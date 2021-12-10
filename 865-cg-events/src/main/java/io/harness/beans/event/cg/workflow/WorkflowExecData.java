@@ -21,7 +21,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class WorkflowEventData {
+public class WorkflowExecData {
   private String id;
-  private String name;
 }

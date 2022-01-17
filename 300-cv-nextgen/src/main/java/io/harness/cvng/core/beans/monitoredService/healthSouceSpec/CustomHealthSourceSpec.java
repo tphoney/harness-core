@@ -124,9 +124,9 @@ public class CustomHealthSourceSpec extends MetricHealthSourceSpec {
                                                 .orgIdentifier(orgIdentifier)
                                                 .projectIdentifier(projectIdentifier)
                                                 .identifier(identifier)
-                                                .serviceIdentifier(serviceRef)
+
                                                 .category(riskProfile.getCategory())
-                                                .envIdentifier(environmentRef)
+
                                                 .connectorIdentifier(getConnectorRef())
                                                 .monitoringSourceName(name)
                                                 .build();

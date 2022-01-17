@@ -112,8 +112,6 @@ public class PrometheusHealthSourceSpec extends MetricHealthSourceSpec {
                                         .connectorIdentifier(getConnectorRef())
                                         .monitoringSourceName(name)
                                         .groupName(key.getGroupName())
-                                        .envIdentifier(environmentRef)
-                                        .serviceIdentifier(serviceRef)
                                         .category(category)
                                         .build();
 
@@ -134,8 +132,6 @@ public class PrometheusHealthSourceSpec extends MetricHealthSourceSpec {
 
   private Key getKeyFromConfig(PrometheusCVConfig prometheusCVConfig) {
     return Key.builder()
-        .envIdentifier(prometheusCVConfig.getEnvIdentifier())
-        .serviceIdentifier(prometheusCVConfig.getServiceIdentifier())
         .groupName(prometheusCVConfig.getGroupName())
         .category(prometheusCVConfig.getCategory())
         .build();

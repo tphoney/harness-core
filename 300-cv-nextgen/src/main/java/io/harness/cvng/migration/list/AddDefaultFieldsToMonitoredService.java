@@ -33,8 +33,6 @@ public class AddDefaultFieldsToMonitoredService implements CVNGMigration {
                        .projectIdentifier(cvConfig.getProjectIdentifier())
                        .accountIdentifier(cvConfig.getAccountId())
                        .orgIdentifier(cvConfig.getOrgIdentifier())
-                       .serviceIdentifier(cvConfig.getServiceIdentifier())
-                       .environmentIdentifier(cvConfig.getEnvIdentifier())
                        .build())
             .collect(Collectors.toSet());
     serviceEnvironmentParams.forEach(serviceEnvironmentParam -> {

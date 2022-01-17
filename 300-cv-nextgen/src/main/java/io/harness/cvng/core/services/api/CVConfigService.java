@@ -48,7 +48,6 @@ public interface CVConfigService extends DeleteEntityByHandler<CVConfig> {
   List<CVConfig> find(String accountId, String orgIdentifier, String projectIdentifier, String serviceIdentifier,
       String envIdentifier, List<DataSourceType> dataSourceTypes);
 
-  Map<String, Set<String>> getEnvToServicesMap(String accountId, String orgIdentifier, String projectIdentifier);
   Set<CVMonitoringCategory> getAvailableCategories(
       String accountId, String orgIdentifier, String projectIdentifier, String envIdentifier, String serviceIdentifier);
   List<CVConfig> getConfigsOfProductionEnvironments(String accountId, String orgIdentifier, String projectIdentifier,
@@ -74,4 +73,6 @@ public interface CVConfigService extends DeleteEntityByHandler<CVConfig> {
       ServiceEnvironmentParams serviceEnvironmentParams, List<String> cvConfigIds);
   List<CVConfig> getCVConfigs(ProjectParams projectParams, String identifier);
   List<CVConfig> list(ProjectParams projectParams, List<String> identifiers);
+
+  ServiceEnvironmentParams getServiceEnvParams(ProjectParams projectParams, String identifier);
 }

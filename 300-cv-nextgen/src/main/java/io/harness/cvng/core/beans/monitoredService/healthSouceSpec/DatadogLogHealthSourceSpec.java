@@ -121,11 +121,7 @@ public class DatadogLogHealthSourceSpec extends HealthSourceSpec {
   }
 
   private Key getKeyFromCVConfig(DatadogLogCVConfig datadogLogCVConfig) {
-    return Key.builder()
-        .serviceIdentifier(datadogLogCVConfig.getServiceIdentifier())
-        .envIdentifier(datadogLogCVConfig.getEnvIdentifier())
-        .queryName(datadogLogCVConfig.getQueryName())
-        .build();
+    return Key.builder().queryName(datadogLogCVConfig.getQueryName()).build();
   }
 
   private List<DatadogLogCVConfig> toCVConfigs(String accountId, String orgIdentifier, String projectIdentifier,
@@ -140,8 +136,6 @@ public class DatadogLogHealthSourceSpec extends HealthSourceSpec {
                                                   .connectorIdentifier(getConnectorRef())
                                                   .monitoringSourceName(name)
                                                   .productName(feature)
-                                                  .envIdentifier(environmentRef)
-                                                  .serviceIdentifier(serviceRef)
                                                   .queryName(queryDTO.getName())
                                                   .query(queryDTO.getQuery())
                                                   .serviceInstanceIdentifier(queryDTO.getServiceInstanceIdentifier())

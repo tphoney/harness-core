@@ -122,11 +122,7 @@ public class StackdriverLogHealthSourceSpec extends HealthSourceSpec {
   }
 
   private Key getKeyFromCVConfig(StackdriverLogCVConfig stackdriverLogCVConfig) {
-    return Key.builder()
-        .serviceIdentifier(stackdriverLogCVConfig.getServiceIdentifier())
-        .envIdentifier(stackdriverLogCVConfig.getEnvIdentifier())
-        .queryName(stackdriverLogCVConfig.getQueryName())
-        .build();
+    return Key.builder().queryName(stackdriverLogCVConfig.getQueryName()).build();
   }
 
   private List<StackdriverLogCVConfig> toCVConfigs(String accountId, String orgIdentifier, String projectIdentifier,
@@ -142,8 +138,6 @@ public class StackdriverLogHealthSourceSpec extends HealthSourceSpec {
               .connectorIdentifier(getConnectorRef())
               .monitoringSourceName(name)
               .productName(feature)
-              .envIdentifier(environmentRef)
-              .serviceIdentifier(serviceRef)
               .queryName(queryDTO.getName())
               .query(queryDTO.getQuery())
               .serviceInstanceIdentifier(queryDTO.getServiceInstanceIdentifier())

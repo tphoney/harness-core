@@ -109,8 +109,6 @@ public class StackdriverMetricHealthSourceSpec extends HealthSourceSpec {
                                          .identifier(identifier)
                                          .connectorIdentifier(getConnectorRef())
                                          .monitoringSourceName(name)
-                                         .envIdentifier(environmentRef)
-                                         .serviceIdentifier(serviceRef)
                                          .category(key.getCategory())
                                          .dashboardName(key.getDashboardName())
                                          .dashboardPath(stackdriverDefinitions.get(0).getDashboardPath())

@@ -103,8 +103,6 @@ public class AppDynamicsHealthSourceSpec extends MetricHealthSourceSpec {
                                                     .productName(feature)
                                                     .applicationName(applicationName)
                                                     .tierName(tierName)
-                                                    .envIdentifier(environmentRef)
-                                                    .serviceIdentifier(serviceRef)
                                                     .metricPack(metricPackFromDb)
                                                     .category(metricPackFromDb.getCategory())
                                                     .build();
@@ -127,8 +125,6 @@ public class AppDynamicsHealthSourceSpec extends MetricHealthSourceSpec {
                                    .productName(feature)
                                    .applicationName(applicationName)
                                    .tierName(tierName)
-                                   .envIdentifier(environmentRef)
-                                   .serviceIdentifier(serviceRef)
                                    .groupName(mdList.get(0).getGroupName())
                                    .category(mdList.get(0).getRiskProfile().getCategory())
                                    .build();
@@ -144,7 +140,6 @@ public class AppDynamicsHealthSourceSpec extends MetricHealthSourceSpec {
     return Key.builder()
         .appName(appDynamicsCVConfig.getApplicationName())
         .metricPack(appDynamicsCVConfig.getMetricPack())
-        .serviceIdentifier(appDynamicsCVConfig.getServiceIdentifier())
         .tierName(appDynamicsCVConfig.getTierName())
         .groupName(appDynamicsCVConfig.getGroupName())
         .build();

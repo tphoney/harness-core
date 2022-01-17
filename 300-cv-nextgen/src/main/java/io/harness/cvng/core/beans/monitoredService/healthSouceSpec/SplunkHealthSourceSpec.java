@@ -118,11 +118,7 @@ public class SplunkHealthSourceSpec extends HealthSourceSpec {
   }
 
   private Key getKeyFromCVConfig(@NotNull SplunkCVConfig cvConfig) {
-    return Key.builder()
-        .envIdentifier(cvConfig.getEnvIdentifier())
-        .queryName(cvConfig.getQueryName())
-        .serviceIdentifier(cvConfig.getServiceIdentifier())
-        .build();
+    return Key.builder().queryName(cvConfig.getQueryName()).build();
   }
 
   private Map<Key, SplunkCVConfig> getCurrentCVConfigMap(String accountId, String orgIdentifier,
@@ -137,8 +133,6 @@ public class SplunkHealthSourceSpec extends HealthSourceSpec {
                    .connectorIdentifier(getConnectorRef())
                    .monitoringSourceName(name)
                    .productName(feature)
-                   .envIdentifier(environmentRef)
-                   .serviceIdentifier(serviceRef)
                    .queryName(queryDTO.getName())
                    .query(queryDTO.getQuery())
                    .serviceInstanceIdentifier(queryDTO.getServiceInstanceIdentifier())

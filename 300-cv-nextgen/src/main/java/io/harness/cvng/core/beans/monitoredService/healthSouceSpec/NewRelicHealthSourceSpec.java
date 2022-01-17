@@ -109,8 +109,6 @@ public class NewRelicHealthSourceSpec extends HealthSourceSpec {
                                               .monitoringSourceName(name)
                                               .applicationName(applicationName)
                                               .applicationId(Long.valueOf(applicationId))
-                                              .envIdentifier(environmentRef)
-                                              .serviceIdentifier(serviceRef)
                                               .metricPack(metricPackFromDb)
                                               .category(metricPackFromDb.getCategory())
                                               .productName(feature)
@@ -134,8 +132,6 @@ public class NewRelicHealthSourceSpec extends HealthSourceSpec {
                                               .productName(feature)
                                               .applicationName(applicationName)
                                               .applicationId(Long.valueOf(applicationId))
-                                              .envIdentifier(environmentRef)
-                                              .serviceIdentifier(serviceRef)
                                               .groupName(definitionList.get(0).getGroupName())
                                               .category(definitionList.get(0).getRiskProfile().getCategory())
                                               .build();
@@ -151,8 +147,6 @@ public class NewRelicHealthSourceSpec extends HealthSourceSpec {
     return Key.builder()
         .applicationId(cvConfig.getApplicationId())
         .applicationName(cvConfig.getApplicationName())
-        .envIdentifier(cvConfig.getEnvIdentifier())
-        .serviceIdentifier(cvConfig.getServiceIdentifier())
         .metricPack(cvConfig.getMetricPack())
         .build();
   }

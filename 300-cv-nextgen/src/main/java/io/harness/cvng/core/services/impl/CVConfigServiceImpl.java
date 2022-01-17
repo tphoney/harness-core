@@ -20,6 +20,7 @@ import io.harness.cvng.beans.DataSourceType;
 import io.harness.cvng.client.NextGenService;
 import io.harness.cvng.client.VerificationManagerService;
 import io.harness.cvng.core.beans.DatasourceTypeDTO;
+import io.harness.cvng.core.beans.monitoredService.MonitoredServiceResponse;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.entities.CVConfig;
@@ -30,6 +31,7 @@ import io.harness.cvng.core.services.api.CVConfigService;
 import io.harness.cvng.core.services.api.DeletedCVConfigService;
 import io.harness.cvng.core.services.api.UpdatableEntity;
 import io.harness.cvng.core.services.api.VerificationTaskService;
+import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
 import io.harness.encryption.Scope;
 import io.harness.ng.core.environment.beans.EnvironmentType;
 import io.harness.ng.core.environment.dto.EnvironmentResponseDTO;
@@ -61,6 +63,7 @@ public class CVConfigServiceImpl implements CVConfigService {
   @Inject private NextGenService nextGenService;
   @Inject private VerificationManagerService verificationManagerService;
   @Inject private Map<DataSourceType, CVConfigUpdatableEntity> dataSourceTypeCVConfigMapBinder;
+  @Inject private MonitoredServiceService monitoredServiceService;
 
   @Override
   public CVConfig save(CVConfig cvConfig) {
@@ -91,9 +94,10 @@ public class CVConfigServiceImpl implements CVConfigService {
                                    .filter(CVConfigKeys.accountId, accountId)
                                    .filter(CVConfigKeys.projectIdentifier, projectIdentifier)
                                    .filter(CVConfigKeys.orgIdentifier, orgIdentifier)
-                                   .filter(CVConfigKeys.serviceIdentifier, serviceIdentifier)
-                                   .filter(CVConfigKeys.envIdentifier, envIdentifier)
                                    .asList();
+
+    // TODO: add filtering by service/env
+
     return cvConfigs.stream()
         .filter(cvConfig -> dataSourceTypes.contains(cvConfig.getType()))
         .collect(Collectors.toList());
@@ -183,20 +187,6 @@ public class CVConfigServiceImpl implements CVConfigService {
                                 .filter(CVConfigKeys.projectIdentifier, projectIdentifier)
                                 .filter(CVConfigKeys.identifier, monitoringSourceIdentifier);
     return query.asList();
-  }
-
-  @Override
-  public Map<String, Set<String>> getEnvToServicesMap(
-      String accountId, String orgIdentifier, String projectIdentifier) {
-    List<CVConfig> cvConfigs = listConfigsForProject(accountId, orgIdentifier, projectIdentifier);
-    Map<String, Set<String>> envToServicesMap = new HashMap<>();
-    cvConfigs.forEach(cvConfig -> {
-      if (!envToServicesMap.containsKey(cvConfig.getEnvIdentifier())) {
-        envToServicesMap.put(cvConfig.getEnvIdentifier(), new HashSet<>());
-      }
-      envToServicesMap.get(cvConfig.getEnvIdentifier()).add(cvConfig.getServiceIdentifier());
-    });
-    return envToServicesMap;
   }
 
   private List<CVConfig> listConfigsForProject(String accountId, String orgIdentifier, String projectIdentifier) {
@@ -316,6 +306,28 @@ public class CVConfigServiceImpl implements CVConfigService {
         .field(CVConfigKeys.identifier)
         .in(identifiers)
         .asList();
+  }
+
+  @Override
+  public ServiceEnvironmentParams getServiceEnvParams(ProjectParams projectParams1, String cvConfigId) {
+    CVConfig cvConfig = hPersistence.get(CVConfig.class, cvConfigId);
+    ProjectParams projectParams = ProjectParams.builder()
+                                      .accountIdentifier(cvConfig.getAccountId())
+                                      .orgIdentifier(cvConfig.getOrgIdentifier())
+                                      .projectIdentifier(cvConfig.getProjectIdentifier())
+                                      .build();
+    MonitoredServiceResponse monitoredServiceResponse =
+        monitoredServiceService.get(projectParams, cvConfig.getMonitoringSourceName());
+
+    String serviceId = monitoredServiceResponse.getMonitoredServiceDTO().getServiceRef();
+    String envId = monitoredServiceResponse.getMonitoredServiceDTO().getEnvironmentRef();
+    return ServiceEnvironmentParams.builder()
+        .serviceIdentifier(serviceId)
+        .environmentIdentifier(envId)
+        .accountIdentifier(projectParams.getAccountIdentifier())
+        .orgIdentifier(projectParams.getOrgIdentifier())
+        .projectIdentifier(projectParams.getProjectIdentifier())
+        .build();
   }
 
   @Override

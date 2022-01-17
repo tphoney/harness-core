@@ -67,8 +67,6 @@ public abstract class CVConfig
                  .field(CVConfigKeys.accountId)
                  .field(CVConfigKeys.orgIdentifier)
                  .field(CVConfigKeys.projectIdentifier)
-                 .field(CVConfigKeys.envIdentifier)
-                 .field(CVConfigKeys.serviceIdentifier)
                  .build(),
             CompoundMongoIndex.builder()
                 .name("insert_index")
@@ -88,8 +86,6 @@ public abstract class CVConfig
   @NotNull private String accountId;
   @NotNull @FdIndex private String connectorIdentifier;
 
-  @NotNull private String serviceIdentifier;
-  @NotNull private String envIdentifier;
   @NotNull private String projectIdentifier;
   @NotNull private String orgIdentifier;
   @NotNull private CVMonitoringCategory category;
@@ -129,8 +125,6 @@ public abstract class CVConfig
     checkNotNull(getVerificationType(), generateErrorMessageFromParam(CVConfigKeys.verificationType));
     checkNotNull(accountId, generateErrorMessageFromParam(CVConfigKeys.accountId));
     checkNotNull(connectorIdentifier, generateErrorMessageFromParam(CVConfigKeys.connectorIdentifier));
-    checkNotNull(serviceIdentifier, generateErrorMessageFromParam(CVConfigKeys.serviceIdentifier));
-    checkNotNull(envIdentifier, generateErrorMessageFromParam(CVConfigKeys.envIdentifier));
     checkNotNull(projectIdentifier, generateErrorMessageFromParam(CVConfigKeys.projectIdentifier));
     checkNotNull(identifier, generateErrorMessageFromParam(CVConfigKeys.identifier));
     checkNotNull(monitoringSourceName, generateErrorMessageFromParam(CVConfigKeys.monitoringSourceName));
@@ -160,8 +154,6 @@ public abstract class CVConfig
       implements UpdatableEntity<T, D> {
     protected void setCommonOperations(UpdateOperations<T> updateOperations, D cvConfig) {
       updateOperations.set(CVConfigKeys.verificationType, cvConfig.getVerificationType())
-          .set(CVConfigKeys.serviceIdentifier, cvConfig.getServiceIdentifier())
-          .set(CVConfigKeys.envIdentifier, cvConfig.getEnvIdentifier())
           .set(CVConfigKeys.monitoringSourceName, cvConfig.getMonitoringSourceName())
           .set(CVConfigKeys.category, cvConfig.getCategory());
     }

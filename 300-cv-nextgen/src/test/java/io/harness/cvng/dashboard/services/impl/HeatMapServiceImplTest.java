@@ -165,20 +165,6 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
             .filter(HeatMapKeys.envIdentifier, envIdentifier)
             .asList(),
         anomalousMetricsCount, anomalousLogsCount);
-    verifyHeatMaps(instant, riskScore,
-        hPersistence.createQuery(HeatMap.class, excludeAuthority)
-            .filter(HeatMapKeys.projectIdentifier, projectIdentifier)
-            .filter(HeatMapKeys.serviceIdentifier, null)
-            .filter(HeatMapKeys.envIdentifier, envIdentifier)
-            .asList(),
-        anomalousMetricsCount, anomalousLogsCount);
-    verifyHeatMaps(instant, riskScore,
-        hPersistence.createQuery(HeatMap.class, excludeAuthority)
-            .filter(HeatMapKeys.projectIdentifier, projectIdentifier)
-            .filter(HeatMapKeys.serviceIdentifier, null)
-            .filter(HeatMapKeys.envIdentifier, null)
-            .asList(),
-        anomalousMetricsCount, anomalousLogsCount);
   }
 
   private void verifyHeatMaps(

@@ -13,7 +13,6 @@ import io.harness.cvng.core.beans.DatasourceTypeDTO;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.entities.CVConfig;
-import io.harness.cvng.dashboard.beans.EnvToServicesDTO;
 import io.harness.encryption.Scope;
 
 import java.util.List;

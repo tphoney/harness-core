@@ -14,15 +14,10 @@ import io.harness.cvng.core.beans.monitoredService.RiskData;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.entities.CVConfig;
 import io.harness.cvng.core.utils.ServiceEnvKey;
-import io.harness.cvng.dashboard.beans.CategoryRisksDTO;
-import io.harness.cvng.dashboard.beans.EnvServiceRiskDTO;
-import io.harness.cvng.dashboard.beans.HeatMapDTO;
-import io.harness.cvng.dashboard.beans.RiskSummaryPopoverDTO;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import javax.validation.constraints.NotNull;
 import lombok.NonNull;
 import org.apache.commons.lang3.tuple.Pair;

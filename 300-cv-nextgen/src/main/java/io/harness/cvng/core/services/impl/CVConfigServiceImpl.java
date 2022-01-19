@@ -189,14 +189,6 @@ public class CVConfigServiceImpl implements CVConfigService {
     return query.asList();
   }
 
-  private List<CVConfig> listConfigsForProject(String accountId, String orgIdentifier, String projectIdentifier) {
-    return hPersistence.createQuery(CVConfig.class, excludeAuthority)
-        .filter(CVConfigKeys.accountId, accountId)
-        .filter(CVConfigKeys.orgIdentifier, orgIdentifier)
-        .filter(CVConfigKeys.projectIdentifier, projectIdentifier)
-        .asList();
-  }
-
   @Override
   public List<String> getProductNames(String accountId, String connectorIdentifier) {
     checkNotNull(accountId, "accountId can not be null");

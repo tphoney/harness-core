@@ -16,7 +16,6 @@ import io.harness.cvng.analysis.entities.LogAnalysisResult;
 import io.harness.cvng.analysis.entities.LogAnalysisResult.AnalysisResult;
 import io.harness.cvng.analysis.entities.LogAnalysisResult.LogAnalysisTag;
 import io.harness.cvng.analysis.services.api.LogAnalysisService;
-import io.harness.cvng.beans.CVMonitoringCategory;
 import io.harness.cvng.core.beans.params.PageParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.beans.params.TimeRangeParams;
@@ -60,22 +59,6 @@ public class LogDashboardServiceImpl implements LogDashboardService {
   @Inject private CVNGParallelExecutor cvngParallelExecutor;
   @Inject private VerificationTaskService verificationTaskService;
   @Inject private ActivityService activityService;
-
-  @Override
-  public PageResponse<AnalyzedLogDataDTO> getAnomalousLogs(String accountId, String projectIdentifier,
-      String orgIdentifier, String serviceIdentifier, String environmentIdentifier, CVMonitoringCategory category,
-      long startTimeMillis, long endTimeMillis, int page, int size) {
-    return getLogs(accountId, projectIdentifier, orgIdentifier, serviceIdentifier, environmentIdentifier, category,
-        startTimeMillis, endTimeMillis, Arrays.asList(LogAnalysisTag.UNEXPECTED, LogAnalysisTag.UNKNOWN), page, size);
-  }
-
-  @Override
-  public PageResponse<AnalyzedLogDataDTO> getAllLogs(String accountId, String projectIdentifier, String orgIdentifier,
-      String serviceIdentifier, String environmentIdentifier, CVMonitoringCategory category, long startTimeMillis,
-      long endTimeMillis, int page, int size) {
-    return getLogs(accountId, projectIdentifier, orgIdentifier, serviceIdentifier, environmentIdentifier, category,
-        startTimeMillis, endTimeMillis, Arrays.asList(LogAnalysisTag.values()), page, size);
-  }
 
   @Override
   public PageResponse<AnalyzedLogDataDTO> getActivityLogs(String activityId, String accountId, String projectIdentifier,
@@ -172,16 +155,6 @@ public class LogDashboardServiceImpl implements LogDashboardService {
         .collect(Collectors.toList());
   }
 
-  @Override
-  public SortedSet<LogDataByTag> getLogCountByTag(String accountId, String projectIdentifier, String orgIdentifier,
-      String serviceIdentifier, String environmentIdentifier, CVMonitoringCategory category, long startTimeMillis,
-      long endTimeMillis) {
-    List<CVConfig> configs = cvConfigService.getConfigsOfProductionEnvironments(
-        accountId, orgIdentifier, projectIdentifier, environmentIdentifier, serviceIdentifier, category);
-    List<String> cvConfigIds = configs.stream().map(CVConfig::getUuid).collect(Collectors.toList());
-    return getLogCountByTagForConfigs(accountId, cvConfigIds, startTimeMillis, endTimeMillis);
-  }
-
   private SortedSet<LogDataByTag> getLogCountByTagForConfigs(
       String accountId, List<String> cvConfigIds, long startTimeMillis, long endTimeMillis) {
     Map<Long, Map<LogAnalysisTag, Integer>> logTagCountMap = new HashMap<>();
@@ -226,18 +199,6 @@ public class LogDashboardServiceImpl implements LogDashboardService {
       String orgIdentifier, String activityId, Instant startTime, Instant endTime) {
     List<String> cvConfigIds = getCVConfigIdsForActivity(accountId, activityId);
     return getLogCountByTagForConfigs(accountId, cvConfigIds, startTime.toEpochMilli(), endTime.toEpochMilli());
-  }
-
-  private PageResponse<AnalyzedLogDataDTO> getLogs(String accountId, String projectIdentifier, String orgIdentifier,
-      String serviceIdentifier, String environmentIdentifier, CVMonitoringCategory category, long startTimeMillis,
-      long endTimeMillis, List<LogAnalysisTag> tags, int page, int size) {
-    Instant startTime = Instant.ofEpochMilli(startTimeMillis);
-    Instant endTime = Instant.ofEpochMilli(endTimeMillis);
-    List<CVConfig> configs = cvConfigService.getConfigsOfProductionEnvironments(
-        accountId, orgIdentifier, projectIdentifier, environmentIdentifier, serviceIdentifier, category);
-    List<String> cvConfigIds = configs.stream().map(CVConfig::getUuid).collect(Collectors.toList());
-    return getLogs(accountId, projectIdentifier, orgIdentifier, serviceIdentifier, environmentIdentifier, tags,
-        startTime, endTime, cvConfigIds, page, size);
   }
 
   private PageResponse<AnalyzedLogDataDTO> getLogs(String accountId, String projectIdentifier, String orgIdentifier,

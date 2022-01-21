@@ -104,30 +104,6 @@ public class TimeSeriesDashboardServiceImpl implements TimeSeriesDashboardServic
   }
 
   @Override
-  public PageResponse<TimeSeriesMetricDataDTO> getSortedMetricData(String accountId, String projectIdentifier,
-      String orgIdentifier, String environmentIdentifier, String serviceIdentifier,
-      CVMonitoringCategory monitoringCategory, Long startTimeMillis, Long endTimeMillis, Long analysisStartTimeMillis,
-      boolean anomalous, int page, int size, String filter, DataSourceType dataSourceType) {
-    // TODO: Change this to a request body. This is too many query params.
-    Instant startTime = Instant.ofEpochMilli(startTimeMillis);
-    Instant endTime = Instant.ofEpochMilli(endTimeMillis);
-    Instant analysisStartTime = Instant.ofEpochMilli(analysisStartTimeMillis);
-
-    // get all the cvConfigs that belong to
-    List<CVConfig> cvConfigList = cvConfigService.getConfigsOfProductionEnvironments(
-        accountId, orgIdentifier, projectIdentifier, environmentIdentifier, serviceIdentifier, monitoringCategory);
-    if (dataSourceType != null) {
-      cvConfigList = cvConfigList.stream()
-                         .filter(cvConfig -> cvConfig.getType().equals(dataSourceType))
-                         .collect(Collectors.toList());
-    }
-    List<String> cvConfigIds = cvConfigList.stream().map(CVConfig::getUuid).collect(Collectors.toList());
-
-    return getMetricData(cvConfigIds, accountId, projectIdentifier, orgIdentifier, environmentIdentifier,
-        serviceIdentifier, monitoringCategory, startTime, endTime, analysisStartTime, anomalous, page, size, filter);
-  }
-
-  @Override
   public PageResponse<TimeSeriesMetricDataDTO> getActivityMetrics(String activityId, String accountId,
       String projectIdentifier, String orgIdentifier, String environmentIdentifier, String serviceIdentifier,
       Long startTimeMillis, Long endTimeMillis, boolean anomalousOnly, int page, int size) {

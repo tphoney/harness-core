@@ -20,6 +20,7 @@ import io.harness.cvng.beans.DataSourceType;
 import io.harness.cvng.client.NextGenService;
 import io.harness.cvng.client.VerificationManagerService;
 import io.harness.cvng.core.beans.DatasourceTypeDTO;
+import io.harness.cvng.core.beans.monitoredService.MonitoredServiceDTO;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceResponse;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
@@ -255,28 +256,6 @@ public class CVConfigServiceImpl implements CVConfigService {
   }
 
   @Override
-  public List<CVConfig> getConfigsOfProductionEnvironments(String accountId, String orgIdentifier,
-      String projectIdentifier, String environmentIdentifier, String serviceIdentifier,
-      CVMonitoringCategory monitoringCategory) {
-    List<CVConfig> configsForFilter =
-        list(accountId, orgIdentifier, projectIdentifier, environmentIdentifier, serviceIdentifier, monitoringCategory);
-    if (isEmpty(configsForFilter)) {
-      return Collections.emptyList();
-    }
-    List<CVConfig> configsToReturn = new ArrayList<>();
-    configsForFilter.forEach(config -> {
-      EnvironmentResponseDTO environment =
-          nextGenService.getEnvironment(accountId, orgIdentifier, projectIdentifier, config.getEnvIdentifier());
-      Preconditions.checkNotNull(environment, "no env with identifier %s found for account %s org %s project %s",
-          config.getEnvIdentifier(), accountId, orgIdentifier, projectIdentifier);
-      if (environment.getType().equals(EnvironmentType.Production)) {
-        configsToReturn.add(config);
-      }
-    });
-    return configsToReturn;
-  }
-
-  @Override
   public List<CVConfig> list(ServiceEnvironmentParams serviceEnvironmentParams) {
     Query<CVConfig> query = createQuery(serviceEnvironmentParams);
     return query.asList();
@@ -301,7 +280,7 @@ public class CVConfigServiceImpl implements CVConfigService {
   }
 
   @Override
-  public ServiceEnvironmentParams getServiceEnvParams(ProjectParams projectParams1, String cvConfigId) {
+  public ServiceEnvironmentParams getServiceEnvParams(String cvConfigId) {
     CVConfig cvConfig = hPersistence.get(CVConfig.class, cvConfigId);
     ProjectParams projectParams = ProjectParams.builder()
                                       .accountIdentifier(cvConfig.getAccountId())
@@ -311,6 +290,42 @@ public class CVConfigServiceImpl implements CVConfigService {
     MonitoredServiceResponse monitoredServiceResponse =
         monitoredServiceService.get(projectParams, cvConfig.getMonitoringSourceName());
 
+    String serviceId = monitoredServiceResponse.getMonitoredServiceDTO().getServiceRef();
+    String envId = monitoredServiceResponse.getMonitoredServiceDTO().getEnvironmentRef();
+    return ServiceEnvironmentParams.builderWithProjectParams(projectParams)
+        .serviceIdentifier(serviceId)
+        .environmentIdentifier(envId)
+        .build();
+  }
+
+  public ServiceEnvironmentParams getServiceEnvParams(ProjectParams projectParams, List<String> cvConfigIds) {
+    List<CVConfig> cvConfigs =
+        hPersistence.createQuery(CVConfig.class).field(CVConfigKeys.uuid).in(cvConfigIds).asList();
+
+    Map<String, String> monitoredServiceCvConfigIdMap =
+        cvConfigs.stream().collect(Collectors.toMap(CVConfig::getMonitoringSourceName, CVConfig::getUuid));
+
+    Set<String> monitoredSourceIdentifiers =
+        cvConfigs.stream().map(CVConfig::getMonitoringSourceName).collect(Collectors.toSet());
+
+    List<MonitoredServiceResponse> monitoredServiceResponses =
+        monitoredServiceService.get(projectParams, monitoredSourceIdentifiers);
+
+    if (isNotEmpty(monitoredServiceResponses)) {
+      Map<String, ServiceEnvironmentParams> monServiceParamsMap = new HashMap<>();
+      monitoredServiceResponses.forEach(monitoredServiceResponse -> {
+        MonitoredServiceDTO monitoredServiceDTO = monitoredServiceResponse.getMonitoredServiceDTO();
+        monServiceParamsMap.put(monitoredServiceResponse.getMonitoredServiceDTO().getName(),
+            ServiceEnvironmentParams.builder()
+                .projectIdentifier(monitoredServiceDTO.getProjectIdentifier())
+                .orgIdentifier(monitoredServiceDTO.getOrgIdentifier())
+                .environmentIdentifier(monitoredServiceDTO.getEnvironmentRef())
+                .serviceIdentifier(monitoredServiceDTO.getServiceRef())
+                .build());
+      });
+    }
+
+    return null;
     String serviceId = monitoredServiceResponse.getMonitoredServiceDTO().getServiceRef();
     String envId = monitoredServiceResponse.getMonitoredServiceDTO().getEnvironmentRef();
     return ServiceEnvironmentParams.builder()

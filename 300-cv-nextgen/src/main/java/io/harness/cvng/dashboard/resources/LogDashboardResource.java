@@ -10,7 +10,6 @@ package io.harness.cvng.dashboard.resources;
 import io.harness.annotations.ExposeInternalException;
 import io.harness.cvng.analysis.beans.LiveMonitoringLogAnalysisClusterDTO;
 import io.harness.cvng.analysis.entities.LogAnalysisResult.LogAnalysisTag;
-import io.harness.cvng.beans.CVMonitoringCategory;
 import io.harness.cvng.core.beans.params.PageParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.beans.params.TimeRangeParams;
@@ -45,62 +44,6 @@ import javax.ws.rs.QueryParam;
 @NextGenManagerAuth
 public class LogDashboardResource {
   @Inject private LogDashboardService logDashboardService;
-
-  @GET
-  @Path("/anomalous-logs")
-  @Timed
-  @ExceptionMetered
-  @ApiOperation(value = "get anomalous logs for a time range", nickname = "getAnomalousLogs")
-  public RestResponse<PageResponse<AnalyzedLogDataDTO>> getAnomalousLogs(@QueryParam("accountId") String accountId,
-      @NotNull @QueryParam("projectIdentifier") String projectIdentifier,
-      @NotNull @QueryParam("orgIdentifier") String orgIdentifier,
-      @QueryParam("environmentIdentifier") String environmentIdentifier,
-      @QueryParam("serviceIdentifier") String serviceIdentifier,
-      @QueryParam("monitoringCategory") String monitoringCategory,
-      @NotNull @QueryParam("startTime") Long startTimeMillis, @NotNull @QueryParam("endTime") Long endTimeMillis,
-      @QueryParam("page") @DefaultValue("0") int page, @QueryParam("size") @DefaultValue("10") int size) {
-    return new RestResponse<>(
-        logDashboardService.getAnomalousLogs(accountId, projectIdentifier, orgIdentifier, serviceIdentifier,
-            environmentIdentifier, monitoringCategory != null ? CVMonitoringCategory.valueOf(monitoringCategory) : null,
-            startTimeMillis, endTimeMillis, page, size));
-  }
-
-  @GET
-  @Path("/all-logs")
-  @Timed
-  @ExceptionMetered
-  @ApiOperation(value = "get all logs for a time range", nickname = "getAllLogs")
-  public RestResponse<PageResponse<AnalyzedLogDataDTO>> getAllLogs(@QueryParam("accountId") String accountId,
-      @NotNull @QueryParam("projectIdentifier") String projectIdentifier,
-      @NotNull @QueryParam("orgIdentifier") String orgIdentifier,
-      @QueryParam("environmentIdentifier") String environmentIdentifier,
-      @QueryParam("serviceIdentifier") String serviceIdentifier,
-      @QueryParam("monitoringCategory") String monitoringCategory,
-      @NotNull @QueryParam("startTime") Long startTimeMillis, @NotNull @QueryParam("endTime") Long endTimeMillis,
-      @QueryParam("page") @DefaultValue("0") int page, @QueryParam("size") @DefaultValue("10") int size) {
-    return new RestResponse<>(
-        logDashboardService.getAllLogs(accountId, projectIdentifier, orgIdentifier, serviceIdentifier,
-            environmentIdentifier, monitoringCategory != null ? CVMonitoringCategory.valueOf(monitoringCategory) : null,
-            startTimeMillis, endTimeMillis, page, size));
-  }
-
-  @GET
-  @Path("/log-count-by-tags")
-  @Timed
-  @ExceptionMetered
-  @ApiOperation(value = "get a sorted tag vs logs list", nickname = "getTagCount")
-  public RestResponse<SortedSet<LogDataByTag>> getTagCount(@QueryParam("accountId") String accountId,
-      @NotNull @QueryParam("projectIdentifier") String projectIdentifier,
-      @NotNull @QueryParam("orgIdentifier") String orgIdentifier,
-      @QueryParam("environmentIdentifier") String environmentIdentifier,
-      @QueryParam("serviceIdentifier") String serviceIdentifier,
-      @QueryParam("monitoringCategory") String monitoringCategory,
-      @NotNull @QueryParam("startTime") Long startTimeMillis, @NotNull @QueryParam("endTime") Long endTimeMillis) {
-    return new RestResponse<>(
-        logDashboardService.getLogCountByTag(accountId, projectIdentifier, orgIdentifier, serviceIdentifier,
-            environmentIdentifier, monitoringCategory != null ? CVMonitoringCategory.valueOf(monitoringCategory) : null,
-            startTimeMillis, endTimeMillis));
-  }
 
   @GET
   @Path("/{activityId}/log-count-by-tags")

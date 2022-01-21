@@ -738,6 +738,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     List<String> serviceIdentifiers = new ArrayList<>();
     List<String> environmentIdentifiers = new ArrayList<>();
     List<String> monitoredServiceIdentifiers = new ArrayList<>();
+
     for (MonitoredServiceListItemDTOBuilder monitoredServiceListDTOBuilder :
         monitoredServiceListDTOBuilderPageResponse.getContent()) {
       serviceEnvironmentIdentifiers.add(
@@ -751,13 +752,16 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         nextGenService.getServiceIdNameMap(projectParams, new ArrayList<>(serviceIdentifiers));
     Map<String, String> environmentIdNameMap =
         nextGenService.getEnvironmentIdNameMap(projectParams, new ArrayList<>(environmentIdentifiers));
+
     List<HistoricalTrend> historicalTrendList = heatMapService.getHistoricalTrend(projectParams.getAccountIdentifier(),
         projectParams.getOrgIdentifier(), projectParams.getProjectIdentifier(), serviceEnvironmentIdentifiers, 24);
+
     Map<String, List<String>> monitoredServiceToDependentServicesMap =
         serviceDependencyService.getMonitoredServiceToDependentServicesMap(projectParams, monitoredServiceIdentifiers);
 
     List<MonitoredServiceListItemDTO> monitoredServiceListDTOS = new ArrayList<>();
     int index = 0;
+
     Map<String, List<SloHealthIndicatorDTO>> sloHealthIndicatorDTOMap =
         getSloHealthIndicators(projectParams, monitoredServiceIdentifiers);
     for (MonitoredServiceListItemDTOBuilder monitoredServiceListDTOBuilder :
@@ -915,6 +919,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         .identifier(monitoredService.getIdentifier())
         .serviceRef(monitoredService.getServiceIdentifier())
         .environmentRef(monitoredService.getEnvironmentIdentifier())
+        .environmentRefList(monitoredService.getEnvironmentIdentifierList())
         .healthMonitoringEnabled(monitoredService.isEnabled())
         .tags(TagMapper.convertToMap(monitoredService.getTags()))
         .type(monitoredService.getType());

@@ -450,6 +450,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   public void run(final boolean watched, final boolean isServer) {
     this.isServer = isServer;
     try {
+      log.info("Creating task executor with {} threads", delegateConfiguration.getTaskExecutorThreads());
+      taskExecutor.toString();
       accountId = delegateConfiguration.getAccountId();
       if (perpetualTaskWorker != null) {
         log.info("Starting perpetual task workers");

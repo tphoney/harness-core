@@ -12,11 +12,15 @@ import io.harness.EntitySubtype;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.function.Supplier;
 
 public enum AccountSettingType implements EntitySubtype {
-  @JsonProperty("Connector") CONNECTOR("Connector");
+  @JsonProperty("Connector") CONNECTOR("Connector", () -> ConnectorSettings.builder().build());
+  //  @JsonProperty("Secret") SECRET("Secret", ()-> SecretSettings.builder().build());
 
   private final String displayName;
+
+  private final Supplier<? extends AccountSettingConfig> supplier;
 
   @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
   public static AccountSettingType getAccountSettingType(@JsonProperty("type") String displayName) {
@@ -28,8 +32,12 @@ public enum AccountSettingType implements EntitySubtype {
     throw new IllegalArgumentException("Invalid value: " + displayName);
   }
 
-  AccountSettingType(String displayName) {
+  AccountSettingType(String displayName, Supplier supplier) {
     this.displayName = displayName;
+    this.supplier = supplier;
+  }
+  public AccountSettingConfig getInstance() {
+    return supplier.get();
   }
 
   @JsonValue

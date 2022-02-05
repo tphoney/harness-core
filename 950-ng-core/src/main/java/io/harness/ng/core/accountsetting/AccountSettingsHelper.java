@@ -7,6 +7,8 @@
 
 package io.harness.ng.core.accountsetting;
 
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+
 import io.harness.ng.core.accountsetting.dto.AccountSettingResponseDTO;
 import io.harness.ng.core.accountsetting.dto.AccountSettingType;
 import io.harness.ng.core.accountsetting.dto.ConnectorSettings;
@@ -17,8 +19,12 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
 @Slf4j
 @Singleton
@@ -40,16 +46,26 @@ public class AccountSettingsHelper {
 
   public void setUpDefaultAccountSettings(String accountIdentifier) {
     final List<AccountSettings> accountSettings = new ArrayList<>();
+    final Criteria criteria =
+        Criteria.where(AccountSettings.AccountSettingsKeys.accountIdentifier).is(accountIdentifier);
+    final List<AccountSettings> existingAccountSettings =
+        mongoTemplate.find(new Query(criteria), AccountSettings.class);
+    List<AccountSettingType> existingAccountSettingType = new ArrayList<>();
+    if (isNotEmpty(existingAccountSettings)) {
+      existingAccountSettingType =
+          existingAccountSettings.stream().map(AccountSettings::getType).collect(Collectors.toList());
+    }
+
     try {
       for (AccountSettingType accountSettingType : AccountSettingType.values()) {
-        AccountSettings accountSetting =
-            AccountSettings.builder().accountIdentifier(accountIdentifier).type(accountSettingType).build();
-        switch (accountSettingType) {
-          case CONNECTOR:
-            accountSetting.setConfig(connectorSettings.getDefaultConfig());
-          default:
-            log.error("No setting of given type is supported");
+        if (existingAccountSettingType != null && existingAccountSettingType.contains(accountSettingType)) {
+          continue;
         }
+        AccountSettings accountSetting = AccountSettings.builder()
+                                             .accountIdentifier(accountIdentifier)
+                                             .type(accountSettingType)
+                                             .config(accountSettingType.getInstance().getDefaultConfig())
+                                             .build();
         accountSettings.add(accountSetting);
       }
       mongoTemplate.insertAll(accountSettings);

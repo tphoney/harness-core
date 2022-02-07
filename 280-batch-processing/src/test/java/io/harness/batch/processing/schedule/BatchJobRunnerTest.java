@@ -8,9 +8,11 @@
 package io.harness.batch.processing.schedule;
 
 import static io.harness.rule.OwnerRule.HITESH;
+import static io.harness.rule.OwnerRule.UTSAV;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
@@ -50,6 +52,25 @@ public class BatchJobRunnerTest extends CategoryTest {
     boolean jobFinished = batchJobRunner.checkDependentJobFinished(
         ACCOUNT_ID, NOW.minus(3, ChronoUnit.DAYS), batchJobType.getDependentBatchJobs());
     assertThat(jobFinished).isTrue();
+  }
+
+  @Test
+  @Owner(developers = UTSAV)
+  @Category(UnitTests.class)
+  public void testDailyJobDependencyOnHourlyJob() {
+    // last K8S_UTILIZATION completed for [2022-01-25T10:00:00.000Z, 2022-01-25T11:00:00.000Z]
+    Instant lastDependentJobEndAt = Instant.parse("2022-01-25T11:00:00.000Z");
+
+    // INSTANCE_BILLING waiting to run from [2022-01-25T00:00:00.000Z, 2022-01-26T00:00:00.000Z]
+    Instant instanceBillingEndAt = Instant.parse("2022-01-26T00:00:00.000Z");
+
+    when(batchJobScheduledDataService.fetchLastDependentBatchJobScheduledTime(
+             eq(ACCOUNT_ID), eq(BatchJobType.K8S_UTILIZATION)))
+        .thenReturn(lastDependentJobEndAt);
+    BatchJobType batchJobType = BatchJobType.INSTANCE_BILLING;
+    boolean jobFinished = batchJobRunner.checkDependentJobFinished(
+        ACCOUNT_ID, instanceBillingEndAt, batchJobType.getDependentBatchJobs());
+    assertThat(jobFinished).isFalse();
   }
 
   @Test

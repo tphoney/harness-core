@@ -167,6 +167,7 @@ public class OwnerRule implements TestRule {
   public static final String SRIRAM = "sriram";
   public static final String SUJAY = "sujay.sharma";
   public static final String SATYAM = "satyam.shanker";
+  public static final String TEJAS = "tejas.tiwari";
   public static final String UJJAWAL = "ujjawal.prasad";
   public static final String UTKARSH = "utkarsh.gupta";
   public static final String UTSAV = "utsav.krishnan";

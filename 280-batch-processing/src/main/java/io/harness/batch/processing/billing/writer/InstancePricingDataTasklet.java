@@ -80,6 +80,12 @@ public class InstancePricingDataTasklet implements Tasklet {
       instanceDataLists =
           instanceDataDao.getInstanceDataListForPricingUpdate(accountId, batchSize, activeInstanceIterator, endTime);
       log.info("Processing {} instances", instanceDataLists.size());
+      for (int i = 0; i<10; i++) {
+        log.info("InstanceId: {}, Instance Family: {}, Region: {}, Cloud Provider: {}", instanceDataLists.get(i).getCloudProviderInstanceId(),
+            instanceDataLists.get(i).getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY),
+            instanceDataLists.get(i).getMetaData().get(InstanceMetaDataConstants.REGION),
+            instanceDataLists.get(i).getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER));
+      }
       if (!instanceDataLists.isEmpty()) {
         activeInstanceIterator = instanceDataLists.get(instanceDataLists.size() - 1).getActiveInstanceIterator();
         if (instanceDataLists.get(0).getActiveInstanceIterator().equals(activeInstanceIterator)) {
@@ -91,6 +97,7 @@ public class InstancePricingDataTasklet implements Tasklet {
           getValueForKeyFromInstanceMetaData(InstanceMetaDataConstants.CLOUD_PROVIDER, instanceData)
               .equals(CloudProvider.AWS.name())
       ).collect(Collectors.groupingBy(InstanceData::getCloudProviderInstanceId));
+      log.info("AWS Instances size: {}", awsInstances.size());
       Set<String> leftOverInstances = awsInstances.keySet();
       // call BQHelperSerivce with awsInstances.keySet
       String awsDataSetId = customBillingMetaDataService.getAwsDataSetId(accountId);

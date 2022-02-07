@@ -405,6 +405,7 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
   @Override
   public Map<InstanceFamilyAndRegion, Pricing> getAwsPricingDataByInstanceFamilyAndRegion(
       List<InstanceFamilyAndRegion> instanceFamilyAndRegions, Instant startTime, Instant endTime, String dataSetId) {
+    if (instanceFamilyAndRegions.isEmpty()) return new HashMap<>();
     String query = BQConst.AWS_PRICING_DATA_BY_INSTANCE_FAMILY_AND_REGION;
     StringJoiner stringJoiner = new StringJoiner(", ");
     instanceFamilyAndRegions.forEach((instanceFamilyAndRegion -> stringJoiner.add(instanceFamilyAndRegion.toString())));

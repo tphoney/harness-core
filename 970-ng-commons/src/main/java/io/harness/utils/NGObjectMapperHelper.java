@@ -15,6 +15,7 @@ import io.harness.serializer.jackson.HarnessJacksonModule;
 
 import software.wings.jersey.JsonViews;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;

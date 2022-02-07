@@ -35,7 +35,7 @@ public enum NGFailureActionType {
     this.yamlName = yamlName;
   }
 
-  @JsonCreator
+  @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
   public static NGFailureActionType getFailureActionType(@JsonProperty("action") String yamlName) {
     for (NGFailureActionType value : NGFailureActionType.values()) {
       if (value.yamlName.equalsIgnoreCase(yamlName)) {

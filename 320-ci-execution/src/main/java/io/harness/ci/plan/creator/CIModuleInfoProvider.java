@@ -33,6 +33,7 @@ import io.harness.ci.plan.creator.execution.CIPipelineModuleInfo;
 import io.harness.ci.plan.creator.execution.CIStageModuleInfo;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.exception.ngexception.CIStageExecutionException;
+import io.harness.execution.CIExecutionConfigService;
 import io.harness.ng.core.BaseNGAccess;
 import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.contracts.ambiance.Ambiance;
@@ -77,6 +78,7 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(HarnessTeam.CI)
 public class CIModuleInfoProvider implements ExecutionSummaryModuleInfoProvider {
   @Inject private ExecutionSweepingOutputService executionSweepingOutputService;
+  @Inject private CIExecutionConfigService executionConfigService;
   @Inject private ConnectorUtils connectorUtils;
 
   @Override
@@ -211,6 +213,8 @@ public class CIModuleInfoProvider implements ExecutionSummaryModuleInfoProvider 
       }
     }
 
+    Boolean usingDeprecatedTag = executionConfigService.isUsingDeprecatedTag(baseNGAccess.getAccountIdentifier());
+
     return CIPipelineModuleInfo.builder()
         .branch(branch)
         .triggerRepoName(triggerRepoName)
@@ -218,6 +222,7 @@ public class CIModuleInfoProvider implements ExecutionSummaryModuleInfoProvider 
         .buildType(buildType)
         .tag(tag)
         .repoName(repoName)
+        .isUsingDeprecatedTag(usingDeprecatedTag)
         .ciExecutionInfoDTO(getCiExecutionInfoDTO(codebaseSweepingOutput, author, prNumber, triggerCommits))
         .isPrivateRepo(isPrivateRepo)
         .build();

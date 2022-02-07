@@ -214,7 +214,7 @@ public class K8BuildSetupUtils {
         harnessInternalImageConnector, gitEnvVars, runtimeCodebaseVars, initializeStepInfo, logPrefix, ambiance);
 
     CIK8ContainerParams setupAddOnContainerParams = internalContainerParamsProvider.getSetupAddonContainerParams(
-        harnessInternalImageConnector, podSetupInfo.getVolumeToMountPath(), podSetupInfo.getWorkDirPath());
+        harnessInternalImageConnector, podSetupInfo.getVolumeToMountPath(), podSetupInfo.getWorkDirPath(), ngAccess.getAccountIdentifier());
 
     // Service identifier usage in host alias requires that service identifier does not have capital letter characters
     // or _. For now, removing host alias usage otherwise pod creation itself fails.

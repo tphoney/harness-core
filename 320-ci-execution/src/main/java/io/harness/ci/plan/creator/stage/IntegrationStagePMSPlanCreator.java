@@ -22,6 +22,7 @@ import io.harness.beans.execution.ExecutionSource;
 import io.harness.beans.execution.PRWebhookEvent;
 import io.harness.beans.execution.WebhookEvent;
 import io.harness.beans.execution.WebhookExecutionSource;
+import io.harness.beans.stages.IntegrationStageConfig;
 import io.harness.beans.stages.IntegrationStageStepParametersPMS;
 import io.harness.ci.integrationstage.CIIntegrationStageModifier;
 import io.harness.ci.integrationstage.IntegrationStageUtils;
@@ -91,6 +92,9 @@ public class IntegrationStagePMSPlanCreator extends GenericStagePlanCreator {
     if (isNotEmpty(codeBaseNodeUUID)) {
       childNodeId = codeBaseNodeUUID; // Change the child of integration stage to codebase node
     }
+
+    IntegrationStageConfig integrationStageConfig = IntegrationStageUtils.getIntegrationStageConfig(stageElementConfig);
+    integrationStageConfig.getCloneCodebase();
 
     ExecutionElementConfig modifiedExecutionPlan =
         modifyYAMLWithImplicitSteps(ctx, executionSource, executionField, stageElementConfig);
@@ -210,6 +214,7 @@ public class IntegrationStagePMSPlanCreator extends GenericStagePlanCreator {
       //  code base is not mandatory in case git clone is false, Sending status won't be possible
       return null;
     }
+
     ExecutionTriggerInfo triggerInfo = planCreationContextValue.getMetadata().getTriggerInfo();
     TriggerPayload triggerPayload = planCreationContextValue.getTriggerPayload();
 

@@ -22,6 +22,8 @@ public class CIExecutionServiceConfig {
   Integer pvcDefaultStorageSize;
   String addonImage;
   String liteEngineImage;
+  String ciImageTag;
+  String expectedCIImageTags;
   CIStepConfig stepConfig;
   boolean isLocal;
 }

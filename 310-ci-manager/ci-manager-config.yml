@@ -108,7 +108,9 @@ ciExecutionServiceConfig:
   delegateServiceEndpointVariableValue: "delegate-service:8080"
   addonImage: harness/ci-addon:release-61
   liteEngineImage: harness/ci-lite-engine:release-30
-  isLocal: false
+  ciImageTag: release-30
+  expectedCIImageTags: release-30
+  isLocal: true
   stepConfig:
     # The below config is for K8 steps
     gitCloneConfig:
@@ -190,7 +192,7 @@ pmsGrpcClientConfig:
 
 apiUrl: https://localhost:8181/#/
 
-shouldConfigureWithPMS: false
+shouldConfigureWithPMS: true
 
 enableDashboardTimescale: false
 

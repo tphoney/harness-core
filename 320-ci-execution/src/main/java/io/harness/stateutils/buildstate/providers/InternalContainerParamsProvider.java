@@ -41,7 +41,9 @@ import io.harness.delegate.beans.ci.pod.ContainerResourceParams;
 import io.harness.delegate.beans.ci.pod.ContainerSecrets;
 import io.harness.delegate.beans.ci.pod.ImageDetailsWithConnector;
 import io.harness.delegate.beans.ci.pod.SecretParams;
+import io.harness.execution.CIExecutionConfigService;
 import io.harness.ff.CIFeatureFlagService;
+import io.harness.ng.core.NGAccess;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.execution.utils.AmbianceUtils;
 
@@ -61,15 +63,16 @@ import java.util.Map;
 @OwnedBy(HarnessTeam.CI)
 public class InternalContainerParamsProvider {
   @Inject CIExecutionServiceConfig ciExecutionServiceConfig;
+  @Inject CIExecutionConfigService ciExecutionConfigService;
   @Inject private CIFeatureFlagService featureFlagService;
 
   public CIK8ContainerParams getSetupAddonContainerParams(
-      ConnectorDetails harnessInternalImageConnector, Map<String, String> volumeToMountPath, String workDir) {
+      ConnectorDetails harnessInternalImageConnector, Map<String, String> volumeToMountPath, String workDir, String accountIdentifier) {
     List<String> args = new ArrayList<>(Collections.singletonList(SETUP_ADDON_ARGS));
     Map<String, String> envVars = new HashMap<>();
     envVars.put(HARNESS_WORKSPACE, workDir);
 
-    String imageName = ciExecutionServiceConfig.getAddonImage();
+    String imageName = ciExecutionConfigService.getAddonImage(accountIdentifier);
     String fullyQualifiedImage =
         IntegrationStageUtils.getFullyQualifiedImageName(imageName, harnessInternalImageConnector);
     return CIK8ContainerParams.builder()
@@ -90,7 +93,8 @@ public class InternalContainerParamsProvider {
       Map<String, ConnectorDetails> publishArtifactConnectors, K8PodDetails k8PodDetails, Integer stageCpuRequest,
       Integer stageMemoryRequest, Map<String, String> logEnvVars, Map<String, String> tiEnvVars,
       Map<String, String> volumeToMountPath, String workDirPath, String logPrefix, Ambiance ambiance) {
-    String imageName = ciExecutionServiceConfig.getLiteEngineImage();
+    NGAccess ngAccess = AmbianceUtils.getNgAccess(ambiance);
+    String imageName = ciExecutionConfigService.getLiteEngineImage(ngAccess.getAccountIdentifier());
     String fullyQualifiedImage =
         IntegrationStageUtils.getFullyQualifiedImageName(imageName, harnessInternalImageConnector);
     return CIK8ContainerParams.builder()

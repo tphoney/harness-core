@@ -177,7 +177,7 @@ public class InstancePricingDataTasklet implements Tasklet {
               getValueForKeyFromInstanceMetaData(InstanceMetaDataConstants.CLOUD_PROVIDER, instanceData)
                   .equals(CloudProvider.AZURE.name())
           ).collect(Collectors.groupingBy(InstanceData::getCloudProviderInstanceId));
-
+      log.info("Azure Instances size: {}", azureInstances.size());
     } while (instanceDataLists.size() == batchSize);
     log.info("Instance Pricing Job Finished");
     return null;

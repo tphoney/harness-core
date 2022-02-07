@@ -82,13 +82,13 @@ func checkHarnessTag(log *zap.SugaredLogger, filePath string, fs filesystem.File
 //   fs  (FileSystem): Filesystem interface for File IO.
 //
 // Returns:
-//  bool : True if harnessArgLine is present in any of the XML files. False otherwise.
+//  bool : True if harnessArgLine is present in any of the pom.xml files. False otherwise.
 //  error: Error if there's one, nil otherwise.
 
 func DetectHarnessTag(log *zap.SugaredLogger, fs filesystem.FileSystem) (bool, error) {
-	// Get all the XML files from $HARNESS_WORKSPACE
+	// Get all the pom.xml files from $HARNESS_WORKSPACE
 	wp, _ := getWorkspace()
-	files, _ := getFiles(fmt.Sprintf("%s/**/*.xml", wp))
+	files, _ := getFiles(fmt.Sprintf("%s/**/pom.xml", wp))
 	foundHarnessTag := false
 	var err error
 

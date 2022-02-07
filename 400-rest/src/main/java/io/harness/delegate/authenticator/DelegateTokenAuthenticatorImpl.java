@@ -90,7 +90,7 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
         } catch (ParseException e) {
           log.warn("Couldn't parse token", e);
         }
-        log.warn("Delegate {} is using REVOKED delegate token", delegateHostName);
+        log.error("Delegate {} is using REVOKED delegate token", delegateHostName);
         throw new RevokedTokenException("Invalid delegate token. Delegate is using revoked token", USER_ADMIN);
       }
 
@@ -143,22 +143,23 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
       Query query, String accountId, DelegateTokenStatus status, EncryptedJWT encryptedJWT, boolean isNg) {
     try (HIterator<DelegateToken> iterator = new HIterator<>(query.fetch())) {
       while (iterator.hasNext()) {
+        DelegateToken delegateToken = iterator.next();
         try {
           if (isNg) {
-            decryptDelegateToken(encryptedJWT, decodeBase64ToString(iterator.next().getValue()));
+            decryptDelegateToken(encryptedJWT, decodeBase64ToString(delegateToken.getValue()));
           } else {
-            decryptDelegateToken(encryptedJWT, iterator.next().getValue());
+            decryptDelegateToken(encryptedJWT, delegateToken.getValue());
           }
           if (DelegateTokenStatus.ACTIVE == status) {
             if (!GlobalContextManager.isAvailable()) {
               initGlobalContextGuard(new GlobalContext());
             }
             upsertGlobalContextRecord(
-                DelegateTokenGlobalContextData.builder().tokenName(iterator.next().getName()).build());
+                DelegateTokenGlobalContextData.builder().tokenName(delegateToken.getName()).build());
           }
           return true;
         } catch (Exception e) {
-          log.debug("Fail to decrypt Delegate JWT using delete token {} for the account {}", iterator.next().getName(),
+          log.debug("Fail to decrypt Delegate JWT using delete token {} for the account {}", delegateToken.getName(),
               accountId);
         }
       }

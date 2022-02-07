@@ -337,8 +337,7 @@ public class SettingValidationServiceTest extends WingsBaseTest {
             .withValue(ElkConfig.builder().elkUrl("https://elk-example.com/").build())
             .build());
     assertThat(validationResult.isValid()).isFalse();
-    assertThat(validationResult.getErrorMessage())
-        .isEqualTo("Error: elk-example.com: nodename nor servname provided, or not known");
+    assertThat(validationResult.getErrorMessage()).isEqualTo("Error: elk-example.com: Name or service not known");
   }
 
   @Test
@@ -377,8 +376,7 @@ public class SettingValidationServiceTest extends WingsBaseTest {
     final ValidationResult validationResult = settingValidationService.validateConnectivity(
         aSettingAttribute().withAccountId(accountId).withName(generateUuid()).withValue(logzConfig).build());
     assertThat(validationResult.isValid()).isFalse();
-    assertThat(validationResult.getErrorMessage())
-        .isEqualTo("Error: logz-example.com: nodename nor servname provided, or not known");
+    assertThat(validationResult.getErrorMessage()).isEqualTo("Error: logz-example.com: Name or service not known");
   }
 
   @Test
@@ -488,8 +486,7 @@ public class SettingValidationServiceTest extends WingsBaseTest {
     final ValidationResult validationResult = settingValidationService.validateConnectivity(
         aSettingAttribute().withAccountId(accountId).withName(generateUuid()).withValue(instanaConfig).build());
     assertThat(validationResult.isValid()).isFalse();
-    assertThat(validationResult.getErrorMessage())
-        .isEqualTo("Error: instana-example.com: nodename nor servname provided, or not known");
+    assertThat(validationResult.getErrorMessage()).isEqualTo("Error: instana-example.com: Name or service not known");
   }
 
   @Test
@@ -551,8 +548,7 @@ public class SettingValidationServiceTest extends WingsBaseTest {
     final ValidationResult validationResult = settingValidationService.validateConnectivity(
         aSettingAttribute().withAccountId(accountId).withName(generateUuid()).withValue(newRelicConfig).build());
     assertThat(validationResult.isValid()).isFalse();
-    assertThat(validationResult.getErrorMessage())
-        .isEqualTo("Error: newrelic-example.com: nodename nor servname provided, or not known");
+    assertThat(validationResult.getErrorMessage()).isEqualTo("Error: newrelic-example.com: Name or service not known");
   }
 
   @Test
@@ -616,8 +612,7 @@ public class SettingValidationServiceTest extends WingsBaseTest {
     final ValidationResult validationResult = settingValidationService.validateConnectivity(
         aSettingAttribute().withAccountId(accountId).withName(generateUuid()).withValue(appDynamicsConfig).build());
     assertThat(validationResult.isValid()).isFalse();
-    assertThat(validationResult.getErrorMessage())
-        .isEqualTo("Error: appd-example.com: nodename nor servname provided, or not known");
+    assertThat(validationResult.getErrorMessage()).isEqualTo("Error: appd-example.com: Name or service not known");
   }
 
   @Test
@@ -684,8 +679,7 @@ public class SettingValidationServiceTest extends WingsBaseTest {
     final ValidationResult validationResult = settingValidationService.validateConnectivity(
         aSettingAttribute().withAccountId(accountId).withName(generateUuid()).withValue(dynaTraceConfig).build());
     assertThat(validationResult.isValid()).isFalse();
-    assertThat(validationResult.getErrorMessage())
-        .isEqualTo("Error: dynatrace-example.com: nodename nor servname provided, or not known");
+    assertThat(validationResult.getErrorMessage()).isEqualTo("Error: dynatrace-example.com: Name or service not known");
   }
 
   @Test

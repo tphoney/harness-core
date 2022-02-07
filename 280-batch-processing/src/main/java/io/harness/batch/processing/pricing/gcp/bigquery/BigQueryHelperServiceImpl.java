@@ -17,7 +17,6 @@ import io.harness.batch.processing.ccm.InstanceFamilyAndRegion;
 import io.harness.batch.processing.config.BatchMainConfig;
 import io.harness.batch.processing.config.BillingDataPipelineConfig;
 import io.harness.batch.processing.entities.ClusterDataDetails;
-import io.harness.batch.processing.pricing.PricingData;
 import io.harness.batch.processing.pricing.gcp.bigquery.VMInstanceServiceBillingData.VMInstanceServiceBillingDataBuilder;
 import io.harness.batch.processing.pricing.vmpricing.VMInstanceBillingData;
 import io.harness.ccm.commons.beans.Pricing;
@@ -40,12 +39,8 @@ import com.google.cloud.bigquery.TableResult;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -173,8 +168,8 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
     return Collections.emptyMap();
   }
 
-  private Map<String, Pricing> pricingQuery(String formattedQuery, String cloudProviderType) {
-    log.debug("Formatted query for {} : {}", cloudProviderType, formattedQuery);
+  private Map<String, Pricing> pricingQueryByResourceId(String formattedQuery, String cloudProviderType) {
+    log.info("Formatted query for {} : {}", cloudProviderType, formattedQuery); // make this log.debug
     BigQuery bigQueryService = getBigQueryService();
     QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(formattedQuery).build();
     TableResult result = null;
@@ -183,6 +178,56 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
       switch (cloudProviderType) {
         case "AWS":
           return convertToAwsPricingData(result);
+//        case "AZURE":
+//          return convertToAzureInstanceBillingData(result);
+        default:
+          break;
+      }
+
+    } catch (InterruptedException e) {
+      log.error("Failed to get {} Pricing Data. {}", cloudProviderType, e);
+      Thread.currentThread().interrupt();
+    } catch (Exception ex) {
+      log.error("Exception Failed to get {} Pricing Data", cloudProviderType, ex);
+    }
+    return Collections.emptyMap();
+  }
+
+  private Map<InstanceFamilyAndRegion, Pricing> pricingQueryByInstanceFamilyAndRegion(String formattedQuery, String cloudProviderType) {
+    log.info("Formatted query for {} : {}", cloudProviderType, formattedQuery); // make this log.debug
+    BigQuery bigQueryService = getBigQueryService();
+    QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(formattedQuery).build();
+    TableResult result = null;
+    try {
+      result = bigQueryService.query(queryConfig);
+      switch (cloudProviderType) {
+        case "AWS":
+          return convertToAwsPricingDataForInstanceFamilyAndRegion(result);
+//        case "AZURE":
+//          return convertToAzureInstanceBillingData(result);
+        default:
+          break;
+      }
+
+    } catch (InterruptedException e) {
+      log.error("Failed to get {} Pricing Data. {}", cloudProviderType, e);
+      Thread.currentThread().interrupt();
+    } catch (Exception ex) {
+      log.error("Exception Failed to get {} Pricing Data", cloudProviderType, ex);
+    }
+    return Collections.emptyMap();
+  }
+
+  private Map<String, Pricing> pricingQueryByInstanceFamily(String formattedQuery, String cloudProviderType) {
+    log.info("Formatted query for {} : {}", cloudProviderType, formattedQuery); // make this log.debug
+    BigQuery bigQueryService = getBigQueryService();
+    QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(formattedQuery).build();
+    TableResult result = null;
+    try {
+      result = bigQueryService.query(queryConfig);
+      switch (cloudProviderType) {
+        case "AWS":
+          return convertToAwsPricingDataForInstanceFamily(result);
 //        case "AZURE":
 //          return convertToAzureInstanceBillingData(result);
         default:
@@ -350,24 +395,32 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
   @Override
   public Map<String, Pricing> getAwsPricingDataByResourceIds(
       List<String> resourceIds, Instant startTime, Instant endTime, String dataSetId) {
-    String query = BQConst.AWS_PRICING_DATA;
+    String query = BQConst.AWS_PRICING_DATA_BY_RESOURCE_IDS;
     String resourceId = String.join("','", resourceIds);
     String projectTableName = getAwsProjectTableName(startTime, dataSetId);
-    String formattedQuery = format(query, projectTableName, resourceIds, startTime, endTime);
-    return pricingQuery(formattedQuery, "AWS");
+    String formattedQuery = format(query, projectTableName, resourceId, startTime, endTime);
+    return pricingQueryByResourceId(formattedQuery, "AWS");
   }
 
   @Override
   public Map<InstanceFamilyAndRegion, Pricing> getAwsPricingDataByInstanceFamilyAndRegion(
       List<InstanceFamilyAndRegion> instanceFamilyAndRegions, Instant startTime, Instant endTime, String dataSetId) {
-    // TODO: Implement
-    return null;
+    String query = BQConst.AWS_PRICING_DATA_BY_INSTANCE_FAMILY_AND_REGION;
+    StringJoiner stringJoiner = new StringJoiner(", ");
+    instanceFamilyAndRegions.forEach((instanceFamilyAndRegion -> stringJoiner.add(instanceFamilyAndRegion.toString())));
+    String instanceFamilyAndRegion = stringJoiner.toString();
+    String projectTableName = getAwsProjectTableName(startTime, dataSetId);
+    String formattedQuery = format(query, projectTableName, instanceFamilyAndRegion, startTime, endTime);
+    return pricingQueryByInstanceFamilyAndRegion(formattedQuery, "AWS");
   }
 
   @Override
   public Map<String, Pricing> getAwsPricingDataByInstanceFamily(List<String> instanceFamilies, Instant startTime, Instant endTime, String dataSetId) {
-    // TODO: Implement
-    return null;
+    String query = BQConst.AWS_PRICING_DATA_BY_INSTANCE_FAMILY;
+    String instanceFamily = String.join("','", instanceFamilies);
+    String projectTableName = getAwsProjectTableName(startTime, dataSetId);
+    String formattedQuery = format(query, projectTableName, instanceFamily, startTime, endTime);
+    return pricingQueryByInstanceFamily(formattedQuery, "AWS");
   }
 
   public FieldList getFieldList(TableResult result) {
@@ -472,6 +525,63 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
       }
       dataBuilder.source(PricingSource.CUR_REPORT_INSTANCE_ID);
       instancePricingMap.put(resourceId, dataBuilder.build());
+    }
+
+    log.debug("AWS: resource map data {} ", instancePricingMap);
+    return instancePricingMap;
+  }
+
+  private Map<InstanceFamilyAndRegion, Pricing> convertToAwsPricingDataForInstanceFamilyAndRegion(TableResult result) {
+    Map<InstanceFamilyAndRegion, Pricing> instancePricingMap = new HashMap<>();
+    FieldList fields = getFieldList(result);
+    Iterable<FieldValueList> fieldValueLists = getFieldValueLists(result);
+    for (FieldValueList row : fieldValueLists) {
+      Pricing.PricingBuilder pricingBuilder = Pricing.builder();
+      InstanceFamilyAndRegion.InstanceFamilyAndRegionBuilder instanceFamilyAndRegionBuilder = InstanceFamilyAndRegion.builder();
+      for (Field field : fields) {
+        switch (field.getName()) {
+          case BQConst.instanceType:
+            instanceFamilyAndRegionBuilder.instanceFamily(fetchStringValue(row, field));
+            break;
+          case BQConst.region:
+            instanceFamilyAndRegionBuilder.region(fetchStringValue(row, field));
+            break;
+          case BQConst.cost:
+            pricingBuilder.pricePerHour(new BigDecimal(getDoubleValue(row, field)));
+            break;
+          default:
+            break;
+        }
+      }
+      pricingBuilder.source(PricingSource.CUR_REPORT_INSTANCE_FAMILY_REGION);
+      instancePricingMap.put(instanceFamilyAndRegionBuilder.build(), pricingBuilder.build());
+    }
+
+    log.debug("AWS: resource map data {} ", instancePricingMap);
+    return instancePricingMap;
+  }
+
+  private Map<String, Pricing> convertToAwsPricingDataForInstanceFamily(TableResult result) {
+    Map<String, Pricing> instancePricingMap = new HashMap<>();
+    FieldList fields = getFieldList(result);
+    Iterable<FieldValueList> fieldValueLists = getFieldValueLists(result);
+    for (FieldValueList row : fieldValueLists) {
+      Pricing.PricingBuilder dataBuilder = Pricing.builder();
+      String instanceFamily = "";
+      for (Field field : fields) {
+        switch (field.getName()) {
+          case BQConst.instanceType:
+            instanceFamily = fetchStringValue(row, field);
+            break;
+          case BQConst.cost:
+            dataBuilder.pricePerHour(new BigDecimal(getDoubleValue(row, field)));
+            break;
+          default:
+            break;
+        }
+      }
+      dataBuilder.source(PricingSource.CUR_REPORT_INSTANCE_FAMILY);
+      instancePricingMap.put(instanceFamily, dataBuilder.build());
     }
 
     log.debug("AWS: resource map data {} ", instancePricingMap);

@@ -45,12 +45,26 @@ public class BQConst {
       + "WHERE productfamily = 'Compute Instance' AND "
       + "usagestartdate  >= '%s' AND usagestartdate < '%s' AND resourceid IS NOT NULL LIMIT 1";
 
-  public static final String AWS_PRICING_DATA = "SELECT resourceid, MAX(unblendedcost) as cost "
+  public static final String AWS_PRICING_DATA_BY_RESOURCE_IDS = "SELECT resourceid, MAX(unblendedcost) as cost "
       + "FROM `%s` "
       + "WHERE resourceid IN "
       + "( '%s' )  AND "
       + "usagestartdate  >= '%s' AND usagestartdate < '%s' "
       + "GROUP BY  resourceid; ";
+
+  public static final String AWS_PRICING_DATA_BY_INSTANCE_FAMILY_AND_REGION = "SELECT instancetype, region, MAX(unblendedrate) as cost "
+      + "FROM `%s` "
+      + "WHERE (instancetype, region) IN "
+      + "( %s )  AND "
+      + "usagestartdate  >= '%s' AND usagestartdate < '%s' "
+      + "GROUP BY instancetype, region; ";
+
+  public static final String AWS_PRICING_DATA_BY_INSTANCE_FAMILY = "SELECT instancetype, MAX(unblendedrate) as cost "
+      + "FROM `%s` "
+      + "WHERE instancetype IN "
+      + "( '%s' )  AND "
+      + "usagestartdate  >= '%s' AND usagestartdate < '%s' "
+      + "GROUP BY instancetype; ";
 
   public static final String CLOUD_PROVIDER_AGG_DATA =
       "SELECT count(*) AS count, cloudProvider FROM `%s` GROUP BY cloudProvider";
@@ -64,6 +78,8 @@ public class BQConst {
   public static final String serviceCode = "servicecode";
   public static final String productFamily = "productfamily";
   public static final String usageType = "usagetype";
+  public static final String instanceType = "instancetype";
+  public static final String region = "region";
 
   public static final String networkProductFamily = "Data Transfer";
   public static final String computeProductFamily = "Compute Instance";

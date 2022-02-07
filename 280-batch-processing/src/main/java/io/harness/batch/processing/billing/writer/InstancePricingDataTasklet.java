@@ -96,7 +96,7 @@ public class InstancePricingDataTasklet implements Tasklet {
       String awsDataSetId = customBillingMetaDataService.getAwsDataSetId(accountId);
       Map<String, Pricing> pricingDataByResourceId = bigQueryHelperService.getAwsPricingDataByResourceIds(
           new ArrayList<>(leftOverInstances), startTime, endTime, awsDataSetId);
-      log.info("Got response from BQ, map: {}, size: {}", pricingDataByResourceId, pricingDataByResourceId.size());
+      log.info("Got response from BQ ResourceID, map: {}, size: {}", pricingDataByResourceId, pricingDataByResourceId.size());
       // update awsInstances
       leftOverInstances.removeAll(pricingDataByResourceId.keySet());
       Set<InstanceFamilyAndRegion> instanceFamilyAndRegions = new HashSet<>();
@@ -109,6 +109,7 @@ public class InstancePricingDataTasklet implements Tasklet {
       Map<InstanceFamilyAndRegion, Pricing> pricingDataByInstanceFamilyAndRegion =
           bigQueryHelperService.getAwsPricingDataByInstanceFamilyAndRegion(new ArrayList<>(instanceFamilyAndRegions),
               startTime, endTime, awsDataSetId);
+      log.info("Got response from BQ Family and Region, map: {}, size: {}", pricingDataByInstanceFamilyAndRegion, pricingDataByInstanceFamilyAndRegion.size());
       // update awsInstances
       Set<String> instanceFamilies = new HashSet<>();
       leftOverInstances.removeIf((String resourceId) -> {
@@ -124,6 +125,7 @@ public class InstancePricingDataTasklet implements Tasklet {
       });
       Map<String, Pricing> pricingDataByInstanceFamily = bigQueryHelperService.getAwsPricingDataByInstanceFamily(
           new ArrayList<>(instanceFamilies), startTime, endTime, awsDataSetId);
+      log.info("Got response from BQ Family and Region, map: {}, size: {}", pricingDataByInstanceFamily, pricingDataByInstanceFamily.size());
       // update awsInstances
       leftOverInstances.removeIf((String resourceId) -> pricingDataByInstanceFamily.containsKey(
           awsInstances.get(resourceId).get(0).getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY)));

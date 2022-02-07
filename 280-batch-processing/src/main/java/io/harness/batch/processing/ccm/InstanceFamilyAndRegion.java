@@ -9,7 +9,9 @@ package io.harness.batch.processing.ccm;
 
 import com.google.common.base.Objects;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 
+@Builder
 @AllArgsConstructor
 public class InstanceFamilyAndRegion {
   String instanceFamily;
@@ -32,5 +34,10 @@ public class InstanceFamilyAndRegion {
     InstanceFamilyAndRegion that = (InstanceFamilyAndRegion) o;
 
     return Objects.equal(instanceFamily, that.instanceFamily) && Objects.equal(region, that.region);
+  }
+
+  @Override
+  public String toString() {
+    return String.format("('%s', '%s')", instanceFamily, region);
   }
 }

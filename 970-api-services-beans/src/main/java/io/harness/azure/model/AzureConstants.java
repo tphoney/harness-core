@@ -11,6 +11,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public interface AzureConstants {
+  Pattern failureContainerLogPattern =
+      Pattern.compile("ERROR - Container .* didn't respond to HTTP pings on port:", Pattern.CASE_INSENSITIVE);
+  Pattern deploymentLogPattern = Pattern.compile("Deployment successful\\.", Pattern.CASE_INSENSITIVE);
+  Pattern containerSuccessPattern =
+      Pattern.compile("initialized successfully and is ready to serve requests\\.", Pattern.CASE_INSENSITIVE);
+  Pattern tomcatSuccessPattern =
+      Pattern.compile("Deployment of web application directory .* has finished", Pattern.CASE_INSENSITIVE);
+
+  String TIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
+  String TIME_STAMP_REGEX = "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})\\s*";
+
   int DEFAULT_SYNC_AZURE_VMSS_TIMEOUT_MIN = 2;
   int DEFAULT_SYNC_AZURE_RESOURCE_TIMEOUT_MIN = 2;
   String NEW_VIRTUAL_MACHINE_SCALE_SET = "New Virtual Machine Scale Set";

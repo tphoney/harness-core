@@ -22,6 +22,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.logging.LogCallback;
 
 import software.wings.delegatetasks.azure.AzureServiceCallBack;
+import software.wings.delegatetasks.azure.appservice.deployment.context.SlotContainerDeploymentVerifierContext;
 import software.wings.delegatetasks.azure.appservice.deployment.context.SlotDeploymentVerifierContext;
 import software.wings.delegatetasks.azure.appservice.deployment.context.StatusVerifierContext;
 import software.wings.delegatetasks.azure.appservice.deployment.context.SwapSlotStatusVerifierContext;
@@ -38,7 +39,13 @@ public abstract class SlotStatusVerifier {
   protected final AzureWebClientContext azureWebClientContext;
 
   public enum SlotStatus { STOPPED, RUNNING }
-  public enum SlotStatusVerifierType { STOP_VERIFIER, START_VERIFIER, SWAP_VERIFIER, SLOT_DEPLOYMENT_VERIFIER }
+  public enum SlotStatusVerifierType {
+    STOP_VERIFIER,
+    START_VERIFIER,
+    SWAP_VERIFIER,
+    SLOT_DEPLOYMENT_VERIFIER,
+    SLOT_CONTAINER_DEPLOYMENT_VERIFIER
+  }
 
   public SlotStatusVerifier(LogCallback logCallback, String slotName, AzureWebClient azureWebClient,
       AzureWebClientContext azureWebClientContext, AzureServiceCallBack restCallBack) {
@@ -104,6 +111,9 @@ public abstract class SlotStatusVerifier {
         return new SwapSlotStatusVerifier((SwapSlotStatusVerifierContext) context);
       case "SLOT_DEPLOYMENT_VERIFIER":
         return new SlotDeploymentVerifier((SlotDeploymentVerifierContext) context);
+      case "SLOT_CONTAINER_DEPLOYMENT_VERIFIER":
+        return new SlotContainerDeploymentVerifier((SlotContainerDeploymentVerifierContext) context);
+
       default:
         throw new InvalidRequestException(String.format("No slot status verifier defined for - [%s]", verifierType));
     }

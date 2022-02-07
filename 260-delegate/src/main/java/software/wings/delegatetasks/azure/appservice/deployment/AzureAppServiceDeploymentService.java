@@ -66,6 +66,7 @@ import static io.harness.logging.LogLevel.INFO;
 import static software.wings.beans.LogColor.White;
 import static software.wings.beans.LogHelper.color;
 import static software.wings.beans.LogWeight.Bold;
+import static software.wings.delegatetasks.azure.appservice.deployment.SlotStatusVerifier.SlotStatusVerifierType.SLOT_CONTAINER_DEPLOYMENT_VERIFIER;
 import static software.wings.delegatetasks.azure.appservice.deployment.SlotStatusVerifier.SlotStatusVerifierType.SLOT_DEPLOYMENT_VERIFIER;
 import static software.wings.delegatetasks.azure.appservice.deployment.SlotStatusVerifier.SlotStatusVerifierType.START_VERIFIER;
 import static software.wings.delegatetasks.azure.appservice.deployment.SlotStatusVerifier.SlotStatusVerifierType.STOP_VERIFIER;
@@ -78,6 +79,7 @@ import io.harness.annotations.dev.TargetModule;
 import io.harness.azure.client.AzureMonitorClient;
 import io.harness.azure.client.AzureWebClient;
 import io.harness.azure.context.AzureWebClientContext;
+import io.harness.azure.impl.SlotContainerLogStreamer;
 import io.harness.azure.impl.SlotLogStreamer;
 import io.harness.azure.model.AzureAppServiceApplicationSetting;
 import io.harness.azure.model.AzureAppServiceConnectionString;
@@ -92,6 +94,7 @@ import software.wings.delegatetasks.azure.AzureTimeLimiter;
 import software.wings.delegatetasks.azure.appservice.deployment.context.AzureAppServiceDeploymentContext;
 import software.wings.delegatetasks.azure.appservice.deployment.context.AzureAppServiceDockerDeploymentContext;
 import software.wings.delegatetasks.azure.appservice.deployment.context.AzureAppServicePackageDeploymentContext;
+import software.wings.delegatetasks.azure.appservice.deployment.context.SlotContainerDeploymentVerifierContext;
 import software.wings.delegatetasks.azure.appservice.deployment.context.SlotDeploymentVerifierContext;
 import software.wings.delegatetasks.azure.appservice.deployment.context.SlotStatusVerifierContext;
 import software.wings.delegatetasks.azure.appservice.deployment.context.SwapSlotStatusVerifierContext;
@@ -152,28 +155,44 @@ public class AzureAppServiceDeploymentService {
 
   private void deployDockerToSlot(
       AzureAppServiceDockerDeploymentContext deploymentContext, AzureAppServicePreDeploymentData preDeploymentData) {
-    Optional<SlotLogStreamer> logStreamer = Optional.empty();
+    ILogStreamingTaskClient logStreamingTaskClient = deploymentContext.getLogStreamingTaskClient();
+    LogCallback deployLogCallback = logStreamingTaskClient.obtainLogCallback(DEPLOY_TO_SLOT);
     try {
-      DateTime startSlotTime = new DateTime(DateTimeZone.UTC).minusMinutes(1);
-      ILogStreamingTaskClient logStreamingTaskClient = deploymentContext.getLogStreamingTaskClient();
-      LogCallback deployLogCallback = logStreamingTaskClient.obtainLogCallback(DEPLOY_TO_SLOT);
       markDeploymentProgress(preDeploymentData, AppServiceDeploymentProgress.DEPLOY_TO_SLOT);
       deployLogCallback.saveExecutionLog(String.format(START_SLOT_DEPLOYMENT, deploymentContext.getSlotName()));
 
+      SlotContainerLogStreamer slotLogStreamer =
+          new SlotContainerLogStreamer(deploymentContext.getAzureWebClientContext(), azureWebClient,
+              deploymentContext.getSlotName(), deployLogCallback);
       uploadStartupScript(deploymentContext.getAzureWebClientContext(), deploymentContext.getSlotName(),
           deploymentContext.getStartupCommand(), deployLogCallback);
       startSlotAsyncWithSteadyCheck(deploymentContext, preDeploymentData, deployLogCallback);
-      logStreamer = startLogStream(deployLogCallback, deploymentContext.getAzureWebClientContext(),
-          deploymentContext.getSlotName(), startSlotTime);
-      logStreamer.ifPresent(
-          slotLogStreamer -> deploySlotSteadyStateCheck(deploymentContext, slotLogStreamer, deployLogCallback));
+
+      containerDeploymentSteadyStateCheck(deploymentContext, deployLogCallback, slotLogStreamer);
 
       deployLogCallback.saveExecutionLog(
           String.format(SUCCESS_SLOT_DEPLOYMENT, deploymentContext.getSlotName()), INFO, SUCCESS);
     } catch (Exception ex) {
-      logStreamer.ifPresent(SlotLogStreamer::unsubscribe);
+      deployLogCallback.saveExecutionLog(String.format(FAIL_DEPLOYMENT, ex.getMessage()), ERROR, FAILURE);
       throw ex;
     }
+  }
+
+  private void containerDeploymentSteadyStateCheck(AzureAppServiceDockerDeploymentContext deploymentContext,
+      LogCallback deployLogCallback, SlotContainerLogStreamer slotLogStreamer) {
+    SlotContainerDeploymentVerifierContext verifierContext =
+        SlotContainerDeploymentVerifierContext.builder()
+            .logCallback(deployLogCallback)
+            .slotName(deploymentContext.getSlotName())
+            .azureWebClient(azureWebClient)
+            .azureWebClientContext(deploymentContext.getAzureWebClientContext())
+            .logStreamer(slotLogStreamer)
+            .build();
+
+    SlotStatusVerifier statusVerifier =
+        SlotStatusVerifier.getStatusVerifier(SLOT_CONTAINER_DEPLOYMENT_VERIFIER.name(), verifierContext);
+    slotSteadyStateChecker.waitUntilCompleteWithTimeout(deploymentContext.getSteadyStateTimeoutInMin(),
+        SLOT_STARTING_STATUS_CHECK_INTERVAL, deployLogCallback, DEPLOY_TO_SLOT, statusVerifier);
   }
 
   private void deploySlotSteadyStateCheck(AzureAppServiceDeploymentContext deploymentContext,

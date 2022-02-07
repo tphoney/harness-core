@@ -100,9 +100,6 @@ public class IntegrationStagePMSPlanCreator extends GenericStagePlanCreator {
       }
     }
 
-    IntegrationStageConfig integrationStageConfig = IntegrationStageUtils.getIntegrationStageConfig(stageElementConfig);
-    integrationStageConfig.getCloneCodebase();
-
     ExecutionElementConfig modifiedExecutionPlan =
         modifyYAMLWithImplicitSteps(ctx, executionSource, executionField, stageElementConfig);
 

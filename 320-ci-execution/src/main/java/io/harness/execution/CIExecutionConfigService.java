@@ -15,7 +15,14 @@ public class CIExecutionConfigService {
     public static String LITE_ENGINE_IMAGE = "harness/ci-lite-engine";
 
     public Boolean updateCIContainerTag(String accountId, String tag) {
-        CIExecutionConfig executionConfig = CIExecutionConfig.builder().accountIdentifier(accountId).tag(tag).build();
+        CIExecutionConfig executionConfig;
+        Optional<CIExecutionConfig> existingConfig = configRepository.findFirstByAccountIdentifier(accountId);
+        if(existingConfig.isPresent()) {
+            executionConfig = existingConfig.get();
+            executionConfig.setTag(tag);
+        } else {
+            executionConfig = CIExecutionConfig.builder().accountIdentifier(accountId).tag(tag).build();
+        }
         configRepository.save(executionConfig);
         return true;
     }

@@ -110,7 +110,7 @@ ciExecutionServiceConfig:
   liteEngineImage: harness/ci-lite-engine:release-30
   ciImageTag: release-30
   expectedCIImageTags: release-30
-  isLocal: true
+  isLocal: false
   stepConfig:
     # The below config is for K8 steps
     gitCloneConfig:
@@ -192,7 +192,7 @@ pmsGrpcClientConfig:
 
 apiUrl: https://localhost:8181/#/
 
-shouldConfigureWithPMS: true
+shouldConfigureWithPMS: false
 
 enableDashboardTimescale: false
 

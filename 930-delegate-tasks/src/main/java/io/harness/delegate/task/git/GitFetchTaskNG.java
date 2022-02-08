@@ -42,8 +42,6 @@ import io.harness.logging.LogCallback;
 import io.harness.security.encryption.SecretDecryptionService;
 import io.harness.shell.SshSessionConfig;
 
-import software.wings.delegatetasks.ExceptionMessageSanitizer;
-
 import com.google.inject.Inject;
 import java.nio.file.NoSuchFileException;
 import java.util.HashMap;
@@ -156,9 +154,6 @@ public class GitFetchTaskNG extends AbstractDelegateRunnableTask {
     if (gitStoreDelegateConfig.isOptimizedFilesFetch()) {
       executionLogCallback.saveExecutionLog("Using optimized file fetch");
       secretDecryptionService.decrypt(
-          GitApiAccessDecryptionHelper.getAPIAccessDecryptableEntity(gitStoreDelegateConfig.getGitConfigDTO()),
-          gitStoreDelegateConfig.getApiAuthEncryptedDataDetails());
-      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
           GitApiAccessDecryptionHelper.getAPIAccessDecryptableEntity(gitStoreDelegateConfig.getGitConfigDTO()),
           gitStoreDelegateConfig.getApiAuthEncryptedDataDetails());
       gitFetchFilesResult = scmFetchFilesHelper.fetchFilesFromRepoWithScm(gitStoreDelegateConfig, filePathsToFetch);

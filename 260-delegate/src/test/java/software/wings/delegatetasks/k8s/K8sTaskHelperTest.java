@@ -94,7 +94,6 @@ import io.harness.logging.LoggingInitializer;
 import io.harness.manifest.CustomManifestService;
 import io.harness.manifest.CustomManifestSource;
 import io.harness.rule.Owner;
-import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.GitConfig;
 import software.wings.beans.GitConfig.ProviderType;
@@ -129,7 +128,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -275,8 +273,6 @@ public class K8sTaskHelperTest extends CategoryTest {
             K8sDelegateManifestConfig.builder()
                 .manifestStoreTypes(storeType)
                 .gitConfig(GitConfig.builder().repoUrl(REPO_URL).build())
-                .encryptedDataDetails(
-                    Collections.singletonList(EncryptedDataDetail.builder().fieldName("serviceToken").build()))
                 .gitFileConfig(
                     GitFileConfig.builder().filePath("dir/file").branch("master").connectorId("git-connector").build())
                 .build(),
@@ -314,8 +310,6 @@ public class K8sTaskHelperTest extends CategoryTest {
                    K8sDelegateManifestConfig.builder()
                        .optimizedFilesFetch(true)
                        .manifestStoreTypes(Remote)
-                       .encryptedDataDetails(
-                           Collections.singletonList(EncryptedDataDetail.builder().fieldName("serviceToken").build()))
                        .gitConfig(GitConfig.builder().repoUrl(REPO_URL).providerType(ProviderType.GITHUB).build())
                        .gitFileConfig(GitFileConfig.builder()
                                           .useBranch(true)

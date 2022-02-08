@@ -71,7 +71,6 @@ import io.harness.helm.HelmCliCommandType;
 import io.harness.k8s.K8sGlobalConfigService;
 import io.harness.k8s.model.HelmVersion;
 import io.harness.rule.Owner;
-import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.WingsBaseTest;
 import software.wings.beans.AwsConfig;
@@ -92,7 +91,6 @@ import software.wings.helpers.ext.k8s.request.K8sValuesLocation;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.settings.SettingValue;
 
-import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -495,9 +493,6 @@ public class HelmTaskHelperTest extends WingsBaseTest {
         .chartName("chartName")
         .helmRepoConfig(repoConfig)
         .connectorConfig(connectorConfig)
-        .connectorEncryptedDataDetails(
-            ImmutableList.of(EncryptedDataDetail.builder().fieldName("aws-accessKey").build()))
-        .encryptedDataDetails(ImmutableList.of(EncryptedDataDetail.builder().fieldName("aws-secretKey").build()))
         .helmVersion(V3)
         .repoName("repoName")
         .build();

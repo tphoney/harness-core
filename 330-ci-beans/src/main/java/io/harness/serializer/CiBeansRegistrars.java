@@ -18,6 +18,7 @@ import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.serializer.kryo.CIBeansKryoRegistrar;
 import io.harness.serializer.morphia.CIBeansMorphiaRegistrar;
 import io.harness.serializer.morphia.YamlMorphiaRegistrar;
+import io.harness.yaml.schema.beans.SchemaNamespaceConstants;
 import io.harness.yaml.schema.beans.YamlGroup;
 import io.harness.yaml.schema.beans.YamlSchemaMetadata;
 import io.harness.yaml.schema.beans.YamlSchemaRootClass;
@@ -62,6 +63,7 @@ public class CiBeansRegistrars {
                    .availableAtAccountLevel(false)
                    .clazz(IntegrationStageNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.CI)
                                            .modulesSupported(ImmutableList.of(ModuleType.CI, ModuleType.PMS))
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STAGE.name()).build())
                                            .build())

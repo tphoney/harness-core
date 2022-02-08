@@ -20,6 +20,7 @@ import lombok.Data;
 @Data
 @Builder
 public class YamlSchemaMetadata {
+  String namespace;
   List<ModuleType> modulesSupported;
   List<String> featureFlags;
   List<String> featureRestrictions;

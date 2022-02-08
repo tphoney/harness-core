@@ -50,7 +50,7 @@ public class CIExecutionConfigService {
 
     public Boolean isUsingDeprecatedTag(String accountId) {
         Optional<CIExecutionConfig> configOptional = configRepository.findFirstByAccountIdentifier(accountId);
-        String allowedTags = ciExecutionServiceConfig.getExpectedCIImageTags();
+        String allowedTags = ciExecutionServiceConfig.getSupportedCIImageTags();
         String[] allowedTagsList = allowedTags.split(",");
         if (configOptional.isPresent()) {
             String tag = configOptional.get().getTag();

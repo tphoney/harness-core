@@ -23,7 +23,7 @@ public class CIExecutionServiceConfig {
   String addonImage;
   String liteEngineImage;
   String ciImageTag;
-  String expectedCIImageTags;
+  String supportedCIImageTags;
   CIStepConfig stepConfig;
   boolean isLocal;
 }

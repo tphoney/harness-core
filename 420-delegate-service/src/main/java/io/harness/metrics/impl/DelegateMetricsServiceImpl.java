@@ -56,7 +56,7 @@ public class DelegateMetricsServiceImpl implements DelegateMetricsService {
   @Override
   public void recordDelegateTaskMetrics(DelegateTask task, String metricName) {
     try (AutoMetricContext ignore = metricContextBuilder.getContext(task, DelegateTask.class)) {
-      metricService.incCounter(metricName);
+      metricService.incCounter(metricName);6
     }
   }
 

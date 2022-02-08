@@ -1286,7 +1286,9 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
                  TaskType.valueOf(delegateTask.getData().getTaskType()).getTaskGroup().name(), OVERRIDE_ERROR)) {
           errorMessage =
               "Task expired. " + assignDelegateService.getActiveDelegateAssignmentErrorMessage(EXPIRED, delegateTask);
+
           delegateMetricsService.recordDelegateTaskMetrics(delegateTask, DELEGATE_TASK_EXPIRED);
+
           log.info("Marking task as expired: {}", errorMessage);
 
           if (isNotBlank(delegateTask.getWaitId())) {

@@ -65,7 +65,6 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
   @Inject private DelegateTokenCacheHelper delegateTokenCacheHelper;
   @Inject private HPersistence persistence;
 
-  // TODO: Arpit convert this cache to a distributed one
   private final LoadingCache<String, String> keyCache =
       Caffeine.newBuilder()
           .maximumSize(10000)
@@ -86,28 +85,29 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
     String delegateHostName = "";
     try {
       delegateHostName = encryptedJWT.getJWTClaimsSet().getIssuer();
-    } catch (ParseException e) {
+    } catch (Exception e) {
       log.warn("Couldn't parse delegate token", e);
     }
-
+    DelegateTokenCacheKey delegateTokenCacheKey =
+        DelegateTokenCacheKey.builder().accountId(accountId).delegateHostName(delegateHostName).build();
     boolean decryptedWithActiveToken = false;
     boolean decryptedWithRevokedToken = false;
-    DelegateToken delegateToken =
-        delegateTokenCacheHelper.getDelegateToken(new DelegateTokenCacheKey(accountId, delegateHostName));
-    boolean decryptedWithTokenFromCache = decryptJwtTokenWithDelegateToken(encryptedJWT, delegateToken);
+    DelegateToken delegateTokenFromCache = delegateTokenCacheHelper.getDelegateToken(delegateTokenCacheKey);
+    boolean decryptedWithTokenFromCache = decryptJwtTokenWithDelegateToken(encryptedJWT, delegateTokenFromCache);
     if (!decryptedWithTokenFromCache) {
-      delegateTokenCacheHelper.invalidateCacheUsingKey(new DelegateTokenCacheKey(accountId, delegateHostName));
+      delegateTokenCacheHelper.invalidateCacheUsingKey(delegateTokenCacheKey);
       decryptedWithActiveToken =
-          decryptJWTDelegateToken(accountId, delegateHostName, DelegateTokenStatus.ACTIVE, encryptedJWT);
+          decryptJWTDelegateToken(delegateTokenCacheKey, DelegateTokenStatus.ACTIVE, encryptedJWT);
       if (!decryptedWithActiveToken) {
         decryptedWithRevokedToken =
-            decryptJWTDelegateToken(accountId, delegateHostName, DelegateTokenStatus.REVOKED, encryptedJWT);
+            decryptJWTDelegateToken(delegateTokenCacheKey, DelegateTokenStatus.REVOKED, encryptedJWT);
       }
     }
 
-    if ((decryptedWithTokenFromCache && delegateToken.getStatus() == DelegateTokenStatus.REVOKED)
+    if ((decryptedWithTokenFromCache && delegateTokenFromCache.getStatus() == DelegateTokenStatus.REVOKED)
         || decryptedWithRevokedToken) {
-      log.error("Delegate {} is using REVOKED delegate token {}", delegateHostName, delegateToken.getName());
+      log.error("Delegate {} is using REVOKED delegate token {}", delegateHostName,
+          delegateTokenFromCache == null ? "" : delegateTokenFromCache.getName());
       throw new RevokedTokenException("Invalid delegate token. Delegate is using revoked token", USER_ADMIN);
     }
 
@@ -137,36 +137,40 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
       throw new InvalidRequestException("Access denied", USER_ADMIN);
     }
 
-    decryptDelegateToken(encryptedJWT, accountKey);
+    try {
+      decryptDelegateToken(encryptedJWT, accountKey);
+    } catch (InvalidTokenException e) {
+      log.error("Delegate is using invalid account key.");
+      throw new InvalidTokenException("Invalid delegate token", USER_ADMIN);
+    }
   }
 
   // TODO: make sure that cg delegate is not using ng token and vice-versa.
   private boolean decryptJWTDelegateToken(
-      String accountId, String delegateHostName, DelegateTokenStatus status, EncryptedJWT encryptedJWT) {
+      DelegateTokenCacheKey delegateTokenCacheKey, DelegateTokenStatus status, EncryptedJWT encryptedJWT) {
     long startTime = System.currentTimeMillis();
-    // first try to decrypt with cg tokens and if you failed then try with ng tokens
+    // first try to decrypt with cg tokens and if we failed then try with ng tokens
     Query<DelegateToken> query = persistence.createQuery(DelegateToken.class)
                                      .field(DelegateTokenKeys.accountId)
-                                     .equal(accountId)
+                                     .equal(delegateTokenCacheKey.getAccountId())
                                      .field(DelegateTokenKeys.status)
                                      .equal(status);
 
-    boolean result = decryptDelegateTokenByQuery(query, accountId, delegateHostName, encryptedJWT);
+    boolean result = decryptDelegateTokenByQuery(query, delegateTokenCacheKey, encryptedJWT);
     long endTime = System.currentTimeMillis() - startTime;
-    log.debug("Delegate Token verification for accountId {} and status {} has taken {} milliseconds.", accountId,
-        status.name(), endTime);
+    log.debug("Delegate Token verification for accountId {} and status {} has taken {} milliseconds.",
+        delegateTokenCacheKey.getAccountId(), status.name(), endTime);
     return result;
   }
 
   // TODO: Arpit, check owner also and filter accordingly
   private boolean decryptDelegateTokenByQuery(
-      Query query, String accountId, String delegateHostName, EncryptedJWT encryptedJWT) {
+      Query query, DelegateTokenCacheKey delegateTokenCacheKey, EncryptedJWT encryptedJWT) {
     try (HIterator<DelegateToken> iterator = new HIterator<>(query.fetch())) {
       while (iterator.hasNext()) {
         DelegateToken delegateToken = iterator.next();
         if (decryptJwtTokenWithDelegateToken(encryptedJWT, delegateToken)) {
-          delegateTokenCacheHelper.putIfTokenIsAbsent(
-              new DelegateTokenCacheKey(accountId, delegateHostName), delegateToken);
+          delegateTokenCacheHelper.putIfTokenIsAbsent(delegateTokenCacheKey, delegateToken);
           return true;
         }
       }

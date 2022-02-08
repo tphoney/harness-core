@@ -4,11 +4,13 @@ import static io.harness.annotations.dev.HarnessTeam.DEL;
 
 import io.harness.annotations.dev.OwnedBy;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Value;
 
-@Data
+@Value
+@Builder
 @OwnedBy(DEL)
 public class DelegateTokenCacheKey {
-  private final String accountId;
-  private final String delegateHostName;
+  String accountId;
+  String delegateHostName;
 }

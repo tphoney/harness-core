@@ -17,6 +17,7 @@ import io.harness.delegate.beans.DelegateToken.DelegateTokenKeys;
 import io.harness.delegate.beans.DelegateTokenDetails;
 import io.harness.delegate.beans.DelegateTokenDetails.DelegateTokenDetailsBuilder;
 import io.harness.delegate.beans.DelegateTokenStatus;
+import io.harness.delegate.utils.DelegateTokenCacheHelper;
 import io.harness.persistence.HPersistence;
 import io.harness.service.intfc.DelegateTokenService;
 import io.harness.utils.Misc;
@@ -41,6 +42,7 @@ import org.mongodb.morphia.query.UpdateOperations;
 public class DelegateTokenServiceImpl implements DelegateTokenService, AccountCrudObserver {
   @Inject private HPersistence persistence;
   @Inject private AuditServiceHelper auditServiceHelper;
+  @Inject private DelegateTokenCacheHelper delegateTokenCacheHelper;
 
   private static final String DEFAULT_TOKEN_NAME = "default";
 
@@ -97,6 +99,7 @@ public class DelegateTokenServiceImpl implements DelegateTokenService, AccountCr
                 Date.from(OffsetDateTime.now().plusDays(DelegateToken.TTL.toDays()).toInstant()));
     DelegateToken updatedDelegateToken =
         persistence.findAndModify(filterQuery, updateOperations, new FindAndModifyOptions());
+    delegateTokenCacheHelper.invalidateAllCacheUsingAccountId(accountId);
     auditServiceHelper.reportForAuditingUsingAccountId(
         accountId, originalDelegateToken, updatedDelegateToken, Event.Type.UPDATE);
   }

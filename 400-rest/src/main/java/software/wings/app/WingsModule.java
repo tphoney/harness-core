@@ -86,6 +86,7 @@ import io.harness.datahandler.services.AdminAccountService;
 import io.harness.datahandler.services.AdminAccountServiceImpl;
 import io.harness.datahandler.services.AdminFeatureFlagService;
 import io.harness.datahandler.services.AdminFeatureFlagServiceImpl;
+import io.harness.datahandler.services.AdminRingService;
 import io.harness.datahandler.services.AdminUserService;
 import io.harness.datahandler.services.AdminUserServiceImpl;
 import io.harness.datahandler.utils.AccountSummaryHelper;
@@ -167,6 +168,7 @@ import io.harness.notifications.AlertNotificationRuleChecker;
 import io.harness.notifications.AlertNotificationRuleCheckerImpl;
 import io.harness.notifications.AlertVisibilityChecker;
 import io.harness.notifications.AlertVisibilityCheckerImpl;
+import io.harness.organization.OrganizationClientModule;
 import io.harness.outbox.TransactionOutboxModule;
 import io.harness.outbox.api.OutboxEventHandler;
 import io.harness.pcf.CfDeploymentManager;
@@ -175,6 +177,7 @@ import io.harness.perpetualtask.PerpetualTaskScheduleServiceImpl;
 import io.harness.perpetualtask.PerpetualTaskServiceModule;
 import io.harness.persistence.HPersistence;
 import io.harness.polling.client.PollResourceClientModule;
+import io.harness.project.ProjectClientModule;
 import io.harness.queue.QueueController;
 import io.harness.redis.RedisConfig;
 import io.harness.remote.client.ClientMode;
@@ -999,6 +1002,7 @@ public class WingsModule extends AbstractModule implements ServersModule {
     bind(AdminAccountService.class).to(AdminAccountServiceImpl.class);
     bind(AdminUserService.class).to(AdminUserServiceImpl.class);
     bind(AdminFeatureFlagService.class).to(AdminFeatureFlagServiceImpl.class);
+    bind(AdminRingService.class);
     bind(AccountSummaryHelper.class).to(AccountSummaryHelperImpl.class);
     bind(PipelineService.class).to(PipelineServiceImpl.class);
     bind(NotificationSetupService.class).to(NotificationSetupServiceImpl.class);
@@ -1434,6 +1438,13 @@ public class WingsModule extends AbstractModule implements ServersModule {
 
     install(new MetricsModule());
     bind(MetricsPublisher.class).to(DelegateMetricsPublisher.class).in(Scopes.SINGLETON);
+
+    // these two module needed for background migration # 214.
+    install(new OrganizationClientModule(configuration.getNgManagerServiceHttpClientConfig(),
+        configuration.getPortal().getJwtNextGenManagerSecret(), MANAGER.getServiceId()));
+
+    install(new ProjectClientModule(configuration.getNgManagerServiceHttpClientConfig(),
+        configuration.getPortal().getJwtNextGenManagerSecret(), MANAGER.getServiceId()));
   }
 
   private void registerOutboxEventHandlers() {

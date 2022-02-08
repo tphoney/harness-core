@@ -595,6 +595,12 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   @Override
+  public Map<String, List<String>> getActiveDelegatesPerAccount(String version) {
+    version = Arrays.stream(version.split("-")).findFirst().get();
+    return delegateConnectionDao.obtainActiveDelegatesPerAccount(version);
+  }
+
+  @Override
   public DelegateSetupDetails validateKubernetesYaml(String accountId, DelegateSetupDetails delegateSetupDetails) {
     validateKubernetesSetupDetails(accountId, delegateSetupDetails);
     return delegateSetupDetails;
@@ -1243,7 +1249,6 @@ public class DelegateServiceImpl implements DelegateService {
               .put("delegateCheckLocation", delegateCheckLocation)
               .put("deployMode", mainConfiguration.getDeployMode().name())
               .put("ciEnabled", String.valueOf(isCiEnabled))
-              .put("kubectlVersion", mainConfiguration.getKubectlVersion())
               .put("scmVersion", mainConfiguration.getScmVersion())
               .put("delegateGrpcServicePort", String.valueOf(delegateGrpcConfig.getPort()))
               .put("kubernetesAccountLabel", getAccountIdentifier(templateParameters.getAccountId()));
@@ -1359,9 +1364,6 @@ public class DelegateServiceImpl implements DelegateService {
       if (templateParameters.getK8sPermissionsType() != null) {
         params.put("k8sPermissionsType", templateParameters.getK8sPermissionsType().name());
       }
-
-      boolean versionCheckEnabled = hasVersionCheckDisabled(templateParameters.getAccountId());
-      params.put("versionCheckDisabled", String.valueOf(versionCheckEnabled));
 
       if (isNotBlank(templateParameters.getDelegateTokenName())) {
         params.put("delegateTokenName", templateParameters.getDelegateTokenName());

@@ -104,7 +104,7 @@ public class BatchJobRunner {
     Instant jobsStartTime = Instant.now();
     while (batchJobScheduleTimeProvider.hasNext()) {
       Instant endInstant = batchJobScheduleTimeProvider.next();
-      if (null != endInstant && checkDependentJobFinished(accountId, startInstant, dependentBatchJobs)
+      if (null != endInstant && checkDependentJobFinished(accountId, endInstant, dependentBatchJobs)
           && checkOutOfClusterDependentJobs(accountId, startInstant, endInstant, batchJobType)
           && checkClusterToBigQueryJobCompleted(accountId, batchJobType)) {
         if (runningMode) {
@@ -183,11 +183,11 @@ public class BatchJobRunner {
     }
   }
 
-  boolean checkDependentJobFinished(String accountId, Instant startAt, List<BatchJobType> dependentBatchJobs) {
+  boolean checkDependentJobFinished(String accountId, Instant endAt, List<BatchJobType> dependentBatchJobs) {
     for (BatchJobType dependentBatchJob : dependentBatchJobs) {
       Instant instant =
           batchJobScheduledDataService.fetchLastDependentBatchJobScheduledTime(accountId, dependentBatchJob);
-      if (null == instant || !instant.isAfter(startAt)) {
+      if (null == instant || !instant.isAfter(endAt)) {
         return false;
       }
     }

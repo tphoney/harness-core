@@ -1,79 +1,12 @@
 {
   "type": "object",
-  "required": [
-    "identifier",
-    "name",
-    "type"
-  ],
   "properties": {
-    "description": {
-      "type": "string"
-    },
-    "failureStrategies": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/FailureStrategyConfig"
-      }
-    },
-    "identifier": {
-      "type": "string",
-      "pattern": "^[a-zA-Z_][0-9a-zA-Z_$]{0,63}$"
-    },
-    "name": {
-      "type": "string",
-      "pattern": "^[a-zA-Z_][-0-9a-zA-Z_\\s]{0,63}$"
-    },
-    "tags": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
-    "type": {
-      "type": "string",
-      "enum": [
-        "Approval"
-      ]
-    },
-    "variables": {
-      "type": "array",
-      "items": {
-        "oneOf": [
-          {
-            "$ref": "#/definitions/NumberNGVariable"
-          },
-          {
-            "$ref": "#/definitions/SecretNGVariable"
-          },
-          {
-            "$ref": "#/definitions/StringNGVariable"
-          }
-        ]
-      }
-    },
-    "when": {
-      "$ref": "#/definitions/StageWhenCondition"
+    "pipeline": {
+      "readOnly": true,
+      "$ref": "#/definitions/PipelineInfoConfig"
     }
   },
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "allOf": [
-    {
-      "if": {
-        "properties": {
-          "type": {
-            "const": "Approval"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "spec": {
-            "$ref": "#/definitions/ApprovalStageConfig"
-          }
-        }
-      }
-    }
-  ],
   "definitions": {
     "AbortFailureActionConfig": {
       "allOf": [
@@ -248,93 +181,23 @@
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "ApprovalStageConfig": {
-      "type": "object",
-      "required": [
-        "execution"
-      ],
-      "properties": {
-        "execution": {
-          "$ref": "#/definitions/ExecutionElementConfig"
-        }
-      },
-      "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "ApprovalStageNode": {
-      "type": "object",
-      "required": [
-        "identifier",
-        "name",
-        "type"
-      ],
-      "properties": {
-        "description": {
-          "type": "string"
-        },
-        "failureStrategies": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/FailureStrategyConfig"
-          }
-        },
-        "identifier": {
-          "type": "string",
-          "pattern": "^[a-zA-Z_][0-9a-zA-Z_$]{0,63}$"
-        },
-        "name": {
-          "type": "string",
-          "pattern": "^[a-zA-Z_][-0-9a-zA-Z_\\s]{0,63}$"
-        },
-        "tags": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "Approval"
-          ]
-        },
-        "variables": {
-          "type": "array",
-          "items": {
-            "oneOf": [
-              {
-                "$ref": "#/definitions/NumberNGVariable"
-              },
-              {
-                "$ref": "#/definitions/SecretNGVariable"
-              },
-              {
-                "$ref": "#/definitions/StringNGVariable"
-              }
-            ]
-          }
-        },
-        "when": {
-          "$ref": "#/definitions/StageWhenCondition"
-        }
-      },
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "allOf": [
         {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "Approval"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "spec": {
-                "$ref": "#/definitions/ApprovalStageConfig"
-              }
+          "$ref": "#/definitions/StageInfoConfig"
+        },
+        {
+          "type": "object",
+          "required": [
+            "execution"
+          ],
+          "properties": {
+            "execution": {
+              "$ref": "#/definitions/ExecutionElementConfig"
             }
           }
         }
-      ]
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "ApproverInputInfo": {
       "type": "object",
@@ -396,6 +259,22 @@
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "BarrierInfoConfig": {
+      "type": "object",
+      "required": [
+        "identifier",
+        "name"
+      ],
+      "properties": {
+        "identifier": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "BarrierStepInfo": {
       "allOf": [
         {
@@ -413,6 +292,106 @@
           }
         }
       ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "BranchBuildSpec": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/BuildSpec"
+        },
+        {
+          "type": "object",
+          "required": [
+            "branch"
+          ],
+          "properties": {
+            "branch": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "Build": {
+      "type": "object",
+      "required": [
+        "spec",
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "branch",
+            "tag",
+            "PR"
+          ]
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "PR"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/PRBuildSpec"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "branch"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/BranchBuildSpec"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "tag"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/TagBuildSpec"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "BuildSpec": {
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "CIProperties": {
+      "type": "object",
+      "properties": {
+        "codebase": {
+          "$ref": "#/definitions/CodeBase"
+        }
+      },
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "Clause": {
@@ -468,6 +447,49 @@
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "CodeBase": {
+      "type": "object",
+      "required": [
+        "build",
+        "connectorRef"
+      ],
+      "properties": {
+        "build": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/Build"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "connectorRef": {
+          "type": "string"
+        },
+        "depth": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "prCloneStrategy": {
+          "type": "string",
+          "enum": [
+            "MergeCommit",
+            "SourceBranch"
+          ]
+        },
+        "repoName": {
+          "type": "string"
+        },
+        "resources": {
+          "$ref": "#/definitions/ContainerResource"
+        },
+        "sslVerify": {
+          "type": "boolean"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "Condition": {
       "type": "object",
       "required": [
@@ -490,6 +512,18 @@
         },
         "value": {
           "type": "string"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "ContainerResource": {
+      "type": "object",
+      "required": [
+        "limits"
+      ],
+      "properties": {
+        "limits": {
+          "$ref": "#/definitions/Limits"
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
@@ -696,6 +730,18 @@
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "FeatureFlagStageConfig": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/StageInfoConfig"
+        },
+        {
+          "type": "object",
+          "properties": { }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "FlagConfigurationStepInfo": {
       "allOf": [
         {
@@ -733,6 +779,18 @@
           }
         }
       ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "FlowControlConfig": {
+      "type": "object",
+      "properties": {
+        "barriers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BarrierInfoConfig"
+          }
+        }
+      },
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "HarnessApprovalStepInfo": {
@@ -1066,6 +1124,10 @@
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "JsonNode": {
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "KeyValuesCriteriaSpec": {
       "allOf": [
         {
@@ -1096,6 +1158,26 @@
           }
         }
       ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "Limits": {
+      "type": "object",
+      "properties": {
+        "cpu": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "memory": {
+          "type": "string",
+          "pattern": "^(([0-9]*[.])?[0-9]+)([GM]i?)$"
+        }
+      },
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "ManualFailureSpecConfig": {
@@ -1163,6 +1245,15 @@
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "NGProperties": {
+      "type": "object",
+      "properties": {
+        "ci": {
+          "$ref": "#/definitions/CIProperties"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "NGVariable": {
       "type": "object",
       "discriminator": "type",
@@ -1186,6 +1277,102 @@
             "Number",
             "Secret"
           ]
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "NotificationChannelWrapper": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Email"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/PmsEmailChannel"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "MsTeams"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/PmsMSTeamChannel"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "PagerDuty"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/PmsPagerDutyChannel"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Slack"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/PmsSlackChannel"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "NotificationRules": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "notificationMethod": {
+          "$ref": "#/definitions/NotificationChannelWrapper"
+        },
+        "pipelineEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PipelineEvent"
+          }
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
@@ -1344,6 +1531,40 @@
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "PRBuildSpec": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/BuildSpec"
+        },
+        {
+          "type": "object",
+          "required": [
+            "number"
+          ],
+          "properties": {
+            "number": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "ParallelStageElementConfig": {
+      "type": "object",
+      "required": [
+        "sections"
+      ],
+      "properties": {
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StageElementWrapperConfig"
+          }
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "ParallelStepElementConfig": {
       "type": "object",
       "required": [
@@ -1379,6 +1600,216 @@
           ]
         }
       },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "PipelineConfig": {
+      "type": "object",
+      "properties": {
+        "pipeline": {
+          "readOnly": true,
+          "$ref": "#/definitions/PipelineInfoConfig"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "PipelineEvent": {
+      "type": "object",
+      "properties": {
+        "forStages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "AllEvents",
+            "PipelineStart",
+            "PipelineSuccess",
+            "PipelineFailed",
+            "PipelineEnd",
+            "PipelinePaused",
+            "StageSuccess",
+            "StageFailed",
+            "StageStart",
+            "StepFailed"
+          ]
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "PipelineInfoConfig": {
+      "type": "object",
+      "required": [
+        "identifier",
+        "name"
+      ],
+      "properties": {
+        "allowStageExecutions": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        },
+        "flowControl": {
+          "$ref": "#/definitions/FlowControlConfig"
+        },
+        "identifier": {
+          "type": "string",
+          "pattern": "^[a-zA-Z_][0-9a-zA-Z_$]{0,63}$"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-zA-Z_][-0-9a-zA-Z_\\s]{0,63}$"
+        },
+        "notificationRules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/NotificationRules"
+          }
+        },
+        "orgIdentifier": {
+          "type": "string"
+        },
+        "projectIdentifier": {
+          "type": "string"
+        },
+        "properties": {
+          "$ref": "#/definitions/NGProperties"
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StageElementWrapperConfig"
+          }
+        },
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "timeout": {
+          "type": "string",
+          "pattern": "^(([1-9])+\\d+[s])|(((([1-9])+\\d*[mhwd])+([\\s]?\\d+[smhwd])*)|(<\\+input>.*)|(.*<\\+.*>.*))$"
+        },
+        "variables": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/NumberNGVariable"
+              },
+              {
+                "$ref": "#/definitions/SecretNGVariable"
+              },
+              {
+                "$ref": "#/definitions/StringNGVariable"
+              }
+            ]
+          }
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "PmsEmailChannel": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/PmsNotificationChannel"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "recipients": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "userGroups": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "PmsMSTeamChannel": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/PmsNotificationChannel"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "msTeamKeys": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "userGroups": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "PmsNotificationChannel": {
+      "type": "object",
+      "discriminator": "type",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "PmsPagerDutyChannel": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/PmsNotificationChannel"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "integrationKey": {
+              "type": "string"
+            },
+            "userGroups": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "PmsSlackChannel": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/PmsNotificationChannel"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "userGroups": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "webhookUrl": {
+              "type": "string"
+            }
+          }
+        }
+      ],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "PolicySpec": {
@@ -2036,6 +2467,149 @@
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "StageElementConfig": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "identifier",
+            "name",
+            "template"
+          ],
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "identifier": {
+              "type": "string",
+              "pattern": "^[a-zA-Z_][0-9a-zA-Z_$]{0,63}$"
+            },
+            "name": {
+              "type": "string",
+              "pattern": "^[a-zA-Z_][-0-9a-zA-Z_\\s]{0,63}$"
+            },
+            "template": {
+              "$ref": "#/definitions/TemplateLinkConfig"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "identifier",
+            "name",
+            "type"
+          ],
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "failureStrategies": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FailureStrategyConfig"
+              }
+            },
+            "identifier": {
+              "type": "string",
+              "pattern": "^[a-zA-Z_][0-9a-zA-Z_$]{0,63}$"
+            },
+            "name": {
+              "type": "string",
+              "pattern": "^[a-zA-Z_][-0-9a-zA-Z_\\s]{0,63}$"
+            },
+            "spec": { },
+            "tags": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "type": {
+              "type": "string"
+            },
+            "variables": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "$ref": "#/definitions/NumberNGVariable"
+                  },
+                  {
+                    "$ref": "#/definitions/SecretNGVariable"
+                  },
+                  {
+                    "$ref": "#/definitions/StringNGVariable"
+                  }
+                ]
+              }
+            },
+            "when": {
+              "$ref": "#/definitions/StageWhenCondition"
+            }
+          },
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "Approval"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "spec": {
+                    "$ref": "#/definitions/ApprovalStageConfig"
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "FeatureFlag"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "spec": {
+                    "$ref": "#/definitions/FeatureFlagStageConfig"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "StageElementWrapperConfig": {
+      "type": "object",
+      "properties": {
+        "parallel": {
+          "$ref": "#/definitions/ParallelStageElementConfig"
+        },
+        "stage": {
+          "$ref": "#/definitions/StageElementConfig"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "StageInfoConfig": {
+      "type": "object",
+      "discriminator": "type",
+      "properties": {
+        "execution": {
+          "$ref": "#/definitions/ExecutionElementConfig"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "StageRollbackFailureActionConfig": {
       "allOf": [
         {
@@ -2390,6 +2964,44 @@
           }
         }
       ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "TagBuildSpec": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/BuildSpec"
+        },
+        {
+          "type": "object",
+          "required": [
+            "tag"
+          ],
+          "properties": {
+            "tag": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "TemplateLinkConfig": {
+      "type": "object",
+      "required": [
+        "templateRef"
+      ],
+      "properties": {
+        "templateInputs": {
+          "$ref": "#/definitions/JsonNode"
+        },
+        "templateRef": {
+          "type": "string"
+        },
+        "versionLabel": {
+          "type": "string",
+          "pattern": "^[0-9a-zA-Z][^\\s]{0,63}$"
+        }
+      },
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "TransitionTo": {

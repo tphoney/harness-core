@@ -67,8 +67,8 @@ public class InternalContainerParamsProvider {
   @Inject CIExecutionConfigService ciExecutionConfigService;
   @Inject private CIFeatureFlagService featureFlagService;
 
-  public CIK8ContainerParams getSetupAddonContainerParams(
-      ConnectorDetails harnessInternalImageConnector, Map<String, String> volumeToMountPath, String workDir, String accountIdentifier) {
+  public CIK8ContainerParams getSetupAddonContainerParams(ConnectorDetails harnessInternalImageConnector,
+      Map<String, String> volumeToMountPath, String workDir, String accountIdentifier) {
     List<String> args = new ArrayList<>(Collections.singletonList(SETUP_ADDON_ARGS));
     Map<String, String> envVars = new HashMap<>();
     envVars.put(HARNESS_WORKSPACE, workDir);

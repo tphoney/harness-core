@@ -54,6 +54,12 @@ fi
 if [[ "" != "$LE_IMAGE" ]]; then
   yq write -i $CONFIG_FILE ciExecutionServiceConfig.liteEngineImage "$LE_IMAGE"
 fi
+if [[ "" != "$SUPPORTED_CI_IMAGE_TAGS" ]]; then
+  yq write -i $CONFIG_FILE ciExecutionServiceConfig.supportedCIImageTags "$SUPPORTED_CI_IMAGE_TAGS"
+fi
+if [[ "" != "$CI_IMAGE_TAG" ]]; then
+  yq write -i $CONFIG_FILE ciExecutionServiceConfig.ciImageTag "$CI_IMAGE_TAG"
+fi
 
 if [[ "" != "$GIT_CLONE_IMAGE" ]]; then
   yq write -i $CONFIG_FILE ciExecutionServiceConfig.stepConfig.gitCloneConfig.image "$GIT_CLONE_IMAGE"

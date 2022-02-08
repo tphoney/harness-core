@@ -368,7 +368,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   @Inject HarnessMetricRegistry metricRegistry;
 
   private final AtomicBoolean waiter = new AtomicBoolean(true);
-
+  private TimeLimiter taskResponseTimeLimiter;
   private final Set<String> currentlyAcquiringTasks = ConcurrentHashMap.newKeySet();
   private final Map<String, DelegateTaskPackage> currentlyValidatingTasks = new ConcurrentHashMap<>();
   private final Map<String, DelegateTaskPackage> currentlyExecutingTasks = new ConcurrentHashMap<>();
@@ -450,7 +450,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   public void run(final boolean watched, final boolean isServer) {
     this.isServer = isServer;
     try {
-      final int threads = delegateConfiguration.getTaskExecutorThreads() > 0 ? delegateConfiguration.getTaskExecutorThreads() : 100;
+      final int threads =
+          delegateConfiguration.getTaskExecutorThreads() > 0 ? delegateConfiguration.getTaskExecutorThreads() : 100;
       log.info("Creating task executor with {} threads", threads);
       taskExecutor.toString();
       accountId = delegateConfiguration.getAccountId();
@@ -462,6 +463,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       log.info("Delegate will start running on JRE {}", System.getProperty(JAVA_VERSION));
       log.info("The deploy mode for delegate is [{}]", System.getenv().get("DEPLOY_MODE"));
       startTime = clock.millis();
+      taskResponseTimeLimiter = HTimeLimiter.create(taskExecutor);
       DelegateStackdriverLogAppender.setTimeLimiter(timeLimiter);
       DelegateStackdriverLogAppender.setManagerClient(delegateAgentManagerClient);
 
@@ -2282,7 +2284,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
       Response<ResponseBody> response = null;
       try {
-        response = HTimeLimiter.callInterruptible21(timeLimiter, Duration.ofSeconds(30), () -> {
+        response = HTimeLimiter.callInterruptible21(taskResponseTimeLimiter, Duration.ofSeconds(30), () -> {
           Response<ResponseBody> resp = null;
           int retries = 5;
           for (int attempt = 0; attempt < retries; attempt++) {

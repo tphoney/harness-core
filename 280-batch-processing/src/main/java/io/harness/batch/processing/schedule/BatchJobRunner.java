@@ -185,9 +185,9 @@ public class BatchJobRunner {
 
   boolean checkDependentJobFinished(String accountId, Instant endAt, List<BatchJobType> dependentBatchJobs) {
     for (BatchJobType dependentBatchJob : dependentBatchJobs) {
-      Instant instant =
+      Instant lastDependentJobEndAt =
           batchJobScheduledDataService.fetchLastDependentBatchJobScheduledTime(accountId, dependentBatchJob);
-      if (null == instant || !instant.isAfter(endAt)) {
+      if (lastDependentJobEndAt == null || lastDependentJobEndAt.isBefore(endAt)) {
         return false;
       }
     }

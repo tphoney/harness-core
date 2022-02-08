@@ -8,9 +8,11 @@
 package io.harness.batch.processing.schedule;
 
 import static io.harness.rule.OwnerRule.HITESH;
+import static io.harness.rule.OwnerRule.UTSAV;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
@@ -50,6 +52,114 @@ public class BatchJobRunnerTest extends CategoryTest {
     boolean jobFinished = batchJobRunner.checkDependentJobFinished(
         ACCOUNT_ID, NOW.minus(3, ChronoUnit.DAYS), batchJobType.getDependentBatchJobs());
     assertThat(jobFinished).isTrue();
+  }
+
+  // hourly <- daily; hourly job is remaining for last 1 hour (24th) of the day
+  @Test
+  @Owner(developers = UTSAV)
+  @Category(UnitTests.class)
+  public void testDailyJobDependencyOnHourlyJob() {
+    // last K8S_UTILIZATION completed for [2022-01-25T22:00:00.000Z, 2022-01-25T23:00:00.000Z]
+    Instant lastDependentJobEndAt = Instant.parse("2022-01-25T23:00:00.000Z");
+
+    // INSTANCE_BILLING waiting to run from [2022-01-25T00:00:00.000Z, 2022-01-26T00:00:00.000Z]
+    Instant instanceBillingEndAt = Instant.parse("2022-01-26T00:00:00.000Z");
+
+    when(batchJobScheduledDataService.fetchLastDependentBatchJobScheduledTime(
+             eq(ACCOUNT_ID), eq(BatchJobType.K8S_UTILIZATION)))
+        .thenReturn(lastDependentJobEndAt);
+    BatchJobType batchJobType = BatchJobType.INSTANCE_BILLING;
+    boolean jobFinished = batchJobRunner.checkDependentJobFinished(
+        ACCOUNT_ID, instanceBillingEndAt, batchJobType.getDependentBatchJobs());
+    assertThat(jobFinished).isFalse();
+  }
+
+  // daily <- daily; all dependent jobs finished
+  @Test
+  @Owner(developers = UTSAV)
+  @Category(UnitTests.class)
+  public void testDailyJobDependencyOnDailyJob() {
+    // last INSTANCE_BILLING completed for [2022-01-25T00:00:00.000Z, 2022-01-26T00:00:00.000Z]
+    Instant lastDependentJobEndAt = Instant.parse("2022-01-26T00:00:00.000Z");
+
+    // ACTUAL_IDLE_COST_BILLING waiting to run from [2022-01-25T00:00:00.000Z, 2022-01-26T00:00:00.000Z]
+    Instant instanceBillingEndAt = Instant.parse("2022-01-26T00:00:00.000Z");
+
+    when(batchJobScheduledDataService.fetchLastDependentBatchJobScheduledTime(
+             eq(ACCOUNT_ID), eq(BatchJobType.INSTANCE_BILLING)))
+        .thenReturn(lastDependentJobEndAt);
+
+    BatchJobType batchJobType = BatchJobType.ACTUAL_IDLE_COST_BILLING;
+    boolean jobFinished = batchJobRunner.checkDependentJobFinished(
+        ACCOUNT_ID, instanceBillingEndAt, batchJobType.getDependentBatchJobs());
+
+    assertThat(jobFinished).isTrue();
+  }
+
+  // daily <- daily; dependent jobs not finished
+  @Test
+  @Owner(developers = UTSAV)
+  @Category(UnitTests.class)
+  public void testDailyJobDependencyOnDailyJobNotFinished() {
+    // last INSTANCE_BILLING completed for [2022-01-24T00:00:00.000Z, 2022-01-25T00:00:00.000Z]
+    Instant lastDependentJobEndAt = Instant.parse("2022-01-25T00:00:00.000Z");
+
+    // ACTUAL_IDLE_COST_BILLING waiting to run from [2022-01-25T00:00:00.000Z, 2022-01-26T00:00:00.000Z]
+    Instant instanceBillingEndAt = Instant.parse("2022-01-26T00:00:00.000Z");
+
+    when(batchJobScheduledDataService.fetchLastDependentBatchJobScheduledTime(
+             eq(ACCOUNT_ID), eq(BatchJobType.INSTANCE_BILLING)))
+        .thenReturn(lastDependentJobEndAt);
+
+    BatchJobType batchJobType = BatchJobType.ACTUAL_IDLE_COST_BILLING;
+    boolean jobFinished = batchJobRunner.checkDependentJobFinished(
+        ACCOUNT_ID, instanceBillingEndAt, batchJobType.getDependentBatchJobs());
+
+    assertThat(jobFinished).isFalse();
+  }
+
+  // hourly <- hourly; all dependent jobs finished
+  @Test
+  @Owner(developers = UTSAV)
+  @Category(UnitTests.class)
+  public void testHourlyJobDependencyOnHourlyJobFinished() {
+    // last K8S_EVENT completed for [2022-01-25T23:00:00.000Z, 2022-01-26T00:00:00.000Z]
+    Instant lastDependentJobEndAt = Instant.parse("2022-01-26T00:00:00.000Z");
+
+    // K8S_UTILIZATION waiting to run from [2022-01-25T23:00:00.000Z, 2022-01-26T00:00:00.000Z]
+    Instant instanceBillingEndAt = Instant.parse("2022-01-26T00:00:00.000Z");
+
+    when(batchJobScheduledDataService.fetchLastDependentBatchJobScheduledTime(
+             eq(ACCOUNT_ID), eq(BatchJobType.K8S_EVENT)))
+        .thenReturn(lastDependentJobEndAt);
+
+    BatchJobType batchJobType = BatchJobType.K8S_UTILIZATION;
+    boolean jobFinished = batchJobRunner.checkDependentJobFinished(
+        ACCOUNT_ID, instanceBillingEndAt, batchJobType.getDependentBatchJobs());
+
+    assertThat(jobFinished).isTrue();
+  }
+
+  // hourly <- hourly; all dependent jobs not finished
+  @Test
+  @Owner(developers = UTSAV)
+  @Category(UnitTests.class)
+  public void testHourlyJobDependencyOnHourlyJobNotFinished() {
+    // last K8S_EVENT completed for [2022-01-26T23:00:00.000Z, 2022-01-26T00:00:00.000Z]
+    Instant lastDependentJobEndAt = Instant.parse("2022-01-26T00:00:00.000Z");
+
+    // K8S_UTILIZATION waiting to run from [2022-01-26T00:00:00.000Z, 2022-01-26T01:00:00.000Z]
+    Instant instanceBillingEndAt = Instant.parse("2022-01-26T01:00:00.000Z");
+
+    when(batchJobScheduledDataService.fetchLastDependentBatchJobScheduledTime(
+             eq(ACCOUNT_ID), eq(BatchJobType.K8S_EVENT)))
+        .thenReturn(lastDependentJobEndAt);
+
+    BatchJobType batchJobType = BatchJobType.K8S_UTILIZATION;
+    boolean jobFinished = batchJobRunner.checkDependentJobFinished(
+        ACCOUNT_ID, instanceBillingEndAt, batchJobType.getDependentBatchJobs());
+
+    assertThat(jobFinished).isFalse();
   }
 
   @Test
@@ -95,15 +205,18 @@ public class BatchJobRunnerTest extends CategoryTest {
     assertThat(jobFinished).isTrue();
   }
 
+  /**
+   * hourly <- daily; daily job dependent on hourly job
+   */
   @Test
   @Owner(developers = HITESH)
   @Category(UnitTests.class)
-  public void shouldReturnFalseIfDependentJobFinished() {
+  public void shouldReturnTrueIfDependentJobFinished() {
     when(batchJobScheduledDataService.fetchLastDependentBatchJobScheduledTime(any(), any(BatchJobType.class)))
         .thenReturn(NOW);
     BatchJobType batchJobType = BatchJobType.INSTANCE_BILLING;
     boolean jobFinished =
         batchJobRunner.checkDependentJobFinished(ACCOUNT_ID, NOW, batchJobType.getDependentBatchJobs());
-    assertThat(jobFinished).isFalse();
+    assertThat(jobFinished).isTrue();
   }
 }

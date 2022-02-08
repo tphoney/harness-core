@@ -154,6 +154,7 @@ Sanja Jokic sanja.jokic@harness.io
 Sanyasi Naidu Annepu sanyasi.naidu@harness.io
 Satyam Shanker satyam.shanker@harness.io
 Seán Dunne sean.dunne@harness.io
+Shalini Agrawal shalini.agarwal@harness.io
 Shashank Singh shashank.singh@harness.io
 Shaswat Deep shaswat.deep@harness.io
 Shivakumar Ningappa shivakumar.ningappa@harness.io
@@ -236,3 +237,4 @@ Joseph Sentongo joseph.sentongo@harness.io
 Sergey Bobrov sergey.bobrov@harness.io
 William Wissemann william.wissemann@harness.io
 Shubham Maheshwari shubham.maheshwari@harness.io
+Scott Walker scott.walker@harness.io

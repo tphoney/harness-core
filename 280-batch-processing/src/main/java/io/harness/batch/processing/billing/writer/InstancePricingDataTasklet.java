@@ -96,7 +96,11 @@ public class InstancePricingDataTasklet implements Tasklet {
       instanceDataLists.stream().filter((InstanceData instanceData) ->
           getValueForKeyFromInstanceMetaData(InstanceMetaDataConstants.CLOUD_PROVIDER, instanceData)
               .equals(CloudProvider.AWS.name())
-      ).collect(Collectors.groupingBy(InstanceData::getCloudProviderInstanceId));
+      ).collect(Collectors.groupingBy((InstanceData instanceData) -> {
+        if (instanceData.getCloudProviderInstanceId()!=null)
+          return instanceData.getCloudProviderInstanceId();
+        return "";
+      }));
       log.info("AWS Instances size: {}", awsInstances.size());
       Set<String> leftOverInstances = awsInstances.keySet();
       // call BQHelperSerivce with awsInstances.keySet

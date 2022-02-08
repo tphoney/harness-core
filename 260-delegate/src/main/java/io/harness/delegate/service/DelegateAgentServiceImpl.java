@@ -1314,7 +1314,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         terminatedSync, terminatedPoll);
 
     if (perpetualTaskWorker != null) {
-      log.info("Stopping perpetual task workers");
+      log.info("Stopping perpetual task workerss");
       perpetualTaskWorker.stop();
     }
 

@@ -14,6 +14,7 @@ import static io.harness.git.model.ChangeType.RENAME;
 import static io.harness.git.model.PushResultGit.pushResultBuilder;
 import static io.harness.rule.OwnerRule.ABHINAV;
 import static io.harness.rule.OwnerRule.ARVIND;
+import static io.harness.rule.OwnerRule.TATHAGAT;
 import static io.harness.rule.OwnerRule.YOGESH;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
@@ -316,6 +318,78 @@ public class GitClientV2ImplTest extends CategoryTest {
     addRemote(repoPath);
     addGitTag(repoPath, "t1");
     gitClient.downloadFiles(request);
+  }
+
+  @Test
+  @Owner(developers = TATHAGAT)
+  @Category(UnitTests.class)
+  public void testDownloadFiles_InvalidCommitId() throws Exception {
+    DownloadFilesRequest request = DownloadFilesRequest.builder()
+                                       .repoUrl(repoPath)
+                                       .authRequest(new UsernamePasswordAuthRequest(USERNAME, PASSWORD.toCharArray()))
+                                       .commitId("t1")
+                                       .connectorId("CONNECTOR_ID")
+                                       .accountId("ACCOUNT_ID")
+                                       .destinationDirectory("./")
+                                       .filePaths(Collections.singletonList("./"))
+                                       .build();
+    doReturn("").when(gitClientHelper).getLockObject(request.getConnectorId());
+    doNothing().when(gitClientHelper).createDirStructureForFileDownload(any());
+    doReturn(repoPath).when(gitClientHelper).getFileDownloadRepoDirectory(any());
+    assertThatThrownBy(() -> gitClient.downloadFiles(request))
+        .isInstanceOf(YamlException.class)
+        .hasMessageContaining(
+            "Failed while fetching files for CommitId: t1, FilePaths: [./]. Reason: Error in checking out commit id t1");
+    verify(gitClientHelper, times(5)).getFileDownloadRepoDirectory(any());
+  }
+
+  @Test
+  @Owner(developers = TATHAGAT)
+  @Category(UnitTests.class)
+  public void testDownloadFiles_NonExistentFiles() throws Exception {
+    DownloadFilesRequest request = DownloadFilesRequest.builder()
+                                       .repoUrl(repoPath)
+                                       .authRequest(new UsernamePasswordAuthRequest(USERNAME, PASSWORD.toCharArray()))
+                                       .commitId("t1")
+                                       .connectorId("CONNECTOR_ID")
+                                       .accountId("ACCOUNT_ID")
+                                       .destinationDirectory("./")
+                                       .filePaths(Collections.singletonList("./"))
+                                       .build();
+    doReturn("").when(gitClientHelper).getLockObject(request.getConnectorId());
+    doNothing().when(gitClientHelper).createDirStructureForFileDownload(any());
+    when(gitClientHelper.getFileDownloadRepoDirectory(any()))
+        .thenReturn(repoPath, repoPath, repoPath + "/INVALID_REPO", repoPath, repoPath);
+    addRemote(repoPath);
+    addGitTag(repoPath, "t1");
+    assertThatThrownBy(() -> gitClient.downloadFiles(request))
+        .isInstanceOf(YamlException.class)
+        .hasMessageContaining(
+            "Failed while fetching files for CommitId: t1, FilePaths: [./]. Reason: File './' not found");
+    verify(gitClientHelper, times(4)).getFileDownloadRepoDirectory(any());
+  }
+
+  @Test
+  @Owner(developers = TATHAGAT)
+  @Category(UnitTests.class)
+  public void testDownloadFiles_InvalidBranch() throws Exception {
+    DownloadFilesRequest request = DownloadFilesRequest.builder()
+                                       .repoUrl(repoPath)
+                                       .authRequest(new UsernamePasswordAuthRequest(USERNAME, PASSWORD.toCharArray()))
+                                       .branch("INVALID_BRANCH")
+                                       .connectorId("CONNECTOR_ID")
+                                       .accountId("ACCOUNT_ID")
+                                       .destinationDirectory("./")
+                                       .filePaths(Collections.singletonList("./"))
+                                       .build();
+    doReturn("").when(gitClientHelper).getLockObject(request.getConnectorId());
+    doNothing().when(gitClientHelper).createDirStructureForFileDownload(any());
+    doReturn(repoPath).when(gitClientHelper).getFileDownloadRepoDirectory(any());
+    assertThatThrownBy(() -> gitClient.downloadFiles(request))
+        .isInstanceOf(YamlException.class)
+        .hasMessageContaining(
+            "Failed while fetching files for Branch: INVALID_BRANCH, FilePaths: [./]. Reason: Error in checking out Branch INVALID_BRANCH");
+    verify(gitClientHelper, times(5)).getFileDownloadRepoDirectory(any());
   }
 
   @Test

@@ -18,6 +18,7 @@ import static io.harness.k8s.model.HelmVersion.V2;
 import static io.harness.k8s.model.HelmVersion.V3;
 import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.INDER;
+import static io.harness.rule.OwnerRule.TATHAGAT;
 import static io.harness.rule.OwnerRule.YOGESH;
 
 import static java.lang.String.format;
@@ -35,6 +36,7 @@ import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -291,7 +293,27 @@ public class HelmTaskHelperBaseTest extends CategoryTest {
     assertThatThrownBy(()
                            -> helmTaskHelperBase.fetchChartFromRepo(REPO_NAME, REPO_DISPLAY_NAME, CHART_NAME,
                                CHART_VERSION, "/dir", V3, emptyHelmCommandFlag, 90000, false))
-        .isInstanceOf(HelmClientException.class);
+        .isInstanceOf(HelmClientException.class)
+        .hasMessageContaining(
+            "Failed to fetch chart \"test-helm-chart\"  from repo \"Helm Charts\". Please check if the chart is present in the repo. Details: some helm command error");
+
+    verify(helmTaskHelperBase, times(1))
+        .executeCommand(anyMap(), anyString(), anyString(), anyString(), anyLong(), eq(HelmCliCommandType.FETCH));
+  }
+
+  @Test
+  @Owner(developers = TATHAGAT)
+  @Category(UnitTests.class)
+  public void testFetchChartFromRepoProcessException() {
+    doThrow(new HelmClientException("Exception occurred while fetching chart", HelmCliCommandType.REPO_ADD))
+        .when(helmTaskHelperBase)
+        .executeCommand(anyMap(), anyString(), anyString(), anyString(), anyLong(), eq(HelmCliCommandType.FETCH));
+
+    assertThatThrownBy(()
+                           -> helmTaskHelperBase.fetchChartFromRepo(REPO_NAME, REPO_DISPLAY_NAME, CHART_NAME,
+                               CHART_VERSION, "/dir", V3, emptyHelmCommandFlag, 90000, false))
+        .isInstanceOf(HelmClientException.class)
+        .hasMessageContaining("Exception occurred while fetching chart");
 
     verify(helmTaskHelperBase, times(1))
         .executeCommand(anyMap(), anyString(), anyString(), anyString(), anyLong(), eq(HelmCliCommandType.FETCH));
@@ -357,23 +379,7 @@ public class HelmTaskHelperBaseTest extends CategoryTest {
     String chartOutput = "/dir";
     long timeout = 90000L;
 
-    HelmChartManifestDelegateConfig helmChartManifestDelegateConfig =
-        HelmChartManifestDelegateConfig.builder()
-            .chartName(CHART_NAME)
-            .chartVersion(CHART_VERSION)
-            .helmVersion(V3)
-            .helmCommandFlag(emptyHelmCommandFlag)
-            .storeDelegateConfig(
-                HttpHelmStoreDelegateConfig.builder()
-                    .repoName(REPO_NAME)
-                    .repoDisplayName(REPO_DISPLAY_NAME)
-                    .httpHelmConnector(
-                        HttpHelmConnectorDTO.builder()
-                            .helmRepoUrl(repoUrl)
-                            .auth(HttpHelmAuthenticationDTO.builder().authType(HttpHelmAuthType.ANONYMOUS).build())
-                            .build())
-                    .build())
-            .build();
+    HelmChartManifestDelegateConfig helmChartManifestDelegateConfig = getHelmChartManifestDelegateConfig(repoUrl);
 
     doNothing()
         .when(helmTaskHelperBase)
@@ -402,6 +408,25 @@ public class HelmTaskHelperBaseTest extends CategoryTest {
 
     assertThatThrownBy(() -> helmTaskHelperBase.downloadChartFilesFromHttpRepo(manifestDelegateConfig, "output", 9000L))
         .isInstanceOf(InvalidArgumentsException.class);
+  }
+
+  private HelmChartManifestDelegateConfig getHelmChartManifestDelegateConfig(String repoUrl) {
+    return HelmChartManifestDelegateConfig.builder()
+        .chartName(CHART_NAME)
+        .chartVersion(CHART_VERSION)
+        .helmVersion(V3)
+        .helmCommandFlag(emptyHelmCommandFlag)
+        .storeDelegateConfig(
+            HttpHelmStoreDelegateConfig.builder()
+                .repoName(REPO_NAME)
+                .repoDisplayName(REPO_DISPLAY_NAME)
+                .httpHelmConnector(
+                    HttpHelmConnectorDTO.builder()
+                        .helmRepoUrl(repoUrl)
+                        .auth(HttpHelmAuthenticationDTO.builder().authType(HttpHelmAuthType.ANONYMOUS).build())
+                        .build())
+                .build())
+        .build();
   }
 
   @Test
@@ -457,6 +482,26 @@ public class HelmTaskHelperBaseTest extends CategoryTest {
                                REPO_NAME, REPO_DISPLAY_NAME, port, chartDirectory, V3, timeoutInMillis))
         .isInstanceOf(HelmClientException.class)
         .hasMessageContaining("Failed to add helm repo. Executed command");
+  }
+
+  @Test
+  @Owner(developers = TATHAGAT)
+  @Category(UnitTests.class)
+  public void testAddChartMuseumRepoProcessException() throws IOException, InterruptedException, TimeoutException {
+    final String chartDirectory = "chart_directory";
+    final int port = 1234;
+    final long timeoutInMillis = 9000L;
+    ProcessExecutor processExecutor = mock(ProcessExecutor.class);
+    doReturn(processExecutor)
+        .when(helmTaskHelperBase)
+        .createProcessExecutor(anyString(), anyString(), anyLong(), anyMap());
+    doThrow(new InterruptedException()).when(processExecutor).execute();
+
+    assertThatThrownBy(()
+                           -> helmTaskHelperBase.addChartMuseumRepo(
+                               REPO_NAME, REPO_DISPLAY_NAME, port, chartDirectory, V3, timeoutInMillis))
+        .isInstanceOf(HelmClientException.class)
+        .hasMessageContaining("[Interrupted] helm repo add command for repository Helm Charts");
   }
 
   @Test

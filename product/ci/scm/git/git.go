@@ -447,6 +447,14 @@ func GetUserRepos(ctx context.Context, request *pb.GetUserReposRequest, log *zap
 	return out, nil
 }
 
+func GetLatestCommitOnFile(ctx context.Context, slug, branch, filePath string, log *zap.SugaredLogger) (string, error) {
+	listCommitsResponse, err := ListCommits(ctx, &pb.ListCommitsRequest{Slug: slug, Type: &pb.ListCommitsRequest_Branch{Branch: branch}, FilePath: filePath}, log)
+	if err != nil {
+		return "", err
+	}
+	return listCommitsResponse.CommitIds[0], nil
+}
+
 func convertChangesList(from []*scm.Change) (to []*pb.PRFile) {
 	for _, v := range from {
 		to = append(to, convertChange(v))

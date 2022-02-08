@@ -498,8 +498,9 @@ message ListCommitsRequest {
     string branch = 2;
     string ref = 3;
   }
-  PageRequest pagination = 4;
-  Provider provider = 5;
+  string filePath = 4;
+  PageRequest pagination = 5;
+  Provider provider = 6;
 }
 
 message ListCommitsResponse {

@@ -6,8 +6,12 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.DelegateToken;
 import io.harness.delegate.beans.DelegateTokenCacheKey;
 
+import software.wings.beans.DelegateStatus;
+import software.wings.service.intfc.DelegateService;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.util.Objects;
 import javax.cache.Cache;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,18 +20,21 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(DEL)
 public class DelegateTokenCacheHelper {
   @Inject private Cache<DelegateTokenCacheKey, DelegateToken> delegateTokenCache;
+  @Inject private DelegateService delegateService;
 
   public DelegateToken getDelegateToken(DelegateTokenCacheKey delegateTokenCacheKey) {
     return delegateTokenCache != null ? delegateTokenCache.get(delegateTokenCacheKey) : null;
   }
 
-  public void addDelegateTokenToCache(DelegateTokenCacheKey delegateTokenCacheKey, DelegateToken delegateToken) {
-    if (delegateToken != null && delegateTokenCache != null) {
-      delegateTokenCache.put(delegateTokenCacheKey, delegateToken);
-    }
+  // TODO: find a better way to invalidate a particular cache when a delegate token is revoked.
+  public void invalidateCacheUsingAccountId(String accountId) {
+    DelegateStatus delegateStatus = delegateService.getDelegateStatus(accountId);
+    delegateStatus.getDelegates()
+        .stream()
+        .filter(Objects::nonNull)
+        .forEach(delegateInner
+            -> invalidateCacheUsingKey(new DelegateTokenCacheKey(accountId, delegateInner.getHostName())));
   }
-
-  public void invalidateCacheUsingAccountId(String accountId) {}
 
   // TODO: Question, is it able to insert for the very first time
   public void putIfTokenIsAbsent(DelegateTokenCacheKey delegateTokenCacheKey, DelegateToken delegateToken) {
@@ -39,6 +46,8 @@ public class DelegateTokenCacheHelper {
   public void invalidateCacheUsingKey(DelegateTokenCacheKey delegateTokenCacheKey) {
     log.info("Invalidating cache for accountId {} and delegateHostName {}", delegateTokenCacheKey.getAccountId(),
         delegateTokenCacheKey.getDelegateHostName());
-    delegateTokenCache.remove(delegateTokenCacheKey);
+    if (delegateTokenCache != null) {
+      delegateTokenCache.remove(delegateTokenCacheKey);
+    }
   }
 }

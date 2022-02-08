@@ -8,6 +8,7 @@
 package io.harness.serializer.kryo;
 
 import io.harness.delegate.beans.Delegate;
+import io.harness.delegate.beans.DelegateTokenCacheKey;
 import io.harness.perpetualtask.PerpetualTaskClientContext;
 import io.harness.serializer.KryoRegistrar;
 
@@ -22,5 +23,6 @@ public class DelegateServiceKryoRegister implements KryoRegistrar {
     kryo.register(PerpetualTaskClientContext.class, 40030);
     kryo.register(Delegate.class, 40031);
     kryo.register(DelegateTaskUsageInsightsEventType.class, 40032);
+    kryo.register(DelegateTokenCacheKey.class, 40033);
   }
 }

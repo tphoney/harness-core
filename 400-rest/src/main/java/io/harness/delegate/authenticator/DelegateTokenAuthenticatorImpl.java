@@ -65,6 +65,7 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
   @Inject private DelegateTokenCacheHelper delegateTokenCacheHelper;
   @Inject private HPersistence persistence;
 
+  // TODO: Arpit convert this cache to a distributed one
   private final LoadingCache<String, String> keyCache =
       Caffeine.newBuilder()
           .maximumSize(10000)
@@ -89,8 +90,8 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
       log.warn("Couldn't parse delegate token", e);
     }
 
-    boolean decryptedWithRevokedToken = false;
     boolean decryptedWithActiveToken = false;
+    boolean decryptedWithRevokedToken = false;
     DelegateToken delegateToken =
         delegateTokenCacheHelper.getDelegateToken(new DelegateTokenCacheKey(accountId, delegateHostName));
     boolean decryptedWithTokenFromCache = decryptJwtTokenWithDelegateToken(encryptedJWT, delegateToken);
@@ -104,9 +105,9 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
       }
     }
 
-    if ((delegateToken != null && delegateToken.getStatus() == DelegateTokenStatus.REVOKED)
+    if ((decryptedWithTokenFromCache && delegateToken.getStatus() == DelegateTokenStatus.REVOKED)
         || decryptedWithRevokedToken) {
-      log.warn("Delegate {} is using REVOKED delegate token", delegateHostName);
+      log.error("Delegate {} is using REVOKED delegate token {}", delegateHostName, delegateToken.getName());
       throw new RevokedTokenException("Invalid delegate token. Delegate is using revoked token", USER_ADMIN);
     }
 
@@ -139,6 +140,7 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
     decryptDelegateToken(encryptedJWT, accountKey);
   }
 
+  // TODO: make sure that cg delegate is not using ng token and vice-versa.
   private boolean decryptJWTDelegateToken(
       String accountId, String delegateHostName, DelegateTokenStatus status, EncryptedJWT encryptedJWT) {
     long startTime = System.currentTimeMillis();
@@ -150,10 +152,6 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
                                      .equal(status);
 
     boolean result = decryptDelegateTokenByQuery(query, accountId, delegateHostName, encryptedJWT);
-    if (!result) {
-      result = decryptDelegateTokenByQuery(
-          query.filter(DelegateTokenKeys.isNg, true), accountId, delegateHostName, encryptedJWT);
-    }
     long endTime = System.currentTimeMillis() - startTime;
     log.debug("Delegate Token verification for accountId {} and status {} has taken {} milliseconds.", accountId,
         status.name(), endTime);
@@ -165,10 +163,10 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
       Query query, String accountId, String delegateHostName, EncryptedJWT encryptedJWT) {
     try (HIterator<DelegateToken> iterator = new HIterator<>(query.fetch())) {
       while (iterator.hasNext()) {
-        boolean decryptedJwtTokenWithDelegateToken = decryptJwtTokenWithDelegateToken(encryptedJWT, iterator.next());
-        if (decryptedJwtTokenWithDelegateToken) {
+        DelegateToken delegateToken = iterator.next();
+        if (decryptJwtTokenWithDelegateToken(encryptedJWT, delegateToken)) {
           delegateTokenCacheHelper.putIfTokenIsAbsent(
-              new DelegateTokenCacheKey(accountId, delegateHostName), iterator.next());
+              new DelegateTokenCacheKey(accountId, delegateHostName), delegateToken);
           return true;
         }
       }

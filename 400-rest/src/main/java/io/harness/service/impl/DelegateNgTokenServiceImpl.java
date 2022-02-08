@@ -21,6 +21,7 @@ import io.harness.delegate.beans.DelegateTokenDetails.DelegateTokenDetailsBuilde
 import io.harness.delegate.beans.DelegateTokenStatus;
 import io.harness.delegate.service.intfc.DelegateNgTokenService;
 import io.harness.delegate.utils.DelegateEntityOwnerHelper;
+import io.harness.delegate.utils.DelegateTokenCacheHelper;
 import io.harness.exception.InvalidRequestException;
 import io.harness.outbox.api.OutboxService;
 import io.harness.persistence.HPersistence;
@@ -51,11 +52,14 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
   private static final String DEFAULT_TOKEN_NAME = "default_ng";
   private final HPersistence persistence;
   private final OutboxService outboxService;
+  private final DelegateTokenCacheHelper delegateTokenCacheHelper;
 
   @Inject
-  public DelegateNgTokenServiceImpl(HPersistence persistence, OutboxService outboxService) {
+  public DelegateNgTokenServiceImpl(
+      HPersistence persistence, OutboxService outboxService, DelegateTokenCacheHelper delegateTokenCacheHelper) {
     this.persistence = persistence;
     this.outboxService = outboxService;
+    this.delegateTokenCacheHelper = delegateTokenCacheHelper;
   }
 
   @Override
@@ -78,7 +82,6 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
     return getDelegateTokenDetails(delegateToken, true);
   }
 
-  // TODO: on revoking, invalidate the token cache also
   @Override
   public DelegateTokenDetails revokeDelegateToken(String accountId, DelegateEntityOwner owner, String tokenName) {
     Query<DelegateToken> filterQuery = matchNameTokenQuery(accountId, tokenName);
@@ -90,6 +93,7 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
                 Date.from(OffsetDateTime.now().plusDays(DelegateToken.TTL.toDays()).toInstant()));
     DelegateToken updatedDelegateToken =
         persistence.findAndModify(filterQuery, updateOperations, new FindAndModifyOptions());
+    delegateTokenCacheHelper.invalidateCacheUsingAccountId(accountId);
     // publishRevokeTokenAuditEvent(updatedDelegateToken);
     return getDelegateTokenDetails(updatedDelegateToken, false);
   }

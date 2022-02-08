@@ -66,7 +66,7 @@ public class HostRecordServiceImpl implements HostRecordService {
   }
 
   private void saveRecords(List<HostRecord> hostRecords) {
-    hPersistence.save(hostRecords);
+    hPersistence.saveBatch(hostRecords);
   }
   private HostRecord toHostRecord(HostRecordDTO hostRecordDTOs) {
     return HostRecord.builder()

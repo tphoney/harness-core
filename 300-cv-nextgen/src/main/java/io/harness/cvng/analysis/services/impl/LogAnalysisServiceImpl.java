@@ -265,7 +265,7 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
             .filter(LogAnalysisClusterKeys.isEvicted, false));
     // next, save the new records.
     // TODO: move this to LogAnalysisClusterService
-    hPersistence.save(analysisClusters);
+    hPersistence.saveBatch(analysisClusters);
     // TODO: move this to LogAnalysisResultService
     hPersistence.save(analysisResult);
     learningEngineTaskService.markCompleted(taskId);

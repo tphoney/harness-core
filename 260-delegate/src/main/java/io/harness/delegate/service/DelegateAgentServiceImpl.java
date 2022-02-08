@@ -2586,34 +2586,38 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
   @VisibleForTesting
   void applyDelegateSecretFunctor(DelegateTaskPackage delegateTaskPackage) {
-    Map<String, EncryptionConfig> encryptionConfigs = delegateTaskPackage.getEncryptionConfigs();
-    Map<String, SecretDetail> secretDetails = delegateTaskPackage.getSecretDetails();
-    if (isEmpty(encryptionConfigs) || isEmpty(secretDetails)) {
-      return;
+    try {
+      Map<String, EncryptionConfig> encryptionConfigs = delegateTaskPackage.getEncryptionConfigs();
+      Map<String, SecretDetail> secretDetails = delegateTaskPackage.getSecretDetails();
+      if (isEmpty(encryptionConfigs) || isEmpty(secretDetails)) {
+        return;
+      }
+      List<EncryptedRecord> encryptedRecordList = new ArrayList<>();
+      Map<EncryptionConfig, List<EncryptedRecord>> encryptionConfigListMap = new HashMap<>();
+      secretDetails.forEach((key, secretDetail) -> {
+        encryptedRecordList.add(secretDetail.getEncryptedRecord());
+        // encryptionConfigListMap.put(encryptionConfigs.get(secretDetail.getConfigUuid()), encryptedRecordList);
+        addToEncryptedConfigListMap(encryptionConfigListMap, encryptionConfigs.get(secretDetail.getConfigUuid()),
+            secretDetail.getEncryptedRecord());
+      });
+
+      Map<String, char[]> decryptedRecords = delegateDecryptionService.decrypt(encryptionConfigListMap);
+      Map<String, char[]> secretUuidToValues = new HashMap<>();
+
+      secretDetails.forEach((key, value) -> {
+        char[] secretValue = decryptedRecords.get(value.getEncryptedRecord().getUuid());
+        secretUuidToValues.put(key, secretValue);
+
+        // Adds secret values from the 3 phase decryption to the list of task secrets to be masked
+        delegateTaskPackage.getSecrets().add(String.valueOf(secretValue));
+      });
+
+      DelegateExpressionEvaluator delegateExpressionEvaluator = new DelegateExpressionEvaluator(
+          secretUuidToValues, delegateTaskPackage.getData().getExpressionFunctorToken());
+      applyDelegateExpressionEvaluator(delegateTaskPackage, delegateExpressionEvaluator);
+    } catch (Exception e) {
+      sendErrorResponse(delegateTaskPackage);
     }
-    List<EncryptedRecord> encryptedRecordList = new ArrayList<>();
-    Map<EncryptionConfig, List<EncryptedRecord>> encryptionConfigListMap = new HashMap<>();
-    secretDetails.forEach((key, secretDetail) -> {
-      encryptedRecordList.add(secretDetail.getEncryptedRecord());
-      // encryptionConfigListMap.put(encryptionConfigs.get(secretDetail.getConfigUuid()), encryptedRecordList);
-      addToEncryptedConfigListMap(encryptionConfigListMap, encryptionConfigs.get(secretDetail.getConfigUuid()),
-          secretDetail.getEncryptedRecord());
-    });
-
-    Map<String, char[]> decryptedRecords = delegateDecryptionService.decrypt(encryptionConfigListMap);
-    Map<String, char[]> secretUuidToValues = new HashMap<>();
-
-    secretDetails.forEach((key, value) -> {
-      char[] secretValue = decryptedRecords.get(value.getEncryptedRecord().getUuid());
-      secretUuidToValues.put(key, secretValue);
-
-      // Adds secret values from the 3 phase decryption to the list of task secrets to be masked
-      delegateTaskPackage.getSecrets().add(String.valueOf(secretValue));
-    });
-
-    DelegateExpressionEvaluator delegateExpressionEvaluator =
-        new DelegateExpressionEvaluator(secretUuidToValues, delegateTaskPackage.getData().getExpressionFunctorToken());
-    applyDelegateExpressionEvaluator(delegateTaskPackage, delegateExpressionEvaluator);
   }
 
   private void applyDelegateExpressionEvaluator(
@@ -2637,5 +2641,30 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     long tasksExecutionCount = ((ThreadPoolExecutor) taskExecutor).getActiveCount();
     metricRegistry.recordGaugeValue(TASKS_IN_QUEUE, new String[] {DELEGATE_NAME}, tasksInQueueCount);
     metricRegistry.recordGaugeValue(TASKS_CURRENTLY_EXECUTING, new String[] {DELEGATE_NAME}, tasksExecutionCount);
+  }
+
+  private void sendErrorResponse(DelegateTaskPackage delegateTaskPackage) {
+    String taskId = delegateTaskPackage.getDelegateTaskId();
+    DelegateTaskResponse taskResponse = DelegateTaskResponse.builder()
+                                            .accountId(delegateTaskPackage.getAccountId())
+                                            .responseCode(DelegateTaskResponse.ResponseCode.FAILED)
+                                            .build();
+    log.info("Sending error response for task{}", taskId);
+    try {
+      Response<ResponseBody> resp = null;
+      int retries = 5;
+      for (int attempt = 0; attempt < retries; attempt++) {
+        resp = delegateAgentManagerClient.sendTaskStatus(delegateId, taskId, accountId, taskResponse).execute();
+        if (resp != null && resp.code() >= 200 && resp.code() <= 299) {
+          log.info("Task {} response sent to manager", taskId);
+          return;
+        }
+        log.warn("Failed to send response for task {}: {}. {}", taskId, resp == null ? "null" : resp.code(),
+            retries > 0 ? "Retrying." : "Giving up.");
+        sleep(ofSeconds(FibonacciBackOff.getFibonacciElement(attempt)));
+      }
+    } catch (Exception e) {
+      log.error("Unable to send response to manager", e);
+    }
   }
 }

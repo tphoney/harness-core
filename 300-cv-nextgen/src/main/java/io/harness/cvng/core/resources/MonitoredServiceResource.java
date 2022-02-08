@@ -105,8 +105,8 @@ public class MonitoredServiceResource {
       @ApiParam(required = true) @NotNull @QueryParam("accountId") String accountId,
       @ApiParam(required = true) @NotNull @QueryParam("orgIdentifier") String orgIdentifier,
       @ApiParam(required = true) @NotNull @QueryParam("projectIdentifier") String projectIdentifier,
-      @ApiParam(required = true) @NotNull @QueryParam("environmentIdentifier") String environmentIdentifier,
-      @ApiParam(required = true) @NotNull @QueryParam("serviceIdentifier") String serviceIdentifier) {
+      @ApiParam(required = true) @NotEmpty @QueryParam("environmentIdentifier") String environmentIdentifier,
+      @ApiParam(required = true) @NotEmpty @QueryParam("serviceIdentifier") String serviceIdentifier) {
     ProjectParams projectParams = ProjectParams.builder()
                                       .accountIdentifier(accountId)
                                       .orgIdentifier(orgIdentifier)

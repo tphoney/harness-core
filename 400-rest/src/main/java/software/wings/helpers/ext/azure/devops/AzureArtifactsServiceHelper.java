@@ -13,6 +13,7 @@ import static io.harness.exception.WingsException.USER;
 import static io.harness.network.Http.getOkHttpClientBuilder;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import io.harness.annotations.dev.BreakDependencyOn;
@@ -27,6 +28,7 @@ import software.wings.beans.artifact.AzureArtifactsArtifactStream.ProtocolType;
 import software.wings.beans.settings.azureartifacts.AzureArtifactsConfig;
 import software.wings.beans.settings.azureartifacts.AzureArtifactsPATConfig;
 
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -210,8 +212,10 @@ public class AzureArtifactsServiceHelper {
   }
 
   static boolean shouldDownloadFile(String artifactFileName) {
-    return isNotBlank(artifactFileName) && !artifactFileName.endsWith("pom") && !artifactFileName.endsWith("md5")
-        && !artifactFileName.endsWith("sha1");
+    if (isBlank(artifactFileName)) {
+      return false;
+    }
+    return Lists.newArrayList("pom", "md5", "sha1", "sha256", "sha512").stream().noneMatch(artifactFileName::endsWith);
   }
 
   static long getInputStreamSize(InputStream inputStream) throws IOException {

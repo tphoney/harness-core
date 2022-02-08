@@ -402,8 +402,7 @@ public class HeatMapServiceImpl implements HeatMapService {
             resolutionToReadFrom.getResolution().toMinutes()));
     int totalSize = (int) duration.getDuration().toMinutes() / (int) resolutionToReadFrom.getResolution().toMinutes();
     HeatMapResolution heatMapResolution = resolutionToReadFrom;
-    Instant trendEndTime = getBoundaryOfResolution(endTime, heatMapResolution.getResolution())
-                               .plusMillis(heatMapResolution.getResolution().toMillis());
+    Instant trendEndTime = getBoundaryOfResolution(endTime, heatMapResolution.getResolution());
     Instant trendStartTime = trendEndTime.minus(duration.getDuration());
     HistoricalTrend historicalTrend =
         HistoricalTrend.builder().size(totalSize).trendStartTime(trendStartTime).trendEndTime(trendEndTime).build();

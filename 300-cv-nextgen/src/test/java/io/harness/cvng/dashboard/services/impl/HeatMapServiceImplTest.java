@@ -691,8 +691,7 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
             envIdentifier, DurationDTO.FOUR_HOURS, endTime);
 
     assertThat(historicalTrend.getHealthScores().size()).isEqualTo(48);
-    Instant time =
-        getBoundaryOfResolution(endTime, FIVE_MIN.getResolution()).plusMillis(FIVE_MIN.getResolution().toMillis());
+    Instant time = getBoundaryOfResolution(endTime, FIVE_MIN.getResolution());
     for (int i = 47; i >= 0; i--) {
       RiskData riskData = historicalTrend.getHealthScores().get(i);
       assertThat(riskData.getEndTime()).isEqualTo(time.toEpochMilli());
@@ -703,7 +702,7 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
     assertOverallHealthScoreWithInTwoHeatMap(historicalTrend);
 
     // Test for boundary condition
-    endTime = getBoundaryOfResolution(endTime, FIVE_MIN.getBucketSize()).minus(1, ChronoUnit.MINUTES);
+    endTime = getBoundaryOfResolution(endTime, FIVE_MIN.getBucketSize());
     historicalTrend = heatMapService.getOverAllHealthScore(builderFactory.getContext().getProjectParams(),
         serviceIdentifier, envIdentifier, DurationDTO.FOUR_HOURS, endTime);
     assertOverallHealthScoreWithInOneHeatMap(historicalTrend);
@@ -718,7 +717,7 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
     List<HeatMap> heatMaps = hPersistence.createQuery(HeatMap.class).asList();
     heatMaps.forEach(heatMap -> heatMap.getHeatMapRisks().forEach(heatMapRisk -> heatMapRisk.setRiskScore(0.0)));
     hPersistence.save(heatMaps);
-    Instant timeToCheckFor = getBoundaryOfResolution(endTime, FIVE_MIN.getBucketSize()).minus(1, ChronoUnit.MINUTES);
+    Instant timeToCheckFor = getBoundaryOfResolution(endTime, FIVE_MIN.getBucketSize());
     HistoricalTrend historicalTrend =
         heatMapService.getOverAllHealthScore(builderFactory.getContext().getProjectParams(), serviceIdentifier,
             envIdentifier, DurationDTO.FOUR_HOURS, timeToCheckFor);
@@ -746,8 +745,7 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
         heatMapService.getOverAllHealthScore(builderFactory.getContext().getProjectParams(), serviceIdentifier,
             envIdentifier, DurationDTO.TWENTY_FOUR_HOURS, timeToCheckFor);
     assertThat(historicalTrend.getHealthScores().size()).isEqualTo(48);
-    Instant time = getBoundaryOfResolution(timeToCheckFor, THIRTY_MINUTES.getResolution())
-                       .plusMillis(THIRTY_MINUTES.getResolution().toMillis());
+    Instant time = getBoundaryOfResolution(timeToCheckFor, THIRTY_MINUTES.getResolution());
     for (int i = 47; i >= 0; i--) {
       RiskData riskData = historicalTrend.getHealthScores().get(i);
       assertThat(riskData.getEndTime()).isEqualTo(time.toEpochMilli());
@@ -757,7 +755,7 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
     assertOverallHealthScoreWithInTwoHeatMap(historicalTrend);
 
     // Test for boundary condition
-    timeToCheckFor = getBoundaryOfResolution(endTime, THIRTY_MINUTES.getBucketSize()).minus(1, ChronoUnit.MINUTES);
+    timeToCheckFor = getBoundaryOfResolution(endTime, THIRTY_MINUTES.getBucketSize());
     historicalTrend = heatMapService.getOverAllHealthScore(builderFactory.getContext().getProjectParams(),
         serviceIdentifier, envIdentifier, DurationDTO.TWENTY_FOUR_HOURS, timeToCheckFor);
     assertOverallHealthScoreWithInOneHeatMap(historicalTrend);
@@ -767,7 +765,7 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
   @Owner(developers = KANHAIYA)
   @Category(UnitTests.class)
   public void testGetOverAllHealthScoreOneCategory3DaysDuration() {
-    Instant endTime = clock.instant();
+    Instant endTime = clock.instant().plus(THIRTY_MINUTES.getResolution());
     createHeatMaps(endTime, THIRTY_MINUTES, CVMonitoringCategory.ERRORS, 4);
     Instant timeToCheckFor = endTime;
     HistoricalTrend historicalTrend =
@@ -775,8 +773,7 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
             envIdentifier, DurationDTO.THREE_DAYS, timeToCheckFor);
 
     assertThat(historicalTrend.getHealthScores().size()).isEqualTo(48);
-    Instant time = getBoundaryOfResolution(timeToCheckFor, THIRTY_MINUTES.getResolution())
-                       .plusMillis(THIRTY_MINUTES.getResolution().toMillis());
+    Instant time = getBoundaryOfResolution(timeToCheckFor, THIRTY_MINUTES.getResolution());
     int healthScore = 79;
     for (int i = 47; i >= 0; i--) {
       RiskData riskData = historicalTrend.getHealthScores().get(i);
@@ -791,13 +788,12 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
     }
 
     // Test for boundary condition
-    timeToCheckFor = getBoundaryOfResolution(endTime, THIRTY_MINUTES.getBucketSize()).minus(1, ChronoUnit.MINUTES);
+    timeToCheckFor = getBoundaryOfResolution(endTime, THIRTY_MINUTES.getBucketSize());
     historicalTrend = heatMapService.getOverAllHealthScore(builderFactory.getContext().getProjectParams(),
         serviceIdentifier, envIdentifier, DurationDTO.THREE_DAYS, timeToCheckFor);
     assertThat(historicalTrend.getHealthScores().size()).isEqualTo(48);
 
-    time = getBoundaryOfResolution(timeToCheckFor, THIRTY_MINUTES.getResolution())
-               .plusMillis(THIRTY_MINUTES.getResolution().toMillis());
+    time = getBoundaryOfResolution(timeToCheckFor, THIRTY_MINUTES.getResolution());
     healthScore = 52;
     for (int i = 47; i >= 0; i--) {
       RiskData riskData = historicalTrend.getHealthScores().get(i);
@@ -824,39 +820,36 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
             envIdentifier, DurationDTO.SEVEN_DAYS, timeToCheckFor);
 
     assertThat(historicalTrend.getHealthScores().size()).isEqualTo(48);
-    Instant time = getBoundaryOfResolution(timeToCheckFor, THIRTY_MINUTES.getResolution())
-                       .plusMillis(THIRTY_MINUTES.getResolution().toMillis());
-
+    Instant time = getBoundaryOfResolution(timeToCheckFor, THIRTY_MINUTES.getResolution());
     for (int i = 47; i >= 0; i--) {
       RiskData riskData = historicalTrend.getHealthScores().get(i);
       assertThat(riskData.getEndTime()).isEqualTo(time.toEpochMilli());
       assertThat(riskData.getStartTime()).isEqualTo(time.minus(210, ChronoUnit.MINUTES).toEpochMilli());
       time = time.minus(210, ChronoUnit.MINUTES);
     }
-    assertHealthScore(historicalTrend.getHealthScores().get(0), 72);
-    assertHealthScore(historicalTrend.getHealthScores().get(47), 79);
-    assertHealthScore(historicalTrend.getHealthScores().get(39), 87);
+    assertHealthScore(historicalTrend.getHealthScores().get(0), 73);
+    assertHealthScore(historicalTrend.getHealthScores().get(47), 80);
+    assertHealthScore(historicalTrend.getHealthScores().get(39), 88);
     assertHealthScore(historicalTrend.getHealthScores().get(38), 52);
-    assertHealthScore(historicalTrend.getHealthScores().get(40), 80);
+    assertHealthScore(historicalTrend.getHealthScores().get(40), 81);
 
     // Test for boundary condition
     timeToCheckFor = getBoundaryOfResolution(endTime, THIRTY_MINUTES.getBucketSize()).minus(1, ChronoUnit.MINUTES);
     historicalTrend = heatMapService.getOverAllHealthScore(builderFactory.getContext().getProjectParams(),
         serviceIdentifier, envIdentifier, DurationDTO.SEVEN_DAYS, timeToCheckFor);
     assertThat(historicalTrend.getHealthScores().size()).isEqualTo(48);
-    time = getBoundaryOfResolution(timeToCheckFor, THIRTY_MINUTES.getResolution())
-               .plusMillis(THIRTY_MINUTES.getResolution().toMillis());
+    time = getBoundaryOfResolution(timeToCheckFor, THIRTY_MINUTES.getResolution());
     for (int i = 47; i >= 0; i--) {
       RiskData riskData = historicalTrend.getHealthScores().get(i);
       assertThat(riskData.getEndTime()).isEqualTo(time.toEpochMilli());
       assertThat(riskData.getStartTime()).isEqualTo(time.minus(210, ChronoUnit.MINUTES).toEpochMilli());
       time = time.minus(210, ChronoUnit.MINUTES);
     }
-    assertHealthScore(historicalTrend.getHealthScores().get(0), 93);
-    assertHealthScore(historicalTrend.getHealthScores().get(47), 52);
-    assertHealthScore(historicalTrend.getHealthScores().get(42), 87);
+    assertHealthScore(historicalTrend.getHealthScores().get(0), 94);
+    assertHealthScore(historicalTrend.getHealthScores().get(47), 53);
+    assertHealthScore(historicalTrend.getHealthScores().get(42), 88);
     assertHealthScore(historicalTrend.getHealthScores().get(41), 52);
-    assertHealthScore(historicalTrend.getHealthScores().get(43), 80);
+    assertHealthScore(historicalTrend.getHealthScores().get(43), 81);
   }
 
   @Test
@@ -870,8 +863,7 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
         heatMapService.getOverAllHealthScore(builderFactory.getContext().getProjectParams(), serviceIdentifier,
             envIdentifier, DurationDTO.THIRTY_DAYS, timeToCheckFor);
     assertThat(historicalTrend.getHealthScores().size()).isEqualTo(48);
-    Instant time = getBoundaryOfResolution(timeToCheckFor, THIRTY_MINUTES.getResolution())
-                       .plusMillis(THIRTY_MINUTES.getResolution().toMillis());
+    Instant time = getBoundaryOfResolution(timeToCheckFor, THIRTY_MINUTES.getResolution());
     for (int i = 47; i >= 0; i--) {
       RiskData riskData = historicalTrend.getHealthScores().get(i);
       assertThat(riskData.getEndTime()).isEqualTo(time.toEpochMilli());
@@ -880,14 +872,13 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
     }
     assertHealthScore(historicalTrend.getHealthScores().get(0), 52);
     assertHealthScore(historicalTrend.getHealthScores().get(47), 52);
-    assertHealthScore(historicalTrend.getHealthScores().get(35), 55);
+    assertHealthScore(historicalTrend.getHealthScores().get(35), 56);
 
     // Test for boundary condition
     historicalTrend = heatMapService.getOverAllHealthScore(builderFactory.getContext().getProjectParams(),
         serviceIdentifier, envIdentifier, DurationDTO.THIRTY_DAYS, timeToCheckFor);
     assertThat(historicalTrend.getHealthScores().size()).isEqualTo(48);
-    time = getBoundaryOfResolution(timeToCheckFor, THIRTY_MINUTES.getResolution())
-               .plusMillis(THIRTY_MINUTES.getResolution().toMillis());
+    time = getBoundaryOfResolution(timeToCheckFor, THIRTY_MINUTES.getResolution());
     for (int i = 47; i >= 0; i--) {
       RiskData riskData = historicalTrend.getHealthScores().get(i);
       assertThat(riskData.getEndTime()).isEqualTo(time.toEpochMilli());
@@ -896,7 +887,7 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
     }
     assertHealthScore(historicalTrend.getHealthScores().get(0), 52);
     assertHealthScore(historicalTrend.getHealthScores().get(47), 52);
-    assertHealthScore(historicalTrend.getHealthScores().get(46), 61);
+    assertHealthScore(historicalTrend.getHealthScores().get(46), 62);
   }
 
   @Test
@@ -952,15 +943,15 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
 
   private void assertOverallHealthScoreWithInTwoHeatMap(HistoricalTrend historicalTrend) {
     assertThat(historicalTrend.getHealthScores().size()).isEqualTo(48);
-    int healthScore = 75;
-    for (int i = 47; i >= 23; i--) {
+    int healthScore = 76;
+    for (int i = 47; i >= 24; i--) {
       assertThat(historicalTrend.getHealthScores().get(i).getHealthScore()).isEqualTo(healthScore);
       assertThat(historicalTrend.getHealthScores().get(i).getRiskStatus())
           .isEqualTo(getHealthScoreRiskStatus(healthScore));
       healthScore++;
     }
     healthScore = 52;
-    for (int i = 22; i >= 0; i--) {
+    for (int i = 23; i >= 0; i--) {
       assertThat(historicalTrend.getHealthScores().get(i).getHealthScore()).isEqualTo(healthScore);
       assertThat(historicalTrend.getHealthScores().get(i).getRiskStatus())
           .isEqualTo(getHealthScoreRiskStatus(healthScore));

@@ -72,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
@@ -126,7 +127,7 @@ public class StateMachine implements PersistentEntity, UuidAware, CreatedAtAware
 
   private boolean valid;
 
-  private List<State> states = Lists.newArrayList();
+  private List<State> states = new CopyOnWriteArrayList<>();
 
   private List<Transition> transitions = Lists.newArrayList();
 
@@ -498,7 +499,7 @@ public class StateMachine implements PersistentEntity, UuidAware, CreatedAtAware
    */
   public State addState(State state) {
     if (states == null) {
-      states = new ArrayList<>();
+      states = new CopyOnWriteArrayList<>();
     }
     states.add(state);
     cachedStatesMap = null;
@@ -1096,7 +1097,7 @@ public class StateMachine implements PersistentEntity, UuidAware, CreatedAtAware
     private String originId;
     private Integer originVersion;
     private String name;
-    private List<State> states = Lists.newArrayList();
+    private List<State> states = new CopyOnWriteArrayList<>();
     private List<Transition> transitions = Lists.newArrayList();
     private String initialStateName;
     private String uuid;

@@ -32,6 +32,8 @@ import static com.google.inject.name.Names.named;
 import static java.time.Duration.ofHours;
 import static java.time.Duration.ofSeconds;
 import static java.util.Arrays.asList;
+import static org.atmosphere.cpr.ApplicationConfig.BROADCASTER_ASYNC_WRITE_THREADPOOL_MAXSIZE;
+import static org.atmosphere.cpr.ApplicationConfig.BROADCASTER_MESSAGE_PROCESSING_THREADPOOL_MAXSIZE;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.app.GraphQLModule;
@@ -974,10 +976,10 @@ public class WingsApplication extends Application<MainConfiguration> {
   private void registerAtmosphereStreams(Environment environment, Injector injector, MainConfiguration configuration) {
     AtmosphereServlet atmosphereServlet = injector.getInstance(AtmosphereServlet.class);
     final AtmosphereConfig atmosphereConfig = configuration.getAtmosphereConfig();
-    atmosphereServlet.framework().addInitParameter("org.atmosphere.cpr.broadcaster.maxProcessingThreads",
-        String.valueOf(atmosphereConfig.getMaxProcessingThreads()));
-    atmosphereServlet.framework().addInitParameter("org.atmosphere.cpr.broadcaster.maxAsyncWriteThreads",
-        String.valueOf(atmosphereConfig.getMaxAsyncWriteThreads()));
+    atmosphereServlet.framework().addInitParameter(
+        BROADCASTER_MESSAGE_PROCESSING_THREADPOOL_MAXSIZE, String.valueOf(atmosphereConfig.getMaxProcessingThreads()));
+    atmosphereServlet.framework().addInitParameter(
+        BROADCASTER_ASYNC_WRITE_THREADPOOL_MAXSIZE, String.valueOf(atmosphereConfig.getMaxAsyncWriteThreads()));
     atmosphereServlet.framework().objectFactory(new GuiceObjectFactory(injector));
     injector.getInstance(BroadcasterFactory.class);
     injector.getInstance(MetaBroadcaster.class);

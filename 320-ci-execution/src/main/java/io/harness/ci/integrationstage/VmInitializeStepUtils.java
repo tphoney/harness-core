@@ -93,6 +93,7 @@ public class VmInitializeStepUtils {
         .connectorRefs(connectorIdentifiers)
         .stageVars(stageElementConfig.getVariables())
         .volToMountPath(volumeToMountPath)
+        .serviceDependencies(integrationStageConfig.getServiceDependencies())
         .build();
   }
 

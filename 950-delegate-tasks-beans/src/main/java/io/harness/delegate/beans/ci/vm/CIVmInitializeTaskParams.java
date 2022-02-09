@@ -11,6 +11,7 @@ import static io.harness.expression.Expression.ALLOW_SECRETS;
 
 import io.harness.delegate.beans.ci.CIInitializeTaskParams;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
+import io.harness.delegate.beans.ci.vm.steps.VmServiceDependency;
 import io.harness.delegate.beans.connector.ConnectorTaskParams;
 import io.harness.delegate.beans.executioncapability.CIVmConnectionCapability;
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
@@ -56,6 +57,7 @@ public class CIVmInitializeTaskParams
   private Map<String, String> volToMountPath;
 
   private String stageRuntimeId;
+  @Expression(ALLOW_SECRETS) private List<VmServiceDependency> serviceDependencies;
   @Builder.Default private static final Type type = Type.VM;
 
   @Override

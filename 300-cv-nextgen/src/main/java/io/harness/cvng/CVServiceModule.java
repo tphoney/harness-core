@@ -231,25 +231,8 @@ import io.harness.cvng.servicelevelobjective.beans.SLOTargetType;
 import io.harness.cvng.servicelevelobjective.entities.RatioServiceLevelIndicator.RatioServiceLevelIndicatorUpdatableEntity;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator.ServiceLevelIndicatorUpdatableEntity;
 import io.harness.cvng.servicelevelobjective.entities.ThresholdServiceLevelIndicator.ThresholdServiceLevelIndicatorUpdatableEntity;
-import io.harness.cvng.servicelevelobjective.services.api.SLIAnalyserService;
-import io.harness.cvng.servicelevelobjective.services.api.SLIDataProcessorService;
-import io.harness.cvng.servicelevelobjective.services.api.SLIRecordService;
-import io.harness.cvng.servicelevelobjective.services.api.SLODashboardService;
-import io.harness.cvng.servicelevelobjective.services.api.SLOErrorBudgetResetService;
-import io.harness.cvng.servicelevelobjective.services.api.SLOHealthIndicatorService;
-import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelIndicatorService;
-import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelObjectiveService;
-import io.harness.cvng.servicelevelobjective.services.api.UserJourneyService;
-import io.harness.cvng.servicelevelobjective.services.impl.RatioAnalyserServiceImpl;
-import io.harness.cvng.servicelevelobjective.services.impl.SLIDataProcessorServiceImpl;
-import io.harness.cvng.servicelevelobjective.services.impl.SLIRecordServiceImpl;
-import io.harness.cvng.servicelevelobjective.services.impl.SLODashboardServiceImpl;
-import io.harness.cvng.servicelevelobjective.services.impl.SLOErrorBudgetResetServiceImpl;
-import io.harness.cvng.servicelevelobjective.services.impl.SLOHealthIndicatorServiceImpl;
-import io.harness.cvng.servicelevelobjective.services.impl.ServiceLevelIndicatorServiceImpl;
-import io.harness.cvng.servicelevelobjective.services.impl.ServiceLevelObjectiveServiceImpl;
-import io.harness.cvng.servicelevelobjective.services.impl.ThresholdAnalyserServiceImpl;
-import io.harness.cvng.servicelevelobjective.services.impl.UserJourneyServiceImpl;
+import io.harness.cvng.servicelevelobjective.services.api.*;
+import io.harness.cvng.servicelevelobjective.services.impl.*;
 import io.harness.cvng.servicelevelobjective.transformer.servicelevelindicator.CalenderSLOTargetTransformer;
 import io.harness.cvng.servicelevelobjective.transformer.servicelevelindicator.RatioServiceLevelIndicatorTransformer;
 import io.harness.cvng.servicelevelobjective.transformer.servicelevelindicator.RollingSLOTargetTransformer;
@@ -680,6 +663,7 @@ public class CVServiceModule extends AbstractModule {
     bind(ServiceLevelIndicatorService.class).to(ServiceLevelIndicatorServiceImpl.class).in(Singleton.class);
     bind(SLIDataProcessorService.class).to(SLIDataProcessorServiceImpl.class);
     bind(ServiceLevelIndicatorEntityAndDTOTransformer.class);
+    bind(SLODebugService.class).to(SLODebugServiceImpl.class).in(Singleton.class);
     MapBinder<SLIMetricType, ServiceLevelIndicatorTransformer> serviceLevelIndicatorTransformerMapBinder =
         MapBinder.newMapBinder(binder(), SLIMetricType.class, ServiceLevelIndicatorTransformer.class);
     serviceLevelIndicatorTransformerMapBinder.addBinding(SLIMetricType.RATIO)

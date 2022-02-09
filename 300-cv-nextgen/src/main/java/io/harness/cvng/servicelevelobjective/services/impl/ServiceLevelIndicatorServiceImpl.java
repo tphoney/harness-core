@@ -225,6 +225,19 @@ public class ServiceLevelIndicatorServiceImpl implements ServiceLevelIndicatorSe
   }
 
   @Override
+  public List<ServiceLevelIndicator> getEntities(ProjectParams projectParams, List<String> serviceLevelIndicators) {
+    List<ServiceLevelIndicator> serviceLevelIndicatorList =
+            hPersistence.createQuery(ServiceLevelIndicator.class)
+                    .filter(ServiceLevelIndicatorKeys.accountId, projectParams.getAccountIdentifier())
+                    .filter(ServiceLevelIndicatorKeys.orgIdentifier, projectParams.getOrgIdentifier())
+                    .filter(ServiceLevelIndicatorKeys.projectIdentifier, projectParams.getProjectIdentifier())
+                    .field(ServiceLevelIndicatorKeys.identifier)
+                    .in(serviceLevelIndicators)
+                    .asList();
+    return serviceLevelIndicatorList;
+  }
+
+  @Override
   public List<String> update(ProjectParams projectParams, List<ServiceLevelIndicatorDTO> serviceLevelIndicatorDTOList,
       String serviceLevelObjectiveIdentifier, List<String> serviceLevelIndicatorsList, String monitoredServiceIndicator,
       String healthSourceIndicator, TimePeriod timePeriod) {

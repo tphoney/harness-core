@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/drone/go-scm/scm"
+	"github.com/wings-software/portal/product/ci/scm/git"
 	"github.com/wings-software/portal/commons/go/lib/utils"
-	git "github.com/wings-software/portal/product/ci/scm/git"
 	"github.com/wings-software/portal/product/ci/scm/gitclient"
 	pb "github.com/wings-software/portal/product/ci/scm/proto"
 	"go.uber.org/zap"

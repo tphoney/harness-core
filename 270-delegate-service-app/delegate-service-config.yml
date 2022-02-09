@@ -375,6 +375,10 @@ ldapSyncJobConfig:
   syncInterval: 15
   defaultCronExpression: "0 0/15 * 1/1 * ? *"
 
+atmosphereConfig:
+    maxProcessingThreads: ${MAX_ATMOSPHERE_PROCESSING_THREAD:-20}
+    maxAsyncWriteThreads: ${MAX_ATMOSPHERE_ASYNC_WRITE_THREAD:-20}
+
 fileStorageMode: MONGO
 
 totp:

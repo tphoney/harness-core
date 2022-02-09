@@ -430,7 +430,7 @@ public class InstanceFetchStateTest extends WingsBaseTest {
                    .map(HostElement::getProperties)
                    .map(v -> v.get("adminPass"))
                    .collect(Collectors.toList()))
-        .containsOnly((String) null);
+        .containsOnly("");
     assertThat(instanceElements.stream()
                    .map(InstanceElement::getHost)
                    .map(HostElement::getProperties)

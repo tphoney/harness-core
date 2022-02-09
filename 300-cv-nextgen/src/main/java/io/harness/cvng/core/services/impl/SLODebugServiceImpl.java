@@ -5,14 +5,14 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cvng.servicelevelobjective.services.impl;
+package io.harness.cvng.core.services.impl;
 
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.servicelevelobjective.beans.SLODebugResponse;
 import io.harness.cvng.servicelevelobjective.entities.SLOHealthIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective;
-import io.harness.cvng.servicelevelobjective.services.api.SLODebugService;
+import io.harness.cvng.core.services.api.SLODebugService;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
@@ -33,22 +33,17 @@ public class SLODebugServiceImpl implements SLODebugService {
 
         ServiceLevelObjective serviceLevelObjective = serviceLevelObjectiveService.getEntity(projectParams, identifier);
 
-        if(Objects.isNull(serviceLevelObjective)){
-            throw new IllegalArgumentException("Wrong Identifier Value");
-            //return new RestResponse<>(new SLODebugResponse());              //Error Handling alternate.  //Look up preconditions.
-        }
+        Preconditions.checkArgument(!Objects.isNull(serviceLevelObjective),"Value of Identifier is not present in database");
 
         List<ServiceLevelIndicator> serviceLevelIndicatorList = serviceLevelIndicatorService.getEntities(projectParams,serviceLevelObjective.getServiceLevelIndicators());
 
         SLOHealthIndicator sloHealthIndicator = sloHealthIndicatorService.getBySLOIdentifier(projectParams,serviceLevelObjective.getIdentifier());
 
-        SLODebugResponse sloDebugResponse = SLODebugResponse.builder()
+        return SLODebugResponse.builder()
                 .projectParams(projectParams)
                 .serviceLevelObjective(serviceLevelObjective)
                 .serviceLevelIndicatorList(serviceLevelIndicatorList)
                 .sloHealthIndicator(sloHealthIndicator)
                 .build();
-
-        return sloDebugResponse;
     }
 }

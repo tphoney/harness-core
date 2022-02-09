@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cvng.servicelevelobjective.resources;
+package io.harness.cvng.core.resources;
 
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.OrgIdentifier;
@@ -15,7 +15,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.servicelevelobjective.beans.SLODebugResponse;
-import io.harness.cvng.servicelevelobjective.services.api.SLODebugService;
+import io.harness.cvng.core.services.api.SLODebugService;
 import com.codahale.metrics.annotation.Timed;
 import com.google.inject.Inject;
 
@@ -34,8 +34,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.PathParam;
 
 
-@Api("slo-debug")
-@Path("slo-debug")
+@Api("debug")
+@Path("debug")
 @Produces("application/json")
 @OwnedBy(HarnessTeam.CV)
 @NextGenManagerAuth

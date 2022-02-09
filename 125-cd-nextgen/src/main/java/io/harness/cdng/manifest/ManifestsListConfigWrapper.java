@@ -15,7 +15,7 @@ import java.util.List;
 public class ManifestsListConfigWrapper {
   List<ManifestConfig> manifests;
 
-  @JsonCreator
+  @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
   public ManifestsListConfigWrapper(List<ManifestConfig> manifests) {
     this.manifests = manifests;
   }

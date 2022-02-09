@@ -345,7 +345,7 @@ public class TrendAnalysisServiceImpl implements TrendAnalysisService {
     }
     List<LogAnalysisCluster> logAnalysisClusterList =
         logAnalysisClusterMap.values().stream().peek(LogAnalysisCluster::compressText).collect(Collectors.toList());
-    hPersistence.saveBatch(logAnalysisClusterList);
+    hPersistence.save(logAnalysisClusterList);
   }
 
   private TimeSeriesRiskSummary buildRiskSummary(

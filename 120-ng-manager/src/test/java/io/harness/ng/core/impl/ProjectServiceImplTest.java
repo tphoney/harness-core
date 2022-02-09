@@ -63,6 +63,7 @@ import io.harness.security.SourcePrincipalContextData;
 import io.harness.security.dto.Principal;
 import io.harness.security.dto.PrincipalType;
 import io.harness.security.dto.UserPrincipal;
+import io.harness.telemetry.helpers.ProjectInstrumentationHelper;
 
 import io.dropwizard.jersey.validation.JerseyViolationException;
 import java.lang.reflect.Field;
@@ -73,9 +74,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import io.harness.telemetry.TelemetryReporter;
-import io.harness.telemetry.helpers.ProjectInstrumentationHelper;
 import org.bson.Document;
 import org.junit.Before;
 import org.junit.Test;
@@ -106,9 +104,7 @@ public class ProjectServiceImplTest extends CategoryTest {
   @Mock private NgUserService ngUserService;
   @Mock private AccessControlClient accessControlClient;
   @Mock private ScopeAccessHelper scopeAccessHelper;
-  @InjectMocks
-  ProjectInstrumentationHelper instrumentationHelper;
-  @Mock private TelemetryReporter telemetryReporter;
+  @InjectMocks ProjectInstrumentationHelper instrumentationHelper;
   private ProjectServiceImpl projectService;
 
   @Before
@@ -146,7 +142,6 @@ public class ProjectServiceImplTest extends CategoryTest {
     projectService.create(accountIdentifier, orgIdentifier, projectDTO);
     try {
       verify(transactionTemplate, times(1)).execute(any());
-      verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
     } catch (Exception e) {
       e.printStackTrace();
     }

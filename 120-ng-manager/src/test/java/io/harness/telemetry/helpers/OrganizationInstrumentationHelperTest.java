@@ -7,6 +7,14 @@
 
 package io.harness.telemetry.helpers;
 
+import static io.harness.ng.core.remote.OrganizationMapper.toOrganization;
+import static io.harness.rule.OwnerRule.TEJAS;
+
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
@@ -14,6 +22,7 @@ import io.harness.ng.core.dto.OrganizationDTO;
 import io.harness.ng.core.entities.Organization;
 import io.harness.rule.Owner;
 import io.harness.telemetry.TelemetryReporter;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -21,56 +30,47 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static io.harness.ng.core.remote.OrganizationMapper.toOrganization;
-import static io.harness.rule.OwnerRule.TEJAS;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
 @OwnedBy(HarnessTeam.PL)
 public class OrganizationInstrumentationHelperTest {
-    @InjectMocks
-    OrganizationInstrumentationHelper instrumentationHelper;
-    @Mock
-    TelemetryReporter telemetryReporter;
+  @InjectMocks OrganizationInstrumentationHelper instrumentationHelper;
+  @Mock TelemetryReporter telemetryReporter;
 
-    @Before
-    public void setup() {
-        MockitoAnnotations.initMocks(this);
-    }
+  @Before
+  public void setup() {
+    MockitoAnnotations.initMocks(this);
+  }
 
-    private OrganizationDTO createOrganizationDTO(String identifier) {
-        return OrganizationDTO.builder().identifier(identifier).name(randomAlphabetic(10)).build();
-    }
+  private OrganizationDTO createOrganizationDTO(String identifier) {
+    return OrganizationDTO.builder().identifier(identifier).name(randomAlphabetic(10)).build();
+  }
 
-    @Test
-    @Owner(developers = TEJAS)
-    @Category(UnitTests.class)
-    public void testCreateOrganizationFinishedTrackSend() {
-        String accountIdentifier = randomAlphabetic(10);
-        OrganizationDTO organizationDTO = createOrganizationDTO(randomAlphabetic(10));
-        Organization organization = toOrganization(organizationDTO);
-        instrumentationHelper.sendOrganizationCreationFinishedEvent(organization, accountIdentifier);
-        try {
-            verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+  @Test
+  @Owner(developers = TEJAS)
+  @Category(UnitTests.class)
+  public void testCreateOrganizationFinishedTrackSend() {
+    String accountIdentifier = randomAlphabetic(10);
+    OrganizationDTO organizationDTO = createOrganizationDTO(randomAlphabetic(10));
+    Organization organization = toOrganization(organizationDTO);
+    instrumentationHelper.sendOrganizationCreationFinishedEvent(organization, accountIdentifier);
+    try {
+      verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
 
-    @Test
-    @Owner(developers = TEJAS)
-    @Category(UnitTests.class)
-    public void testDeleteOrganiztionTrackSend() {
-        String accountIdentifier = randomAlphabetic(10);
-        OrganizationDTO organizationDTO = createOrganizationDTO(randomAlphabetic(10));
-        Organization organization = toOrganization(organizationDTO);
-        instrumentationHelper.sendOrganizationDeletionEvent(organization, accountIdentifier);
-        try {
-            verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+  @Test
+  @Owner(developers = TEJAS)
+  @Category(UnitTests.class)
+  public void testDeleteOrganiztionTrackSend() {
+    String accountIdentifier = randomAlphabetic(10);
+    OrganizationDTO organizationDTO = createOrganizationDTO(randomAlphabetic(10));
+    Organization organization = toOrganization(organizationDTO);
+    instrumentationHelper.sendOrganizationDeletionEvent(organization, accountIdentifier);
+    try {
+      verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
 }

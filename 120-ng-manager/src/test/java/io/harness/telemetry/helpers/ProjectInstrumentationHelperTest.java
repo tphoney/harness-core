@@ -7,6 +7,14 @@
 
 package io.harness.telemetry.helpers;
 
+import static io.harness.ng.core.remote.ProjectMapper.toProject;
+import static io.harness.rule.OwnerRule.TEJAS;
+
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
@@ -14,6 +22,7 @@ import io.harness.ng.core.dto.ProjectDTO;
 import io.harness.ng.core.entities.Project;
 import io.harness.rule.Owner;
 import io.harness.telemetry.TelemetryReporter;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -21,64 +30,54 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static io.harness.ng.core.remote.ProjectMapper.toProject;
-import static io.harness.rule.OwnerRule.PL;
-import static io.harness.rule.OwnerRule.TEJAS;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
 @OwnedBy(HarnessTeam.PL)
 public class ProjectInstrumentationHelperTest {
-    @InjectMocks
-    ProjectInstrumentationHelper instrumentationHelper;
-    @Mock
-    TelemetryReporter telemetryReporter;
+  @InjectMocks ProjectInstrumentationHelper instrumentationHelper;
+  @Mock TelemetryReporter telemetryReporter;
 
-    @Before
-    public void setup() {
-        MockitoAnnotations.initMocks(this);
-    }
+  @Before
+  public void setup() {
+    MockitoAnnotations.initMocks(this);
+  }
 
-    private ProjectDTO createProjectDTO(String orgIdentifier, String identifier) {
-        return ProjectDTO.builder()
-                .orgIdentifier(orgIdentifier)
-                .identifier(identifier)
-                .name(randomAlphabetic(10))
-                .color(randomAlphabetic(10))
-                .build();
-    }
+  private ProjectDTO createProjectDTO(String orgIdentifier, String identifier) {
+    return ProjectDTO.builder()
+        .orgIdentifier(orgIdentifier)
+        .identifier(identifier)
+        .name(randomAlphabetic(10))
+        .color(randomAlphabetic(10))
+        .build();
+  }
 
-    @Test
-    @Owner(developers = TEJAS)
-    @Category(UnitTests.class)
-    public void testCreateProjectFinishedTrackSend() {
-        String accountIdentifier = randomAlphabetic(10);
-        String orgIdentifier = randomAlphabetic(10);
-        ProjectDTO projectDTO = createProjectDTO(orgIdentifier, randomAlphabetic(10));
-        Project project = toProject(projectDTO);
-        instrumentationHelper.sendProjectCreationFinishedEvent(project, accountIdentifier);
-        try {
-            verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+  @Test
+  @Owner(developers = TEJAS)
+  @Category(UnitTests.class)
+  public void testCreateProjectFinishedTrackSend() {
+    String accountIdentifier = randomAlphabetic(10);
+    String orgIdentifier = randomAlphabetic(10);
+    ProjectDTO projectDTO = createProjectDTO(orgIdentifier, randomAlphabetic(10));
+    Project project = toProject(projectDTO);
+    instrumentationHelper.sendProjectCreationFinishedEvent(project, accountIdentifier);
+    try {
+      verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
 
-    @Test
-    @Owner(developers = TEJAS)
-    @Category(UnitTests.class)
-    public void testDeleteProjectTrackSend() {
-        String accountIdentifier = randomAlphabetic(10);
-        String orgIdentifier = randomAlphabetic(10);
-        ProjectDTO projectDTO = createProjectDTO(orgIdentifier, randomAlphabetic(10));
-        Project project = toProject(projectDTO);
-        instrumentationHelper.sendProjectDeletionEvent(project, accountIdentifier);
-        try {
-            verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+  @Test
+  @Owner(developers = TEJAS)
+  @Category(UnitTests.class)
+  public void testDeleteProjectTrackSend() {
+    String accountIdentifier = randomAlphabetic(10);
+    String orgIdentifier = randomAlphabetic(10);
+    ProjectDTO projectDTO = createProjectDTO(orgIdentifier, randomAlphabetic(10));
+    Project project = toProject(projectDTO);
+    instrumentationHelper.sendProjectDeletionEvent(project, accountIdentifier);
+    try {
+      verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
 }

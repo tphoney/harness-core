@@ -45,12 +45,11 @@ import io.harness.repositories.core.spring.OrganizationRepository;
 import io.harness.rule.Owner;
 import io.harness.security.SourcePrincipalContextData;
 import io.harness.security.dto.UserPrincipal;
+import io.harness.telemetry.helpers.OrganizationInstrumentationHelper;
 
 import io.dropwizard.jersey.validation.JerseyViolationException;
 import java.util.Collections;
 import java.util.Optional;
-
-import io.harness.telemetry.helpers.OrganizationInstrumentationHelper;
 import org.bson.Document;
 import org.junit.Before;
 import org.junit.Test;

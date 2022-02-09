@@ -42,6 +42,7 @@ import software.wings.beans.settings.azureartifacts.AzureArtifactsConfig;
 import software.wings.delegatetasks.collect.artifacts.ArtifactCollectionTaskHelper;
 import software.wings.helpers.ext.jenkins.BuildDetails;
 import software.wings.service.intfc.security.EncryptionService;
+import software.wings.utils.ArtifactType;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -316,9 +317,21 @@ public class AzureArtifactsServiceImpl implements AzureArtifactsService {
     encryptionService.decrypt(azureArtifactsConfig, encryptionDetails, false);
     try {
       if (ProtocolType.maven.name().equals(protocolType)) {
+        List<AzureArtifactsPackageFileInfo> files =
+            listFiles(azureArtifactsConfig, encryptionDetails, artifactStreamAttributes, artifactMetadata, true);
+        String fileName = files.stream()
+                              .map(AzureArtifactsPackageFileInfo::getName)
+                              .filter(AzureArtifactsServiceHelper::shouldDownloadFile)
+                              .filter(name -> filterExtension(artifactStreamAttributes.getArtifactType(), name))
+                              .findFirst()
+                              .orElse(null);
+        if (isBlank(fileName)) {
+          throw new InvalidRequestException(
+              "No file available for download for type " + artifactStreamAttributes.getArtifactType());
+        }
         return ImmutablePair.of(artifactFileName,
             downloadArtifactByUrl(getMavenDownloadUrl(azureArtifactsConfig.getAzureDevopsUrl(),
-                                      artifactStreamAttributes, version, artifactFileName),
+                                      artifactStreamAttributes, version, fileName),
                 getAuthHeader(azureArtifactsConfig)));
       } else if (ProtocolType.nuget.name().equals(protocolType)) {
         return ImmutablePair.of(artifactFileName,
@@ -331,6 +344,26 @@ public class AzureArtifactsServiceImpl implements AzureArtifactsService {
     } catch (IOException e) {
       throw new InvalidArtifactServerException(ExceptionUtils.getMessage(e), e);
     }
+  }
+
+  private boolean filterExtension(ArtifactType artifactType, String fileName) {
+    if (artifactType == null) {
+      return false;
+    }
+
+    if (artifactType == ArtifactType.WAR) {
+      return fileName.endsWith("war");
+    }
+
+    if (artifactType == ArtifactType.ZIP) {
+      return fileName.endsWith("zip");
+    }
+
+    if (artifactType == ArtifactType.JAR) {
+      return fileName.endsWith("jar");
+    }
+
+    return false;
   }
 
   private void downloadArtifactByUrl(String delegateId, String taskId, String accountId,

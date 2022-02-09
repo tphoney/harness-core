@@ -31,11 +31,9 @@ import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
 import io.harness.delegate.task.AbstractDelegateRunnableTask;
 import io.harness.delegate.task.TaskParameters;
 import io.harness.logging.CommandExecutionStatus;
-import io.harness.secret.SecretSanitizerThreadLocal;
 
 import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.delegatetasks.DelegateLogService;
-import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.helpers.ext.helm.request.HelmChartConfigParams;
 import software.wings.helpers.ext.helm.request.HelmValuesFetchTaskParameters;
 import software.wings.helpers.ext.helm.response.HelmValuesFetchTaskResponse;
@@ -59,7 +57,6 @@ public class HelmValuesFetchTask extends AbstractDelegateRunnableTask {
   public HelmValuesFetchTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
-    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override
@@ -92,13 +89,12 @@ public class HelmValuesFetchTask extends AbstractDelegateRunnableTask {
           .mapK8sValuesLocationToContent(mapK8sValuesLocationToContent)
           .build();
     } catch (Exception e) {
-      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(e);
-      log.error("HelmValuesFetchTask execution failed with exception ", sanitizedException);
-      executionLogCallback.saveExecutionLog(sanitizedException.getMessage(), ERROR, CommandExecutionStatus.FAILURE);
+      log.error("HelmValuesFetchTask execution failed with exception ", e);
+      executionLogCallback.saveExecutionLog(e.getMessage(), ERROR, CommandExecutionStatus.FAILURE);
 
       return HelmValuesFetchTaskResponse.builder()
           .commandExecutionStatus(FAILURE)
-          .errorMessage("Execution failed with Exception: " + sanitizedException.getMessage())
+          .errorMessage("Execution failed with Exception: " + e.getMessage())
           .build();
     }
   }

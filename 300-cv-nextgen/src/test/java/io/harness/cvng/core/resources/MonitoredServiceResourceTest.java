@@ -93,6 +93,52 @@ public class MonitoredServiceResourceTest extends CvNextGenTestBase {
   }
 
   @Test
+  @Owner(developers = DEEPAK_CHHIKARA)
+  @Category(UnitTests.class)
+  public void test_createDefaultFail() {
+    Response response = RESOURCES.client()
+                            .target("http://localhost:9998/monitored-service/create-default")
+                            .queryParam("accountId", builderFactory.getContext().getAccountId())
+                            .queryParam("projectIdentifier", "cvng_proj_fve79nRfOe")
+                            .queryParam("orgIdentifier", "cvng_org_gc5qeLWq1W")
+                            .queryParam("environmentIdentifier", "")
+                            .queryParam("serviceIdentifier", "")
+                            .request(MediaType.APPLICATION_JSON_TYPE)
+                            .post(Entity.json(null));
+    assertThat(response.getStatus()).isEqualTo(400);
+  }
+
+  @Test
+  @Owner(developers = DEEPAK_CHHIKARA)
+  @Category(UnitTests.class)
+  public void test_createDefaultFailWithNull() {
+    Response response = RESOURCES.client()
+                            .target("http://localhost:9998/monitored-service/create-default")
+                            .queryParam("accountId", builderFactory.getContext().getAccountId())
+                            .queryParam("projectIdentifier", "cvng_proj_fve79nRfOe")
+                            .queryParam("orgIdentifier", "cvng_org_gc5qeLWq1W")
+                            .request(MediaType.APPLICATION_JSON_TYPE)
+                            .post(Entity.json(null));
+    assertThat(response.getStatus()).isEqualTo(400);
+  }
+
+  @Test
+  @Owner(developers = DEEPAK_CHHIKARA)
+  @Category(UnitTests.class)
+  public void test_createDefault() {
+    Response response = RESOURCES.client()
+                            .target("http://localhost:9998/monitored-service/create-default")
+                            .queryParam("accountId", builderFactory.getContext().getAccountId())
+                            .queryParam("projectIdentifier", "cvng_proj_fve79nRfOe")
+                            .queryParam("orgIdentifier", "cvng_org_gc5qeLWq1W")
+                            .queryParam("environmentIdentifier", "environmentIdentifier")
+                            .queryParam("serviceIdentifier", "serviceIdentifier")
+                            .request(MediaType.APPLICATION_JSON_TYPE)
+                            .post(Entity.json(null));
+    assertThat(response.getStatus()).isEqualTo(200);
+  }
+
+  @Test
   @Owner(developers = KAMAL)
   @Category(UnitTests.class)
   public void testSaveMonitoredService_withMetricDefIdentifier() throws IOException {

@@ -102,7 +102,8 @@ public class VerificationManagerClientHelper {
       return Failsafe.with(retryPolicy).get(() -> SafeHttpCall.execute(call.clone()));
     } catch (Exception e) {
       throw new VerificationOperationException(ErrorCode.RETRY_FAILED,
-          "Exception occurred while calling manager from verification service. Exception: " + e.getMessage(), e);
+          "Exception occurred while calling manager from verification service. Exception: " + e.getMessage(), e)
+          .addParam("displayName", "'Exception: " + e.getMessage() + "'");
     }
   }
 }

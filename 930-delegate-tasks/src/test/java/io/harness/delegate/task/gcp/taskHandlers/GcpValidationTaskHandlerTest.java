@@ -33,10 +33,8 @@ import io.harness.errorhandling.NGErrorHelper;
 import io.harness.gcp.client.GcpClient;
 import io.harness.rule.Owner;
 import io.harness.rule.OwnerRule;
-import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.security.encryption.SecretDecryptionService;
 
-import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
@@ -102,7 +100,6 @@ public class GcpValidationTaskHandlerTest extends CategoryTest {
   private GcpValidationRequest buildGcpValidationRequestWithSecretKey() {
     return GcpValidationRequest.builder()
         .gcpManualDetailsDTO(GcpManualDetailsDTO.builder().secretKeyRef(SecretRefData.builder().build()).build())
-        .encryptionDetails(ImmutableList.of(EncryptedDataDetail.builder().fieldName("accessKey").build()))
         .build();
   }
 
@@ -117,13 +114,12 @@ public class GcpValidationTaskHandlerTest extends CategoryTest {
                                                               .config(config)
                                                               .build();
     GcpConnectorDTO gcpConnectorDTO = GcpConnectorDTO.builder().credential(gcpConnectorCredentialDTO).build();
-    ConnectorValidationParams connectorValidationParams =
-        GcpValidationParams.builder()
-            .gcpConnectorDTO(gcpConnectorDTO)
-            .connectorName("GcpConnectorName")
-            .delegateSelectors(Collections.singleton("foo"))
-            .encryptionDetails(ImmutableList.of(EncryptedDataDetail.builder().fieldName("accessKey").build()))
-            .build();
+    ConnectorValidationParams connectorValidationParams = GcpValidationParams.builder()
+                                                              .gcpConnectorDTO(gcpConnectorDTO)
+                                                              .connectorName("GcpConnectorName")
+                                                              .delegateSelectors(Collections.singleton("foo"))
+                                                              .encryptionDetails(null)
+                                                              .build();
 
     ConnectorValidationResult result = taskHandler.validate(connectorValidationParams, accountIdentifier);
     assertThat(result.getStatus()).isEqualTo(SUCCESS);

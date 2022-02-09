@@ -15,6 +15,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.MapBinder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -96,10 +97,13 @@ public abstract class OASModule extends AbstractModule {
   private void checkParamAnnotation(Method method) {
     Annotation[][] parametersAnnotationsList = method.getParameterAnnotations();
     for (Annotation[] annotations : parametersAnnotationsList) {
-      for (Annotation parameterAnnotation : annotations) {
-        if (parameterAnnotation.annotationType() == Parameter.class) {
-          Parameter parameter = (Parameter) parameterAnnotation;
+      for (Annotation annotation : annotations) {
+        if (annotation.annotationType() == Parameter.class) {
+          Parameter parameter = (Parameter) annotation;
           assertThat(parameter.description()).isNotEmpty();
+        } else if (annotation.annotationType() == RequestBody.class) {
+          RequestBody requestBody = (RequestBody) annotation;
+          assertThat(requestBody.description()).isNotEmpty();
         }
       }
     }

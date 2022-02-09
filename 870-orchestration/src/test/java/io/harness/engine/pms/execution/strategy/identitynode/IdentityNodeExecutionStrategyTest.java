@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -112,6 +113,9 @@ public class IdentityNodeExecutionStrategyTest extends OrchestrationTestBase {
                                             .identifier("test")
                                             .stepType(TEST_STEP_TYPE)
                                             .build();
+    doReturn(NodeExecution.builder().build())
+        .when(executionStrategy)
+        .createNodeExecution(ambiance, identityPlanNode, null, null, null);
     executionStrategy.triggerNode(ambiance, identityPlanNode, null);
     verify(executorService).submit(any(ExecutionEngineDispatcher.class));
   }
@@ -146,6 +150,7 @@ public class IdentityNodeExecutionStrategyTest extends OrchestrationTestBase {
                                       .ambiance(ambiance)
                                       .adviserResponse(adviserResponse)
                                       .planNode(planNode)
+                                      .originalNodeExecutionId(originalNodeExecutionId)
                                       .mode(ExecutionMode.SYNC)
                                       .build();
 
@@ -160,8 +165,7 @@ public class IdentityNodeExecutionStrategyTest extends OrchestrationTestBase {
     when(planService.fetchNode(planId, planNode.getUuid())).thenReturn(planNode);
     when(nodeExecutionService.get(eq(nodeExecutionId))).thenReturn(nodeExecution);
     when(nodeExecutionService.get(eq(originalNodeExecutionId))).thenReturn(originalExecution);
-    when(nodeExecutionService.update(eq(nodeExecutionId), any())).thenReturn(nodeExecution);
-    when(nodeExecutionService.updateStatusWithUpdate(eq(nodeExecutionId), any(), any(), any()))
+    when(nodeExecutionService.updateStatusWithOps(eq(nodeExecutionId), eq(Status.SKIPPED), any(), any()))
         .thenReturn(nodeExecution);
 
     executionStrategy.startExecution(ambiance);

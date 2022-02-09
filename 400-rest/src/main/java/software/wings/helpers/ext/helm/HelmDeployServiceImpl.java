@@ -67,7 +67,6 @@ import software.wings.beans.command.HelmDummyCommandUnit;
 import software.wings.beans.container.HelmChartSpecification;
 import software.wings.beans.yaml.GitFetchFilesResult;
 import software.wings.delegatetasks.DelegateLogService;
-import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.delegatetasks.ScmFetchFilesHelper;
 import software.wings.delegatetasks.helm.HarnessHelmDeployConfig;
 import software.wings.delegatetasks.helm.HelmCommandHelper;
@@ -230,7 +229,7 @@ public class HelmDeployServiceImpl implements HelmDeployService {
     } catch (WingsException e) {
       throw e;
     } catch (Exception e) {
-      String exceptionMessage = ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e));
+      String exceptionMessage = ExceptionUtils.getMessage(e);
       String msg = "Exception in deploying helm chart:" + exceptionMessage;
       log.error(msg, e);
       executionLogCallback.saveExecutionLog(msg, LogLevel.ERROR);
@@ -612,9 +611,8 @@ public class HelmDeployServiceImpl implements HelmDeployService {
     } catch (WingsException e) {
       throw e;
     } catch (Exception e) {
-      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(e);
-      log.error("Helm chart rollback failed [{}]", commandRequest.toString(), sanitizedException);
-      return new HelmCommandResponse(CommandExecutionStatus.FAILURE, ExceptionUtils.getMessage(sanitizedException));
+      log.error("Helm chart rollback failed [{}]", commandRequest.toString(), e);
+      return new HelmCommandResponse(CommandExecutionStatus.FAILURE, ExceptionUtils.getMessage(e));
     } finally {
       cleanupWorkingDirectory(commandRequest);
     }
@@ -632,8 +630,7 @@ public class HelmDeployServiceImpl implements HelmDeployService {
         deleteDirectoryAndItsContentIfExists(commandRequest.getWorkingDir());
       }
     } catch (IOException e) {
-      log.info("Unable to delete working directory: " + commandRequest.getWorkingDir(),
-          ExceptionMessageSanitizer.sanitizeException(e));
+      log.info("Unable to delete working directory: " + commandRequest.getWorkingDir(), e);
     }
   }
 
@@ -672,11 +669,10 @@ public class HelmDeployServiceImpl implements HelmDeployService {
           });
     } catch (UncheckedTimeoutException e) {
       String msg = "Timed out while finding helm client and server version";
-      log.error(msg, ExceptionMessageSanitizer.sanitizeException(e));
+      log.error(msg, e);
       throw new InvalidRequestException(msg);
     } catch (Exception e) {
-      throw new InvalidRequestException("Some error occurred while finding Helm client and server version",
-          ExceptionMessageSanitizer.sanitizeException(e));
+      throw new InvalidRequestException("Some error occurred while finding Helm client and server version", e);
     }
   }
 
@@ -788,7 +784,7 @@ public class HelmDeployServiceImpl implements HelmDeployService {
       releaseInfoList =
           parseHelmReleaseCommandOutput(helmCliResponse.getOutput(), helmCommandRequest.getHelmCommandType());
     } catch (Exception e) {
-      log.error("Helm list releases failed", ExceptionMessageSanitizer.sanitizeException(e));
+      log.error("Helm list releases failed", e);
     }
     return HelmReleaseHistoryCommandResponse.builder()
         .commandExecutionStatus(CommandExecutionStatus.SUCCESS)
@@ -862,7 +858,7 @@ public class HelmDeployServiceImpl implements HelmDeployService {
           helmClient.deleteHelmRelease(HelmCommandDataMapper.getHelmCommandData(commandRequest), false);
       executionLogCallback.saveExecutionLog(deleteCommandResponse.getOutput());
     } catch (Exception e) {
-      log.error("Helm delete failed", ExceptionMessageSanitizer.sanitizeException(e));
+      log.error("Helm delete failed", e);
     }
   }
 
@@ -1000,8 +996,7 @@ public class HelmDeployServiceImpl implements HelmDeployService {
         executionLogCallback.saveExecutionLog("No values yaml file found on git");
       }
     } catch (Exception ex) {
-      String msg = "Exception in adding values yaml from git. "
-          + ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ex));
+      String msg = "Exception in adding values yaml from git. " + ExceptionUtils.getMessage(ex);
       log.error(msg);
       executionLogCallback.saveExecutionLog(msg);
       throw ex;

@@ -236,4 +236,14 @@ public class AmbianceUtilsTest extends CategoryTest {
                 .setStepType(StepType.newBuilder().setType("SECTION").setStepCategory(StepCategory.STAGE).build())
                 .build());
   }
+
+  @Test
+  @Owner(developers = SAHIL)
+  @Category(UnitTests.class)
+  public void testObtainParentRuntimeId() {
+    Ambiance ambiance = buildAmbiance();
+    String parentRuntimeId = AmbianceUtils.obtainParentRuntimeId(ambiance);
+    assertThat(parentRuntimeId).isNotNull();
+    assertThat(parentRuntimeId).isEqualTo(SECTION_RUNTIME_ID);
+  }
 }

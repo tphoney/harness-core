@@ -1,5 +1,5 @@
 {
-  "schema": {
+  "schema" : {
     "type": "object",
     "required": [
       "identifier",
@@ -145,6 +145,22 @@
           "properties": {
             "spec": {
               "$ref": "#/definitions/cvng/JiraUpdateStepInfo"
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "type": {
+              "const": "Policy"
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "spec": {
+              "$ref": "#/definitions/cvng/PolicyStepInfo"
             }
           }
         }
@@ -707,6 +723,22 @@
               }
             }
           ]
+        },
+        "CustomPolicyStepSpec": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/cvng/PolicySpec"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "payload": {
+                  "type": "string"
+                }
+              }
+            }
+          ],
+          "$schema": "http://json-schema.org/draft-07/schema#"
         },
         "Distribution": {
           "type": "object",
@@ -1487,6 +1519,57 @@
           },
           "$schema": "http://json-schema.org/draft-07/schema#"
         },
+        "PolicySpec": {
+          "type": "object",
+          "discriminator": "type",
+          "properties": {
+            "type": {
+              "type": "string"
+            }
+          },
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "PolicyStepInfo": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/cvng/StepSpecType"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "metadata": {
+                  "type": "string"
+                },
+                "policySets": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "type": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "Custom"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "policySpec": {
+                    "$ref": "#/definitions/cvng/CustomPolicyStepSpec"
+                  }
+                }
+              }
+            }
+          ],
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
         "RemoveSegmentToVariationTargetMapYaml": {
           "allOf": [
             {
@@ -2152,6 +2235,7 @@
                 "JiraApproval",
                 "JiraCreate",
                 "JiraUpdate",
+                "Policy",
                 "ServiceNowApproval",
                 "ShellScript",
                 "Verify"
@@ -2271,6 +2355,22 @@
                 "properties": {
                   "spec": {
                     "$ref": "#/definitions/cvng/JiraUpdateStepInfo"
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "Policy"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "spec": {
+                    "$ref": "#/definitions/cvng/PolicyStepInfo"
                   }
                 }
               }
@@ -2600,9 +2700,9 @@
       }
     }
   },
-  "nodeType": "Verify",
-  "nodeName": "CVNGStageInfo",
-  "namespace": "cvng",
-  "moduleType": "CV",
-  "skipStageSchema": true
+  "nodeType" : "Verify",
+  "nodeName" : "CVNGStageInfo",
+  "namespace" : "cvng",
+  "skipStageSchema" : true,
+  "moduleType" : "CV"
 }

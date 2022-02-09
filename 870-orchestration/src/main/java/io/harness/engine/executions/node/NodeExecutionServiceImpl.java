@@ -587,6 +587,11 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
   }
 
   @Override
+  public NodeExecution update(@NonNull NodeExecution nodeExecution) {
+    return mongoTemplate.save(nodeExecution);
+  }
+
+  @Override
   public List<NodeExecution> fetchStageExecutionsWithEndTsAndStatusProjection(String planExecutionId) {
     Query query = query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId))
                       .addCriteria(where(NodeExecutionKeys.status).ne(SKIPPED))
@@ -603,12 +608,6 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
 
     query.with(by(NodeExecutionKeys.createdAt));
     return mongoTemplate.find(query, NodeExecution.class);
-  }
-
-  @Override
-  public boolean ifExists(String nodeExecutionId) {
-    Query query = query(where(NodeExecutionKeys.uuid).is(nodeExecutionId));
-    return mongoTemplate.exists(query, NodeExecution.class);
   }
 
   @Override
@@ -659,15 +658,6 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
                       .addCriteria(where(NodeExecutionKeys.planNodeStepCategory).is(StepCategory.STAGE));
     query.with(by(NodeExecutionKeys.createdAt));
     return mongoTemplate.find(query, NodeExecution.class);
-  }
-
-  @Override
-  public NodeExecution getPipelineNodeFromPlanExecutionId(String planExecutionId) {
-    Query query = query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId))
-                      .addCriteria(where(NodeExecutionKeys.status).ne(Status.SKIPPED.name()))
-                      .addCriteria(where(NodeExecutionKeys.planNodeStepCategory).is(StepCategory.PIPELINE));
-    query.with(by(NodeExecutionKeys.createdAt));
-    return mongoTemplate.findOne(query, NodeExecution.class);
   }
 
   @Override

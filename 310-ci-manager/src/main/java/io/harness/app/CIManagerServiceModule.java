@@ -46,6 +46,8 @@ import io.harness.redis.RedisConfig;
 import io.harness.remote.client.ClientMode;
 import io.harness.secrets.SecretNGManagerClientModule;
 import io.harness.service.DelegateServiceDriverModule;
+import io.harness.telemetry.AbstractTelemetryModule;
+import io.harness.telemetry.TelemetryConfiguration;
 import io.harness.threading.ThreadPool;
 import io.harness.timescaledb.TimeScaleDBConfig;
 import io.harness.timescaledb.TimeScaleDBService;
@@ -254,5 +256,11 @@ public class CIManagerServiceModule extends AbstractModule {
     install(EnforcementClientModule.getInstance(ciManagerConfiguration.getManagerClientConfig(),
         ciManagerConfiguration.getNgManagerServiceSecret(), CI_MANAGER.getServiceId(),
         ciManagerConfiguration.getEnforcementClientConfiguration()));
+    install(new AbstractTelemetryModule() {
+      @Override
+      public TelemetryConfiguration telemetryConfiguration() {
+        return ciManagerConfiguration.getSegmentConfiguration();
+      }
+    });
   }
 }

@@ -483,8 +483,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   public List<MonitoredServiceWithHealthSources> getAllWithTimeSeriesHealthSources(ProjectParams projectParams) {
     List<MonitoredService> monitoredServiceEntities = getMonitoredServices(projectParams);
     if (isEmpty(monitoredServiceEntities)) {
-      throw new InvalidRequestException(String.format(
-          "There are no Monitored Services for the given project: %s", projectParams.getProjectIdentifier()));
+      return Collections.emptyList();
     }
     Map<String, Set<HealthSource>> healthSourceMap = healthSourceService.getHealthSource(monitoredServiceEntities);
     return monitoredServiceEntities.stream()
@@ -1109,7 +1108,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         healthSourceService.get(projectParams.getAccountIdentifier(), projectParams.getOrgIdentifier(),
             projectParams.getProjectIdentifier(), monitoredServiceIdentifier, Arrays.asList(healthSourceIdentifier));
     return healthSources.stream()
-        .map(healthSource -> healthSource.getSpec())
+        .map(HealthSource::getSpec)
         .filter(spec -> spec instanceof MetricHealthSourceSpec)
         .map(spec -> (MetricHealthSourceSpec) spec)
         .filter(spec -> isNotEmpty(spec.getMetricDefinitions()))

@@ -86,7 +86,7 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
     try {
       delegateHostName = encryptedJWT.getJWTClaimsSet().getIssuer();
     } catch (Exception e) {
-      log.warn("Couldn't parse delegate token", e);
+      log.warn("Couldn't parse delegate token");
     }
     DelegateTokenCacheKey delegateTokenCacheKey =
         DelegateTokenCacheKey.builder().accountId(accountId).delegateHostName(delegateHostName).build();

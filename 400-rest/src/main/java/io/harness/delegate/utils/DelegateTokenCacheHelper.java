@@ -55,7 +55,7 @@ public class DelegateTokenCacheHelper {
 
   public void putToken(DelegateTokenCacheKey delegateTokenCacheKey, DelegateToken delegateToken) {
     if (delegateTokenCache != null) {
-      delegateTokenCache.putIfAbsent(delegateTokenCacheKey, delegateToken);
+      delegateTokenCache.put(delegateTokenCacheKey, delegateToken);
     }
   }
 

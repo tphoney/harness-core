@@ -38,18 +38,22 @@ public class DelegateTokenCacheHelper {
   // TODO: find a better way to invalidate a particular cache when a delegate token is revoked.
   public void invalidateAllCacheUsingAccountId(String accountId) {
     log.warn("All delegate token cache for account {} will be invalidated.", accountId);
-    DelegateStatus delegateStatus = delegateService.getDelegateStatus(accountId);
-    delegateStatus.getDelegates()
-        .stream()
-        .filter(Objects::nonNull)
-        .forEach(delegateInner
-            -> invalidateCacheUsingKey(DelegateTokenCacheKey.builder()
-                                           .accountId(accountId)
-                                           .delegateHostName(delegateInner.getHostName())
-                                           .build()));
+    try {
+      DelegateStatus delegateStatus = delegateService.getDelegateStatus(accountId);
+      delegateStatus.getDelegates()
+          .stream()
+          .filter(Objects::nonNull)
+          .forEach(delegateInner
+              -> invalidateCacheUsingKey(DelegateTokenCacheKey.builder()
+                                             .accountId(accountId)
+                                             .delegateHostName(delegateInner.getHostName())
+                                             .build()));
+    } catch (Exception e) {
+      log.error("Error occurred during invalidating all delegate tokens cache for account {}", accountId, e);
+    }
   }
 
-  public void putIfTokenIsAbsent(DelegateTokenCacheKey delegateTokenCacheKey, DelegateToken delegateToken) {
+  public void putToken(DelegateTokenCacheKey delegateTokenCacheKey, DelegateToken delegateToken) {
     if (delegateTokenCache != null) {
       delegateTokenCache.putIfAbsent(delegateTokenCacheKey, delegateToken);
     }

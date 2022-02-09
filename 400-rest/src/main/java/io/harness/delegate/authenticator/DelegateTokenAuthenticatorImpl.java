@@ -112,6 +112,7 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
     }
 
     if (!decryptedWithTokenFromCache && !decryptedWithActiveToken && !decryptedWithRevokedToken) {
+      // we are not able to decrypt with token, trying with accountKey now
       decryptWithAccountKey(accountId, encryptedJWT);
     }
 
@@ -158,7 +159,7 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
 
     boolean result = decryptDelegateTokenByQuery(query, delegateTokenCacheKey, encryptedJWT);
     long endTime = System.currentTimeMillis() - startTime;
-    log.debug("Delegate Token verification for accountId {} and status {} has taken {} milliseconds.",
+    log.debug("Delegate Token verification for accountId {} and status {} took {} milliseconds.",
         delegateTokenCacheKey.getAccountId(), status.name(), endTime);
     return result;
   }
@@ -170,7 +171,7 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
       while (iterator.hasNext()) {
         DelegateToken delegateToken = iterator.next();
         if (decryptJwtTokenWithDelegateToken(encryptedJWT, delegateToken)) {
-          delegateTokenCacheHelper.putIfTokenIsAbsent(delegateTokenCacheKey, delegateToken);
+          delegateTokenCacheHelper.putToken(delegateTokenCacheKey, delegateToken);
           return true;
         }
       }

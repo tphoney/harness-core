@@ -367,6 +367,22 @@
         }
       ]
     },
+    "CustomPolicyStepSpec": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/PolicySpec"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "payload": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "Distribution": {
       "type": "object",
       "required": [
@@ -882,6 +898,57 @@
           ]
         }
       },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "PolicySpec": {
+      "type": "object",
+      "discriminator": "type",
+      "properties": {
+        "type": {
+          "type": "string"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "PolicyStepInfo": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/PMSStepInfo"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "metadata": {
+              "type": "string"
+            },
+            "policySets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "type": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Custom"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "policySpec": {
+                "$ref": "#/definitions/CustomPolicyStepSpec"
+              }
+            }
+          }
+        }
+      ],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "RemoveSegmentToVariationTargetMapYaml": {

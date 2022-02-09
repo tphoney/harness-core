@@ -30,7 +30,6 @@ import io.harness.pms.contracts.execution.failure.FailureInfo;
 import io.harness.pms.contracts.facilitators.FacilitatorResponseProto;
 import io.harness.pms.contracts.plan.NodeExecutionEventType;
 import io.harness.pms.contracts.steps.io.StepResponseProto;
-import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.sdk.core.response.publishers.SdkResponseEventPublisher;
 import io.harness.pms.sdk.core.steps.io.ResponseDataMapper;
 import io.harness.pms.serializer.recaster.RecastOrchestrationUtils;
@@ -161,7 +160,6 @@ public class SdkNodeExecutionServiceImpl implements SdkNodeExecutionService {
   @Override
   public void handleProgressResponse(Ambiance ambiance, ProgressData progressData) {
     String progressJson = RecastOrchestrationUtils.toJson(progressData);
-    String nodeExecutionId = AmbianceUtils.obtainCurrentRuntimeId(ambiance);
     sdkResponseEventPublisher.publishEvent(
         SdkResponseEventProto.newBuilder()
             .setSdkResponseEventType(SdkResponseEventType.HANDLE_PROGRESS)

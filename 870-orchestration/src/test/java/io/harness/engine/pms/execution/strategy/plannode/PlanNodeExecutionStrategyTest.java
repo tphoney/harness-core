@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -125,6 +126,10 @@ public class PlanNodeExecutionStrategyTest extends OrchestrationTestBase {
                     .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.SYNC).build())
                     .build())
             .build();
+
+    doReturn(NodeExecution.builder().build())
+        .when(executionStrategy)
+        .createNodeExecution(ambiance, planNode, null, null, null);
     executionStrategy.triggerNode(ambiance, planNode, null);
     verify(executorService).submit(any(ExecutionEngineDispatcher.class));
   }

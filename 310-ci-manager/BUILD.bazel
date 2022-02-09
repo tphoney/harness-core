@@ -13,6 +13,7 @@ shared_dependencies = [
     "//870-cg-orchestration:module",
     "//940-primary-version-manager:module",
     "//942-enforcement-sdk:module",
+    "//950-telemetry:module",
     "//959-common-entities:module",
     "//955-delegate-beans:module",
     "//960-persistence:module",

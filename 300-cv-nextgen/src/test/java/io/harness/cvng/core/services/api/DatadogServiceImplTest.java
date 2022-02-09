@@ -21,6 +21,7 @@ import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.cvng.beans.DataCollectionRequest;
 import io.harness.cvng.beans.DataCollectionRequestType;
+import io.harness.cvng.beans.MetricPackDTO;
 import io.harness.cvng.core.beans.OnboardingRequestDTO;
 import io.harness.cvng.core.beans.OnboardingResponseDTO;
 import io.harness.cvng.core.beans.TimeSeriesSampleDTO;
@@ -212,6 +213,10 @@ public class DatadogServiceImplTest extends CategoryTest {
     mockedResponse.put("title", name);
     mockedResponse.put("url", path);
     return mockedResponse;
+  }
+
+  private static List<MetricPackDTO> createMockMetricPacks() {
+    return Arrays.asList(MetricPackDTO.builder().build(), MetricPackDTO.builder().build());
   }
 
   private static List<Map<String, Object>> createMockedDashboardDetailsResponse() {

@@ -51,7 +51,7 @@ public class ServiceEntityManagementServiceImpl implements ServiceEntityManageme
   }
 
   @Override
-  public void checkThatTheOrganizationAndProjectExists(
+  public boolean checkThatTheOrganizationAndProjectExists(
       String orgIdentifier, String projectIdentifier, String accountIdentifier) {
     if (isNotEmpty(orgIdentifier)) {
       final Optional<Organization> organization = organizationService.get(accountIdentifier, orgIdentifier);
@@ -66,5 +66,6 @@ public class ServiceEntityManagementServiceImpl implements ServiceEntityManageme
         throw new NotFoundException(String.format("project [%s] not found.", projectIdentifier));
       }
     }
+    return true;
   }
 }

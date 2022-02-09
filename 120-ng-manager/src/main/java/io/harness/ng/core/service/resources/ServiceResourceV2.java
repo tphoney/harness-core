@@ -209,7 +209,7 @@ public class ServiceResourceV2 {
             .collect(Collectors.toList());
     serviceEntities.forEach(serviceEntity
         -> serviceEntityManagementService.checkThatTheOrganizationAndProjectExists(
-            serviceEntity.getProjectIdentifier(), serviceEntity.getOrgIdentifier(), serviceEntity.getAccountId()));
+            serviceEntity.getOrgIdentifier(), serviceEntity.getProjectIdentifier(), serviceEntity.getAccountId()));
     Page<ServiceEntity> createdServices = serviceEntityService.bulkCreate(accountId, serviceEntities);
     return ResponseDTO.newResponse(getNGPageResponse(createdServices.map(ServiceElementMapper::toResponseWrapper)));
   }

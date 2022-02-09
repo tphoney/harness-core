@@ -14,6 +14,6 @@ import io.harness.annotations.dev.OwnedBy;
 public interface ServiceEntityManagementService {
   boolean deleteService(
       String accountId, String orgIdentifier, String projectIdentifier, String serviceIdentifier, String ifMatch);
-  void checkThatTheOrganizationAndProjectExists(
+  boolean checkThatTheOrganizationAndProjectExists(
       String orgIdentifier, String projectIdentifier, String accountIdentifier);
 }

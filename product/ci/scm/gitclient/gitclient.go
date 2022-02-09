@@ -20,7 +20,7 @@ import (
 	"github.com/drone/go-scm/scm/transport"
 
 	"github.com/drone/go-scm/scm/transport/oauth2"
-	_ "github.com/wings-software/portal/product/ci/scm/proto"
+	pb "github.com/wings-software/portal/product/ci/scm/proto"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -74,14 +74,14 @@ func defaultTransport(skip bool) http.RoundTripper {
 	}
 }
 
-func GetValidRef(p Provider, inputRef, inputBranch string) (string, error) {
+func GetValidRef(p pb.Provider, inputRef, inputBranch string) (string, error) {
 	if inputRef != "" {
 		return inputRef, nil
 	} else if inputBranch != "" {
 		switch p.GetHook().(type) {
-		case *Provider_BitbucketCloud:
+		case *pb.Provider_BitbucketCloud:
 			return inputBranch, nil
-		case *Provider_BitbucketServer:
+		case *pb.Provider_BitbucketServer:
 			return inputBranch, nil
 		default:
 			return scm.ExpandRef(inputBranch, "refs/heads"), nil
@@ -91,9 +91,9 @@ func GetValidRef(p Provider, inputRef, inputBranch string) (string, error) {
 	}
 }
 
-func GetGitClient(p Provider, log *zap.SugaredLogger) (client *scm.Client, err error) { //nolint:gocyclo,funlen
+func GetGitClient(p pb.Provider, log *zap.SugaredLogger) (client *scm.Client, err error) { //nolint:gocyclo,funlen
 	switch p.GetHook().(type) {
-	case *Provider_Github:
+	case *pb.Provider_Github:
 		if p.GetEndpoint() == "" {
 			client = github.NewDefault()
 		} else {
@@ -105,7 +105,7 @@ func GetGitClient(p Provider, log *zap.SugaredLogger) (client *scm.Client, err e
 		}
 		var token string
 		switch p.GetGithub().GetProvider().(type) {
-		case *GithubProvider_AccessToken:
+		case *pb.GithubProvider_AccessToken:
 			token = p.GetGithub().GetAccessToken()
 		default:
 			return nil, status.Errorf(codes.Unimplemented, "Github Application not implemented yet")
@@ -113,7 +113,7 @@ func GetGitClient(p Provider, log *zap.SugaredLogger) (client *scm.Client, err e
 		client.Client = &http.Client{
 			Transport: oauthTransport(token, p.GetSkipVerify()),
 		}
-	case *Provider_Gitlab:
+	case *pb.Provider_Gitlab:
 		if p.GetEndpoint() == "" {
 			client = gitlab.NewDefault()
 		} else {
@@ -125,12 +125,12 @@ func GetGitClient(p Provider, log *zap.SugaredLogger) (client *scm.Client, err e
 		}
 		var token string
 		switch p.GetGitlab().GetProvider().(type) {
-		case *GitlabProvider_AccessToken:
+		case *pb.GitlabProvider_AccessToken:
 			token = p.GetGitlab().GetAccessToken()
 			client.Client = &http.Client{
 				Transport: oauthTransport(token, p.GetSkipVerify()),
 			}
-		case *GitlabProvider_PersonalToken:
+		case *pb.GitlabProvider_PersonalToken:
 			token = p.GetGitlab().GetPersonalToken()
 			client.Client = &http.Client{
 				Transport: privateTokenTransport(token, p.GetSkipVerify()),
@@ -139,7 +139,7 @@ func GetGitClient(p Provider, log *zap.SugaredLogger) (client *scm.Client, err e
 			return nil, status.Errorf(codes.Unimplemented, "Gitlab provider not implemented yet")
 		}
 
-	case *Provider_Gitea:
+	case *pb.Provider_Gitea:
 		if p.GetEndpoint() == "" {
 			log.Error("getGitClient failure Gitea, endpoint is empty")
 			return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Must provide an endpoint for %s", p.String()))
@@ -152,12 +152,12 @@ func GetGitClient(p Provider, log *zap.SugaredLogger) (client *scm.Client, err e
 		client.Client = &http.Client{
 			Transport: giteaTransport(p.GetGitea().GetAccessToken(), p.GetSkipVerify()),
 		}
-	case *Provider_BitbucketCloud:
+	case *pb.Provider_BitbucketCloud:
 		client = bitbucket.NewDefault()
 		client.Client = &http.Client{
 			Transport: bitbucketTransport(p.GetBitbucketCloud().GetUsername(), p.GetBitbucketCloud().GetAppPassword(), p.GetSkipVerify()),
 		}
-	case *Provider_BitbucketServer:
+	case *pb.Provider_BitbucketServer:
 		if p.GetEndpoint() == "" {
 			log.Error("getGitClient failure Bitbucket Server, endpoint is empty")
 			return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Must provide an endpoint for %s", p.String()))
@@ -188,17 +188,17 @@ func GetGitClient(p Provider, log *zap.SugaredLogger) (client *scm.Client, err e
 }
 
 // returns a string of the git provider being used. Currently only its name.
-func GetProvider(p Provider) string {
+func GetProvider(p pb.Provider) string {
 	switch p.GetHook().(type) {
-	case *Provider_Github:
+	case *pb.Provider_Github:
 		return "github"
-	case *Provider_Gitlab:
+	case *pb.Provider_Gitlab:
 		return "gitlab"
-	case *Provider_Gitea:
+	case *pb.Provider_Gitea:
 		return "gitea"
-	case *Provider_BitbucketCloud:
+	case *pb.Provider_BitbucketCloud:
 		return "bitbucket cloud"
-	case *Provider_BitbucketServer:
+	case *pb.Provider_BitbucketServer:
 		return "bitbucket server"
 	default:
 		return "unknown provider"

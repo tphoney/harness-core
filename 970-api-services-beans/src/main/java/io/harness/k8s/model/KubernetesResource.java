@@ -150,7 +150,7 @@ public class KubernetesResource {
 
     try {
       org.yaml.snakeyaml.Yaml yaml =
-          new org.yaml.snakeyaml.Yaml(new Yaml.CustomConstructor(Object.class), new BooleanPatchedRepresenter());
+          new org.yaml.snakeyaml.Yaml(new Yaml.CustomConstructor(), new BooleanPatchedRepresenter());
       this.spec = yaml.dump(k8sResource);
       this.value = readYaml(this.spec).get(0);
     } catch (IOException e) {

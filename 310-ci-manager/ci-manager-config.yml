@@ -227,6 +227,12 @@ hostname: ${HOSTNAME:-localhost}
 
 basePathPrefix: ${BASE_PATH_PREFIX:-""}
 
+segmentConfiguration:
+  enabled: false
+  url: "segment_url_place_holder"
+  apiKey: "segment_api_key"
+  certValidationRequired: false
+
 cacheConfig:
   cacheBackend: REDIS
   cacheNamespace: ""

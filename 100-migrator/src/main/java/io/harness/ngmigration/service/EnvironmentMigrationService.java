@@ -44,7 +44,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @OwnedBy(HarnessTeam.CDC)
-public class EnvironmentMigrationService implements NgMigration {
+public class EnvironmentMigrationService implements NgMigrationService {
   @Inject private EnvironmentService environmentService;
   @Inject private InfrastructureDefinitionService infrastructureDefinitionService;
 

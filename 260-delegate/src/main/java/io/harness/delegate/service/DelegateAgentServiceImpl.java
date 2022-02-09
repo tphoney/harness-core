@@ -300,8 +300,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   private static final String TOKEN = "[TOKEN]";
   private static final String SEQ = "[SEQ]";
 
-  // Using json body start '{' as task even marker, since only task events only contains json body.
-  private static final String TASK_EVENT_MARKER = "{";
+  // Marker string to indicate task events.
+  private static final String TASK_EVENT_MARKER = "{\"eventType\":\"DelegateTaskEvent\"";
 
   private static final String HOST_NAME = getLocalHostName();
   private static final String DELEGATE_NAME =

@@ -57,7 +57,6 @@ import software.wings.beans.settings.helm.AmazonS3HelmRepoConfig;
 import software.wings.beans.settings.helm.GCSHelmRepoConfig;
 import software.wings.beans.settings.helm.HelmRepoConfig;
 import software.wings.beans.settings.helm.HttpHelmRepoConfig;
-import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.helpers.ext.chartmuseum.ChartMuseumClient;
 import software.wings.helpers.ext.helm.request.HelmChartCollectionParams;
 import software.wings.helpers.ext.helm.request.HelmChartConfigParams;
@@ -133,15 +132,11 @@ public class HelmTaskHelper {
   public void decryptConnectorConfig(HelmChartConfigParams helmChartConfigParams) {
     encryptionService.decrypt(
         helmChartConfigParams.getHelmRepoConfig(), helmChartConfigParams.getEncryptedDataDetails(), false);
-    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
-        helmChartConfigParams.getHelmRepoConfig(), helmChartConfigParams.getEncryptedDataDetails());
 
     SettingValue connectorConfig = helmChartConfigParams.getConnectorConfig();
     if (connectorConfig != null) {
       encryptionService.decrypt(
           (EncryptableSetting) connectorConfig, helmChartConfigParams.getConnectorEncryptedDataDetails(), false);
-      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
-          (EncryptableSetting) connectorConfig, helmChartConfigParams.getConnectorEncryptedDataDetails());
     }
   }
 
@@ -195,7 +190,7 @@ public class HelmTaskHelper {
               Paths.get(workingDirectory, helmChartConfigParams.getChartName(), CHARTS_YAML_KEY).toString())
                                                     .getVersion());
         } catch (Exception e) {
-          log.info("Unable to fetch chart version", ExceptionMessageSanitizer.sanitizeException(e));
+          log.info("Unable to fetch chart version", e);
         }
       }
 
@@ -221,10 +216,9 @@ public class HelmTaskHelper {
                 StandardCharsets.UTF_8);
             valuesYamlContents.add(fileContent);
           } catch (Exception ex) {
-            Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
             String msg = format("Required values yaml file with path %s not found", filePath);
-            log.error(msg, sanitizedException);
-            throw new InvalidArgumentsException(msg, sanitizedException, USER);
+            log.error(msg, ex);
+            throw new InvalidArgumentsException(msg, ex, USER);
           }
           mapK8sValuesLocationToContents.put(key, valuesYamlContents);
         });
@@ -237,9 +231,9 @@ public class HelmTaskHelper {
 
       return mapK8sValuesLocationToContents;
     } catch (InvalidArgumentsException ex) {
-      throw ExceptionMessageSanitizer.sanitizeException(ex);
+      throw ex;
     } catch (Exception ex) {
-      log.info("values yaml file not found", ExceptionMessageSanitizer.sanitizeException(ex));
+      log.info("values yaml file not found", ex);
       return null;
     } finally {
       cleanup(workingDirectory);
@@ -528,8 +522,7 @@ public class HelmTaskHelper {
     try {
       FileUtils.forceDelete(new File(tempDir));
     } catch (IOException ie) {
-      log.error(
-          "Deletion of charts folder failed due to : {}", ExceptionMessageSanitizer.sanitizeException(ie).getMessage());
+      log.error("Deletion of charts folder failed due to : {}", ie.getMessage());
     }
   }
 
@@ -633,8 +626,7 @@ public class HelmTaskHelper {
       }
       return sb.toString();
     } catch (IOException e) {
-      throw new HelmClientException(format("[IO exception] %s", errorMessage), USER,
-          ExceptionMessageSanitizer.sanitizeException(e), helmCliCommandType);
+      throw new HelmClientException(format("[IO exception] %s", errorMessage), USER, e, helmCliCommandType);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new HelmClientException(format("[Interrupted] %s", errorMessage), USER, e, helmCliCommandType);

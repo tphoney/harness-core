@@ -8,12 +8,13 @@
 package io.harness.ng.core.service.services;
 
 import static io.harness.rule.OwnerRule.PRABU;
+import static io.harness.rule.OwnerRule.SHIVAM;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
@@ -21,12 +22,17 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.dtos.InstanceDTO;
 import io.harness.exception.InvalidRequestException;
+import io.harness.ng.core.entities.Organization;
+import io.harness.ng.core.entities.Project;
+import io.harness.ng.core.services.OrganizationService;
+import io.harness.ng.core.services.ProjectService;
 import io.harness.rule.Owner;
 import io.harness.service.instance.InstanceService;
 
 import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -38,6 +44,8 @@ import org.mockito.MockitoAnnotations;
 public class ServiceEntityManagementServiceTest extends CategoryTest {
   @Mock ServiceEntityService serviceEntityService;
   @Mock InstanceService instanceService;
+  @Mock OrganizationService organizationService;
+  @Mock ProjectService projectService;
   @Inject @InjectMocks ServiceEntityManagementServiceImpl serviceEntityManagementService;
 
   private static final String accountIdentifier = "accountIdentifier";
@@ -77,6 +85,19 @@ public class ServiceEntityManagementServiceTest extends CategoryTest {
         .thenReturn(null);
     serviceEntityManagementService.deleteService(accountIdentifier, orgIdentifier, projectIdentifier, identifier, "");
     verify(serviceEntityService).delete(accountIdentifier, orgIdentifier, projectIdentifier, identifier, null);
+  }
+
+  @Test
+  @Owner(developers = SHIVAM)
+  @Category(UnitTests.class)
+  public void verifyOrgProjectExist() {
+    when(organizationService.get(accountIdentifier, orgIdentifier))
+        .thenReturn(Optional.of(Organization.builder().build()));
+    when(projectService.get(accountIdentifier, orgIdentifier, projectIdentifier))
+        .thenReturn(Optional.of(Project.builder().build()));
+    boolean check = serviceEntityManagementService.checkThatTheOrganizationAndProjectExists(
+        orgIdentifier, projectIdentifier, accountIdentifier);
+    assertThat(check).isEqualTo(true);
   }
 
   private InstanceDTO getInstance() {

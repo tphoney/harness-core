@@ -18,6 +18,7 @@ import io.harness.persistence.UpdatedAtAware;
 import io.harness.persistence.UpdatedByAware;
 import io.harness.persistence.UuidAware;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import javax.validation.constraints.Size;
@@ -39,18 +40,21 @@ import org.mongodb.morphia.annotations.Id;
 @Schema(description = "This object will contain the complete definition of a Cloud Cost Perspective")
 public final class CEView implements PersistentEntity, UuidAware, CreatedAtAware, UpdatedAtAware, AccountAccess,
                                      CreatedByAware, UpdatedByAware {
-  @Id String uuid;
-  @Size(min = 1, max = 32, message = "for view must be between 1 and 32 characters long") @NotBlank String name;
-  String accountId;
-  @NotBlank String viewVersion;
+  @Schema(description = "Unique identifier for the Perspective") @Id String uuid;
+  @Schema(description = "Name of the Perspective, maximum 32 characters long")
+  @Size(min = 1, max = 32, message = "for view must be between 1 and 32 characters long")
+  @NotBlank
+  String name;
+  @Schema(description = "Unique identifier for the Perspective") String accountId;
+  @Hidden @NotBlank String viewVersion;
 
-  ViewTimeRange viewTimeRange;
+  @Schema(description = "The time interval on which you want to create a Perspective") ViewTimeRange viewTimeRange;
   List<ViewRule> viewRules;
   List<ViewFieldIdentifier> dataSources;
   ViewVisualization viewVisualization;
-  ViewType viewType = ViewType.CUSTOMER;
+  @Hidden ViewType viewType = ViewType.CUSTOMER;
 
-  ViewState viewState = ViewState.DRAFT;
+  @Hidden ViewState viewState = ViewState.DRAFT;
 
   double totalCost;
   long createdAt;

@@ -38,13 +38,14 @@ public class ExpansionsMerger {
       List<ExpansionResponseProto> expansionResponseProtoList = expansionResponseBatch.getExpansionResponseProtoList();
       for (ExpansionResponseProto response : expansionResponseProtoList) {
         if (!response.getSuccess()) {
-          log.warn("Failed to get expansion for: " + response.getFqn() + ". Error: " + response.getErrorMessage());
-          continue;
+          log.error("Failed to get expansion for: " + response.getFqn() + ". Error: " + response.getErrorMessage());
+          throw new InvalidRequestException(
+              "Failed to get expansion for: " + response.getFqn() + ". Error: " + response.getErrorMessage());
         }
         String key = response.getKey();
         if (EmptyPredicate.isEmpty(key)) {
-          log.warn("No key provided for expansion for: " + response.getFqn());
-          continue;
+          log.error("No key provided for expansion for: " + response.getFqn());
+          throw new InvalidRequestException("No key provided for expansion for: " + response.getFqn());
         }
         String newFQN = getNewFQN(response.getFqn(), key, response.getPlacement());
         String value = response.getValue();

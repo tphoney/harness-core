@@ -12,7 +12,7 @@ import io.harness.cvng.servicelevelobjective.beans.SLODebugResponse;
 import io.harness.cvng.servicelevelobjective.entities.SLOHealthIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective;
-import io.harness.cvng.core.services.api.SLODebugService;
+import io.harness.cvng.core.services.api.DebugService;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
@@ -23,7 +23,7 @@ import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelObjectiveS
 import java.util.List;
 import java.util.Objects;
 
-public class SLODebugServiceImpl implements SLODebugService {
+public class DebugServiceImpl implements DebugService {
     @Inject ServiceLevelObjectiveService serviceLevelObjectiveService;
     @Inject ServiceLevelIndicatorService serviceLevelIndicatorService;
     @Inject SLOHealthIndicatorService sloHealthIndicatorService;
@@ -33,7 +33,7 @@ public class SLODebugServiceImpl implements SLODebugService {
 
         ServiceLevelObjective serviceLevelObjective = serviceLevelObjectiveService.getEntity(projectParams, identifier);
 
-        Preconditions.checkArgument(!Objects.isNull(serviceLevelObjective),"Value of Identifier is not present in database");
+        Preconditions.checkNotNull(serviceLevelObjective,"Value of Identifier is not present in database");
 
         List<ServiceLevelIndicator> serviceLevelIndicatorList = serviceLevelIndicatorService.getEntities(projectParams,serviceLevelObjective.getServiceLevelIndicators());
 

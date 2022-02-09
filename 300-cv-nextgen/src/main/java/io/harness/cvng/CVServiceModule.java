@@ -120,7 +120,7 @@ import io.harness.cvng.core.services.api.OnboardingService;
 import io.harness.cvng.core.services.api.PagerDutyService;
 import io.harness.cvng.core.services.api.ParseSampleDataService;
 import io.harness.cvng.core.services.api.PrometheusService;
-import io.harness.cvng.core.services.api.SLODebugService;
+import io.harness.cvng.core.services.api.DebugService;
 import io.harness.cvng.core.services.api.SetupUsageEventService;
 import io.harness.cvng.core.services.api.SideKickExecutor;
 import io.harness.cvng.core.services.api.SideKickService;
@@ -168,7 +168,7 @@ import io.harness.cvng.core.services.impl.ParseSampleDataServiceImpl;
 import io.harness.cvng.core.services.impl.PrometheusDataCollectionInfoMapper;
 import io.harness.cvng.core.services.impl.PrometheusServiceImpl;
 import io.harness.cvng.core.services.impl.SLIDataCollectionTaskServiceImpl;
-import io.harness.cvng.core.services.impl.SLODebugServiceImpl;
+import io.harness.cvng.core.services.impl.DebugServiceImpl;
 import io.harness.cvng.core.services.impl.ServiceGuardDataCollectionTaskServiceImpl;
 import io.harness.cvng.core.services.impl.SetupUsageEventServiceImpl;
 import io.harness.cvng.core.services.impl.SideKickServiceImpl;
@@ -682,7 +682,7 @@ public class CVServiceModule extends AbstractModule {
     bind(ServiceLevelIndicatorService.class).to(ServiceLevelIndicatorServiceImpl.class).in(Singleton.class);
     bind(SLIDataProcessorService.class).to(SLIDataProcessorServiceImpl.class);
     bind(ServiceLevelIndicatorEntityAndDTOTransformer.class);
-    bind(SLODebugService.class).to(SLODebugServiceImpl.class).in(Singleton.class);
+    bind(DebugService.class).to(DebugServiceImpl.class).in(Singleton.class);
     MapBinder<SLIMetricType, ServiceLevelIndicatorTransformer> serviceLevelIndicatorTransformerMapBinder =
         MapBinder.newMapBinder(binder(), SLIMetricType.class, ServiceLevelIndicatorTransformer.class);
     serviceLevelIndicatorTransformerMapBinder.addBinding(SLIMetricType.RATIO)

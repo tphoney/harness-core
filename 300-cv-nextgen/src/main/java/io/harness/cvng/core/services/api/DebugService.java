@@ -10,6 +10,6 @@ package io.harness.cvng.core.services.api;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.servicelevelobjective.beans.SLODebugResponse;
 
-public interface SLODebugService {
+public interface DebugService {
     SLODebugResponse get(ProjectParams projectParams,String identifier);
 }

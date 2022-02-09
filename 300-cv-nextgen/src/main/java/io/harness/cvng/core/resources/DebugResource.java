@@ -15,7 +15,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.servicelevelobjective.beans.SLODebugResponse;
-import io.harness.cvng.core.services.api.SLODebugService;
+import io.harness.cvng.core.services.api.DebugService;
 import com.codahale.metrics.annotation.Timed;
 import com.google.inject.Inject;
 
@@ -39,12 +39,13 @@ import javax.ws.rs.PathParam;
 @Produces("application/json")
 @OwnedBy(HarnessTeam.CV)
 @NextGenManagerAuth
-public class SLODebugResource {
-    @Inject SLODebugService sloDebugService;
+public class DebugResource {
+    @Inject
+    DebugService debugService;
 
     @GET
     @Timed
-    @Path("{identifier}")
+    @Path("slo/{identifier}")
     @ApiOperation(value = "Gets SLO debug data", nickname = "getSLODebugData")
     public RestResponse<SLODebugResponse> getSLODebug(
             @ApiParam(required = true) @NotNull @QueryParam("accountId") @AccountIdentifier String accountId,
@@ -58,7 +59,7 @@ public class SLODebugResource {
                 .projectIdentifier(projectIdentifier)
                 .build();
 
-        return new RestResponse<>(sloDebugService.get(projectParams,identifier));
+        return new RestResponse<>(debugService.get(projectParams,identifier));
 
     }
 }

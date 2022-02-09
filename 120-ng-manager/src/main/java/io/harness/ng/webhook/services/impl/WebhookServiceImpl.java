@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.ng.NextGenModule.CONNECTOR_DECORATOR_SERVICE;
 
 import io.harness.NGCommonEntityConstants;
+import io.harness.account.services.AccountService;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.connector.impl.ConnectorErrorMessagesHelper;
 import io.harness.connector.services.ConnectorService;
@@ -46,13 +47,14 @@ public class WebhookServiceImpl implements WebhookService, WebhookEventService {
   private final ConnectorErrorMessagesHelper connectorErrorMessagesHelper;
   private final BaseUrls baseUrls;
   private final ScmOrchestratorService scmOrchestratorService;
+  private final AccountService accountService;
 
   @Inject
   public WebhookServiceImpl(WebhookEventRepository webhookEventRepository,
       DelegateGrpcClientWrapper delegateGrpcClientWrapper, SecretManagerClientService secretManagerClientService,
       @Named(CONNECTOR_DECORATOR_SERVICE) ConnectorService connectorService,
       ConnectorErrorMessagesHelper connectorErrorMessagesHelper, BaseUrls baseUrls,
-      ScmOrchestratorService scmOrchestratorService) {
+      ScmOrchestratorService scmOrchestratorService, AccountService accountService) {
     this.webhookEventRepository = webhookEventRepository;
     this.delegateGrpcClientWrapper = delegateGrpcClientWrapper;
     this.secretManagerClientService = secretManagerClientService;
@@ -60,6 +62,7 @@ public class WebhookServiceImpl implements WebhookService, WebhookEventService {
     this.connectorErrorMessagesHelper = connectorErrorMessagesHelper;
     this.baseUrls = baseUrls;
     this.scmOrchestratorService = scmOrchestratorService;
+    this.accountService = accountService;
   }
 
   @Override
@@ -90,11 +93,11 @@ public class WebhookServiceImpl implements WebhookService, WebhookEventService {
 
   @VisibleForTesting
   String getTargetUrl(String accountIdentifier) {
-    String webhookBaseUrl = getWebhookBaseUrl();
-    if (!webhookBaseUrl.endsWith("/")) {
-      webhookBaseUrl += "/";
+    String accountBaseURL = accountService.getBaseUrl(accountIdentifier);
+    if (!accountBaseURL.endsWith("/")) {
+      accountBaseURL += "/";
     }
-    StringBuilder webhookUrl = new StringBuilder(webhookBaseUrl)
+    StringBuilder webhookUrl = new StringBuilder(accountBaseURL)
                                    .append(WebhookConstants.WEBHOOK_ENDPOINT)
                                    .append('?')
                                    .append(NGCommonEntityConstants.ACCOUNT_KEY)

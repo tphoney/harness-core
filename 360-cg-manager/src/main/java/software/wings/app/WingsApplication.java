@@ -190,6 +190,7 @@ import software.wings.beans.Log;
 import software.wings.beans.User;
 import software.wings.beans.WorkflowExecution;
 import software.wings.beans.alert.AlertReconciliationHandler;
+import software.wings.beans.atmosphere.AtmosphereConfig;
 import software.wings.collect.ArtifactCollectEventListener;
 import software.wings.core.managerConfiguration.ConfigurationController;
 import software.wings.dl.WingsPersistence;
@@ -638,7 +639,7 @@ public class WingsApplication extends Application<MainConfiguration> {
 
     boolean shouldEnableDelegateMgmt = shouldEnableDelegateMgmt(configuration);
     if (shouldEnableDelegateMgmt) {
-      registerAtmosphereStreams(environment, injector);
+      registerAtmosphereStreams(environment, injector, configuration);
     }
 
     initializeFeatureFlags(configuration, injector);
@@ -970,8 +971,13 @@ public class WingsApplication extends Application<MainConfiguration> {
     entityCRUDConsumerExecutor.execute(injector.getInstance(EntityCRUDConsumer.class));
   }
 
-  private void registerAtmosphereStreams(Environment environment, Injector injector) {
+  private void registerAtmosphereStreams(Environment environment, Injector injector, MainConfiguration configuration) {
     AtmosphereServlet atmosphereServlet = injector.getInstance(AtmosphereServlet.class);
+    final AtmosphereConfig atmosphereConfig = configuration.getAtmosphereConfig();
+    atmosphereServlet.framework().addInitParameter("org.atmosphere.cpr.broadcaster.maxProcessingThreads",
+        String.valueOf(atmosphereConfig.getMaxProcessingThreads()));
+    atmosphereServlet.framework().addInitParameter("org.atmosphere.cpr.broadcaster.maxAsyncWriteThreads",
+        String.valueOf(atmosphereConfig.getMaxAsyncWriteThreads()));
     atmosphereServlet.framework().objectFactory(new GuiceObjectFactory(injector));
     injector.getInstance(BroadcasterFactory.class);
     injector.getInstance(MetaBroadcaster.class);

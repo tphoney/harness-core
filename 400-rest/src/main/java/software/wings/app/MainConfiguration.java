@@ -57,6 +57,7 @@ import software.wings.audit.AuditConfig;
 import software.wings.beans.DefaultSalesContacts;
 import software.wings.beans.HttpMethod;
 import software.wings.beans.UrlInfo;
+import software.wings.beans.atmosphere.AtmosphereConfig;
 import software.wings.beans.security.access.GlobalWhitelistConfig;
 import software.wings.cdn.CdnConfig;
 import software.wings.helpers.ext.mail.SmtpConfig;
@@ -227,6 +228,7 @@ public class MainConfiguration extends Configuration implements AssetsBundleConf
   @JsonProperty("eventListenersCountConfig") private EventListenersCountConfig eventListenersCountConfig;
   @JsonProperty(value = "useGlobalKMSAsBaseAlgo", defaultValue = "false") private boolean useGlobalKMSAsBaseAlgo;
   @JsonProperty("totp") private TotpConfig totpConfig;
+  @JsonProperty("atmosphereConfig") private AtmosphereConfig atmosphereConfig;
 
   private int applicationPort;
   private boolean sslEnabled;

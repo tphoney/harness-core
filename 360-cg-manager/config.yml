@@ -685,6 +685,10 @@ iteratorsConfig:
   perpetualTaskAssignmentIteratorConfig:
     threadPoolSize: ${PERPETUAL_TASK_ASSIGNMENT_ITERATOR_THREAD_COUNT:-5}
 
+atmosphereConfig:
+    maxProcessingThreads: ${MAX_ATMOSPHERE_PROCESSING_THREAD:-20}
+    maxAsyncWriteThreads: ${MAX_ATMOSPHERE_ASYNC_WRITE_THREAD:-20}
+
 disableDelegateMgmtInManager: false
 
 secretsConfiguration:

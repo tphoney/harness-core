@@ -24,8 +24,6 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.security.encryption.SecretDecryptionService;
 
-import software.wings.delegatetasks.ExceptionMessageSanitizer;
-
 import com.google.inject.Inject;
 import java.util.List;
 import lombok.NoArgsConstructor;
@@ -77,7 +75,6 @@ public class GcpListClustersTaskHandler implements TaskHandler {
     GcpManualDetailsDTO gcpManualDetailsDTO = request.getGcpManualDetailsDTO();
     if (gcpManualDetailsDTO != null) {
       secretDecryptionService.decrypt(gcpManualDetailsDTO, request.getEncryptionDetails());
-      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(gcpManualDetailsDTO, request.getEncryptionDetails());
       return gcpManualDetailsDTO.getSecretKeyRef().getDecryptedValue();
     }
 

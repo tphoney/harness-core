@@ -83,8 +83,8 @@ public class ResourceRestraintFacilitator implements Facilitator {
 
     String releaseEntityId = ResourceRestraintUtils.getReleaseEntityId(specParameters, ambiance.getPlanExecutionId());
 
-    try (AcquiredLock<?> lock =
-             persistentLocker.acquireLock(LOCK_PREFIX + resourceRestraint.getUuid(), Duration.ofMinutes(1))) {
+    try (AcquiredLock<?> lock = persistentLocker.waitToAcquireLock(
+             LOCK_PREFIX + resourceRestraint.getUuid(), Duration.ofSeconds(10), Duration.ofMinutes(1))) {
       if (lock == null) {
         throw new PersistentLockException("Cannot Acquire Lock for Resource Constraint",
             ErrorCode.FAILED_TO_ACQUIRE_PERSISTENT_LOCK, WingsException.USER);

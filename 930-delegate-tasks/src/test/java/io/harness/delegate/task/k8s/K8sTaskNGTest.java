@@ -241,8 +241,7 @@ public class K8sTaskNGTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testRunK8sManifestDelegateConfigGit() throws Exception {
     final GitConfigDTO gitConfigDTO = GitConfigDTO.builder().build();
-    final List<EncryptedDataDetail> encryptedDataDetails =
-        singletonList(EncryptedDataDetail.builder().fieldName("accessKey").build());
+    final List<EncryptedDataDetail> encryptedDataDetails = singletonList(EncryptedDataDetail.builder().build());
 
     testRunWithManifest(K8sManifestDelegateConfig.builder()
                             .storeDelegateConfig(GitStoreDelegateConfig.builder()
@@ -258,11 +257,8 @@ public class K8sTaskNGTest extends CategoryTest {
   @Owner(developers = ABOSII)
   @Category(UnitTests.class)
   public void testRunHelmChartManifestDelegateConfigHttpV2() throws Exception {
-    char[] str = {'1', '2', '3'};
-    doReturn(str).when(decryptionService).getDecryptedValue(any());
     HttpHelmUsernamePasswordDTO usernamePasswordDTO = HttpHelmUsernamePasswordDTO.builder().build();
-    final List<EncryptedDataDetail> encryptedDataDetails =
-        singletonList(EncryptedDataDetail.builder().fieldName("accessKey").build());
+    final List<EncryptedDataDetail> encryptedDataDetails = singletonList(EncryptedDataDetail.builder().build());
     final HelmChartManifestDelegateConfig manifestConfig =
         HelmChartManifestDelegateConfig.builder()
             .storeDelegateConfig(HttpHelmStoreDelegateConfig.builder()
@@ -287,8 +283,7 @@ public class K8sTaskNGTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testRunHelmChartManifestDelegateConfigS3V3() throws Exception {
     final AwsManualConfigSpecDTO manualConfigSpecDTO = AwsManualConfigSpecDTO.builder().build();
-    final List<EncryptedDataDetail> encryptedDataDetails =
-        singletonList(EncryptedDataDetail.builder().fieldName("aws-accessKey").build());
+    final List<EncryptedDataDetail> encryptedDataDetails = singletonList(EncryptedDataDetail.builder().build());
     final HelmChartManifestDelegateConfig manifestConfig =
         HelmChartManifestDelegateConfig.builder()
             .storeDelegateConfig(
@@ -338,8 +333,7 @@ public class K8sTaskNGTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testRunHelmChartManifestDelegateConfigGcsV2() throws Exception {
     final GcpManualDetailsDTO manualDetailsDTO = GcpManualDetailsDTO.builder().build();
-    final List<EncryptedDataDetail> encryptedDataDetails =
-        singletonList(EncryptedDataDetail.builder().fieldName("accessKey").build());
+    final List<EncryptedDataDetail> encryptedDataDetails = singletonList(EncryptedDataDetail.builder().build());
     final HelmChartManifestDelegateConfig manifestConfig =
         HelmChartManifestDelegateConfig.builder()
             .storeDelegateConfig(
@@ -389,8 +383,6 @@ public class K8sTaskNGTest extends CategoryTest {
     final ArgumentCaptor<K8sDelegateTaskParams> delegateTaskParamsCaptor =
         ArgumentCaptor.forClass(K8sDelegateTaskParams.class);
 
-    char[] str = {'1', '2', '3'};
-    doReturn(str).when(decryptionService).getDecryptedValue(any());
     doReturn(K8sTaskType.DEPLOYMENT_ROLLING).when(k8sDeployRequest).getTaskType();
     doReturn(manifest).when(k8sDeployRequest).getManifestDelegateConfig();
     doReturn(k8sInfraDelegateConfig).when(k8sDeployRequest).getK8sInfraDelegateConfig();

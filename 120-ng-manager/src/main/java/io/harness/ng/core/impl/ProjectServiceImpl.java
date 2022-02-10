@@ -132,7 +132,7 @@ public class ProjectServiceImpl implements ProjectService {
   public ProjectServiceImpl(ProjectRepository projectRepository, OrganizationService organizationService,
       @Named(OUTBOX_TRANSACTION_TEMPLATE) TransactionTemplate transactionTemplate, OutboxService outboxService,
       NgUserService ngUserService, AccessControlClient accessControlClient, ScopeAccessHelper scopeAccessHelper,
-                            ProjectInstrumentationHelper instrumentationHelper) {
+      ProjectInstrumentationHelper instrumentationHelper) {
     this.projectRepository = projectRepository;
     this.organizationService = organizationService;
     this.transactionTemplate = transactionTemplate;
@@ -164,8 +164,9 @@ public class ProjectServiceImpl implements ProjectService {
       setupProject(Scope.of(accountIdentifier, orgIdentifier, projectDTO.getIdentifier()));
       log.info(String.format("Project with identifier %s and orgIdentifier %s was successfully created",
           project.getIdentifier(), projectDTO.getOrgIdentifier()));
-      CompletableFuture.runAsync(() -> instrumentationHelper.sendProjectCreationFinishedEvent(createdProject, accountIdentifier));
-//      instrumentationHelper.sendProjectCreationEvent(project, accountIdentifier);
+      CompletableFuture.runAsync(
+          () -> instrumentationHelper.sendProjectCreationFinishedEvent(createdProject, accountIdentifier));
+      //      instrumentationHelper.sendProjectCreationEvent(project, accountIdentifier);
       return createdProject;
     } catch (DuplicateKeyException ex) {
       throw new DuplicateFieldException(
@@ -553,7 +554,8 @@ public class ProjectServiceImpl implements ProjectService {
         outboxService.save(
             new ProjectDeleteEvent(deletedProject.getAccountIdentifier(), ProjectMapper.writeDTO(deletedProject)));
 
-        CompletableFuture.runAsync(() -> instrumentationHelper.sendProjectDeletionEvent(deletedProject, accountIdentifier));
+        CompletableFuture.runAsync(
+            () -> instrumentationHelper.sendProjectDeletionEvent(deletedProject, accountIdentifier));
       } else {
         log.error(String.format(
             "Project with identifier %s and orgIdentifier %s could not be deleted", projectIdentifier, orgIdentifier));

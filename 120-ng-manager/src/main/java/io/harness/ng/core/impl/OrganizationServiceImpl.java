@@ -104,7 +104,8 @@ public class OrganizationServiceImpl implements OrganizationService {
   @Inject
   public OrganizationServiceImpl(OrganizationRepository organizationRepository, OutboxService outboxService,
       @Named(OUTBOX_TRANSACTION_TEMPLATE) TransactionTemplate transactionTemplate, NgUserService ngUserService,
-      AccessControlClient accessControlClient, ScopeAccessHelper scopeAccessHelper, OrganizationInstrumentationHelper instrumentationHelper) {
+      AccessControlClient accessControlClient, ScopeAccessHelper scopeAccessHelper,
+      OrganizationInstrumentationHelper instrumentationHelper) {
     this.organizationRepository = organizationRepository;
     this.outboxService = outboxService;
     this.transactionTemplate = transactionTemplate;
@@ -124,7 +125,8 @@ public class OrganizationServiceImpl implements OrganizationService {
       Organization savedOrganization = saveOrganization(organization);
       setupOrganization(Scope.of(accountIdentifier, organizationDTO.getIdentifier(), null));
       log.info(String.format("Organization with identifier %s was successfully created", organization.getIdentifier()));
-      CompletableFuture.runAsync(() -> instrumentationHelper.sendOrganizationCreationFinishedEvent(organization, accountIdentifier));
+      CompletableFuture.runAsync(
+          () -> instrumentationHelper.sendOrganizationCreationFinishedEvent(organization, accountIdentifier));
       return savedOrganization;
     } catch (DuplicateKeyException ex) {
       throw new DuplicateFieldException(
@@ -352,7 +354,8 @@ public class OrganizationServiceImpl implements OrganizationService {
       if (delete) {
         log.info(String.format("Organization with identifier %s was successfully deleted", organizationIdentifier));
         outboxService.save(new OrganizationDeleteEvent(accountIdentifier, OrganizationMapper.writeDto(organization)));
-        CompletableFuture.runAsync(() -> instrumentationHelper.sendOrganizationDeletionEvent(organization, accountIdentifier));
+        CompletableFuture.runAsync(
+            () -> instrumentationHelper.sendOrganizationDeletionEvent(organization, accountIdentifier));
       } else {
         log.error(String.format("Organization with identifier %s could not be deleted", organizationIdentifier));
       }

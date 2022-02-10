@@ -188,7 +188,9 @@ public class ConnectorServiceImpl implements ConnectorService {
                 connectorHeartbeatTaskId.getId());
           }
         }
-        CompletableFuture.runAsync(() -> instrumentationHelper.sendConnectorCreationFinishedEvent(connector.getConnectorInfo(), accountIdentifier));
+        CompletableFuture.runAsync(()
+                                       -> instrumentationHelper.sendConnectorCreationFinishedEvent(
+                                           connector.getConnectorInfo(), accountIdentifier));
         return connectorResponse;
       } else {
         throw new InvalidRequestException("Connector could not be created because we could not create the heartbeat");
@@ -376,13 +378,17 @@ public class ConnectorServiceImpl implements ConnectorService {
               getConnectorService(connector.getType())
                   .delete(accountIdentifier, orgIdentifier, projectIdentifier, connectorIdentifier);
           if (!isDefaultBranchConnector) {
-            CompletableFuture.runAsync(() -> instrumentationHelper.sendConnectorDeletionEvent(orgIdentifier, projectIdentifier, connectorIdentifier, accountIdentifier));
+            CompletableFuture.runAsync(()
+                                           -> instrumentationHelper.sendConnectorDeletionEvent(orgIdentifier,
+                                               projectIdentifier, connectorIdentifier, accountIdentifier));
             return true;
           }
           if (isConnectorDeleted) {
             publishEvent(accountIdentifier, orgIdentifier, projectIdentifier, connectorIdentifier, connector.getType(),
                 EventsFrameworkMetadataConstants.DELETE_ACTION);
-            CompletableFuture.runAsync(() -> instrumentationHelper.sendConnectorDeletionEvent(orgIdentifier, projectIdentifier, connectorIdentifier, accountIdentifier));
+            CompletableFuture.runAsync(()
+                                           -> instrumentationHelper.sendConnectorDeletionEvent(orgIdentifier,
+                                               projectIdentifier, connectorIdentifier, accountIdentifier));
             return true;
           } else {
             PerpetualTaskId perpetualTaskId = connectorHeartbeatService.createConnectorHeatbeatTask(

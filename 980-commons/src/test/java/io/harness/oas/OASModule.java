@@ -13,6 +13,8 @@ import io.harness.testing.TestExecution;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.MapBinder;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -46,10 +48,14 @@ public abstract class OASModule extends AbstractModule {
     for (Class<?> clazz : classes) {
       if (clazz.isAnnotationPresent(Tag.class)) {
         for (final Method method : clazz.getDeclaredMethods()) {
-          if (Modifier.isPublic(method.getModifiers()) && method.isAnnotationPresent(Operation.class)
-              && !isHiddenApi(method)) {
-            checkParamAnnotation(method);
-            endpointsWithoutAccountParam.addAll(checkAccountIdentifierParam(method));
+          if (Modifier.isPublic(method.getModifiers())) {
+            if (method.isAnnotationPresent(Operation.class) && !isHiddenFromOpenApi(method)) {
+              checkParamAnnotation(method);
+              endpointsWithoutAccountParam.addAll(checkAccountIdentifierParam(method));
+            }
+            if (isHiddenFromSwaggerApi(method)) {
+              assertThat(isHiddenFromOpenApi(method)).isTrue();
+            }
           }
         }
       }
@@ -83,12 +89,26 @@ public abstract class OASModule extends AbstractModule {
     return excludedEndpoints;
   }
 
-  private boolean isHiddenApi(Method method) {
+  private boolean isHiddenFromOpenApi(Method method) {
+    Annotation[] methodAnnotations = method.getDeclaredAnnotations();
+    boolean isHidden = false;
+    for (Annotation annotation : methodAnnotations) {
+      if (annotation.annotationType() == Hidden.class) {
+        return true;
+      } else if (annotation.annotationType() == Operation.class) {
+        Operation operation = (Operation) annotation;
+        isHidden = operation.hidden();
+      }
+    }
+    return isHidden;
+  }
+
+  private boolean isHiddenFromSwaggerApi(Method method) {
     Annotation[] methodAnnotations = method.getDeclaredAnnotations();
     for (Annotation annotation : methodAnnotations) {
-      if (annotation.annotationType() == Operation.class) {
-        Operation operation = (Operation) annotation;
-        return operation.hidden();
+      if (annotation.annotationType() == ApiOperation.class) {
+        ApiOperation apiOperation = (ApiOperation) annotation;
+        return apiOperation.hidden();
       }
     }
     return false;

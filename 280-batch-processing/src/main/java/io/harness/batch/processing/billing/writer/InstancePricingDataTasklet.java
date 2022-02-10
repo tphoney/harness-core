@@ -65,11 +65,10 @@ public class InstancePricingDataTasklet implements Tasklet {
 
   @Override
   public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
-    log.info("Instance Pricing Job Started");
     parameters = chunkContext.getStepContext().getStepExecution().getJobParameters();
     batchSize = config.getBatchQueryConfig().getInstanceDataBatchSize();
     String accountId = parameters.getString(CCMJobConstants.ACCOUNT_ID);
-    log.info("Account ID: {}", accountId);
+    log.info("Instance Pricing Job Started for Account ID: {}", accountId);
     Instant startTime = getFieldValueFromJobParams(CCMJobConstants.JOB_START_DATE);
     Instant endTime = getFieldValueFromJobParams(CCMJobConstants.JOB_END_DATE);
     batchJobType = CCMJobConstants.getBatchJobTypeFromJobParams(parameters, CCMJobConstants.BATCH_JOB_TYPE);
@@ -80,11 +79,12 @@ public class InstancePricingDataTasklet implements Tasklet {
       instanceDataLists =
           instanceDataDao.getInstanceDataListForPricingUpdate(accountId, batchSize, activeInstanceIterator, endTime);
       log.info("Processing {} instances", instanceDataLists.size());
-      for (int i = 0; i<10; i++) {
-        log.info("InstanceId: {}, Instance Family: {}, Region: {}, Cloud Provider: {}", instanceDataLists.get(i).getCloudProviderInstanceId(),
-            instanceDataLists.get(i).getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY),
-            instanceDataLists.get(i).getMetaData().get(InstanceMetaDataConstants.REGION),
-            instanceDataLists.get(i).getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER));
+      for (InstanceData instanceDataList : instanceDataLists) {
+        if (!instanceDataList.getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER).equals("AWS")) continue;
+        log.info("InstanceId: {}, Instance Family: {}, Region: {}, Cloud Provider: {}", instanceDataList.getCloudProviderInstanceId(),
+            instanceDataList.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY),
+            instanceDataList.getMetaData().get(InstanceMetaDataConstants.REGION),
+            instanceDataList.getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER));
       }
       if (!instanceDataLists.isEmpty()) {
         activeInstanceIterator = instanceDataLists.get(instanceDataLists.size() - 1).getActiveInstanceIterator();
@@ -219,7 +219,7 @@ public class InstancePricingDataTasklet implements Tasklet {
       // call BQHelperSerivce with awsInstances.keySet
       String azureDataSetId = customBillingMetaDataService.getAzureDataSetId(accountId);
       pricingDataByResourceId = bigQueryHelperService.getAzurePricingDataByResourceIds(
-          new ArrayList<>(leftOverInstances), startTime, endTime, awsDataSetId);
+          new ArrayList<>(leftOverInstances), startTime, endTime, azureDataSetId);
       log.info("Got response from BQ ResourceID, map: {}, size: {}", pricingDataByResourceId, pricingDataByResourceId.size());
       // update awsInstances
       pricingDataByResourceId.forEach(
@@ -262,6 +262,7 @@ public class InstancePricingDataTasklet implements Tasklet {
     String cloudProvider = instanceData.getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER);
     String k8sService = (cloudProvider.equalsIgnoreCase(CloudProvider.AWS.getCloudProviderName())) ?
         CloudProvider.AWS.getK8sService() : CloudProvider.AZURE.getK8sService();
+    log.info("Getting public Pricing for cloudProvider: {}, service: {}, region: {}, instanceFamily: {}", cloudProvider, k8sService, instanceData.getMetaData().get(InstanceMetaDataConstants.REGION), instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY));
     Call<ProductDetailResponse> pricingInfoCall = banzaiPricingClient.getPricingInfo(
         cloudProvider,
         instanceData.getMetaData().get(InstanceMetaDataConstants.CLUSTER_TYPE).equals(ClusterType.K8S.name()) ?

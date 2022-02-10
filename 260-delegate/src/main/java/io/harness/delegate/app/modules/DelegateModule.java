@@ -787,9 +787,7 @@ public class DelegateModule extends AbstractModule {
   @Singleton
   @Named("taskExecutor")
   public ExecutorService taskExecutor() {
-    final int threads = configuration.getTaskExecutorThreads() > 0 ? configuration.getTaskExecutorThreads() : 100;
-
-    return ThreadPool.create(10, threads, 1, TimeUnit.SECONDS,
+    return ThreadPool.create(10, Integer.MAX_VALUE, 1, TimeUnit.SECONDS,
         new ThreadFactoryBuilder().setNameFormat("task-exec-%d").setPriority(Thread.MIN_PRIORITY).build());
   }
 

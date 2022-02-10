@@ -12,6 +12,7 @@ import io.harness.cvng.beans.change.ChangeEventDTO;
 import io.harness.cvng.beans.change.ChangeSourceType;
 import io.harness.cvng.core.beans.change.ChangeSummaryDTO;
 import io.harness.cvng.core.beans.change.ChangeTimeline;
+import io.harness.cvng.core.beans.monitoredService.DurationDTO;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.ng.beans.PageRequest;
@@ -35,6 +36,8 @@ public interface ChangeEventService {
   ChangeTimeline getTimeline(ProjectParams projectParams, List<String> serviceIdentifiers,
       List<String> environmentIdentifier, String searchText, List<ChangeCategory> changeCategories,
       List<ChangeSourceType> changeSourceTypes, Instant startTime, Instant endTime, Integer pointCount);
+  ChangeTimeline getMonitoredServiceChangeTimeline(ServiceEnvironmentParams serviceEnvironmentParams, String searchText,
+      List<ChangeSourceType> changeSourceTypes, DurationDTO duration, Instant endTime);
   ChangeSummaryDTO getChangeSummary(ProjectParams projectParams, List<String> serviceIdentifiers,
       List<String> environmentIdentifier, List<ChangeCategory> changeCategories,
       List<ChangeSourceType> changeSourceTypes, Instant startTime, Instant endTime);

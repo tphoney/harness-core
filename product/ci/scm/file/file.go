@@ -131,7 +131,7 @@ func DeleteFile(ctx context.Context, fileRequest *pb.DeleteFileRequest, log *zap
 		return out, nil
 	}
 	// go-scm doesnt provide CRUD content parsing lets do it our self
-	
+
 	commitID, blobID := parseCrudResponse(ctx, client, response.Body, *fileRequest.GetProvider(), requestContext{Slug: fileRequest.Slug, Branch: fileRequest.Branch, FilePath: fileRequest.Path}, log)
 	log.Infow("DeleteFile success", "slug", fileRequest.GetSlug(), "path", fileRequest.GetPath(), "elapsed_time_ms", utils.TimeSince(start))
 	out = &pb.DeleteFileResponse{
@@ -429,5 +429,5 @@ func parseCrudResponse(ctx context.Context, client *scm.Client, body io.Reader, 
 type requestContext struct {
 	Slug string
 	Branch string
-	FilePath string 
+	FilePath string
 }

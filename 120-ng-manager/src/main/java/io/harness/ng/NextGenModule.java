@@ -112,6 +112,8 @@ import io.harness.ng.core.DelegateServiceModule;
 import io.harness.ng.core.InviteModule;
 import io.harness.ng.core.NGAggregateModule;
 import io.harness.ng.core.SecretManagementModule;
+import io.harness.ng.core.accountsetting.services.NGAccountSettingService;
+import io.harness.ng.core.accountsetting.services.NGAccountSettingServiceImpl;
 import io.harness.ng.core.api.ApiKeyService;
 import io.harness.ng.core.api.NGModulesService;
 import io.harness.ng.core.api.NGSecretServiceV2;
@@ -632,11 +634,13 @@ public class NextGenModule extends AbstractModule {
     bind(ProjectService.class).to(ProjectServiceImpl.class);
     bind(OrganizationService.class).to(OrganizationServiceImpl.class);
     bind(NGModulesService.class).to(NGModulesServiceImpl.class);
+    bind(NGAccountSettingService.class).to(NGAccountSettingServiceImpl.class);
     bind(NGSecretServiceV2.class).to(NGSecretServiceV2Impl.class);
     bind(ScheduledExecutorService.class)
         .annotatedWith(Names.named("taskPollExecutor"))
         .toInstance(new ManagedScheduledExecutorService("TaskPoll-Thread"));
     bind(ConnectorService.class).annotatedWith(Names.named(CONNECTOR_DECORATOR_SERVICE)).to(ConnectorServiceImpl.class);
+
     bind(ConnectorService.class)
         .annotatedWith(Names.named(SECRET_MANAGER_CONNECTOR_SERVICE))
         .to(SecretManagerConnectorServiceImpl.class);

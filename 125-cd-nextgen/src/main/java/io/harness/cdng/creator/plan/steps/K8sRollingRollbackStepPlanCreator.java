@@ -7,10 +7,15 @@
 
 package io.harness.cdng.creator.plan.steps;
 
+import static io.harness.cdng.visitor.YamlTypes.K8S_ROLLING_DEPLOY;
+
 import io.harness.cdng.k8s.K8sRollingRollbackStepNode;
+import io.harness.cdng.k8s.K8sRollingRollbackStepParameters;
 import io.harness.executions.steps.StepSpecTypeConstants;
+import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
+import io.harness.pms.sdk.core.steps.io.StepParameters;
 
 import com.google.common.collect.Sets;
 import java.util.Set;
@@ -29,5 +34,16 @@ public class K8sRollingRollbackStepPlanCreator extends CDPMSStepPlanCreatorV2<K8
   @Override
   public PlanCreationResponse createPlanForField(PlanCreationContext ctx, K8sRollingRollbackStepNode stepElement) {
     return super.createPlanForField(ctx, stepElement);
+  }
+
+  @Override
+  protected StepParameters getStepParameters(PlanCreationContext ctx, K8sRollingRollbackStepNode stepElement) {
+    final StepParameters stepParameters = super.getStepParameters(ctx, stepElement);
+
+    String rollingFqn = getExecutionStepFqn(ctx.getCurrentField(), K8S_ROLLING_DEPLOY);
+    ((K8sRollingRollbackStepParameters) ((StepElementParameters) stepParameters).getSpec())
+        .setRollingStepFqn(rollingFqn);
+
+    return stepParameters;
   }
 }

@@ -7,10 +7,15 @@
 
 package io.harness.cdng.creator.plan.steps;
 
+import static io.harness.cdng.visitor.YamlTypes.K8S_CANARY_DEPLOY;
+
 import io.harness.cdng.k8s.K8sRollingStepNode;
+import io.harness.cdng.k8s.K8sRollingStepParameters;
 import io.harness.executions.steps.StepSpecTypeConstants;
+import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
+import io.harness.pms.sdk.core.steps.io.StepParameters;
 
 import com.google.common.collect.Sets;
 import java.util.Set;
@@ -29,5 +34,15 @@ public class K8sRollingStepPlanCreator extends CDPMSStepPlanCreatorV2<K8sRolling
   @Override
   public PlanCreationResponse createPlanForField(PlanCreationContext ctx, K8sRollingStepNode stepElement) {
     return super.createPlanForField(ctx, stepElement);
+  }
+
+  @Override
+  protected StepParameters getStepParameters(PlanCreationContext ctx, K8sRollingStepNode stepElement) {
+    final StepParameters stepParameters = super.getStepParameters(ctx, stepElement);
+
+    String canaryStepFqn = getExecutionStepFqn(ctx.getCurrentField(), K8S_CANARY_DEPLOY);
+    ((K8sRollingStepParameters) ((StepElementParameters) stepParameters).getSpec()).setCanaryStepFqn(canaryStepFqn);
+
+    return stepParameters;
   }
 }

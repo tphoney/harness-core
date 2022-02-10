@@ -31,9 +31,6 @@ import io.harness.k8s.K8sGlobalConfigService;
 import io.harness.k8s.model.HelmVersion;
 import io.harness.k8s.model.K8sDelegateTaskParams;
 import io.harness.logging.CommandExecutionStatus;
-import io.harness.secret.SecretSanitizerThreadLocal;
-
-import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
@@ -43,7 +40,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
-
 @Slf4j
 @OwnedBy(CDP)
 public class K8sTaskNG extends AbstractDelegateRunnableTask {
@@ -59,8 +55,6 @@ public class K8sTaskNG extends AbstractDelegateRunnableTask {
   public K8sTaskNG(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
-
-    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override
@@ -83,12 +77,11 @@ public class K8sTaskNG extends AbstractDelegateRunnableTask {
         return k8sTaskTypeToRequestHandler.get(k8sDeployRequest.getTaskType().name())
             .executeTask(k8sDeployRequest, null, getLogStreamingTaskClient(), commandUnitsProgress);
       } catch (Exception ex) {
-        Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
         log.error("Exception in processing k8s task [{}]",
-            k8sDeployRequest.getCommandName() + ":" + k8sDeployRequest.getTaskType(), sanitizedException);
+            k8sDeployRequest.getCommandName() + ":" + k8sDeployRequest.getTaskType(), ex);
         return K8sDeployResponse.builder()
             .commandExecutionStatus(CommandExecutionStatus.FAILURE)
-            .errorMessage(ExceptionUtils.getMessage(sanitizedException))
+            .errorMessage(ExceptionUtils.getMessage(ex))
             .build();
       }
     } else {
@@ -133,25 +126,21 @@ public class K8sTaskNG extends AbstractDelegateRunnableTask {
         k8sDeployResponse.setCommandUnitsProgress(UnitProgressDataMapper.toUnitProgressData(commandUnitsProgress));
         return k8sDeployResponse;
       } catch (Exception ex) {
-        Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
         log.error("Exception in processing k8s task [{}]",
-            k8sDeployRequest.getCommandName() + ":" + k8sDeployRequest.getTaskType(), sanitizedException);
+            k8sDeployRequest.getCommandName() + ":" + k8sDeployRequest.getTaskType(), ex);
         if (requestHandler != null && requestHandler.isErrorFrameworkSupported()) {
           try {
-            requestHandler.onTaskFailed(
-                k8sDeployRequest, sanitizedException, getLogStreamingTaskClient(), commandUnitsProgress);
+            requestHandler.onTaskFailed(k8sDeployRequest, ex, getLogStreamingTaskClient(), commandUnitsProgress);
           } catch (Exception e) {
-            throw new TaskNGDataException(UnitProgressDataMapper.toUnitProgressData(commandUnitsProgress),
-                ExceptionMessageSanitizer.sanitizeException(e));
+            throw new TaskNGDataException(UnitProgressDataMapper.toUnitProgressData(commandUnitsProgress), e);
           }
 
-          throw new TaskNGDataException(
-              UnitProgressDataMapper.toUnitProgressData(commandUnitsProgress), sanitizedException);
+          throw new TaskNGDataException(UnitProgressDataMapper.toUnitProgressData(commandUnitsProgress), ex);
         }
 
         return K8sDeployResponse.builder()
             .commandExecutionStatus(CommandExecutionStatus.FAILURE)
-            .errorMessage(ExceptionUtils.getMessage(sanitizedException))
+            .errorMessage(ExceptionUtils.getMessage(ex))
             .commandUnitsProgress(UnitProgressDataMapper.toUnitProgressData(commandUnitsProgress))
             .build();
       } finally {
@@ -167,7 +156,7 @@ public class K8sTaskNG extends AbstractDelegateRunnableTask {
       k8sTaskTypeToRequestHandler.get(K8sTaskType.VERSION.name())
           .executeTask(k8sDeployRequest, k8sDelegateTaskParams, getLogStreamingTaskClient(), commandUnitsProgress);
     } catch (Exception ex) {
-      log.error("Error fetching K8s Server Version: ", ExceptionMessageSanitizer.sanitizeException(ex));
+      log.error("Error fetching K8s Server Version: ", ex);
     }
   }
 
@@ -176,7 +165,7 @@ public class K8sTaskNG extends AbstractDelegateRunnableTask {
       log.warn("Cleaning up directory " + workingDirectory);
       deleteDirectoryAndItsContentIfExists(workingDirectory);
     } catch (Exception ex) {
-      log.warn("Exception in directory cleanup.", ExceptionMessageSanitizer.sanitizeException(ex));
+      log.warn("Exception in directory cleanup.", ex);
     }
   }
 

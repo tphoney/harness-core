@@ -22,10 +22,7 @@ import io.harness.delegate.task.gcp.response.GcpListBucketsResponse;
 import io.harness.delegate.task.gcp.response.GcpResponse;
 import io.harness.errorhandling.NGErrorHelper;
 import io.harness.logging.CommandExecutionStatus;
-import io.harness.secret.SecretSanitizerThreadLocal;
 import io.harness.security.encryption.SecretDecryptionService;
-
-import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 import com.google.api.services.storage.Storage;
 import com.google.api.services.storage.model.Buckets;
@@ -53,9 +50,6 @@ public class GcpListBucketsTaskHandler implements TaskHandler {
       boolean useDelegate = gcpRequest.getGcpManualDetailsDTO() == null;
       decryptDTO(gcpRequest);
       char[] serviceAccountKeyFileContent = getGcpServiceAccountKeyFileContent(gcpRequest);
-      if (isNotEmpty(serviceAccountKeyFileContent)) {
-        SecretSanitizerThreadLocal.add(String.valueOf(serviceAccountKeyFileContent));
-      }
       Storage storageService = gcpHelperService.getGcsStorageService(serviceAccountKeyFileContent, useDelegate);
       String projectId = gcpHelperService.getProjectId(serviceAccountKeyFileContent, useDelegate);
       Storage.Buckets buckets = storageService.buckets();
@@ -65,10 +59,9 @@ public class GcpListBucketsTaskHandler implements TaskHandler {
           .buckets(listBuckets(buckets, projectId))
           .build();
     } catch (Exception e) {
-      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(e);
       return GcpListBucketsResponse.builder()
-          .errorMessage(ngErrorHelper.getErrorSummary(sanitizedException.getMessage()))
-          .errorDetail(ngErrorHelper.createErrorDetail(sanitizedException.getMessage()))
+          .errorMessage(ngErrorHelper.getErrorSummary(e.getMessage()))
+          .errorDetail(ngErrorHelper.createErrorDetail(e.getMessage()))
           .commandExecutionStatus(CommandExecutionStatus.FAILURE)
           .build();
     }
@@ -97,8 +90,6 @@ public class GcpListBucketsTaskHandler implements TaskHandler {
   private void decryptDTO(GcpRequest gcpRequest) {
     if (gcpRequest.getGcpManualDetailsDTO() != null) {
       secretDecryptionService.decrypt(gcpRequest.getGcpManualDetailsDTO(), gcpRequest.getEncryptionDetails());
-      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
-          gcpRequest.getGcpManualDetailsDTO(), gcpRequest.getEncryptionDetails());
     }
   }
 

@@ -15,6 +15,7 @@ import io.harness.delegate.beans.connector.ConnectorConfigDTO;
 import io.harness.delegate.beans.connector.appdynamicsconnector.AppDynamicsCapabilityHelper;
 import io.harness.delegate.beans.connector.customhealthconnector.CustomHealthCapabilityHelper;
 import io.harness.delegate.beans.connector.datadogconnector.DatadogCapabilityHelper;
+import io.harness.delegate.beans.connector.dynatraceconnector.DynatraceCapabilityHelper;
 import io.harness.delegate.beans.connector.gcp.GcpCapabilityHelper;
 import io.harness.delegate.beans.connector.k8Connector.K8sTaskCapabilityHelper;
 import io.harness.delegate.beans.connector.newrelicconnector.NewRelicCapabilityHelper;
@@ -107,6 +108,9 @@ public abstract class DataCollectionRequest<T extends ConnectorConfigDTO> implem
             maskingEvaluator, connectorInfoDTO.getConnectorConfig());
       case DATADOG:
         return DatadogCapabilityHelper.fetchRequiredExecutionCapabilities(
+            maskingEvaluator, connectorInfoDTO.getConnectorConfig());
+      case DYNATRACE:
+        return DynatraceCapabilityHelper.fetchRequiredExecutionCapabilities(
             maskingEvaluator, connectorInfoDTO.getConnectorConfig());
       case CUSTOM_HEALTH:
         return CustomHealthCapabilityHelper.fetchRequiredExecutionCapabilities(

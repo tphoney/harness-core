@@ -58,4 +58,19 @@ public class EntityYamlRootNames {
   public static String HARNESS_APPROVAL = "HarnessApproval";
   public static String BARRIER = "Barrier";
   public static String OPAPOLICY = "governancePolicy";
+  public static String POLICY_STEP = "PolicyStep";
+  public static String RUN_STEP = "Run";
+  public static String RUN_TEST = "RunTests";
+  public static String PLUGIN = "Plugin";
+  public static String RESTORE_CACHE_GCS = "RestoreCacheGCS";
+  public static String RESTORE_CACHE_S3 = "RestoreCacheS3";
+  public static String SAVE_CACHE_GCS = "SaveCacheGCS";
+  public static String SAVE_CACHE_S3 = "SaveCacheS3";
+  public static String ARTIFACTORY_UPLOAD = "ArtifactoryUpload";
+  public static String GCS_UPLOAD = "GCSUpload";
+  public static String S3_UPLOAD = "S3Upload";
+
+  public static String BUILD_AND_PUSH_GCR = "BuildAndPushGCR";
+  public static String BUILD_AND_PUSH_ECR = "BuildAndPushECR";
+  public static String BUILD_AND_PUSH_DOCKER_REGISTRY = "BuildAndPushDockerRegistry";
 }

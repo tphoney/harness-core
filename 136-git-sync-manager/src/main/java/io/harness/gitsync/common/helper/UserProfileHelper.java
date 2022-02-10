@@ -31,7 +31,6 @@ import io.harness.security.dto.PrincipalType;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.protobuf.StringValue;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -78,11 +77,7 @@ public class UserProfileHelper {
         && SourcePrincipalContextBuilder.getSourcePrincipal().getType() == PrincipalType.USER) {
       io.harness.security.dto.UserPrincipal userPrincipal =
           (io.harness.security.dto.UserPrincipal) SourcePrincipalContextBuilder.getSourcePrincipal();
-      return UserPrincipal.newBuilder()
-          .setEmail(StringValue.of(userPrincipal.getEmail()))
-          .setUserId(StringValue.of(userPrincipal.getName()))
-          .setUserName(StringValue.of(userPrincipal.getUsername()))
-          .build();
+      return UserPrincipalMapper.toProto(userPrincipal);
     }
     log.error(ERROR_MSG_USER_PRINCIPAL_NOT_SET);
     throw new InvalidRequestException(ERROR_MSG_USER_PRINCIPAL_NOT_SET);

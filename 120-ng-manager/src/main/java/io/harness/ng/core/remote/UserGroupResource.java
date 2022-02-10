@@ -179,7 +179,7 @@ public class UserGroupResource {
            NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @Parameter(description = GROUP_IDENTIFIER_KEY, required = true) @QueryParam(
           NGCommonEntityConstants.GROUP_IDENTIFIER_KEY) String userGroupIdentifier,
-      @RequestBody(required = true) List<ScopeDTO> scopes) {
+      @RequestBody(description = "List of scopes", required = true) List<ScopeDTO> scopes) {
     accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, null, null),
         Resource.of(USERGROUP, userGroupIdentifier), MANAGE_USERGROUP_PERMISSION);
     return ResponseDTO.newResponse(userGroupService.copy(accountIdentifier, userGroupIdentifier, scopes));

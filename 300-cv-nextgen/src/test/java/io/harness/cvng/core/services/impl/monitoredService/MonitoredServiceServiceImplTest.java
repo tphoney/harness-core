@@ -1203,6 +1203,17 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
   }
 
   @Test
+  @Owner(developers = DEEPAK_CHHIKARA)
+  @Category(UnitTests.class)
+  public void testGetAll_noMonitoredService() {
+    String serviceRef1 = "service1";
+    String identifier1 = "monitoredService1";
+    List<MonitoredServiceWithHealthSources> monitoredServiceWithHealthSourcesList =
+        monitoredServiceService.getAllWithTimeSeriesHealthSources(projectParams);
+    assertThat(monitoredServiceWithHealthSourcesList).isEmpty();
+  }
+
+  @Test
   @Owner(developers = PRAVEEN)
   @Category(UnitTests.class)
   public void testCreate_withDependency() {

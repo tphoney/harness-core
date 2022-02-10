@@ -96,11 +96,13 @@ import io.harness.delegate.beans.ci.status.BuildStatusPushResponse;
 import io.harness.delegate.beans.ci.vm.CIVmCleanupTaskParams;
 import io.harness.delegate.beans.ci.vm.CIVmExecuteStepTaskParams;
 import io.harness.delegate.beans.ci.vm.CIVmInitializeTaskParams;
+import io.harness.delegate.beans.ci.vm.VmServiceStatus;
 import io.harness.delegate.beans.ci.vm.VmTaskExecutionResponse;
 import io.harness.delegate.beans.ci.vm.steps.VmJunitTestReport;
 import io.harness.delegate.beans.ci.vm.steps.VmPluginStep;
 import io.harness.delegate.beans.ci.vm.steps.VmRunStep;
 import io.harness.delegate.beans.ci.vm.steps.VmRunTestStep;
+import io.harness.delegate.beans.ci.vm.steps.VmServiceDependency;
 import io.harness.delegate.beans.ci.vm.steps.VmStepInfo;
 import io.harness.delegate.beans.ci.vm.steps.VmUnitTestReport;
 import io.harness.delegate.beans.connector.ConnectorHeartbeatDelegateResponse;
@@ -1096,5 +1098,8 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(HelmNGException.class, 543471);
     kryo.register(CfRouteUpdateCommandResponse.class, 543472);
     kryo.register(CfInBuiltVariablesUpdateValues.class, 543473);
+    kryo.register(VmServiceDependency.class, 543474);
+    kryo.register(VmServiceStatus.class, 543475);
+    kryo.register(VmServiceStatus.Status.class, 543476);
   }
 }

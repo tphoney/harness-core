@@ -18,6 +18,7 @@ import io.harness.exception.WingsException;
 import io.harness.gitsync.FullSyncEventRequest;
 import io.harness.gitsync.common.dtos.TriggerFullSyncRequestDTO;
 import io.harness.gitsync.common.dtos.TriggerFullSyncResponseDTO;
+import io.harness.gitsync.common.helper.UserProfileHelper;
 import io.harness.gitsync.common.service.FullSyncTriggerService;
 import io.harness.gitsync.core.fullsync.GitFullSyncConfigService;
 import io.harness.gitsync.core.fullsync.entity.GitFullSyncJob;
@@ -38,14 +39,16 @@ public class FullSyncTriggerServiceImpl implements FullSyncTriggerService {
   private final Producer eventProducer;
   private final GitFullSyncConfigService gitFullSyncConfigService;
   private final FullSyncJobService fullSyncJobService;
+  private final UserProfileHelper userProfileHelper;
 
   @Inject
-  public FullSyncTriggerServiceImpl(
-      @Named(EventsFrameworkConstants.GIT_FULL_SYNC_STREAM) Producer fullSyncEventProducer,
-      GitFullSyncConfigService gitFullSyncConfigService, FullSyncJobService fullSyncJobService) {
+  public FullSyncTriggerServiceImpl(@Named(EventsFrameworkConstants.GIT_FULL_SYNC_STREAM)
+                                    Producer fullSyncEventProducer, GitFullSyncConfigService gitFullSyncConfigService,
+      FullSyncJobService fullSyncJobService, UserProfileHelper userProfileHelper) {
     this.eventProducer = fullSyncEventProducer;
     this.gitFullSyncConfigService = gitFullSyncConfigService;
     this.fullSyncJobService = fullSyncJobService;
+    this.userProfileHelper = userProfileHelper;
   }
 
   @Override
@@ -101,7 +104,8 @@ public class FullSyncTriggerServiceImpl implements FullSyncTriggerService {
                                                      .setBranch(fullSyncRequest.getBranch())
                                                      .setCreatePr(fullSyncRequest.isCreatePR())
                                                      .setIsNewBranch(fullSyncRequest.isNewBranch())
-                                                     .setRootFolder(fullSyncRequest.getRootFolder());
+                                                     .setRootFolder(fullSyncRequest.getRootFolder())
+                                                     .setUserPrincipal(userProfileHelper.getUserPrincipal());
 
     if (fullSyncRequest.isCreatePR()) {
       builder.setTargetBranch(fullSyncRequest.getTargetBranchForPR()).setPrTitle(fullSyncRequest.getPrTitle());

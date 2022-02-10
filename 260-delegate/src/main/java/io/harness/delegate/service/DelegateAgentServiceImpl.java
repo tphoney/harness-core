@@ -38,7 +38,6 @@ import static io.harness.delegate.message.MessageConstants.DELEGATE_MIGRATE;
 import static io.harness.delegate.message.MessageConstants.DELEGATE_RESTART_NEEDED;
 import static io.harness.delegate.message.MessageConstants.DELEGATE_RESUME;
 import static io.harness.delegate.message.MessageConstants.DELEGATE_SELF_DESTRUCT;
-import static io.harness.delegate.message.MessageConstants.DELEGATE_SEND_VERSION_HEADER;
 import static io.harness.delegate.message.MessageConstants.DELEGATE_SHUTDOWN_PENDING;
 import static io.harness.delegate.message.MessageConstants.DELEGATE_SHUTDOWN_STARTED;
 import static io.harness.delegate.message.MessageConstants.DELEGATE_STARTED;
@@ -149,7 +148,6 @@ import io.harness.logstreaming.LogStreamingSanitizer;
 import io.harness.logstreaming.LogStreamingTaskClient;
 import io.harness.logstreaming.LogStreamingTaskClient.LogStreamingTaskClientBuilder;
 import io.harness.managerclient.DelegateAgentManagerClient;
-import io.harness.managerclient.DelegateAgentManagerClientFactory;
 import io.harness.metrics.HarnessMetricRegistry;
 import io.harness.network.FibonacciBackOff;
 import io.harness.network.Http;
@@ -302,8 +300,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   private static final String TOKEN = "[TOKEN]";
   private static final String SEQ = "[SEQ]";
 
-  // Using json body start '{' as task even marker, since only task events only contains json body.
-  private static final String TASK_EVENT_MARKER = "{";
+  // Marker string to indicate task events.
+  private static final String TASK_EVENT_MARKER = "{\"eventType\":\"DelegateTaskEvent\"";
 
   private static final String HOST_NAME = getLocalHostName();
   private static final String DELEGATE_NAME =
@@ -322,9 +320,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   private final String delegateDescription = System.getenv().get("DELEGATE_DESCRIPTION");
   private final boolean delegateNg = isNotBlank(System.getenv().get("DELEGATE_SESSION_IDENTIFIER"))
       || (isNotBlank(System.getenv().get("NEXT_GEN")) && Boolean.parseBoolean(System.getenv().get("NEXT_GEN")));
-  private final int delegateTaskLimit = isNotBlank(System.getenv().get("DELEGATE_TASK_LIMIT"))
-      ? Integer.parseInt(System.getenv().get("DELEGATE_TASK_LIMIT"))
-      : 0;
   private final String delegateTokenName = System.getenv().get("DELEGATE_TOKEN_NAME");
   public static final String JAVA_VERSION = "java.version";
 
@@ -468,9 +463,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       DelegateStackdriverLogAppender.setManagerClient(delegateAgentManagerClient);
 
       logProxyConfiguration();
-      if (delegateConfiguration.isVersionCheckDisabled()) {
-        DelegateAgentManagerClientFactory.setSendVersionHeader(false);
-      }
+
       connectionHeartbeat = DelegateConnectionHeartbeat.builder()
                                 .delegateConnectionId(delegateConnectionId)
                                 .version(getVersion())
@@ -779,11 +772,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       URI uri = uriBuilder.build();
 
       // Stream the request body
-      RequestBuilder requestBuilder =
-          client.newRequestBuilder().method(METHOD.GET).uri(uri.toString()).header("Version", getVersion());
-      if (delegateConfiguration.isVersionCheckDisabled()) {
-        requestBuilder = client.newRequestBuilder().method(METHOD.GET).uri(uri.toString());
-      }
+      RequestBuilder requestBuilder = client.newRequestBuilder().method(METHOD.GET).uri(uri.toString());
 
       requestBuilder
           .encoder(new Encoder<Delegate, Reader>() { // Do not change this, wasync doesn't like lambdas
@@ -1309,9 +1298,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
             handleStopAcquiringMessage(message.getFromProcess());
           } else if (DELEGATE_RESUME.equals(message.getMessage())) {
             resume();
-          } else if (DELEGATE_SEND_VERSION_HEADER.equals(message.getMessage())) {
-            DelegateAgentManagerClientFactory.setSendVersionHeader(Boolean.parseBoolean(message.getParams().get(0)));
-            delegateAgentManagerClient = injector.getInstance(DelegateAgentManagerClient.class);
           } else if (DELEGATE_START_GRPC.equals(message.getMessage())) {
             startGrpcService();
           } else if (DELEGATE_STOP_GRPC.equals(message.getMessage())) {
@@ -1937,11 +1923,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       int perpetualTaskCount = 0;
       if (perpetualTaskWorker != null) {
         perpetualTaskCount = perpetualTaskWorker.getCurrentlyExecutingPerpetualTasksCount().intValue();
-      }
-
-      if (delegateTaskLimit > 0 && (currentlyExecutingFutures.size() + perpetualTaskCount) >= delegateTaskLimit) {
-        log.info("Delegate reached Delegate Size Task Limit of {}. It will not acquire this time.", delegateTaskLimit);
-        return;
       }
 
       currentlyAcquiringTasks.add(delegateTaskId);
@@ -2605,34 +2586,38 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
   @VisibleForTesting
   void applyDelegateSecretFunctor(DelegateTaskPackage delegateTaskPackage) {
-    Map<String, EncryptionConfig> encryptionConfigs = delegateTaskPackage.getEncryptionConfigs();
-    Map<String, SecretDetail> secretDetails = delegateTaskPackage.getSecretDetails();
-    if (isEmpty(encryptionConfigs) || isEmpty(secretDetails)) {
-      return;
+    try {
+      Map<String, EncryptionConfig> encryptionConfigs = delegateTaskPackage.getEncryptionConfigs();
+      Map<String, SecretDetail> secretDetails = delegateTaskPackage.getSecretDetails();
+      if (isEmpty(encryptionConfigs) || isEmpty(secretDetails)) {
+        return;
+      }
+      List<EncryptedRecord> encryptedRecordList = new ArrayList<>();
+      Map<EncryptionConfig, List<EncryptedRecord>> encryptionConfigListMap = new HashMap<>();
+      secretDetails.forEach((key, secretDetail) -> {
+        encryptedRecordList.add(secretDetail.getEncryptedRecord());
+        // encryptionConfigListMap.put(encryptionConfigs.get(secretDetail.getConfigUuid()), encryptedRecordList);
+        addToEncryptedConfigListMap(encryptionConfigListMap, encryptionConfigs.get(secretDetail.getConfigUuid()),
+            secretDetail.getEncryptedRecord());
+      });
+
+      Map<String, char[]> decryptedRecords = delegateDecryptionService.decrypt(encryptionConfigListMap);
+      Map<String, char[]> secretUuidToValues = new HashMap<>();
+
+      secretDetails.forEach((key, value) -> {
+        char[] secretValue = decryptedRecords.get(value.getEncryptedRecord().getUuid());
+        secretUuidToValues.put(key, secretValue);
+
+        // Adds secret values from the 3 phase decryption to the list of task secrets to be masked
+        delegateTaskPackage.getSecrets().add(String.valueOf(secretValue));
+      });
+
+      DelegateExpressionEvaluator delegateExpressionEvaluator = new DelegateExpressionEvaluator(
+          secretUuidToValues, delegateTaskPackage.getData().getExpressionFunctorToken());
+      applyDelegateExpressionEvaluator(delegateTaskPackage, delegateExpressionEvaluator);
+    } catch (Exception e) {
+      sendErrorResponse(delegateTaskPackage);
     }
-    List<EncryptedRecord> encryptedRecordList = new ArrayList<>();
-    Map<EncryptionConfig, List<EncryptedRecord>> encryptionConfigListMap = new HashMap<>();
-    secretDetails.forEach((key, secretDetail) -> {
-      encryptedRecordList.add(secretDetail.getEncryptedRecord());
-      // encryptionConfigListMap.put(encryptionConfigs.get(secretDetail.getConfigUuid()), encryptedRecordList);
-      addToEncryptedConfigListMap(encryptionConfigListMap, encryptionConfigs.get(secretDetail.getConfigUuid()),
-          secretDetail.getEncryptedRecord());
-    });
-
-    Map<String, char[]> decryptedRecords = delegateDecryptionService.decrypt(encryptionConfigListMap);
-    Map<String, char[]> secretUuidToValues = new HashMap<>();
-
-    secretDetails.forEach((key, value) -> {
-      char[] secretValue = decryptedRecords.get(value.getEncryptedRecord().getUuid());
-      secretUuidToValues.put(key, secretValue);
-
-      // Adds secret values from the 3 phase decryption to the list of task secrets to be masked
-      delegateTaskPackage.getSecrets().add(String.valueOf(secretValue));
-    });
-
-    DelegateExpressionEvaluator delegateExpressionEvaluator =
-        new DelegateExpressionEvaluator(secretUuidToValues, delegateTaskPackage.getData().getExpressionFunctorToken());
-    applyDelegateExpressionEvaluator(delegateTaskPackage, delegateExpressionEvaluator);
   }
 
   private void applyDelegateExpressionEvaluator(
@@ -2656,5 +2641,30 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     long tasksExecutionCount = ((ThreadPoolExecutor) taskExecutor).getActiveCount();
     metricRegistry.recordGaugeValue(TASKS_IN_QUEUE, new String[] {DELEGATE_NAME}, tasksInQueueCount);
     metricRegistry.recordGaugeValue(TASKS_CURRENTLY_EXECUTING, new String[] {DELEGATE_NAME}, tasksExecutionCount);
+  }
+
+  private void sendErrorResponse(DelegateTaskPackage delegateTaskPackage) {
+    String taskId = delegateTaskPackage.getDelegateTaskId();
+    DelegateTaskResponse taskResponse = DelegateTaskResponse.builder()
+                                            .accountId(delegateTaskPackage.getAccountId())
+                                            .responseCode(DelegateTaskResponse.ResponseCode.FAILED)
+                                            .build();
+    log.info("Sending error response for task{}", taskId);
+    try {
+      Response<ResponseBody> resp = null;
+      int retries = 5;
+      for (int attempt = 0; attempt < retries; attempt++) {
+        resp = delegateAgentManagerClient.sendTaskStatus(delegateId, taskId, accountId, taskResponse).execute();
+        if (resp != null && resp.code() >= 200 && resp.code() <= 299) {
+          log.info("Task {} response sent to manager", taskId);
+          return;
+        }
+        log.warn("Failed to send response for task {}: {}. {}", taskId, resp == null ? "null" : resp.code(),
+            retries > 0 ? "Retrying." : "Giving up.");
+        sleep(ofSeconds(FibonacciBackOff.getFibonacciElement(attempt)));
+      }
+    } catch (Exception e) {
+      log.error("Unable to send response to manager", e);
+    }
   }
 }

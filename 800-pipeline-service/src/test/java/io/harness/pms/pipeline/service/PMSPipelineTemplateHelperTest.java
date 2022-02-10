@@ -83,8 +83,8 @@ public class PMSPipelineTemplateHelperTest extends CategoryTest {
     Call<ResponseDTO<TemplateMergeResponseDTO>> callRequest = mock(Call.class);
     doReturn(callRequest)
         .when(templateResourceClient)
-        .applyTemplatesOnGivenYaml(
-            ACCOUNT_ID, ORG_ID, PROJECT_ID, TemplateApplyRequestDTO.builder().originalEntityYaml(GIVEN_YAML).build());
+        .applyTemplatesOnGivenYaml(ACCOUNT_ID, ORG_ID, PROJECT_ID, null, null, null,
+            TemplateApplyRequestDTO.builder().originalEntityYaml(GIVEN_YAML).build());
     when(callRequest.execute())
         .thenReturn(Response.success(
             ResponseDTO.newResponse(TemplateMergeResponseDTO.builder().mergedPipelineYaml(mergedYaml).build())));
@@ -103,8 +103,8 @@ public class PMSPipelineTemplateHelperTest extends CategoryTest {
     Call<ResponseDTO<TemplateMergeResponseDTO>> callRequest = mock(Call.class);
     doReturn(callRequest)
         .when(templateResourceClient)
-        .applyTemplatesOnGivenYaml(
-            ACCOUNT_ID, ORG_ID, PROJECT_ID, TemplateApplyRequestDTO.builder().originalEntityYaml(GIVEN_YAML).build());
+        .applyTemplatesOnGivenYaml(ACCOUNT_ID, ORG_ID, PROJECT_ID, null, null, null,
+            TemplateApplyRequestDTO.builder().originalEntityYaml(GIVEN_YAML).build());
     TemplateInputsErrorMetadataDTO templateInputsErrorMetadataDTO =
         new TemplateInputsErrorMetadataDTO(errorYaml, new HashMap<>());
     when(callRequest.execute())

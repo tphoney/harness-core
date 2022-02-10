@@ -66,6 +66,13 @@ public class BQConst {
       + "usagestartdate  >= '%s' AND usagestartdate < '%s' "
       + "GROUP BY instancetype; ";
 
+  public static final String AZURE_PRICING_DATA_BY_RESOURCE_IDS = "SELECT azureVMProviderId, MAX(azureResourceRate) as cost "
+      + "FROM `%s` "
+      + "WHERE resourceid IN "
+      + "( '%s' )  AND "
+      + "usagestartdate  >= '%s' AND usagestartdate < '%s' AND cloudProvider = 'AZURE' "
+      + "GROUP BY  azureVMProviderId; ";
+
   public static final String CLOUD_PROVIDER_AGG_DATA =
       "SELECT count(*) AS count, cloudProvider FROM `%s` GROUP BY cloudProvider";
 

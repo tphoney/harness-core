@@ -41,4 +41,7 @@ public interface BigQueryHelperService {
 
   Map<String, Pricing> getAwsPricingDataByInstanceFamily(
       List<String> instanceFamilies, Instant startTime, Instant endTime, String dataSetId);
+
+  Map<String, Pricing> getAzurePricingDataByResourceIds(
+      List<String> resourceIds, Instant startTime, Instant endTime, String dataSetId);
 }

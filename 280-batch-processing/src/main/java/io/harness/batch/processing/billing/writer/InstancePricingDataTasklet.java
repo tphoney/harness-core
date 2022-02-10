@@ -93,14 +93,14 @@ public class InstancePricingDataTasklet implements Tasklet {
         }
       }
       Map<String, List<InstanceData>> awsInstances =
-      instanceDataLists.stream().filter((InstanceData instanceData) ->
-          getValueForKeyFromInstanceMetaData(InstanceMetaDataConstants.CLOUD_PROVIDER, instanceData)
-              .equals(CloudProvider.AWS.name())
-      ).collect(Collectors.groupingBy((InstanceData instanceData) -> {
-        if (instanceData.getCloudProviderInstanceId()!=null)
-          return instanceData.getCloudProviderInstanceId();
-        return "";
-      }));
+          instanceDataLists.stream().filter((InstanceData instanceData) ->
+              getValueForKeyFromInstanceMetaData(InstanceMetaDataConstants.CLOUD_PROVIDER, instanceData)
+                  .equals(CloudProvider.AWS.name())
+          ).collect(Collectors.groupingBy((InstanceData instanceData) -> {
+            if (instanceData.getCloudProviderInstanceId() != null)
+              return instanceData.getCloudProviderInstanceId();
+            return "";
+          }));
       log.info("AWS Instances size: {}", awsInstances.size());
       Set<String> leftOverInstances = awsInstances.keySet();
       // call BQHelperSerivce with awsInstances.keySet
@@ -109,21 +109,44 @@ public class InstancePricingDataTasklet implements Tasklet {
           new ArrayList<>(leftOverInstances), startTime, endTime, awsDataSetId);
       log.info("Got response from BQ ResourceID, map: {}, size: {}", pricingDataByResourceId, pricingDataByResourceId.size());
       // update awsInstances
+      pricingDataByResourceId.forEach(
+          (String resourceId, Pricing pricing) -> awsInstances.get(resourceId).forEach(
+              (InstanceData instanceData) -> instanceDataDao.updateInstancePricingData(instanceData, pricing))
+      );
       leftOverInstances.removeAll(pricingDataByResourceId.keySet());
       Set<InstanceFamilyAndRegion> instanceFamilyAndRegions = new HashSet<>();
       for (String resourceId: leftOverInstances) {
-        InstanceData instanceData = awsInstances.get(resourceId).get(0);
-        instanceFamilyAndRegions.add(new InstanceFamilyAndRegion(
-            instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY),
-            instanceData.getMetaData().get(InstanceMetaDataConstants.REGION)));
+        if (!resourceId.equals("")) {
+          InstanceData instanceData = awsInstances.get(resourceId).get(0);
+          instanceFamilyAndRegions.add(new InstanceFamilyAndRegion(
+              instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY),
+              instanceData.getMetaData().get(InstanceMetaDataConstants.REGION)));
+        } else {
+          awsInstances.get(resourceId).forEach(
+              (instanceData -> instanceFamilyAndRegions.add(new InstanceFamilyAndRegion(
+                  instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY),
+                  instanceData.getMetaData().get(InstanceMetaDataConstants.REGION)))))
+          ;
+        }
       }
       Map<InstanceFamilyAndRegion, Pricing> pricingDataByInstanceFamilyAndRegion =
           bigQueryHelperService.getAwsPricingDataByInstanceFamilyAndRegion(new ArrayList<>(instanceFamilyAndRegions),
               startTime, endTime, awsDataSetId);
       log.info("Got response from BQ Family and Region, map: {}, size: {}", pricingDataByInstanceFamilyAndRegion, pricingDataByInstanceFamilyAndRegion.size());
       // update awsInstances
+      leftOverInstances.forEach((String resourceId) ->
+          awsInstances.get(resourceId).forEach((InstanceData instanceData) -> {
+            InstanceFamilyAndRegion instanceFamilyAndRegion = new InstanceFamilyAndRegion(
+                instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY),
+                instanceData.getMetaData().get(InstanceMetaDataConstants.REGION));
+            if (pricingDataByInstanceFamilyAndRegion.containsKey(instanceFamilyAndRegion)) {
+              instanceDataDao.updateInstancePricingData(instanceData, pricingDataByInstanceFamilyAndRegion.get(instanceFamilyAndRegion));
+            }
+          })
+      );
       Set<String> instanceFamilies = new HashSet<>();
       leftOverInstances.removeIf((String resourceId) -> {
+        if (resourceId.equals("")) return false;
         InstanceData instanceData = awsInstances.get(resourceId).get(0);
         String instanceFamily = instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY);
         String region = instanceData.getMetaData().get(InstanceMetaDataConstants.REGION);
@@ -138,50 +161,94 @@ public class InstancePricingDataTasklet implements Tasklet {
           new ArrayList<>(instanceFamilies), startTime, endTime, awsDataSetId);
       log.info("Got response from BQ Family and Region, map: {}, size: {}", pricingDataByInstanceFamily, pricingDataByInstanceFamily.size());
       // update awsInstances
+      leftOverInstances.forEach((String resourceId) -> {
+        awsInstances.get(resourceId).forEach((InstanceData instanceData) -> {
+          InstanceFamilyAndRegion instanceFamilyAndRegion = new InstanceFamilyAndRegion(
+              instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY),
+              instanceData.getMetaData().get(InstanceMetaDataConstants.REGION));
+          String instanceFamily = instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY);
+          if (pricingDataByInstanceFamily.containsKey(instanceFamily) &&
+              !pricingDataByInstanceFamilyAndRegion.containsKey(instanceFamilyAndRegion)) {
+            instanceDataDao.updateInstancePricingData(instanceData, pricingDataByInstanceFamily.get(instanceFamily));
+          }
+        });
+      });
       leftOverInstances.removeIf((String resourceId) -> pricingDataByInstanceFamily.containsKey(
-          awsInstances.get(resourceId).get(0).getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY)));
-      // get pricing from public api
+          awsInstances.get(resourceId).get(0).getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY))
+          && !resourceId.equals(""));
+      // get pricing from public api and update instances
       for (String resourceId: leftOverInstances) {
         try {
-          InstanceData instanceData = awsInstances.get(resourceId).get(0);
-          Call<ProductDetailResponse> pricingInfoCall = banzaiPricingClient.getPricingInfo(
-              CloudProvider.AWS.getCloudProviderName(),
-              instanceData.getMetaData().get(InstanceMetaDataConstants.CLUSTER_TYPE).equals(ClusterType.K8S.name()) ?
-                  CloudProvider.AWS.getK8sService() : COMPUTE_SERVICE,
-              instanceData.getMetaData().get(InstanceMetaDataConstants.REGION),
-              instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY));
-          double pricePerHour = 0;
-          Response<ProductDetailResponse> pricingInfo = pricingInfoCall.execute();
-          if (null != pricingInfo.body() && null != pricingInfo.body().getProduct()) {
-            ProductDetails product = pricingInfo.body().getProduct();
-            pricePerHour = product.getOnDemandPrice();
-            if (InstanceCategory.valueOf(instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_CATEGORY))
-                .equals(InstanceCategory.SPOT)) {
-              pricePerHour = product.getSpotPrice()
-                  .stream()
-                  .filter(zonePrice -> zonePrice.getZone().equals(instanceData.getMetaData().get(InstanceMetaDataConstants.ZONE)))
-                  .findFirst()
-                  .map(ZonePrice::getPrice)
-                  .orElse(pricePerHour);
-            }
-          } else {
-            log.info("Null response from banzai service");
+          Pricing pricing = getPublicPricing(awsInstances.get(resourceId).get(0));
+          if (pricing == null) continue;;
+          if (!resourceId.equals("")) {
+            awsInstances.get(resourceId).forEach((InstanceData instanceData) ->
+                instanceDataDao.updateInstancePricingData(instanceData, pricing));
           }
-
-          instanceData.setPricing(new Pricing(new BigDecimal(pricePerHour), PricingSource.PUBLIC_API));
-
+          else {
+            instanceDataDao.updateInstancePricingData(awsInstances.get(resourceId).get(0), pricing);
+            for (int i=1; i<awsInstances.get(resourceId).size(); i++) {
+              InstanceData instanceData = awsInstances.get(resourceId).get(i);
+              InstanceFamilyAndRegion instanceFamilyAndRegion = new InstanceFamilyAndRegion(
+                  instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY),
+                  instanceData.getMetaData().get(InstanceMetaDataConstants.REGION));
+              String instanceFamily = instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY);
+              if (!pricingDataByInstanceFamilyAndRegion.containsKey(instanceFamilyAndRegion) &&
+                  !pricingDataByInstanceFamily.containsKey(instanceFamily)) {
+                instanceDataDao.updateInstancePricingData(instanceData, getPublicPricing(instanceData));
+              }
+            }
+          }
         } catch (IOException e) {
           log.error("Exception in pricing service ", e);
         }
       }
-      // update awsInstances
 
       Map<String, List<InstanceData>> azureInstances =
           instanceDataLists.stream().filter((InstanceData instanceData) ->
               getValueForKeyFromInstanceMetaData(InstanceMetaDataConstants.CLOUD_PROVIDER, instanceData)
                   .equals(CloudProvider.AZURE.name())
-          ).collect(Collectors.groupingBy(InstanceData::getCloudProviderInstanceId));
+          ).collect(Collectors.groupingBy((InstanceData instanceData) -> {
+            if (instanceData.getCloudProviderInstanceId() != null)
+              return instanceData.getCloudProviderInstanceId();
+            return "";
+          }));
       log.info("Azure Instances size: {}", azureInstances.size());
+
+      leftOverInstances = azureInstances.keySet();
+      // call BQHelperSerivce with awsInstances.keySet
+      String azureDataSetId = customBillingMetaDataService.getAzureDataSetId(accountId);
+      pricingDataByResourceId = bigQueryHelperService.getAzurePricingDataByResourceIds(
+          new ArrayList<>(leftOverInstances), startTime, endTime, awsDataSetId);
+      log.info("Got response from BQ ResourceID, map: {}, size: {}", pricingDataByResourceId, pricingDataByResourceId.size());
+      // update awsInstances
+      pricingDataByResourceId.forEach(
+          (String resourceId, Pricing pricing) -> azureInstances.get(resourceId).forEach(
+              (InstanceData instanceData) -> instanceDataDao.updateInstancePricingData(instanceData, pricing))
+      );
+      leftOverInstances.removeAll(pricingDataByResourceId.keySet());
+
+      // get pricing from public api and update instances
+      for (String resourceId: leftOverInstances) {
+        try {
+          Pricing pricing = getPublicPricing(azureInstances.get(resourceId).get(0));
+          if (pricing == null) continue;;
+          if (!resourceId.equals("")) {
+            azureInstances.get(resourceId).forEach((InstanceData instanceData) ->
+                instanceDataDao.updateInstancePricingData(instanceData, pricing));
+          }
+          else {
+            instanceDataDao.updateInstancePricingData(azureInstances.get(resourceId).get(0), pricing);
+            for (int i=1; i<azureInstances.get(resourceId).size(); i++) {
+              InstanceData instanceData = azureInstances.get(resourceId).get(i);
+              instanceDataDao.updateInstancePricingData(instanceData, getPublicPricing(instanceData));
+            }
+          }
+        } catch (IOException e) {
+          log.error("Exception in pricing service ", e);
+        }
+      }
+
     } while (instanceDataLists.size() == batchSize);
     log.info("Instance Pricing Job Finished");
     return null;
@@ -189,5 +256,36 @@ public class InstancePricingDataTasklet implements Tasklet {
 
   private Instant getFieldValueFromJobParams(String fieldName) {
     return Instant.ofEpochMilli(Long.parseLong(parameters.getString(fieldName)));
+  }
+
+  private Pricing getPublicPricing(InstanceData instanceData) throws IOException {
+    String cloudProvider = instanceData.getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER);
+    String k8sService = (cloudProvider.equalsIgnoreCase(CloudProvider.AWS.getCloudProviderName())) ?
+        CloudProvider.AWS.getK8sService() : CloudProvider.AZURE.getK8sService();
+    Call<ProductDetailResponse> pricingInfoCall = banzaiPricingClient.getPricingInfo(
+        cloudProvider,
+        instanceData.getMetaData().get(InstanceMetaDataConstants.CLUSTER_TYPE).equals(ClusterType.K8S.name()) ?
+            k8sService : COMPUTE_SERVICE,
+        instanceData.getMetaData().get(InstanceMetaDataConstants.REGION),
+        instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY));
+    double pricePerHour = 0;
+    Response<ProductDetailResponse> pricingInfo = pricingInfoCall.execute();
+    if (null != pricingInfo.body() && null != pricingInfo.body().getProduct()) {
+      ProductDetails product = pricingInfo.body().getProduct();
+      pricePerHour = product.getOnDemandPrice();
+      if (InstanceCategory.valueOf(instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_CATEGORY))
+          .equals(InstanceCategory.SPOT)) {
+        pricePerHour = product.getSpotPrice()
+            .stream()
+            .filter(zonePrice -> zonePrice.getZone().equals(instanceData.getMetaData().get(InstanceMetaDataConstants.ZONE)))
+            .findFirst()
+            .map(ZonePrice::getPrice)
+            .orElse(pricePerHour);
+      }
+      return new Pricing(new BigDecimal(pricePerHour), PricingSource.PUBLIC_API);
+    } else {
+      log.info("Null response from banzai service");
+    }
+    return null;
   }
 }

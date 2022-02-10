@@ -178,8 +178,8 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
       switch (cloudProviderType) {
         case "AWS":
           return convertToAwsPricingData(result);
-//        case "AZURE":
-//          return convertToAzureInstanceBillingData(result);
+        case "AZURE":
+          return convertToAzurePricingData(result);
         default:
           break;
       }
@@ -424,6 +424,15 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
     return pricingQueryByInstanceFamily(formattedQuery, "AWS");
   }
 
+  @Override
+  public Map<String, Pricing> getAzurePricingDataByResourceIds(List<String> resourceIds, Instant startTime, Instant endTime, String dataSetId) {
+    String query = BQConst.AZURE_PRICING_DATA_BY_RESOURCE_IDS;
+    String resourceId = String.join("','", resourceIds);
+    String projectTableName = getAzureProjectTableName(dataSetId);
+    String formattedQuery = format(query, projectTableName, resourceId, startTime, endTime);
+    return pricingQueryByResourceId(formattedQuery, "AZURE");
+  }
+
   public FieldList getFieldList(TableResult result) {
     Schema schema = result.getSchema();
     return schema.getFields();
@@ -529,6 +538,33 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
     }
 
     log.debug("AWS: resource map data {} ", instancePricingMap);
+    return instancePricingMap;
+  }
+
+  private Map<String, Pricing> convertToAzurePricingData(TableResult result) {
+    Map<String, Pricing> instancePricingMap = new HashMap<>();
+    FieldList fields = getFieldList(result);
+    Iterable<FieldValueList> fieldValueLists = getFieldValueLists(result);
+    for (FieldValueList row : fieldValueLists) {
+      Pricing.PricingBuilder dataBuilder = Pricing.builder();
+      String resourceId = "";
+      for (Field field : fields) {
+        switch (field.getName()) {
+          case BQConst.azureVMProviderId:
+            resourceId = fetchStringValue(row, field);
+            break;
+          case BQConst.cost:
+            dataBuilder.pricePerHour(new BigDecimal(getDoubleValue(row, field)));
+            break;
+          default:
+            break;
+        }
+      }
+      dataBuilder.source(PricingSource.CUR_REPORT_INSTANCE_ID);
+      instancePricingMap.put(resourceId, dataBuilder.build());
+    }
+
+    log.debug("AZURE: resource map data {} ", instancePricingMap);
     return instancePricingMap;
   }
 

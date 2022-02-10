@@ -9,6 +9,7 @@ package io.harness.batch.processing.dao.intfc;
 
 import io.harness.ccm.commons.beans.InstanceState;
 import io.harness.ccm.commons.beans.InstanceType;
+import io.harness.ccm.commons.beans.Pricing;
 import io.harness.ccm.commons.entities.batch.InstanceData;
 
 import java.time.Instant;
@@ -55,4 +56,6 @@ public interface InstanceDataDao {
 
   List<InstanceData> getInstanceDataListForPricingUpdate(
       String accountId, int batchSize, Instant startTime, Instant endTime);
+
+  boolean updateInstancePricingData(InstanceData instanceData, Pricing pricing);
 }

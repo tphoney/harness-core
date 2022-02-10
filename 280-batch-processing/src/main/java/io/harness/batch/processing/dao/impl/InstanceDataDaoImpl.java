@@ -22,6 +22,7 @@ import io.harness.batch.processing.support.ActiveInstanceIterator;
 import io.harness.batch.processing.tasklet.util.InstanceMetaDataUtils;
 import io.harness.ccm.commons.beans.InstanceState;
 import io.harness.ccm.commons.beans.InstanceType;
+import io.harness.ccm.commons.beans.Pricing;
 import io.harness.ccm.commons.beans.PricingSource;
 import io.harness.ccm.commons.constants.InstanceMetaDataConstants;
 import io.harness.ccm.commons.entities.batch.InstanceData;
@@ -258,6 +259,12 @@ public class InstanceDataDaoImpl implements InstanceDataDao {
         .order(InstanceDataKeys.accountId + "," + InstanceDataKeys.instanceType + ","
             + InstanceDataKeys.activeInstanceIterator)
         .asList(new FindOptions().limit(batchSize));
+  }
+
+  @Override
+  public boolean updateInstancePricingData(InstanceData instanceData, Pricing pricing) {
+    instanceData.setPricing(pricing);
+    return hPersistence.save(instanceData) != null;
   }
 
   private Query<InstanceData> getActiveInstanceQuery(

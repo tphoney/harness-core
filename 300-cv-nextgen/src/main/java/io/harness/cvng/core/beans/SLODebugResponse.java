@@ -5,26 +5,23 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cvng.servicelevelobjective.beans;
-
-import static io.harness.annotations.dev.HarnessTeam.CV;
+package io.harness.cvng.core.beans;
 
 import io.harness.annotations.dev.OwnedBy;
-
-import javax.validation.constraints.NotNull;
-
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.servicelevelobjective.entities.SLOHealthIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective;
-import lombok.Builder;
-import lombok.Value;
 import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.Value;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
+
+import static io.harness.annotations.dev.HarnessTeam.CV;
 
 @OwnedBy(CV)
 @Value
@@ -41,9 +38,4 @@ public class SLODebugResponse {
     List<ServiceLevelIndicator> serviceLevelIndicatorList;
 
     SLOHealthIndicator sloHealthIndicator;
-    //Verification Task Entity Specific Properties.
-
-
-    //DataCollection Entity Specific Properties.
-
 }

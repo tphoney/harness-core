@@ -13,11 +13,16 @@ import static io.harness.validation.Validator.notNullCheck;
 
 import static software.wings.beans.CGConstants.GLOBAL_APP_ID;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.FeatureName;
 import io.harness.exception.HarnessException;
+import io.harness.ff.FeatureFlagService;
 
 import software.wings.beans.CloudFormationInfrastructureProvisioner;
 import software.wings.beans.CloudFormationInfrastructureProvisioner.Yaml;
+import software.wings.beans.GitFileConfig;
 import software.wings.beans.InfrastructureProvisionerType;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.yaml.ChangeContext;
@@ -32,6 +37,7 @@ public class CloudFormationInfrastructureProvisionerYamlHandler
     extends InfrastructureProvisionerYamlHandler<Yaml, CloudFormationInfrastructureProvisioner> {
   @Inject SettingsService settingsService;
   @Inject GitFileConfigHelperService gitFileConfigHelperService;
+  @Inject private FeatureFlagService featureFlagService;
 
   protected String getSourceRepoSettingId(String appId, String sourceRepoSettingName) {
     SettingAttribute settingAttribute = settingsService.getSettingAttributeByName(GLOBAL_APP_ID, sourceRepoSettingName);
@@ -53,8 +59,15 @@ public class CloudFormationInfrastructureProvisionerYamlHandler
     yaml.setSourceType(bean.getSourceType());
     yaml.setTemplateBody(bean.getTemplateBody());
     yaml.setTemplateFilePath(bean.getTemplateFilePath());
-    yaml.setGitFileConfig(gitFileConfigHelperService.getGitFileConfigForToYaml(bean.getGitFileConfig()));
+    yaml.setGitFileConfig(getGitFileConfig(bean.getAccountId(), bean.getGitFileConfig()));
     return yaml;
+  }
+
+  private GitFileConfig getGitFileConfig(final String accountId, GitFileConfig gitFileConfig) {
+    if (featureFlagService.isEnabled(FeatureName.YAML_GIT_CONNECTOR_NAME, accountId)) {
+      return gitFileConfigHelperService.getGitFileConfigForToYaml(gitFileConfig);
+    }
+    return gitFileConfig;
   }
 
   @Override
@@ -93,8 +106,15 @@ public class CloudFormationInfrastructureProvisionerYamlHandler
     bean.setTemplateFilePath(yaml.getTemplateFilePath());
     bean.setTemplateBody(yaml.getTemplateBody());
     bean.setSourceType(yaml.getSourceType());
-    bean.setGitFileConfig(
-        gitFileConfigHelperService.getGitFileConfigFromYaml(accountId, appId, yaml.getGitFileConfig()));
+    bean.setGitFileConfig(setGitFileConfig(accountId, appId, yaml.getGitFileConfig()));
+  }
+
+  private GitFileConfig setGitFileConfig(final String accountId, final String appId, GitFileConfig gitFileConfig) {
+    // make connectorId optional in Yaml
+    if (gitFileConfig != null && isBlank(gitFileConfig.getConnectorId())) {
+      return gitFileConfigHelperService.getGitFileConfigFromYaml(accountId, appId, gitFileConfig);
+    }
+    return gitFileConfig;
   }
 
   @Override

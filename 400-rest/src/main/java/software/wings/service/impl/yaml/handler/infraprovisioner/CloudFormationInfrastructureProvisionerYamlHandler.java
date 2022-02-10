@@ -36,7 +36,7 @@ import java.util.List;
 public class CloudFormationInfrastructureProvisionerYamlHandler
     extends InfrastructureProvisionerYamlHandler<Yaml, CloudFormationInfrastructureProvisioner> {
   @Inject SettingsService settingsService;
-  @Inject GitFileConfigHelperService gitFileConfigHelperService;
+  @Inject private GitFileConfigHelperService gitFileConfigHelperService;
   @Inject private FeatureFlagService featureFlagService;
 
   protected String getSourceRepoSettingId(String appId, String sourceRepoSettingName) {

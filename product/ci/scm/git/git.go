@@ -341,10 +341,12 @@ func ListCommits(ctx context.Context, request *pb.ListCommitsRequest, log *zap.S
 	}
 
 	commits, response, err := client.Git.ListCommits(ctx, request.GetSlug(), scm.CommitListOptions{Ref: ref, Page: int(request.GetPagination().GetPage()), Path: request.FilePath})
+	
 	if err != nil {
 		log.Errorw("ListCommits failure", "provider", gitclient.GetProvider(*request.GetProvider()), "slug", request.GetSlug(), "ref", ref, "elapsed_time_ms", utils.TimeSince(start), zap.Error(err))
 		return nil, err
 	}
+	
 	log.Infow("ListCommits success", "slug", request.GetSlug(), "ref", ref, "elapsed_time_ms", utils.TimeSince(start))
 	var commitIDs []string
 	for _, v := range commits {
@@ -447,8 +449,8 @@ func GetUserRepos(ctx context.Context, request *pb.GetUserReposRequest, log *zap
 	return out, nil
 }
 
-func GetLatestCommitOnFile(ctx context.Context, slug, branch, filePath string, log *zap.SugaredLogger) (string, error) {
-	listCommitsResponse, err := ListCommits(ctx, &pb.ListCommitsRequest{Slug: slug, Type: &pb.ListCommitsRequest_Branch{Branch: branch}, FilePath: filePath}, log)
+func GetLatestCommitOnFile(ctx context.Context, p pb.Provider, slug, branch, filePath string, log *zap.SugaredLogger) (string, error) {
+	listCommitsResponse, err := ListCommits(ctx, &pb.ListCommitsRequest{Provider: &p, Slug: slug, Type: &pb.ListCommitsRequest_Branch{Branch: branch}, FilePath: filePath}, log)
 	if err != nil {
 		return "", err
 	}

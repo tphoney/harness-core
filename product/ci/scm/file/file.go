@@ -169,6 +169,7 @@ func UpdateFile(ctx context.Context, fileRequest *pb.FileModifyRequest, log *zap
 		Name:  fileRequest.GetSignature().GetName(),
 		Email: fileRequest.GetSignature().GetEmail(),
 	}
+
 	response, err := client.Contents.Update(ctx, fileRequest.GetSlug(), fileRequest.GetPath(), inputParams)
 
 	if err != nil {
@@ -415,7 +416,7 @@ func parseCrudResponse(ctx context.Context, client *scm.Client, body io.Reader, 
 		// Bitbucket doesn't work on blobId concept for a file, thus it will  always be empty
 		// We try to find out the latest commit on the file, which is most-likely the commit done by SCM itself
 		// It works on best-effort basis
-		commit, err := git.GetLatestCommitOnFile(ctx, request.Slug, request.Branch, request.FilePath, log)
+		commit, err := git.GetLatestCommitOnFile(ctx, p, request.Slug, request.Branch, request.FilePath, log)
 		if err != nil {
 			return "", ""
 		}

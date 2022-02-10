@@ -10,42 +10,29 @@ package io.harness.steps.policy.step;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.plancreator.steps.common.StepElementParameters;
-import io.harness.plancreator.steps.common.rollback.AsyncExecutableWithRollback;
 import io.harness.pms.contracts.ambiance.Ambiance;
-import io.harness.pms.contracts.execution.AsyncExecutableResponse;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
+import io.harness.pms.sdk.core.steps.executables.SyncExecutable;
 import io.harness.pms.sdk.core.steps.io.PassThroughData;
 import io.harness.pms.sdk.core.steps.io.StepInputPackage;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.steps.StepSpecTypeConstants;
-import io.harness.tasks.ResponseData;
-
-import java.util.Map;
+import io.harness.steps.policy.PolicyStepInfo;
 
 @OwnedBy(PIPELINE)
-public class PolicyStep extends AsyncExecutableWithRollback {
+public class PolicyStep implements SyncExecutable<PolicyStepInfo> {
   public static StepType STEP_TYPE =
       StepType.newBuilder().setType(StepSpecTypeConstants.POLICY_STEP).setStepCategory(StepCategory.STEP).build();
+
   @Override
-  public AsyncExecutableResponse executeAsync(Ambiance ambiance, StepElementParameters stepParameters,
-      StepInputPackage inputPackage, PassThroughData passThroughData) {
+  public StepResponse executeSync(Ambiance ambiance, PolicyStepInfo stepParameters, StepInputPackage inputPackage,
+      PassThroughData passThroughData) {
     return null;
   }
 
   @Override
-  public StepResponse handleAsyncResponse(
-      Ambiance ambiance, StepElementParameters stepParameters, Map<String, ResponseData> responseDataMap) {
-    return null;
+  public Class<PolicyStepInfo> getStepParametersClass() {
+    return PolicyStepInfo.class;
   }
-
-  @Override
-  public Class<StepElementParameters> getStepParametersClass() {
-    return null;
-  }
-
-  @Override
-  public void handleAbort(
-      Ambiance ambiance, StepElementParameters stepParameters, AsyncExecutableResponse executableResponse) {}
 }

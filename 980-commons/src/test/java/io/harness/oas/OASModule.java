@@ -15,15 +15,19 @@ import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.MapBinder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import lombok.extern.slf4j.Slf4j;
@@ -34,11 +38,13 @@ public abstract class OASModule extends AbstractModule {
   public static final String ACCOUNT_IDENTIFIER = "accountIdentifier";
   public static final String ACCOUNT_ID = "accountId";
   public static final String ENDPOINT_VALIDATION_EXCLUSION_FILE = "/oas/exclude-endpoint-validation";
+  public static final String DTO_EXCLUSION_FILE = "/oas/dto-exclusion-file";
 
   public abstract Collection<Class<?>> getResourceClasses();
 
   public void testOASAdoption(Collection<Class<?>> classes) {
     List<String> endpointsWithoutAccountParam = new ArrayList<>();
+    List<String> dtoWithoutDescriptionToField = new ArrayList<>();
 
     if (classes == null) {
       return;
@@ -49,16 +55,28 @@ public abstract class OASModule extends AbstractModule {
           if (Modifier.isPublic(method.getModifiers()) && method.isAnnotationPresent(Operation.class)
               && !isHiddenApi(method)) {
             checkParamAnnotation(method);
+            dtoWithoutDescriptionToField.addAll(checkDtoFieldsDescription(method));
             endpointsWithoutAccountParam.addAll(checkAccountIdentifierParam(method));
           }
         }
       }
     }
 
+    if (!dtoWithoutDescriptionToField.isEmpty()) {
+      dtoWithoutDescriptionToField.removeAll(excludedDTOs());
+      assertThat(dtoWithoutDescriptionToField.isEmpty()).as(getDtoDetailMsg(dtoWithoutDescriptionToField)).isTrue();
+    }
+
     if (!endpointsWithoutAccountParam.isEmpty()) {
       endpointsWithoutAccountParam.removeAll(excludedEndpoints());
       assertThat(endpointsWithoutAccountParam.isEmpty()).as(getDetails(endpointsWithoutAccountParam)).isTrue();
     }
+  }
+
+  private String getDtoDetailMsg(List<String> dtoWithoutDescriptionToField){
+    StringBuilder details = new StringBuilder("All the fields in DTO should have description, but found below : ");
+    dtoWithoutDescriptionToField.forEach(entry->details.append("\n").append(entry));
+    return details.toString();
   }
 
   private String getDetails(List<String> endpointsWithoutAccountParam) {
@@ -81,6 +99,20 @@ public abstract class OASModule extends AbstractModule {
           e.getMessage());
     }
     return excludedEndpoints;
+  }
+
+  private List<String> excludedDTOs() {
+    List<String> excludedDTOs = new ArrayList<>();
+    try (InputStream in = getClass().getResourceAsStream(DTO_EXCLUSION_FILE)) {
+      if (in == null) {
+        log.info("No dto exclusion configured for OAS validations.");
+        return excludedDTOs;
+      }
+      excludedDTOs = IOUtils.readLines(in, "UTF-8");
+    } catch (Exception e) {
+      log.error("Failed to load dto exclusion file {} with error: {}", DTO_EXCLUSION_FILE, e.getMessage());
+    }
+    return excludedDTOs;
   }
 
   private boolean isHiddenApi(Method method) {
@@ -107,6 +139,70 @@ public abstract class OASModule extends AbstractModule {
         }
       }
     }
+  }
+
+  private List<String> recursiveDtoFieldDescriptionCheck(Class<?> clazz) {
+    List<String> dtoWithoutDescriptionToField = new ArrayList<>();
+    Field[] listOfFields = clazz.getDeclaredFields();
+    for (Field field : listOfFields) {
+
+      if (field.getType() == field.getDeclaringClass()) {
+        return dtoWithoutDescriptionToField;
+      }
+
+      if (field.getType() == List.class || field.getType() == Set.class) {
+        ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
+        Class<?> classInList = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+        if (classInList.isAnnotationPresent(Schema.class)) {
+          dtoWithoutDescriptionToField.addAll(recursiveDtoFieldDescriptionCheck(classInList));
+        }
+      }
+
+      if (field.getType().isAnnotationPresent(Schema.class)) {
+        dtoWithoutDescriptionToField.addAll(recursiveDtoFieldDescriptionCheck(field.getType()));
+      } else {
+        if (!field.isAnnotationPresent(Schema.class)) {
+          if (!dtoWithoutDescriptionToField.contains(clazz.getName())) {
+            dtoWithoutDescriptionToField.add(clazz.getName());
+          }
+        } else {
+          Annotation[] annotations = field.getAnnotations();
+          for (Annotation annotation : annotations) {
+            if (annotation.annotationType() == Schema.class) {
+              Schema schema = (Schema) annotation;
+              if (schema.description().isEmpty()) {
+                dtoWithoutDescriptionToField.add(clazz.getName());
+              }
+            }
+          }
+        }
+      }
+    }
+    return dtoWithoutDescriptionToField;
+  }
+
+  private List<String> checkDtoFieldsDescription(Method method) {
+    List<String> dtoWithoutDescriptionToField = new ArrayList<>();
+    java.lang.reflect.Parameter[] parameters = method.getParameters();
+    Class<?>[] listOfClass = method.getParameterTypes();
+
+    for (java.lang.reflect.Parameter parameter : parameters) {
+      if (parameter.getType() == List.class || parameter.getType() == Set.class) {
+        ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();
+        parameterizedType.getActualTypeArguments();
+        Class<?> classInList = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+        if (classInList.isAnnotationPresent(Schema.class)) {
+          dtoWithoutDescriptionToField.addAll(recursiveDtoFieldDescriptionCheck(classInList));
+        }
+      }
+    }
+
+    for (Class<?> clazz : listOfClass) {
+      if (clazz.isAnnotationPresent(Schema.class)) {
+        dtoWithoutDescriptionToField.addAll(recursiveDtoFieldDescriptionCheck(clazz));
+      }
+    }
+    return dtoWithoutDescriptionToField;
   }
 
   private List<String> checkAccountIdentifierParam(Method method) {

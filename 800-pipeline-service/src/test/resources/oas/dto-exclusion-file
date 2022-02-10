@@ -1,0 +1,7 @@
+io.harness.pms.plan.execution.beans.dto.RunStageRequestDTO
+io.harness.gitsync.interceptor.GitEntityCreateInfoDTO
+io.harness.gitsync.interceptor.GitEntityUpdateInfoDTO
+io.harness.pms.ngpipeline.inputset.beans.resource.InputSetTemplateRequestDTO
+io.harness.pms.inputset.MergeInputSetTemplateRequestDTO
+io.harness.gitsync.interceptor.GitEntityFindInfoDTO
+io.harness.gitsync.interceptor.GitEntityDeleteInfoDTO

@@ -19,4 +19,5 @@ import lombok.experimental.FieldDefaults;
 public class CCMFilter {
   List<CCMStringFilter> stringFilters;
   List<CCMNumberFilter> numericFilters;
+  List<CCMTimeFilter> timeFilters;
 }

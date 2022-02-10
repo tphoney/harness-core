@@ -10,6 +10,7 @@ import io.harness.ccm.commons.entities.CCMNumberFilter;
 import io.harness.ccm.commons.entities.CCMOperator;
 import io.harness.ccm.commons.entities.CCMSort;
 import io.harness.ccm.commons.entities.CCMStringFilter;
+import io.harness.ccm.commons.entities.CCMTimeFilter;
 import io.harness.exception.InvalidRequestException;
 import io.harness.timescaledb.tables.records.AnomaliesRecord;
 
@@ -49,7 +50,6 @@ public class AnomalyQueryBuilder {
     Condition condition = DSL.noCondition();
 
     if (filter.getNumericFilters() != null) {
-      condition = applyTimeFilters(filter.getNumericFilters(), condition);
       condition = applyNumericFilters(filter.getNumericFilters(), condition);
     }
 
@@ -58,17 +58,17 @@ public class AnomalyQueryBuilder {
       condition = applyStringFilters(filter.getStringFilters(), condition);
     }
 
+    if (filter.getTimeFilters() != null) {
+      condition = applyTimeFilters(filter.getTimeFilters(), condition);
+    }
+
     return condition;
   }
 
   @NotNull
-  private Condition applyTimeFilters(@NotNull List<CCMNumberFilter> filters, Condition condition) {
-    for (CCMNumberFilter filter : filters) {
-      switch (filter.getField()) {
-        case ANOMALY_DATE:
-          condition = condition.and(
-              constructCondition(ANOMALIES.ANOMALYTIME, filter.getValue().longValue(), filter.getOperator()));
-      }
+  private Condition applyTimeFilters(@NotNull List<CCMTimeFilter> filters, Condition condition) {
+    for (CCMTimeFilter filter : filters) {
+      condition = condition.and(constructCondition(ANOMALIES.ANOMALYTIME, filter.getTimestamp(), filter.getOperator()));
     }
     return condition;
   }
@@ -127,7 +127,7 @@ public class AnomalyQueryBuilder {
   @NotNull
   private static TableField<AnomaliesRecord, ?> getTableField(CCMField field) {
     switch (field) {
-      case ANOMALY_DATE:
+      case ANOMALY_TIME:
         return ANOMALIES.ANOMALYTIME;
       case ACTUAL_COST:
         return ANOMALIES.ACTUALCOST;

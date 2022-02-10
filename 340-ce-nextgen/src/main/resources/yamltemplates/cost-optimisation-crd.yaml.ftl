@@ -166,8 +166,8 @@ metadata:
 data:
   envoy.yaml: >
     node:
-      cluster: primary-cluster
-      id: primary-id
+      cluster: test-cluster
+      id: test-id
 
     dynamic_resources:
       lds_config:

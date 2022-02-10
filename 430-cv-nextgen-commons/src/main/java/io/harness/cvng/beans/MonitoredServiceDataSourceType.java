@@ -20,6 +20,7 @@ public enum MonitoredServiceDataSourceType {
   @JsonProperty("Splunk") SPLUNK,
   @JsonProperty("DatadogMetrics") DATADOG_METRICS,
   @JsonProperty("DatadogLog") DATADOG_LOG,
+  @JsonProperty("Dynatrace") DYNATRACE,
   @JsonProperty("ErrorTracking") ERROR_TRACKING,
   @JsonProperty("CustomHealth") CUSTOM_HEALTH;
 
@@ -35,6 +36,7 @@ public enum MonitoredServiceDataSourceType {
           put(DataSourceType.DATADOG_METRICS, DATADOG_METRICS);
           put(DataSourceType.DATADOG_LOG, DATADOG_LOG);
           put(DataSourceType.CUSTOM_HEALTH, CUSTOM_HEALTH);
+          put(DataSourceType.DYNATRACE, DYNATRACE);
           put(DataSourceType.ERROR_TRACKING, ERROR_TRACKING);
         }
       };

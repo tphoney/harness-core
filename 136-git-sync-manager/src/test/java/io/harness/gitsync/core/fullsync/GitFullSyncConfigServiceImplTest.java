@@ -24,7 +24,6 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.gitsync.GitSyncTestBase;
 import io.harness.gitsync.common.beans.GitBranch;
 import io.harness.gitsync.common.service.GitBranchService;
-import io.harness.gitsync.common.service.YamlGitConfigService;
 import io.harness.gitsync.fullsync.dtos.GitFullSyncConfigDTO;
 import io.harness.gitsync.fullsync.dtos.GitFullSyncConfigRequestDTO;
 import io.harness.repositories.fullSync.GitFullSyncConfigRepository;
@@ -54,7 +53,6 @@ public class GitFullSyncConfigServiceImplTest extends GitSyncTestBase {
   @Inject private GitFullSyncConfigRepository gitFullSyncConfigRepository;
   @Inject private GitFullSyncConfigServiceImpl gitFullSyncConfigService;
   @Mock private GitBranchService gitBranchService;
-  @Mock private YamlGitConfigService yamlGitConfigService;
 
   @Before
   public void setup() throws Exception {
@@ -69,10 +67,8 @@ public class GitFullSyncConfigServiceImplTest extends GitSyncTestBase {
                            .gitConnectorType(ConnectorType.GIT)
                            .build();
     gitBranch = GitBranch.builder().branchName(BRANCH).repoURL(REPO_URL).build();
-    when(yamlGitConfigService.get(any(), any(), any(), any())).thenReturn(yamlGitConfigDTO);
-    when(gitBranchService.get(any(), any(), any())).thenReturn(gitBranch);
+    when(gitBranchService.isBranchExists(any(), any(), any(), any(), any())).thenReturn(true);
 
-    FieldUtils.writeField(gitFullSyncConfigService, "yamlGitConfigService", yamlGitConfigService, true);
     FieldUtils.writeField(gitFullSyncConfigService, "gitBranchService", gitBranchService, true);
   }
 

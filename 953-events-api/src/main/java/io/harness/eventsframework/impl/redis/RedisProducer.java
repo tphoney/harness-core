@@ -38,7 +38,7 @@ import org.redisson.api.StreamMessageId;
 @Slf4j
 public class RedisProducer extends AbstractProducer {
   private static final String PRODUCER = "producer";
-  private static final String REDIS_PUSH_EVENT_METRIC = "redis_push_event_metric";
+  private static final String REDIS_PRODUCER_EVENT_METRIC = "redis_producer_event_metric";
   private RStream<String, String> stream;
   private RedissonClient redissonClient;
   @Inject private RedisEventMetricPublisher redisEventMetricPublisher;
@@ -150,7 +150,7 @@ public class RedisProducer extends AbstractProducer {
   private void addMonitoring(Message message) {
     try {
       redisEventMetricPublisher.sendMetricWithEventContext(
-          RedisEventMetricDTOMapper.prepareRedisEventMetricDTO(message, getTopicName()), REDIS_PUSH_EVENT_METRIC);
+          RedisEventMetricDTOMapper.prepareRedisEventMetricDTO(message, getTopicName()), REDIS_PRODUCER_EVENT_METRIC);
     } catch (Exception ex) {
       log.warn("Error while sending metrics for redis producer events :", ex);
     }

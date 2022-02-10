@@ -504,7 +504,9 @@ public class NGTemplateResource {
       @Parameter(description = TEMPLATE_PARAM_MESSAGE) @PathParam(
           "templateIdentifier") @ResourceIdentifier String templateIdentifier,
       @Parameter(description = "Template Label") @NotNull @QueryParam(
-          NGCommonEntityConstants.VERSION_LABEL_KEY) String templateLabel) {
+          NGCommonEntityConstants.VERSION_LABEL_KEY) String templateLabel,
+      @Parameter(
+          description = "This contains details of Git Entity") @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
     accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountId, orgId, projectId),
         Resource.of(TEMPLATE, templateIdentifier), PermissionTypes.TEMPLATE_VIEW_PERMISSION);
     // if label not given, then consider stable template label
@@ -523,7 +525,7 @@ public class NGTemplateResource {
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
       @QueryParam(NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgId,
       @QueryParam(NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectId,
-      @NotNull TemplateApplyRequestDTO templateApplyRequestDTO) {
+      @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo, @NotNull TemplateApplyRequestDTO templateApplyRequestDTO) {
     TemplateMergeResponseDTO templateMergeResponseDTO = templateMergeHelper.mergeTemplateSpecToPipelineYaml(
         accountId, orgId, projectId, templateApplyRequestDTO.getOriginalEntityYaml());
     if (templateApplyRequestDTO.isCheckForAccess() && templateMergeResponseDTO != null

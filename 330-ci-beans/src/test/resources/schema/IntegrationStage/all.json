@@ -508,6 +508,19 @@
                 "IfNotPresent"
               ]
             },
+            "portBindings": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
             "privileged": {
               "oneOf": [
                 {
@@ -5034,6 +5047,12 @@
               "type": "array",
               "items": {
                 "type": "string"
+              }
+            },
+            "serviceDependencies": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DependencyElement"
               }
             },
             "stageVars": {

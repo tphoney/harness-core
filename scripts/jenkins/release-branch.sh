@@ -33,7 +33,7 @@ function check_branch_name(){
     fi
 }
 
-PROJECTS="BT|CCE|CCM|CDC|CDNG|CDP|CDS|CE|CI|CV|CVNG|DEL|DOC|DX|ER|FFM|OPA|OPS|PIE|PL|SEC|SWAT|GTM|ONP"
+PROJECTS="BT|CCE|CCM|CDC|CDNG|CDP|CDS|CE|CI|CV|CVNG|CVS|DEL|DOC|DX|ER|FFM|OPA|OPS|PIE|PL|SEC|SWAT|GTM|ONP"
 
 #RELEASE TYPE is required to increment tag accordingly.
 check_empty_output "$RELEASE_TYPE" "Release Type is not defined."

@@ -7,9 +7,7 @@
 
 package io.harness.cvng.analysis.entities;
 
-import static io.harness.data.encoding.EncodingUtils.compressString;
 import static io.harness.data.encoding.EncodingUtils.deCompressString;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.annotation.HarnessEntity;
@@ -30,7 +28,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.reinert.jjschema.SchemaIgnore;
 import com.google.common.collect.ImmutableList;
-import java.io.IOException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -47,7 +44,7 @@ import org.mongodb.morphia.annotations.Id;
 import org.mongodb.morphia.annotations.PrePersist;
 
 @Data
-@Builder(buildMethodName = "unsafeBuild")
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldNameConstants(innerTypeName = "LogAnalysisClusterKeys")
@@ -66,15 +63,6 @@ public final class LogAnalysisCluster implements PersistentEntity, UuidAware, Cr
         .build();
   }
 
-  public static class LogAnalysisClusterBuilder {
-    public LogAnalysisCluster build() {
-      LogAnalysisCluster logAnalysisCluster = unsafeBuild();
-      logAnalysisCluster.setCompressedText(logAnalysisCluster.getCompressedText());
-      logAnalysisCluster.setText(null);
-      return logAnalysisCluster;
-    }
-  }
-
   @Id private String uuid;
   @FdIndex private long createdAt;
   @FdIndex private long lastUpdatedAt;
@@ -86,35 +74,13 @@ public final class LogAnalysisCluster implements PersistentEntity, UuidAware, Cr
   private long label;
   private List<Frequency> frequencyTrend;
   private String text;
-  private byte[] compressedText;
   private boolean isEvicted;
   private long firstSeenTime;
   private double x;
   private double y;
+  @Deprecated private byte[] compressedText;
 
-  public void compressText() {
-    if (isNotEmpty(text)) {
-      try {
-        setCompressedText(compressString(JsonUtils.asJson(text)));
-        setText(null);
-      } catch (IOException e) {
-        throw new IllegalStateException(e);
-      }
-    }
-  }
-
-  public void deCompressText() {
-    if (isNotEmpty(compressedText)) {
-      try {
-        String decompressedText = deCompressString(compressedText);
-        setText(JsonUtils.asObject(decompressedText, new TypeReference<String>() {}));
-        setCompressedText(null);
-      } catch (Exception ex) {
-        throw new IllegalStateException(ex);
-      }
-    }
-  }
-
+  @Deprecated
   public String getText() {
     if (Objects.isNull(text) && isNotEmpty(compressedText)) {
       try {
@@ -125,17 +91,6 @@ public final class LogAnalysisCluster implements PersistentEntity, UuidAware, Cr
       }
     }
     return text;
-  }
-
-  public byte[] getCompressedText() {
-    if (isEmpty(compressedText) && isNotEmpty(text)) {
-      try {
-        return compressString(JsonUtils.asJson(text));
-      } catch (IOException e) {
-        throw new IllegalStateException(e);
-      }
-    }
-    return compressedText;
   }
 
   public List<Frequency> getFrequencyTrend() {

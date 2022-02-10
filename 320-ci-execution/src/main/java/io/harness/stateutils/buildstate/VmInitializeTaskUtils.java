@@ -7,14 +7,19 @@
 
 package io.harness.stateutils.buildstate;
 
+import static io.harness.beans.serializer.RunTimeInputHandler.resolveMapParameter;
 import static io.harness.beans.sweepingoutputs.StageInfraDetails.STAGE_INFRA_DETAILS;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import static java.lang.String.format;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FeatureName;
+import io.harness.beans.dependencies.CIServiceInfo;
+import io.harness.beans.dependencies.DependencyElement;
 import io.harness.beans.environment.VmBuildJobInfo;
+import io.harness.beans.serializer.RunTimeInputHandler;
 import io.harness.beans.steps.stepinfo.InitializeStepInfo;
 import io.harness.beans.sweepingoutputs.ContextElement;
 import io.harness.beans.sweepingoutputs.StageDetails;
@@ -23,9 +28,9 @@ import io.harness.beans.yaml.extended.infrastrucutre.Infrastructure;
 import io.harness.beans.yaml.extended.infrastrucutre.VmInfraSpec;
 import io.harness.beans.yaml.extended.infrastrucutre.VmInfraYaml;
 import io.harness.beans.yaml.extended.infrastrucutre.VmPoolYaml;
-import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.ci.vm.CIVmInitializeTaskParams;
+import io.harness.delegate.beans.ci.vm.steps.VmServiceDependency;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.ff.CIFeatureFlagService;
 import io.harness.logserviceclient.CILogServiceUtils;
@@ -50,11 +55,13 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
+import org.apache.commons.lang3.StringUtils;
 
 @Singleton
 @Slf4j
@@ -65,6 +72,8 @@ public class VmInitializeTaskUtils {
   @Inject private ExecutionSweepingOutputService executionSweepingOutputService;
   @Inject TIServiceUtils tiServiceUtils;
   @Inject CodebaseUtils codebaseUtils;
+  @Inject ConnectorUtils connectorUtils;
+  @Inject CIVmSecretEvaluator ciVmSecretEvaluator;
   @Inject private CIFeatureFlagService featureFlagService;
 
   private final Duration RETRY_SLEEP_DURATION = Duration.ofSeconds(2);
@@ -139,11 +148,64 @@ public class VmInitializeTaskUtils {
         .tiSvcToken(getTISvcToken(accountID))
         .secrets(new ArrayList<>(secrets))
         .volToMountPath(vmBuildJobInfo.getVolToMountPath())
+        .serviceDependencies(getServiceDependencies(ambiance, vmBuildJobInfo.getServiceDependencies()))
+        .build();
+  }
+
+  private List<VmServiceDependency> getServiceDependencies(
+      Ambiance ambiance, List<DependencyElement> dependencyElements) {
+    List<VmServiceDependency> serviceDependencies = new ArrayList<>();
+    if (isEmpty(dependencyElements)) {
+      return serviceDependencies;
+    }
+
+    for (DependencyElement dependencyElement : dependencyElements) {
+      if (dependencyElement == null) {
+        continue;
+      }
+
+      if (dependencyElement.getDependencySpecType() instanceof CIServiceInfo) {
+        serviceDependencies.add(
+            getServiceDependency(ambiance, (CIServiceInfo) dependencyElement.getDependencySpecType()));
+      }
+    }
+    return serviceDependencies;
+  }
+
+  private VmServiceDependency getServiceDependency(Ambiance ambiance, CIServiceInfo ciServiceInfo) {
+    String image = RunTimeInputHandler.resolveStringParameter(
+        "Image", "Service", ciServiceInfo.getIdentifier(), ciServiceInfo.getImage(), true);
+    String connectorIdentifier = RunTimeInputHandler.resolveStringParameter(
+        "connectorRef", "Service", ciServiceInfo.getIdentifier(), ciServiceInfo.getConnectorRef(), false);
+    Map<String, String> envVars = resolveMapParameter(
+        "envVariables", "Service", ciServiceInfo.getIdentifier(), ciServiceInfo.getEnvVariables(), false);
+    Map<String, String> portBindings = RunTimeInputHandler.resolveMapParameter(
+        "portBindings", "Service", ciServiceInfo.getIdentifier(), ciServiceInfo.getPortBindings(), false);
+
+    String logKey = format("%s/serviceId:%s", getLogPrefix(ambiance), ciServiceInfo.getIdentifier());
+
+    Set<String> secrets =
+        ciVmSecretEvaluator.resolve(envVars, AmbianceUtils.getNgAccess(ambiance), ambiance.getExpressionFunctorToken());
+
+    ConnectorDetails connectorDetails = null;
+    if (!StringUtils.isEmpty(connectorIdentifier)) {
+      NGAccess ngAccess = AmbianceUtils.getNgAccess(ambiance);
+      connectorDetails = connectorUtils.getConnectorDetails(ngAccess, connectorIdentifier);
+    }
+    return VmServiceDependency.builder()
+        .name(ciServiceInfo.getName())
+        .identifier(ciServiceInfo.getIdentifier())
+        .image(image)
+        .imageConnector(connectorDetails)
+        .envVariables(envVars)
+        .secrets(new ArrayList<>(secrets))
+        .logKey(logKey)
+        .portBindings(portBindings)
         .build();
   }
 
   public Map<String, String> getEnvironmentVariables(Map<String, Object> inputVariables) {
-    if (EmptyPredicate.isEmpty(inputVariables)) {
+    if (isEmpty(inputVariables)) {
       return new HashMap<>();
     }
     Map<String, String> res = new LinkedHashMap<>();
@@ -202,6 +264,11 @@ public class VmInitializeTaskUtils {
 
   private String getLogKey(Ambiance ambiance) {
     LinkedHashMap<String, String> logAbstractions = StepUtils.generateLogAbstractions(ambiance);
+    return LogStreamingHelper.generateLogBaseKey(logAbstractions);
+  }
+
+  private String getLogPrefix(Ambiance ambiance) {
+    LinkedHashMap<String, String> logAbstractions = StepUtils.generateLogAbstractions(ambiance, "STAGE");
     return LogStreamingHelper.generateLogBaseKey(logAbstractions);
   }
 }

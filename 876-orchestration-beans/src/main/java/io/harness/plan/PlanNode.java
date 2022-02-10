@@ -44,6 +44,8 @@ public class PlanNode implements Node {
 
   // Input/Outputs
   PmsStepParameters stepParameters;
+
+  // TODO change this to PmsStepInputs
   OrchestrationMap stepInputs;
   @Singular List<RefObject> refObjects;
 

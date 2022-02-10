@@ -25,7 +25,9 @@ import io.harness.pms.expressions.functors.AccountFunctor;
 import io.harness.pms.expressions.functors.OrgFunctor;
 import io.harness.pms.expressions.functors.ProjectFunctor;
 import io.harness.pms.expressions.functors.RemoteExpressionFunctor;
+import io.harness.pms.expressions.functors.TriggeredByFunctor;
 import io.harness.pms.plan.execution.SetupAbstractionKeys;
+import io.harness.pms.plan.execution.service.PMSExecutionService;
 import io.harness.pms.sdk.PmsSdkInstance;
 import io.harness.pms.sdk.PmsSdkInstanceService;
 import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
@@ -44,6 +46,7 @@ public class PMSExpressionEvaluator extends AmbianceExpressionEvaluator {
   @Inject @Named("PRIVILEGED") private OrganizationClient organizationClient;
   @Inject @Named("PRIVILEGED") private ProjectClient projectClient;
   @Inject private PlanExecutionMetadataService planExecutionMetadataService;
+  @Inject private PMSExecutionService pmsExecutionService;
   @Inject PmsSdkInstanceService pmsSdkInstanceService;
 
   public PMSExpressionEvaluator(VariableResolverTracker variableResolverTracker, Ambiance ambiance,
@@ -58,6 +61,8 @@ public class PMSExpressionEvaluator extends AmbianceExpressionEvaluator {
     addToContext("account", new AccountFunctor(accountClient, ambiance));
     addToContext("org", new OrgFunctor(organizationClient, ambiance));
     addToContext("project", new ProjectFunctor(projectClient, ambiance));
+
+    addToContext("pipeline", new TriggeredByFunctor(pmsExecutionService, ambiance));
 
     // Trigger functors
     addToContext(SetupAbstractionKeys.eventPayload, new EventPayloadFunctor(ambiance, planExecutionMetadataService));

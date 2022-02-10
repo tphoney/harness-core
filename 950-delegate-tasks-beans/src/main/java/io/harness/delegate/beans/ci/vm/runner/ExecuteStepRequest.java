@@ -45,6 +45,7 @@ public class ExecuteStepRequest {
     @JsonProperty("image") String image;
     @JsonProperty("pull") String pull;
     @JsonProperty("privileged") boolean privileged;
+    @JsonProperty("port_bindings") Map<String, String> portBindings;
     @JsonProperty("user") String user;
     @JsonProperty("volumes") List<VolumeMount> volumeMounts;
     @JsonProperty("auth") ImageAuth imageAuth;

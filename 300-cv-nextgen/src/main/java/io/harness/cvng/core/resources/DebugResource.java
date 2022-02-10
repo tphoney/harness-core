@@ -7,6 +7,8 @@
 
 package io.harness.cvng.core.resources;
 
+import com.codahale.metrics.annotation.Timed;
+import com.google.inject.Inject;
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.OrgIdentifier;
 import io.harness.accesscontrol.ProjectIdentifier;
@@ -14,11 +16,8 @@ import io.harness.accesscontrol.ResourceIdentifier;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.core.beans.params.ProjectParams;
-import io.harness.cvng.servicelevelobjective.beans.SLODebugResponse;
 import io.harness.cvng.core.services.api.DebugService;
-import com.codahale.metrics.annotation.Timed;
-import com.google.inject.Inject;
-
+import io.harness.cvng.core.beans.SLODebugResponse;
 import io.harness.rest.RestResponse;
 import io.harness.security.annotations.NextGenManagerAuth;
 import io.swagger.annotations.Api;
@@ -26,12 +25,11 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 import javax.validation.constraints.NotNull;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.PathParam;
 
 
 @Api("debug")
@@ -52,14 +50,14 @@ public class DebugResource {
             @ApiParam(required = true) @NotNull @PathParam("identifier") @ResourceIdentifier String identifier,
             @ApiParam(required = true) @NotNull @QueryParam("orgIdentifier") @OrgIdentifier String orgIdentifier,
             @ApiParam(required = true) @NotNull @QueryParam("projectIdentifier") @ProjectIdentifier String projectIdentifier
-    ){
+    ) {
         ProjectParams projectParams = ProjectParams.builder()
                 .accountIdentifier(accountId)
                 .orgIdentifier(orgIdentifier)
                 .projectIdentifier(projectIdentifier)
                 .build();
 
-        return new RestResponse<>(debugService.get(projectParams,identifier));
+        return new RestResponse<>(debugService.get(projectParams, identifier));
 
     }
 }

@@ -17,31 +17,32 @@ import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective.Time
 import java.util.List;
 
 public interface ServiceLevelIndicatorService {
-  List<String> create(ProjectParams projectParams, List<ServiceLevelIndicatorDTO> serviceLevelIndicatorDTOList,
-      String serviceLevelObjectiveIdentifier, String monitoredServiceIndicator, String healthSourceIndicator);
+    List<String> create(ProjectParams projectParams, List<ServiceLevelIndicatorDTO> serviceLevelIndicatorDTOList,
+                        String serviceLevelObjectiveIdentifier, String monitoredServiceIndicator, String healthSourceIndicator);
 
-  SLIOnboardingGraphs getOnboardingGraphs(ProjectParams projectParams, String monitoredServiceIdentifier,
-      ServiceLevelIndicatorDTO serviceLevelIndicatorDTO, String tracingId);
+    SLIOnboardingGraphs getOnboardingGraphs(ProjectParams projectParams, String monitoredServiceIdentifier,
+                                            ServiceLevelIndicatorDTO serviceLevelIndicatorDTO, String tracingId);
 
-  List<ServiceLevelIndicatorDTO> get(ProjectParams projectParams, List<String> serviceLevelIndicators);
+    List<ServiceLevelIndicatorDTO> get(ProjectParams projectParams, List<String> serviceLevelIndicators);
 
-  List<ServiceLevelIndicator> getEntities(ProjectParams projectParams, List<String> serviceLevelIndicators);
+    List<ServiceLevelIndicator> getEntities(ProjectParams projectParams, List<String> serviceLevelIndicators);
 
-  List<String> update(ProjectParams projectParams, List<ServiceLevelIndicatorDTO> serviceLevelIndicatorDTOList,
-      String serviceLevelObjectiveIdentifier, List<String> serviceLevelIndicatorsList, String monitoredServiceIndicator,
-      String healthSourceIndicator, TimePeriod timePeriod);
+    List<String> update(ProjectParams projectParams, List<ServiceLevelIndicatorDTO> serviceLevelIndicatorDTOList,
+                        String serviceLevelObjectiveIdentifier, List<String> serviceLevelIndicatorsList, String monitoredServiceIndicator,
+                        String healthSourceIndicator, TimePeriod timePeriod);
 
-  void deleteByIdentifier(ProjectParams projectParams, List<String> serviceLevelIndicatorIdentifier);
+    void deleteByIdentifier(ProjectParams projectParams, List<String> serviceLevelIndicatorIdentifier);
 
-  ServiceLevelIndicator get(String sliId);
+    ServiceLevelIndicator get(String sliId);
 
-  List<CVConfig> fetchCVConfigForSLI(ServiceLevelIndicator serviceLevelIndicator);
-  List<CVConfig> fetchCVConfigForSLI(String sliId);
+    List<CVConfig> fetchCVConfigForSLI(ServiceLevelIndicator serviceLevelIndicator);
 
-  ServiceLevelIndicator getServiceLevelIndicator(ProjectParams projectParams, String identifier);
+    List<CVConfig> fetchCVConfigForSLI(String sliId);
 
-  List<String> getSLIsWithMetrics(ProjectParams projectParams, String monitoredServiceIdentifier,
-      String healthSourceIdentifier, List<String> metricIdentifiers);
+    ServiceLevelIndicator getServiceLevelIndicator(ProjectParams projectParams, String identifier);
 
-  List<String> getSLIs(ProjectParams projectParams, String monitoredServiceIdentifier);
+    List<String> getSLIsWithMetrics(ProjectParams projectParams, String monitoredServiceIdentifier,
+                                    String healthSourceIdentifier, List<String> metricIdentifiers);
+
+    List<String> getSLIs(ProjectParams projectParams, String monitoredServiceIdentifier);
 }

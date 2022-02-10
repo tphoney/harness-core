@@ -8,8 +8,8 @@
 package io.harness.cvng.core.services.api;
 
 import io.harness.cvng.core.beans.params.ProjectParams;
-import io.harness.cvng.servicelevelobjective.beans.SLODebugResponse;
+import io.harness.cvng.core.beans.SLODebugResponse;
 
 public interface DebugService {
-    SLODebugResponse get(ProjectParams projectParams,String identifier);
+    SLODebugResponse get(ProjectParams projectParams, String identifier);
 }

@@ -96,6 +96,7 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
     boolean decryptedWithTokenFromCache = decryptJwtTokenWithDelegateToken(encryptedJWT, delegateTokenFromCache);
     if (!decryptedWithTokenFromCache) {
       delegateTokenCacheHelper.invalidateCacheUsingKey(delegateTokenCacheKey);
+      log.warn("Delegate token not found in cache. Fetching it from db.");
       decryptedWithActiveToken =
           decryptJWTDelegateToken(delegateTokenCacheKey, DelegateTokenStatus.ACTIVE, encryptedJWT);
       if (!decryptedWithActiveToken) {

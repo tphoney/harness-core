@@ -9,7 +9,6 @@ import io.harness.delegate.beans.DelegateToken;
 import io.harness.delegate.beans.DelegateTokenCacheKey;
 
 import software.wings.beans.DelegateStatus;
-import software.wings.service.intfc.AccountService;
 import software.wings.service.intfc.DelegateService;
 
 import com.google.inject.Inject;
@@ -25,14 +24,15 @@ import lombok.extern.slf4j.Slf4j;
 public class DelegateTokenCacheHelper {
   @Inject @Named(DELEGATE_TOKEN_CACHE) private Cache<DelegateTokenCacheKey, DelegateToken> delegateTokenCache;
   @Inject private DelegateService delegateService;
-  @Inject private AccountService accountService;
 
   public DelegateToken getDelegateToken(DelegateTokenCacheKey delegateTokenCacheKey) {
     if (delegateTokenCache == null) {
       log.warn("Delegate token cache not yet initialized.");
       return null;
     }
-    return delegateTokenCache.get(delegateTokenCacheKey);
+    DelegateToken delegateToken = delegateTokenCache.get(delegateTokenCacheKey);
+    log.info("Fetched delegate token {} from cache.", delegateToken);
+    return delegateToken;
   }
 
   // TODO: find a better way to invalidate a particular cache when a delegate token is revoked.
@@ -55,6 +55,7 @@ public class DelegateTokenCacheHelper {
 
   public void putToken(DelegateTokenCacheKey delegateTokenCacheKey, DelegateToken delegateToken) {
     if (delegateTokenCache != null) {
+      log.info("Putting delegate token in cache for account {}", delegateTokenCacheKey.getAccountId());
       delegateTokenCache.put(delegateTokenCacheKey, delegateToken);
     }
   }

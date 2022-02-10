@@ -368,7 +368,10 @@ public class PMSPipelineServiceImplTest extends PipelineServiceTestBase {
         ExpansionResponseBatch.newBuilder().addExpansionResponseProto(dummyResponse).build();
     Set<ExpansionResponseBatch> dummyResponseSet = Collections.singleton(dummyResponseBatch);
     doReturn(dummyResponseSet).when(jsonExpander).fetchExpansionResponses(dummyRequestSet, expansionRequestMetadata);
-    pmsPipelineService.fetchExpandedPipelineJSONFromYaml(accountId, ORG_IDENTIFIER, PROJ_IDENTIFIER, dummyYaml);
+    assertThatThrownBy(()
+                           -> pmsPipelineService.fetchExpandedPipelineJSONFromYaml(
+                               accountId, ORG_IDENTIFIER, PROJ_IDENTIFIER, dummyYaml))
+        .isInstanceOf(InvalidRequestException.class);
     verify(pmsFeatureFlagService, times(1)).isEnabled(accountId, FeatureName.OPA_PIPELINE_GOVERNANCE);
     verify(gitSyncHelper, times(1)).getGitSyncBranchContextBytesThreadLocal();
     verify(expansionRequestsExtractor, times(1)).fetchExpansionRequests(dummyYaml);

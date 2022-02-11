@@ -8,9 +8,11 @@
 package io.harness.ng.userprofile.services.impl;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
-
 import static java.lang.String.format;
 
+import com.google.inject.Inject;
+
+import com.hazelcast.util.Preconditions;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
@@ -22,16 +24,14 @@ import io.harness.ng.userprofile.services.api.SourceCodeManagerService;
 import io.harness.repositories.ng.userprofile.spring.SourceCodeManagerRepository;
 import io.harness.security.SourcePrincipalContextBuilder;
 import io.harness.security.dto.PrincipalType;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 
-import com.google.inject.Inject;
-import com.hazelcast.util.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import org.springframework.dao.DuplicateKeyException;
 
 @OwnedBy(PL)
 @NoArgsConstructor
@@ -42,30 +42,26 @@ public class SourceCodeManagerServiceImpl implements SourceCodeManagerService {
 
   @Override
   public List<SourceCodeManagerDTO> get(String accountIdentifier) {
-    Optional<String> userIdentifier = getUserIdentifier();
-    return getInternal(userIdentifier, accountIdentifier);
+    return getUserIdentifier().map(userId -> getInternal(userId, accountIdentifier)).orElse(null);
   }
 
   @Override
   public List<SourceCodeManagerDTO> get(String userIdentifier, String accountIdentifier) {
-    return getInternal(Optional.of(userIdentifier), accountIdentifier);
+    return getInternal(userIdentifier, accountIdentifier);
   }
 
-  private List<SourceCodeManagerDTO> getInternal(Optional<String> userIdentifier, String accountIdentifier) {
-    if (userIdentifier.isPresent()) {
-      List<SourceCodeManagerDTO> sourceCodeManagerDTOS = new ArrayList<>();
-      sourceCodeManagerRepository.findByUserIdentifierAndAccountIdentifier(userIdentifier.get(), accountIdentifier)
-          .forEach(scm -> sourceCodeManagerDTOS.add(scmMapBinder.get(scm.getType()).toSCMDTO(scm)));
-      return sourceCodeManagerDTOS;
-    }
-    return null;
+  private List<SourceCodeManagerDTO> getInternal(String userIdentifier, String accountIdentifier) {
+    List<SourceCodeManagerDTO> sourceCodeManagerDTOS = new ArrayList<>();
+    sourceCodeManagerRepository.findByUserIdentifierAndAccountIdentifier(userIdentifier, accountIdentifier)
+        .forEach(scm -> sourceCodeManagerDTOS.add(scmMapBinder.get(scm.getType()).toSCMDTO(scm)));
+    return sourceCodeManagerDTOS;
   }
 
   @Override
   public SourceCodeManagerDTO save(SourceCodeManagerDTO sourceCodeManagerDTO) {
     Optional<String> userIdentifier = getUserIdentifier();
     if (userIdentifier.isPresent()) {
-      SourceCodeManager sourceCodeManager = null;
+      SourceCodeManager sourceCodeManager;
       sourceCodeManagerDTO.setUserIdentifier(userIdentifier.get());
       try {
         sourceCodeManager = sourceCodeManagerRepository.save(
@@ -110,13 +106,12 @@ public class SourceCodeManagerServiceImpl implements SourceCodeManagerService {
 
   @Override
   public boolean delete(String name, String accountIdentifier) {
-    Optional<String> userIdentifier = getUserIdentifier();
-    if (userIdentifier.isPresent()) {
-      return sourceCodeManagerRepository.deleteByUserIdentifierAndNameAndAccountIdentifier(
-                 userIdentifier.get(), name, accountIdentifier)
-          > 0;
-    }
-    return false;
+    return getUserIdentifier()
+        .filter(userIdentifier
+            -> sourceCodeManagerRepository.deleteByUserIdentifierAndNameAndAccountIdentifier(
+                   userIdentifier, name, accountIdentifier)
+                > 0)
+        .isPresent();
   }
 
   private Optional<String> getUserIdentifier() {

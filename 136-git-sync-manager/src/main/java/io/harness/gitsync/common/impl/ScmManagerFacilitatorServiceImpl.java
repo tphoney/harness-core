@@ -10,6 +10,9 @@ package io.harness.gitsync.common.impl;
 import static io.harness.annotations.dev.HarnessTeam.DX;
 import static io.harness.eraro.ErrorCode.PR_CREATION_ERROR;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FileContentBatchResponse;
 import io.harness.beans.IdentifierRef;
@@ -37,6 +40,7 @@ import io.harness.gitsync.common.helper.PRFileListMapper;
 import io.harness.gitsync.common.helper.UserProfileHelper;
 import io.harness.gitsync.common.service.YamlGitConfigService;
 import io.harness.impl.ScmResponseStatusUtils;
+import io.harness.ng.userprofile.commons.SCMType;
 import io.harness.ng.webhook.UpsertWebhookRequestDTO;
 import io.harness.product.ci.scm.proto.Commit;
 import io.harness.product.ci.scm.proto.CompareCommitsResponse;
@@ -50,12 +54,10 @@ import io.harness.product.ci.scm.proto.GetLatestCommitResponse;
 import io.harness.product.ci.scm.proto.UpdateFileResponse;
 import io.harness.service.ScmClient;
 import io.harness.tasks.DecryptGitApiAccessHelper;
+import lombok.extern.slf4j.Slf4j;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import java.util.List;
 import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
 
 // Don't inject this directly go through ScmClientOrchestrator.
 @Slf4j
@@ -199,7 +201,8 @@ public class ScmManagerFacilitatorServiceImpl extends AbstractScmClientFacilitat
       createBranch(infoForPush.getBranch(), infoForPush.getBaseBranch(), decryptedConnector);
     }
     final GitFileDetailsBuilder gitFileDetails = getGitFileDetails(infoForPush.getAccountId(), infoForPush.getYaml(),
-        infoForPush.getFilePath(), infoForPush.getFolderPath(), infoForPush.getCommitMsg(), infoForPush.getBranch());
+        infoForPush.getFilePath(), infoForPush.getFolderPath(), infoForPush.getCommitMsg(), infoForPush.getBranch(),
+        SCMType.fromConnectorType(infoForPush.getScmConnector().getType()));
     return scmClient.createFile(decryptedConnector, gitFileDetails.build());
   }
 
@@ -211,7 +214,8 @@ public class ScmManagerFacilitatorServiceImpl extends AbstractScmClientFacilitat
       createBranch(infoForPush.getBranch(), infoForPush.getBaseBranch(), decryptedConnector);
     }
     final GitFileDetailsBuilder gitFileDetails = getGitFileDetails(infoForPush.getAccountId(), infoForPush.getYaml(),
-        infoForPush.getFilePath(), infoForPush.getFolderPath(), infoForPush.getCommitMsg(), infoForPush.getBranch());
+        infoForPush.getFilePath(), infoForPush.getFolderPath(), infoForPush.getCommitMsg(), infoForPush.getBranch(),
+        SCMType.fromConnectorType(infoForPush.getScmConnector().getType()));
     gitFileDetails.oldFileSha(infoForPush.getOldFileSha());
     return scmClient.updateFile(decryptedConnector, gitFileDetails.build());
   }
@@ -224,7 +228,8 @@ public class ScmManagerFacilitatorServiceImpl extends AbstractScmClientFacilitat
       createBranch(infoForPush.getBranch(), infoForPush.getBaseBranch(), decryptedConnector);
     }
     final GitFileDetailsBuilder gitFileDetails = getGitFileDetails(infoForPush.getAccountId(), infoForPush.getYaml(),
-        infoForPush.getFilePath(), infoForPush.getFolderPath(), infoForPush.getCommitMsg(), infoForPush.getBranch());
+        infoForPush.getFilePath(), infoForPush.getFolderPath(), infoForPush.getCommitMsg(), infoForPush.getBranch(),
+        SCMType.fromConnectorType(infoForPush.getScmConnector().getType()));
     gitFileDetails.oldFileSha(infoForPush.getOldFileSha());
     return scmClient.deleteFile(decryptedConnector, gitFileDetails.build());
   }

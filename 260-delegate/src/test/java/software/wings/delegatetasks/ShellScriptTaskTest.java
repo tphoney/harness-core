@@ -66,7 +66,6 @@ import software.wings.core.winrm.executors.WinRmSessionConfig;
 import software.wings.helpers.ext.container.ContainerDeploymentDelegateHelper;
 import software.wings.service.intfc.security.EncryptionService;
 
-import com.google.inject.Inject;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -90,7 +89,7 @@ public class ShellScriptTaskTest extends WingsBaseTest {
   @Mock DelegateLogService logService;
   @Mock ShellExecutorConfig shellExecutorConfig;
   @Mock ExecutionConfigOverrideFromFileOnDelegate delegateLocalConfigService;
-  @Inject @InjectMocks ShellScriptTaskHandler shellScriptTaskHandler;
+  @InjectMocks ShellScriptTaskHandler shellScriptTaskHandler;
 
   EncryptedDataDetail encryptedDataDetail1 = EncryptedDataDetail.builder()
                                                  .encryptedData(EncryptedRecordData.builder().build())

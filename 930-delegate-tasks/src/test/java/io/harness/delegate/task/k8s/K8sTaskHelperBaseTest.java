@@ -131,6 +131,7 @@ import io.harness.exception.ExplanationException;
 import io.harness.exception.HintException;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.KubernetesCliTaskRuntimeException;
 import io.harness.exception.KubernetesTaskException;
 import io.harness.exception.KubernetesYamlException;
 import io.harness.exception.UrlNotProvidedException;
@@ -138,6 +139,7 @@ import io.harness.exception.UrlNotReachableException;
 import io.harness.filesystem.FileIo;
 import io.harness.k8s.KubernetesContainerService;
 import io.harness.k8s.KubernetesHelperService;
+import io.harness.k8s.ProcessResponse;
 import io.harness.k8s.kubectl.AbstractExecutable;
 import io.harness.k8s.kubectl.ApplyCommand;
 import io.harness.k8s.kubectl.DeleteCommand;
@@ -552,8 +554,9 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
   @Owner(developers = ANSHUL)
   @Category(UnitTests.class)
   public void testDryRunForOpenshiftResources() throws Exception {
-    ProcessResult processResult = new ProcessResult(0, new ProcessOutput("abc".getBytes()));
-    doReturn(processResult).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
+    ProcessResponse response =
+        ProcessResponse.builder().processResult(new ProcessResult(0, new ProcessOutput("abc".getBytes()))).build();
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
 
     final String workingDirectory = ".";
     K8sDelegateTaskParams k8sDelegateTaskParams = K8sDelegateTaskParams.builder()
@@ -572,7 +575,7 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
         .isEqualTo("kubectl --kubeconfig=config-path apply --filename=manifests-dry-run.yaml --dry-run");
     reset(spyK8sTaskHelperBase);
 
-    doReturn(processResult).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
     spyK8sTaskHelperBase.dryRunManifests(client,
         asList(KubernetesResource.builder()
                    .spec("")
@@ -588,8 +591,11 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
   @Owner(developers = ABOSII)
   @Category(UnitTests.class)
   public void testDryRunManifestIsErrorFrameworkEnabled() throws Exception {
-    ProcessResult processResult = new ProcessResult(1, new ProcessOutput("Something went wrong".getBytes()));
-    doReturn(processResult).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
+    ProcessResponse response =
+        ProcessResponse.builder()
+            .processResult(new ProcessResult(1, new ProcessOutput("Something went wrong".getBytes())))
+            .build();
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
 
     final String workingDirectory = ".";
     K8sDelegateTaskParams k8sDelegateTaskParams = K8sDelegateTaskParams.builder()
@@ -604,12 +610,10 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
                            -> spyK8sTaskHelperBase.dryRunManifests(
                                client, emptyList(), k8sDelegateTaskParams, executionLogCallback, true, false))
         .matches(throwable -> {
-          HintException hint = ExceptionUtils.cause(HintException.class, throwable);
-          ExplanationException explanation = ExceptionUtils.cause(ExplanationException.class, throwable);
-          KubernetesTaskException taskException = ExceptionUtils.cause(KubernetesTaskException.class, throwable);
-          assertThat(hint).hasMessageContaining(KubernetesExceptionHints.DRY_RUN_MANIFEST_FAILED);
-          assertThat(explanation).hasMessageContaining("Something went wrong");
-          assertThat(taskException).hasMessageContaining(KubernetesExceptionMessages.DRY_RUN_MANIFEST_FAILED);
+          KubernetesCliTaskRuntimeException taskException = (KubernetesCliTaskRuntimeException) throwable;
+          assertThat(taskException.getProcessResponse().getProcessResult().outputUTF8())
+              .contains("Something went wrong");
+          assertThat(taskException.getProcessResponse().getProcessResult().getExitValue()).isEqualTo(1);
           return true;
         });
   }
@@ -618,8 +622,9 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
   @Owner(developers = ANSHUL)
   @Category(UnitTests.class)
   public void testApplyForOpenshiftResources() throws Exception {
-    ProcessResult processResult = new ProcessResult(0, new ProcessOutput("abc".getBytes()));
-    doReturn(processResult).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any(AbstractExecutable.class));
+    ProcessResponse response =
+        ProcessResponse.builder().processResult(new ProcessResult(0, new ProcessOutput("abc".getBytes()))).build();
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any(AbstractExecutable.class));
 
     final String workingDirectory = ".";
     K8sDelegateTaskParams k8sDelegateTaskParams = K8sDelegateTaskParams.builder()
@@ -628,7 +633,6 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
                                                       .ocPath("oc")
                                                       .kubeconfigPath("config-path")
                                                       .build();
-    //    createDirectoryIfDoesNotExist(Paths.get("/tmp/test").toString());
     Kubectl client = Kubectl.client("kubectl", "config-path");
 
     spyK8sTaskHelperBase.applyManifests(client, emptyList(), k8sDelegateTaskParams, executionLogCallback, true);
@@ -639,7 +643,7 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
         .isEqualTo("kubectl --kubeconfig=config-path apply --filename=manifests.yaml --record");
     reset(spyK8sTaskHelperBase);
 
-    doReturn(processResult).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any(AbstractExecutable.class));
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any(AbstractExecutable.class));
     spyK8sTaskHelperBase.applyManifests(client,
         asList(KubernetesResource.builder()
                    .spec("")
@@ -655,8 +659,11 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
   @Owner(developers = ABOSII)
   @Category(UnitTests.class)
   public void testApplyIsErrorFrameworkEnabled() throws Exception {
-    ProcessResult processResult = new ProcessResult(1, new ProcessOutput("Something went wrong".getBytes()));
-    doReturn(processResult).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any(AbstractExecutable.class));
+    ProcessResponse response =
+        ProcessResponse.builder()
+            .processResult(new ProcessResult(1, new ProcessOutput("Something went wrong".getBytes())))
+            .build();
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any(AbstractExecutable.class));
 
     final String workingDirectory = ".";
     K8sDelegateTaskParams k8sDelegateTaskParams = K8sDelegateTaskParams.builder()
@@ -675,12 +682,10 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
                                                  .build()),
                                k8sDelegateTaskParams, executionLogCallback, true, true))
         .matches(throwable -> {
-          HintException hint = ExceptionUtils.cause(HintException.class, throwable);
-          ExplanationException explanation = ExceptionUtils.cause(ExplanationException.class, throwable);
-          KubernetesTaskException taskException = ExceptionUtils.cause(KubernetesTaskException.class, throwable);
-          assertThat(hint).hasMessageContaining(KubernetesExceptionHints.APPLY_MANIFEST_FAILED);
-          assertThat(explanation).hasMessageContaining("Something went wrong");
-          assertThat(taskException).hasMessageContaining(KubernetesExceptionMessages.APPLY_MANIFEST_FAILED);
+          KubernetesCliTaskRuntimeException taskException = (KubernetesCliTaskRuntimeException) throwable;
+          assertThat(taskException.getProcessResponse().getProcessResult().outputUTF8())
+              .contains("Something went wrong");
+          assertThat(taskException.getProcessResponse().getProcessResult().getExitValue()).isEqualTo(1);
           return true;
         }, "expected exception message");
   }
@@ -689,8 +694,9 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
   @Owner(developers = SAHIL)
   @Category(UnitTests.class)
   public void testDeleteForOpenshiftResources() throws Exception {
-    ProcessResult processResult = new ProcessResult(0, new ProcessOutput("abc".getBytes()));
-    doReturn(processResult).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any(AbstractExecutable.class));
+    ProcessResponse response =
+        ProcessResponse.builder().processResult(new ProcessResult(0, new ProcessOutput("abc".getBytes()))).build();
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any(AbstractExecutable.class));
 
     final String workingDirectory = ".";
     K8sDelegateTaskParams k8sDelegateTaskParams = K8sDelegateTaskParams.builder()
@@ -709,7 +715,7 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
         .isEqualTo("kubectl --kubeconfig=config-path delete --filename=manifests.yaml");
     reset(spyK8sTaskHelperBase);
 
-    doReturn(processResult).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any(AbstractExecutable.class));
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any(AbstractExecutable.class));
     spyK8sTaskHelperBase.deleteManifests(client,
         asList(KubernetesResource.builder()
                    .spec("")
@@ -893,9 +899,9 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
   @Category(UnitTests.class)
   public void scaleFailure() throws Exception {
     Kubectl kubectl = Kubectl.client("kubectl", "config-path");
-    doReturn(new ProcessResult(1, new ProcessOutput("failure".getBytes())))
-        .when(spyK8sTaskHelperBase)
-        .runK8sExecutable(any(), any(), any());
+    ProcessResponse response =
+        ProcessResponse.builder().processResult(new ProcessResult(1, new ProcessOutput("failure".getBytes()))).build();
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
     final boolean success = spyK8sTaskHelperBase.scale(kubectl, K8sDelegateTaskParams.builder().build(),
         KubernetesResourceId.builder().name("nginx").kind("Deployment").namespace("default").build(), 5,
         executionLogCallback, false);
@@ -911,7 +917,8 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
   @Category(UnitTests.class)
   public void scaleSuccess() throws Exception {
     Kubectl kubectl = Kubectl.client("kubectl", "config-path");
-    doReturn(new ProcessResult(0, null)).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
+    ProcessResponse response = ProcessResponse.builder().processResult(new ProcessResult(0, null)).build();
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
     final boolean success =
         spyK8sTaskHelperBase.scale(kubectl, K8sDelegateTaskParams.builder().workingDirectory(".").build(),
             KubernetesResourceId.builder().name("nginx").kind("Deployment").namespace("default").build(), 5,
@@ -939,7 +946,8 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     releaseHistory.getReleases().add(K8sTestHelper.buildRelease(Release.Status.Succeeded, 2));
     releaseHistory.getReleases().add(K8sTestHelper.buildRelease(Release.Status.Succeeded, 1));
     releaseHistory.getReleases().add(K8sTestHelper.buildRelease(Release.Status.Succeeded, 0));
-    doReturn(K8sTestHelper.buildProcessResult(0)).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
+    ProcessResponse response = ProcessResponse.builder().processResult(K8sTestHelper.buildProcessResult(0)).build();
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
     spyK8sTaskHelperBase.cleanup(Kubectl.client("kubectl", "kubeconfig"), K8sDelegateTaskParams.builder().build(),
         releaseHistory, executionLogCallback);
     ArgumentCaptor<DeleteCommand> captor = ArgumentCaptor.forClass(DeleteCommand.class);
@@ -956,7 +964,8 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     releaseHistory.getReleases().add(K8sTestHelper.buildRelease(Release.Status.Failed, 2));
     releaseHistory.getReleases().add(K8sTestHelper.buildRelease(Release.Status.Succeeded, 1));
     releaseHistory.getReleases().add(K8sTestHelper.buildRelease(Release.Status.Failed, 0));
-    doReturn(K8sTestHelper.buildProcessResult(0)).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
+    ProcessResponse response = ProcessResponse.builder().processResult(K8sTestHelper.buildProcessResult(0)).build();
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
     spyK8sTaskHelperBase.cleanup(Kubectl.client("kubectl", "kubeconfig"), K8sDelegateTaskParams.builder().build(),
         releaseHistory, executionLogCallback);
     ArgumentCaptor<DeleteCommand> captor = ArgumentCaptor.forClass(DeleteCommand.class);
@@ -1227,12 +1236,10 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
                            -> spyK8sTaskHelperBase.doStatusCheckForAllResources(client, singletonList(deploymentConfig),
                                k8sDelegateTaskParams, "name", executionLogCallback, false, true))
         .matches(throwable -> {
-          HintException hint = ExceptionUtils.cause(HintException.class, throwable);
-          ExplanationException explanation = ExceptionUtils.cause(ExplanationException.class, throwable);
-          KubernetesTaskException taskException = ExceptionUtils.cause(KubernetesTaskException.class, throwable);
-          assertThat(hint).hasMessageContaining(KubernetesExceptionHints.WAIT_FOR_STEADY_STATE_FAILED);
-          assertThat(explanation).hasMessageContaining("Something went wrong");
-          assertThat(taskException).hasMessageContaining(KubernetesExceptionMessages.WAIT_FOR_STEADY_STATE_FAILED);
+          KubernetesCliTaskRuntimeException taskException = (KubernetesCliTaskRuntimeException) throwable;
+          assertThat(taskException.getProcessResponse().getProcessResult().outputUTF8())
+              .contains("Something went wrong");
+          assertThat(taskException.getProcessResponse().getProcessResult().getExitValue()).isEqualTo(1);
           return true;
         });
   }
@@ -1352,7 +1359,8 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
   @Owner(developers = YOGESH)
   @Category(UnitTests.class)
   public void describe() throws Exception {
-    doReturn(K8sTestHelper.buildProcessResult(0)).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
+    ProcessResponse response = ProcessResponse.builder().processResult(K8sTestHelper.buildProcessResult(0)).build();
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
     spyK8sTaskHelperBase.describe(Kubectl.client("kubectl", "kubeconfig"),
         K8sDelegateTaskParams.builder().workingDirectory("./working-dir").build(), executionLogCallback);
     ArgumentCaptor<DescribeCommand> captor = ArgumentCaptor.forClass(DescribeCommand.class);
@@ -1409,7 +1417,8 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     resourceIds.add(resourceId);
     resourceIds.add(resourceId1);
     ProcessResult result =
-        spyK8sTaskHelperBase.runK8sExecutable(k8sDelegateTaskParams, executionLogCallback, new ApplyCommand(client));
+        spyK8sTaskHelperBase.runK8sExecutable(k8sDelegateTaskParams, executionLogCallback, new ApplyCommand(client))
+            .getProcessResult();
 
     assertThat(result.getExitValue()).isEqualTo(1);
   }
@@ -1702,8 +1711,8 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     List<KubernetesResourceId> kubernetesResourceIds =
         asList(KubernetesResourceId.builder().kind("deployment").name("test1").build(),
             KubernetesResourceId.builder().kind("configmap").name("test2").build());
-    ProcessResult result = new ProcessResult(0, null);
-    doReturn(result)
+    ProcessResponse response = ProcessResponse.builder().processResult(new ProcessResult(0, null)).build();
+    doReturn(response)
         .when(spyK8sTaskHelperBase)
         .runK8sExecutable(eq(params), eq(executionLogCallback), any(AbstractExecutable.class));
 
@@ -1725,8 +1734,8 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     List<KubernetesResourceId> kubernetesResourceIds =
         asList(KubernetesResourceId.builder().kind("deployment").name("test1").build(),
             KubernetesResourceId.builder().kind("configmap").name("test2").build());
-    ProcessResult result = new ProcessResult(0, null);
-    doReturn(result)
+    ProcessResponse response = ProcessResponse.builder().processResult(new ProcessResult(0, null)).build();
+    doReturn(response)
         .when(spyK8sTaskHelperBase)
         .runK8sExecutable(eq(params), eq(executionLogCallback), any(AbstractExecutable.class));
 
@@ -3041,11 +3050,10 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     ProcessOutput output = new ProcessOutput("output".getBytes());
     ProcessResult processResultFail = new ProcessResult(1, output);
     ProcessResult processResultSuccess = new ProcessResult(0, output);
+    ProcessResponse failedResponse = ProcessResponse.builder().processResult(processResultFail).build();
+    ProcessResponse successfulResponse = ProcessResponse.builder().processResult(processResultSuccess).build();
 
-    doReturn(processResultFail)
-        .doReturn(processResultSuccess)
-        .when(spyK8sHelperBase)
-        .runK8sExecutable(any(), any(), any());
+    doReturn(failedResponse).doReturn(successfulResponse).when(spyK8sHelperBase).runK8sExecutable(any(), any(), any());
     doReturn(new DeleteCommand(client)).when(client).delete();
 
     List<KubernetesResourceId> deletedResources = spyK8sHelperBase.executeDeleteHandlingPartialExecution(

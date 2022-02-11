@@ -22,27 +22,18 @@ import io.harness.remote.client.RestClientUtils;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import java.util.Optional;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(PL)
 @Singleton
+@AllArgsConstructor(onConstructor = @__({ @Inject }))
 @Slf4j
 public class AccountOrgProjectHelper {
   private final OrganizationService organizationService;
   private final ProjectService projectService;
   private final AccountClient accountClient;
-  boolean isNgAuthUIEnabled;
-
-  @Inject
-  public AccountOrgProjectHelper(OrganizationService organizationService, ProjectService projectService,
-      AccountClient accountClient, @Named("isNgAuthUIEnabled") boolean isNgAuthUIEnabled) {
-    this.organizationService = organizationService;
-    this.projectService = projectService;
-    this.accountClient = accountClient;
-    this.isNgAuthUIEnabled = isNgAuthUIEnabled;
-  }
 
   public String getBaseUrl(String accountIdentifier) {
     return RestClientUtils.getResponse(accountClient.getBaseUrl(accountIdentifier));
@@ -50,14 +41,6 @@ public class AccountOrgProjectHelper {
 
   public String getGatewayBaseUrl(String accountIdentifier) {
     return RestClientUtils.getResponse(accountClient.getGatewayBaseUrl(accountIdentifier));
-  }
-
-  public String getBasePortallUrl(String accountIdentifier) {
-    String accountBaseURL = isNgAuthUIEnabled ? getGatewayBaseUrl(accountIdentifier) : getBaseUrl(accountIdentifier);
-    if (!accountBaseURL.endsWith("/")) {
-      accountBaseURL += "/";
-    }
-    return accountBaseURL;
   }
 
   public String getAccountName(String accountIdentifier) {

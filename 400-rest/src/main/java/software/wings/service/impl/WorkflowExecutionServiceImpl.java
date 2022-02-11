@@ -1951,7 +1951,7 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     stateExecutionInstance.setWorkflowId(workflowExecution.getWorkflowId());
     stateExecutionInstance.setPipelineStageElementId(executionArgs.getPipelinePhaseElementId());
     stateExecutionInstance.setPipelineStageParallelIndex(executionArgs.getPipelinePhaseParallelIndex());
-
+    stateExecutionInstance.setIsOnDemandRollback(workflowExecution.isOnDemandRollback());
     if (workflowExecutionUpdate == null) {
       workflowExecutionUpdate = new WorkflowExecutionUpdate();
     }

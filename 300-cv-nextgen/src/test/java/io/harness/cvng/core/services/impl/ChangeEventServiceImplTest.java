@@ -81,7 +81,7 @@ public class ChangeEventServiceImplTest extends CvNextGenTestBase {
   @Owner(developers = ABHIJITH)
   @Category(UnitTests.class)
   public void testRegister_insert() {
-    changeSourceService.create(builderFactory.getContext().getServiceEnvironmentParams(),
+    changeSourceService.create(builderFactory.getContext().getMonitoredServiceParams(),
         new HashSet<>(Arrays.asList(builderFactory.getHarnessCDChangeSourceDTOBuilder().build())));
     ChangeEventDTO changeEventDTO = builderFactory.getHarnessCDChangeEventDTOBuilder().build();
 
@@ -95,7 +95,7 @@ public class ChangeEventServiceImplTest extends CvNextGenTestBase {
   @Owner(developers = ABHIJITH)
   @Category(UnitTests.class)
   public void testRegister_update() {
-    changeSourceService.create(builderFactory.getContext().getServiceEnvironmentParams(),
+    changeSourceService.create(builderFactory.getContext().getMonitoredServiceParams(),
         new HashSet<>(Arrays.asList(builderFactory.getHarnessCDChangeSourceDTOBuilder().build())));
 
     ChangeEventDTO changeEventDTO = builderFactory.getHarnessCDChangeEventDTOBuilder().build();
@@ -113,7 +113,7 @@ public class ChangeEventServiceImplTest extends CvNextGenTestBase {
   @Owner(developers = ABHIJITH)
   @Category(UnitTests.class)
   public void testRegister_noChangeSource() {
-    changeSourceService.create(builderFactory.getContext().getServiceEnvironmentParams(),
+    changeSourceService.create(builderFactory.getContext().getMonitoredServiceParams(),
         new HashSet<>(Arrays.asList(builderFactory.getHarnessCDChangeSourceDTOBuilder().build())));
     ChangeEventDTO changeEventDTO = builderFactory.getHarnessCDChangeEventDTOBuilder().build();
 
@@ -131,7 +131,7 @@ public class ChangeEventServiceImplTest extends CvNextGenTestBase {
     hPersistence.save(harnessCDActivity);
 
     List<ChangeEventDTO> changeEventDTOS =
-        changeEventService.get(builderFactory.getContext().getServiceEnvironmentParams(), changeSourceIdentifiers,
+        changeEventService.get(builderFactory.getContext().getMonitoredServiceParams(), changeSourceIdentifiers,
             builderFactory.getClock().instant().minus(Duration.ofMinutes(10)),
             builderFactory.getClock().instant().plus(Duration.ofMinutes(10)), null);
     Assertions.assertThat(changeEventDTOS.size()).isEqualTo(1);

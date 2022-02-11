@@ -40,6 +40,7 @@ import io.harness.cvng.core.beans.monitoredService.MonitoredServiceWithHealthSou
 import io.harness.cvng.core.beans.monitoredService.RiskData;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.HealthSourceDTO;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.MetricHealthSourceSpec;
+import io.harness.cvng.core.beans.params.MonitoredServiceParams;
 import io.harness.cvng.core.beans.params.PageParams;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
@@ -91,6 +92,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -98,6 +100,7 @@ import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.Sort;
 import org.mongodb.morphia.query.UpdateOperations;
 
+@Slf4j
 public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   private static final Map<MonitoredServiceType, String> MONITORED_SERVICE_YAML_TEMPLATE = new HashMap<>();
   static {
@@ -136,6 +139,11 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                                                      .environmentIdentifier(monitoredServiceDTO.getEnvironmentRef())
                                                      .build();
 
+    // TODO: Temporary until UI moves to using environmentRefList completely
+    if (isEmpty(monitoredServiceDTO.getEnvironmentRefList())) {
+      monitoredServiceDTO.setEnvironmentRefList(Arrays.asList(monitoredServiceDTO.getEnvironmentRef()));
+    }
+
     validate(monitoredServiceDTO);
     checkIfAlreadyPresent(
         accountId, environmentParams, monitoredServiceDTO.getIdentifier(), monitoredServiceDTO.getSources());
@@ -157,9 +165,14 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
           environmentParams, monitoredServiceDTO.getIdentifier(), monitoredServiceDTO.getDependencies());
     }
     if (monitoredServiceDTO.getSources() != null && isNotEmpty(monitoredServiceDTO.getSources().getChangeSources())) {
-      changeSourceService.create(environmentParams, monitoredServiceDTO.getSources().getChangeSources());
+      changeSourceService.create(MonitoredServiceParams.builderWithServiceEnvParams(environmentParams)
+                                     .monitoredServiceIdentifier(monitoredServiceDTO.getIdentifier())
+                                     .build(),
+          monitoredServiceDTO.getSources().getChangeSources());
     }
     saveMonitoredServiceEntity(accountId, monitoredServiceDTO);
+    log.info(
+        "Saved monitored service with identifier {} for account {}", monitoredServiceDTO.getIdentifier(), accountId);
     setupUsageEventService.sendCreateEventsForMonitoredService(environmentParams, monitoredServiceDTO);
     return get(environmentParams, monitoredServiceDTO.getIdentifier());
   }
@@ -222,15 +235,24 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     Preconditions.checkArgument(
         monitoredService.getEnvironmentIdentifier().equals(monitoredServiceDTO.getEnvironmentRef()),
         "environmentRef update is not allowed");
+
     MonitoredServiceDTO existingMonitoredServiceDTO =
         createMonitoredServiceDTOFromEntity(monitoredService, environmentParams).getMonitoredServiceDTO();
+
     monitoredServiceHandlers.forEach(baseMonitoredServiceHandler
         -> baseMonitoredServiceHandler.beforeUpdate(
             environmentParams, existingMonitoredServiceDTO, monitoredServiceDTO));
+    // TODO: Temporary until UI moves to using environmentRefList completely
+    if (isEmpty(monitoredServiceDTO.getEnvironmentRefList())) {
+      monitoredServiceDTO.setEnvironmentRefList(Arrays.asList(monitoredServiceDTO.getEnvironmentRef()));
+    }
     validate(monitoredServiceDTO);
 
     updateHealthSources(monitoredService, monitoredServiceDTO);
-    changeSourceService.update(environmentParams, monitoredServiceDTO.getSources().getChangeSources());
+    changeSourceService.update(MonitoredServiceParams.builderWithServiceEnvParams(environmentParams)
+                                   .monitoredServiceIdentifier(monitoredService.getIdentifier())
+                                   .build(),
+        monitoredServiceDTO.getSources().getChangeSources());
     updateMonitoredService(monitoredService, monitoredServiceDTO);
     setupUsageEventService.sendCreateEventsForMonitoredService(environmentParams, monitoredServiceDTO);
     return get(environmentParams, monitoredServiceDTO.getIdentifier());
@@ -388,9 +410,11 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                     .healthSources(healthSourceService.get(monitoredServiceEntity.getAccountId(),
                         monitoredServiceEntity.getOrgIdentifier(), monitoredServiceEntity.getProjectIdentifier(),
                         monitoredServiceEntity.getIdentifier(), monitoredServiceEntity.getHealthSourceIdentifiers()))
+                    // TODO: Update this call to get by monitoredServiceIdentifier in the next PR
                     .changeSources(
                         changeSourceService.get(environmentParams, monitoredServiceEntity.getChangeSourceIdentifiers()))
                     .build())
+            // TODO: Figure out dependencies by refList instead of one env
             .dependencies(serviceDependencyService.getDependentServicesForMonitoredService(
                 ProjectParams.builder()
                     .accountIdentifier(environmentParams.getAccountIdentifier())
@@ -524,6 +548,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         .get();
   }
 
+  @Deprecated
   private MonitoredService getMonitoredService(ServiceEnvironmentParams serviceEnvironmentParams) {
     return hPersistence.createQuery(MonitoredService.class)
         .filter(MonitoredServiceKeys.accountId, serviceEnvironmentParams.getAccountIdentifier())
@@ -561,6 +586,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
             .order(Sort.descending(MonitoredServiceKeys.lastUpdatedAt));
     if (environmentIdentifier != null) {
       monitoredServicesQuery.filter(MonitoredServiceKeys.environmentIdentifier, environmentIdentifier);
+      // TODO: or query
+      // monitoredServicesQuery.field(MonitoredServiceKeys.environmentIdentifierList).hasThisOne(environmentIdentifier);
     }
     List<MonitoredService> monitoredServices = monitoredServicesQuery.asList();
     if (filter != null) {
@@ -855,6 +882,10 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   }
 
   private void validate(MonitoredServiceDTO monitoredServiceDTO) {
+    if (monitoredServiceDTO.getType().equals(MonitoredServiceType.APPLICATION)) {
+      Preconditions.checkState(monitoredServiceDTO.getEnvironmentRefList().size() == 1,
+          "Application monitored service cannot be attached to more than one environment");
+    }
     if (monitoredServiceDTO.getSources() != null) {
       Set<String> identifiers = new HashSet<>();
       monitoredServiceDTO.getSources().getHealthSources().forEach(healthSource -> {

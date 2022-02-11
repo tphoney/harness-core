@@ -13,6 +13,7 @@ import io.harness.beans.DecryptableEntity;
 import io.harness.connector.DelegateSelectable;
 import io.harness.connector.ManagerExecutable;
 import io.harness.delegate.beans.connector.ConnectorConfigDTO;
+import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.scm.GitAuthType;
 import io.harness.delegate.beans.connector.scm.GitConnectionType;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
@@ -74,5 +75,10 @@ public class GitConfigDTO extends ConnectorConfigDTO implements ScmConnector, De
   @Override
   public List<DecryptableEntity> getDecryptableEntities() {
     return Collections.singletonList(gitAuth);
+  }
+
+  @Override
+  public ConnectorType getConnectorType() {
+    return ConnectorType.GIT;
   }
 }

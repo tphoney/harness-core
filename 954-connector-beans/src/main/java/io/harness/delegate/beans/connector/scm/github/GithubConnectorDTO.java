@@ -13,6 +13,7 @@ import io.harness.beans.DecryptableEntity;
 import io.harness.connector.DelegateSelectable;
 import io.harness.connector.ManagerExecutable;
 import io.harness.delegate.beans.connector.ConnectorConfigDTO;
+import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.scm.GitAuthType;
 import io.harness.delegate.beans.connector.scm.GitConnectionType;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
@@ -84,5 +85,10 @@ public class GithubConnectorDTO
       decryptableEntities.add(apiAccess.getSpec());
     }
     return decryptableEntities;
+  }
+
+  @Override
+  public ConnectorType getConnectorType() {
+    return ConnectorType.GITHUB;
   }
 }

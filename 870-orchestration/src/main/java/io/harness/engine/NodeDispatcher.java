@@ -8,14 +8,18 @@
 package io.harness.engine;
 
 import io.harness.execution.PmsNodeExecutionMetadata;
+import io.harness.logging.AutoLogContext;
 import io.harness.plan.Node;
 import io.harness.pms.contracts.ambiance.Ambiance;
+import io.harness.pms.execution.utils.AmbianceUtils;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 
 @Value
 @Builder
+@Slf4j
 public class NodeDispatcher implements Runnable {
   Node node;
   Ambiance ambiance;
@@ -24,6 +28,11 @@ public class NodeDispatcher implements Runnable {
 
   @Override
   public void run() {
-    engine.triggerNode(ambiance, node, metadata);
+    try (AutoLogContext ignore = AmbianceUtils.autoLogContext(ambiance)) {
+      engine.triggerNode(ambiance, node, metadata);
+    } catch (Exception exception) {
+      log.error("Exception in triggering node in the NodeDispatcher", exception);
+      engine.handleError(ambiance, exception);
+    }
   }
 }

@@ -10,7 +10,9 @@ package io.harness.engine;
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.logging.AutoLogContext;
 import io.harness.pms.contracts.ambiance.Ambiance;
+import io.harness.pms.execution.utils.AmbianceUtils;
 
 import lombok.Builder;
 import lombok.Value;
@@ -26,6 +28,11 @@ public class ExecutionEngineDispatcher implements Runnable {
 
   @Override
   public void run() {
-    orchestrationEngine.startNodeExecution(ambiance);
+    try (AutoLogContext ignore = AmbianceUtils.autoLogContext(ambiance)) {
+      orchestrationEngine.startNodeExecution(ambiance);
+    } catch (Exception exception) {
+      log.error("Exception Occurred in ExecutionEngineDispatcher", exception);
+      orchestrationEngine.handleError(ambiance, exception);
+    }
   }
 }

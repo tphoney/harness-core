@@ -275,6 +275,10 @@ public class PlanNodeExecutionStrategy extends AbstractNodeExecutionStrategy<Pla
           nodeExecutionId, ops -> ops.set(NodeExecutionKeys.adviserResponse, adviserResponse));
       AdviserResponseHandler adviserResponseHandler = adviseHandlerFactory.obtainHandler(adviserResponse.getType());
       adviserResponseHandler.handleAdvise(updatedNodeExecution, adviserResponse);
+    } catch (Exception exception) {
+      log.error("Exception Occurred in processing AdviserResponse with nodeExecutionId {} planExecutionId {}",
+          nodeExecutionId, ambiance.getPlanExecutionId(), exception);
+      handleError(ambiance, exception);
     }
   }
 

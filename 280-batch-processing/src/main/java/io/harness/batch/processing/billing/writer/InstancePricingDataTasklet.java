@@ -78,6 +78,10 @@ public class InstancePricingDataTasklet implements Tasklet {
     do {
       instanceDataLists =
           instanceDataDao.getInstanceDataListForPricingUpdate(accountId, batchSize, activeInstanceIterator, endTime);
+      if (instanceDataLists.isEmpty()) {
+        log.info("Skipping because instances are empty");
+        return null;
+      }
       log.info("Processing {} instances", instanceDataLists.size());
       for (InstanceData instanceDataList : instanceDataLists) {
         if (!instanceDataList.getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER).equals("AWS")) continue;

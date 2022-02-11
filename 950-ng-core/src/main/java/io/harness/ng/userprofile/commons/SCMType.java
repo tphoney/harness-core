@@ -22,7 +22,8 @@ public enum SCMType {
   BITBUCKET(ConnectorType.BITBUCKET),
   GITHUB(ConnectorType.GITHUB),
   GITLAB(ConnectorType.GITLAB),
-  AWS_CODE_COMMIT(ConnectorType.CODECOMMIT);
+  AWS_CODE_COMMIT(ConnectorType.CODECOMMIT),
+  AZURE_DEV_OPS(ConnectorType.CE_AZURE);
 
   private final ConnectorType connectorType;
 

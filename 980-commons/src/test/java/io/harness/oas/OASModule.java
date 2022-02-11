@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.harness.testing.TestExecution;
 
+import com.google.common.collect.HashMultimap;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.MapBinder;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,10 +25,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import lombok.extern.slf4j.Slf4j;
@@ -37,8 +35,9 @@ import org.apache.commons.io.IOUtils;
 public abstract class OASModule extends AbstractModule {
   public static final String ACCOUNT_IDENTIFIER = "accountIdentifier";
   public static final String ACCOUNT_ID = "accountId";
-  public static final String ENDPOINT_VALIDATION_EXCLUSION_FILE = "/oas/exclude-endpoint-validation";
-  public static final String DTO_EXCLUSION_FILE = "/oas/dto-exclusion-file";
+  public static final String EXCLUSION_FILE = "/oas/exclusion-file";
+  public static final String ENDPOINT_EXCLUSION = "endpoint-exclusion";
+  public static final String DTO_EXCLUSION = "dto-exclusion";
 
   public abstract Collection<Class<?>> getResourceClasses();
 
@@ -62,57 +61,53 @@ public abstract class OASModule extends AbstractModule {
       }
     }
 
-    if (!dtoWithoutDescriptionToField.isEmpty()) {
-      dtoWithoutDescriptionToField.removeAll(excludedDTOs());
-      assertThat(dtoWithoutDescriptionToField.isEmpty()).as(getDtoDetailMsg(dtoWithoutDescriptionToField)).isTrue();
-    }
-
-    if (!endpointsWithoutAccountParam.isEmpty()) {
-      endpointsWithoutAccountParam.removeAll(excludedEndpoints());
-      assertThat(endpointsWithoutAccountParam.isEmpty()).as(getDetails(endpointsWithoutAccountParam)).isTrue();
-    }
-  }
-
-  private String getDtoDetailMsg(List<String> dtoWithoutDescriptionToField){
-    StringBuilder details = new StringBuilder("All the fields in DTO should have description, but found below : ");
-    dtoWithoutDescriptionToField.forEach(entry->details.append("\n").append(entry));
-    return details.toString();
-  }
-
-  private String getDetails(List<String> endpointsWithoutAccountParam) {
-    StringBuilder details = new StringBuilder(
+    finalAssertion(dtoWithoutDescriptionToField, DTO_EXCLUSION,
+        "All the fields in DTO should have description, but found below : ");
+    finalAssertion(endpointsWithoutAccountParam, ENDPOINT_EXCLUSION,
         "There should not be endpoints without account identifier as path OR query param, but found below : ");
+  }
+  private void finalAssertion(List<String> listFromCheck, String exclusionType, String message) {
+    if (!listFromCheck.isEmpty()) {
+      List<String> exclusionDtoList = new ArrayList<>();
+      Map<String, Collection<String>> map = exclude(exclusionType).asMap();
+      for (Map.Entry<String, Collection<String>> entry : map.entrySet()) {
+        if (entry.getKey().equals(exclusionType)) {
+          exclusionDtoList.addAll(entry.getValue());
+        }
+      }
+      listFromCheck.removeAll(exclusionDtoList);
+      assertThat(listFromCheck.isEmpty()).as(getDetails(listFromCheck, message)).isTrue();
+    }
+  }
+
+  private String getDetails(List<String> endpointsWithoutAccountParam, String message) {
+    StringBuilder details = new StringBuilder(message);
     endpointsWithoutAccountParam.forEach(entry -> details.append("\n ").append(entry));
     return details.toString();
   }
 
-  private List<String> excludedEndpoints() {
-    List<String> excludedEndpoints = new ArrayList<>();
-    try (InputStream in = getClass().getResourceAsStream(ENDPOINT_VALIDATION_EXCLUSION_FILE)) {
-      if (in == null) {
-        log.info("No endpoint exclusion configured for OAS validations.");
-        return excludedEndpoints;
-      }
-      excludedEndpoints = IOUtils.readLines(in, "UTF-8");
-    } catch (Exception e) {
-      log.error("Failed to load endpoint exclusion file {} with error: {}", ENDPOINT_VALIDATION_EXCLUSION_FILE,
-          e.getMessage());
-    }
-    return excludedEndpoints;
-  }
-
-  private List<String> excludedDTOs() {
+  private HashMultimap<String, String> exclude(String key) {
+    HashMultimap<String, String> excludedDTOsMap = HashMultimap.create();
     List<String> excludedDTOs = new ArrayList<>();
-    try (InputStream in = getClass().getResourceAsStream(DTO_EXCLUSION_FILE)) {
+    try (InputStream in = getClass().getResourceAsStream(EXCLUSION_FILE)) {
       if (in == null) {
-        log.info("No dto exclusion configured for OAS validations.");
-        return excludedDTOs;
+        log.info("No " + key + " configured for OAS validations.");
+        return excludedDTOsMap;
       }
       excludedDTOs = IOUtils.readLines(in, "UTF-8");
+
+      for (String excludedDTO : excludedDTOs) {
+        String[] parts = excludedDTO.split(":");
+        String exclusionType = parts[0].trim();
+        String exclusionClassOrMethod = parts[1].trim();
+        if (exclusionType.equals(key)) {
+          excludedDTOsMap.put(exclusionType, exclusionClassOrMethod);
+        }
+      }
     } catch (Exception e) {
-      log.error("Failed to load dto exclusion file {} with error: {}", DTO_EXCLUSION_FILE, e.getMessage());
+      log.error("Failed to load " + key + " file {} with error: {}", EXCLUSION_FILE, e.getMessage());
     }
-    return excludedDTOs;
+    return excludedDTOsMap;
   }
 
   private boolean isHiddenApi(Method method) {
@@ -145,7 +140,6 @@ public abstract class OASModule extends AbstractModule {
     List<String> dtoWithoutDescriptionToField = new ArrayList<>();
     Field[] listOfFields = clazz.getDeclaredFields();
     for (Field field : listOfFields) {
-
       if (field.getType() == field.getDeclaringClass()) {
         return dtoWithoutDescriptionToField;
       }

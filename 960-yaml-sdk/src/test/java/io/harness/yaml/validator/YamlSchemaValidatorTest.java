@@ -8,7 +8,9 @@
 package io.harness.yaml.validator;
 
 import static io.harness.rule.OwnerRule.ABHINAV;
+import static io.harness.rule.OwnerRule.BRIJESH;
 
+import static junit.framework.TestCase.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -20,8 +22,11 @@ import io.harness.yaml.TestClass;
 import io.harness.yaml.schema.beans.YamlSchemaRootClass;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.ValidatorTypeCode;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -72,5 +77,54 @@ public class YamlSchemaValidatorTest extends CategoryTest {
 
   private String getYamlResource(String resource) throws IOException {
     return IOUtils.resourceToString(resource, StandardCharsets.UTF_8, YamlSchemaValidatorTest.class.getClassLoader());
+  }
+
+  @Test
+  @Owner(developers = BRIJESH)
+  @Category(UnitTests.class)
+  public void testProcessValidationMessages() {
+    String path1 = "path1";
+    String path2 = "path2";
+    List<ValidationMessage> validationMessages = new ArrayList<>();
+    validationMessages.add(ValidationMessage.of("type", ValidatorTypeCode.ENUM, path1, "[Http]"));
+    validationMessages.add(ValidationMessage.of("type", ValidatorTypeCode.ENUM, path1, "[ShellScript]"));
+    validationMessages.add(ValidationMessage.of("type", ValidatorTypeCode.ENUM, path1, "[Barrier]"));
+    // Only one location with type ValidatorTypeCode.ENUM. So all validations must be grouped together.
+    Set<ValidationMessage> processValidationMessages =
+        yamlSchemaValidator.processValidationMessages(validationMessages);
+    assertEquals(processValidationMessages.size(), 1);
+    assertEquals(processValidationMessages.stream()
+                     .map(ValidationMessage::getCode)
+                     .filter(o -> o.equals(ValidatorTypeCode.ENUM.getErrorCode()))
+                     .count(),
+        1);
+    validationMessages.add(ValidationMessage.of("type", ValidatorTypeCode.ENUM, path2, "[Barrier]"));
+    // new location added. So processed messages must have 2 validation messages.
+    processValidationMessages = yamlSchemaValidator.processValidationMessages(validationMessages);
+    assertEquals(processValidationMessages.size(), 2);
+    assertEquals(processValidationMessages.stream()
+                     .map(ValidationMessage::getCode)
+                     .filter(o -> o.equals(ValidatorTypeCode.ENUM.getErrorCode()))
+                     .count(),
+        2);
+    assertEquals(processValidationMessages.stream()
+                     .map(ValidationMessage::getCode)
+                     .filter(o -> o.equals(ValidatorTypeCode.TYPE.getErrorCode()))
+                     .count(),
+        0);
+    validationMessages.add(ValidationMessage.of("type", ValidatorTypeCode.TYPE, path2, "[Barrier]"));
+    // Same location added but with different ValidatorTypeCode. So it should come separate after processing.
+    processValidationMessages = yamlSchemaValidator.processValidationMessages(validationMessages);
+    assertEquals(processValidationMessages.size(), 3);
+    assertEquals(processValidationMessages.stream()
+                     .map(ValidationMessage::getCode)
+                     .filter(o -> o.equals(ValidatorTypeCode.ENUM.getErrorCode()))
+                     .count(),
+        2);
+    assertEquals(processValidationMessages.stream()
+                     .map(ValidationMessage::getCode)
+                     .filter(o -> o.equals(ValidatorTypeCode.TYPE.getErrorCode()))
+                     .count(),
+        1);
   }
 }

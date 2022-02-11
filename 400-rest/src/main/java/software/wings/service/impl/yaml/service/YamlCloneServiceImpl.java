@@ -32,6 +32,7 @@ import software.wings.beans.InfrastructureProvisioner;
 import software.wings.beans.Pipeline;
 import software.wings.beans.Workflow;
 import software.wings.beans.yaml.Change;
+import software.wings.beans.yaml.FullSyncError;
 import software.wings.beans.yaml.GitFileChange;
 import software.wings.service.intfc.AppService;
 import software.wings.service.intfc.InfrastructureProvisionerService;
@@ -52,7 +53,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @OwnedBy(CDC)
 @Singleton
@@ -172,15 +172,15 @@ public class YamlCloneServiceImpl implements YamlCloneService {
    */
   private RestResponse cloneAppLevelEntity(String accountId, boolean includeFiles, FolderNode folderNode) {
     List<GitFileChange> gitFileChanges = new ArrayList<>();
-    Optional<List<String>> errorMessages = Optional.of(new ArrayList<String>());
+    List<FullSyncError> errorMessages = new ArrayList<>();
     try {
       traverseDirectory(
           gitFileChanges, accountId, folderNode, folderNode.getDirectoryPath().getPath(), includeFiles, errorMessages);
 
       // If yamlConversion fails for any files, propogate that message to UI with failure
-      if (EmptyPredicate.isNotEmpty(errorMessages.get())) {
+      if (EmptyPredicate.isNotEmpty(errorMessages)) {
         StringBuilder builder = new StringBuilder("Following Errors Happened\n");
-        errorMessages.get().forEach(message -> builder.append(message).append(", "));
+        errorMessages.forEach(message -> builder.append(message.getError()).append(", "));
         return getRestResponseForFailure(builder.toString());
       }
 
@@ -214,7 +214,7 @@ public class YamlCloneServiceImpl implements YamlCloneService {
    */
   @VisibleForTesting
   void traverseDirectory(List<GitFileChange> gitFileChanges, String accountId, FolderNode fn, String path,
-      boolean includeFiles, Optional<List<String>> errorMessages) {
+      boolean includeFiles, List<FullSyncError> errorMessages) {
     path = path + "/" + fn.getName();
 
     for (DirectoryNode dn : fn.getChildren()) {

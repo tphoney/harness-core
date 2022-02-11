@@ -19,4 +19,5 @@ public class WebhookConstants {
   public static final String TARGET = "target";
   public static final String HOOK_EVENT_TYPE = "hookEventType";
   public static final String WEBHOOK_ENDPOINT = "webhook";
+  public static final String COMPLETE_WEBHOOK_ENDPOINT = "ng/api/webhook";
 }

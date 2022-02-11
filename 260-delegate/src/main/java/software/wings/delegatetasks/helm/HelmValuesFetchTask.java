@@ -28,8 +28,10 @@ import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.DelegateTaskPackage;
 import io.harness.delegate.beans.DelegateTaskResponse;
 import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
+import io.harness.delegate.configuration.InstallUtils;
 import io.harness.delegate.task.AbstractDelegateRunnableTask;
 import io.harness.delegate.task.TaskParameters;
+import io.harness.k8s.model.HelmVersion;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.secret.SecretSanitizerThreadLocal;
 
@@ -48,6 +50,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
+import org.zeroturnaround.exec.ProcessExecutor;
 
 @Slf4j
 @TargetModule(HarnessModule._930_DELEGATE_TASKS)
@@ -69,6 +72,9 @@ public class HelmValuesFetchTask extends AbstractDelegateRunnableTask {
         format("Running HelmValuesFetchTask for account %s app %s", taskParams.getAccountId(), taskParams.getAppId()));
 
     ExecutionLogCallback executionLogCallback = getExecutionLogCallback(taskParams, FetchFiles);
+
+    printHelmBinaryPathAndVersion(taskParams.getHelmChartConfigTaskParams().getHelmVersion(), executionLogCallback);
+
     try {
       executionLogCallback.saveExecutionLog(color("\nFetching values.yaml from helm chart for Service", White, Bold));
 
@@ -111,5 +117,22 @@ public class HelmValuesFetchTask extends AbstractDelegateRunnableTask {
   @Override
   public HelmValuesFetchTaskResponse run(Object[] parameters) {
     throw new NotImplementedException("Not implemented");
+  }
+
+  public void printHelmBinaryPathAndVersion(HelmVersion helmVersion, ExecutionLogCallback logCallback) {
+    String helmPath = (helmVersion == HelmVersion.V3) ? InstallUtils.getHelm3Path() : InstallUtils.getHelm2Path();
+    logCallback.saveExecutionLog("Path of helm binary picked up: " + helmPath);
+
+    try {
+      String version = new ProcessExecutor()
+                           .directory(null)
+                           .commandSplit(helmPath + " version")
+                           .readOutput(true)
+                           .execute()
+                           .outputUTF8();
+      logCallback.saveExecutionLog("Helm binary version is: " + version);
+    } catch (Exception e) {
+      log.warn("Exception occurred while getting helm version");
+    }
   }
 }

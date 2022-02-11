@@ -14,18 +14,19 @@ import static org.mockito.Mockito.doReturn;
 
 import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
+import io.harness.ng.core.AccountOrgProjectHelper;
 import io.harness.rule.Owner;
 
 import java.net.MalformedURLException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 
 public class WebhookServiceImplTest extends CategoryTest {
-  @InjectMocks @Spy WebhookServiceImpl webhookService;
+  WebhookServiceImpl webhookService;
+  @Mock AccountOrgProjectHelper accountOrgProjectHelper;
 
   @Before
   public void setup() {
@@ -35,13 +36,15 @@ public class WebhookServiceImplTest extends CategoryTest {
   @Test
   @Owner(developers = HARI)
   @Category(UnitTests.class)
-  public void getTargetUrlTest() throws MalformedURLException {
-    doReturn("https://app.harness.io/gateway/ng/api/").when(webhookService).getWebhookBaseUrl();
+  public void getTargetUrlTest() throws MalformedURLException, IllegalAccessException {
+    webhookService = new WebhookServiceImpl(null, null, accountOrgProjectHelper);
+    doReturn("https://app.harness.io/gateway/").when(accountOrgProjectHelper).getBasePortallUrl("abcde");
     final String targetUrl = webhookService.getTargetUrl("abcde");
     assertThat(targetUrl).isEqualTo("https://app.harness.io/gateway/ng/api/webhook?accountIdentifier=abcde");
 
-    doReturn("https://app.harness.io/gateway/ng/api").when(webhookService).getWebhookBaseUrl();
+    webhookService = new WebhookServiceImpl(null, null, accountOrgProjectHelper);
+    doReturn("https://app.harness.io/").when(accountOrgProjectHelper).getBasePortallUrl("abcde");
     final String targetUrl2 = webhookService.getTargetUrl("abcde");
-    assertThat(targetUrl2).isEqualTo("https://app.harness.io/gateway/ng/api/webhook?accountIdentifier=abcde");
+    assertThat(targetUrl2).isEqualTo("https://app.harness.io/ng/api/webhook?accountIdentifier=abcde");
   }
 }

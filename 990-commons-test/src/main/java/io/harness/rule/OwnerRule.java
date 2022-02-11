@@ -95,6 +95,7 @@ public class OwnerRule implements TestRule {
   public static final String ANSHUL = "anshul";
   public static final String ANUBHAW = "anubhaw";
   public static final String ARPIT = "arpit.tiwari";
+  public static final String ARPITJ = "arpit.jain";
   public static final String ARVIND = "arvind.choudhary";
   public static final String ASHISHSANODIA = "ashish.sanodia";
   public static final String AVMOHAN = "abhijith.mohan";
@@ -260,6 +261,7 @@ public class OwnerRule implements TestRule {
           .put(ANSHUL, defaultUserInfo(ANSHUL).slack("UASUA3E65").team(CDP).build())
           .put(ANUBHAW, defaultUserInfo(ANUBHAW).slack("U0Z1U0HNW").team(CDP).build())
           .put(ARPIT, defaultUserInfo(ARPIT).slack("U0221TUJ4QK").team(DEL).build())
+          .put(ARPITJ, defaultUserInfo(ARPITJ).slack("U02UXP4U508").team(CV).build())
           .put(ARVIND, defaultUserInfo(ARVIND).slack("U01542TQGCU").team(CDP).build())
           .put(ASHISHSANODIA, defaultUserInfo(ASHISHSANODIA).slack("U02Q01CFAB1").team(PL).build())
           .put(AVMOHAN, defaultUserInfo(AVMOHAN).slack("UK72UTBJR").team(CE).build())
@@ -397,6 +399,7 @@ public class OwnerRule implements TestRule {
           .put(PAVIC, defaultUserInfo(PAVIC).slack("U02GPSRJB40").team(CV).build())
           .put(SHIVAM, defaultUserInfo(SHIVAM).slack("U01CPMYC37T").team(CDC).build())
           .put(VITALIE, defaultUserInfo(VITALIE).slack("U02U09LU91R").team(CDP).build())
+          .put(SHUBHAM_MAHESHWARI, defaultUserInfo(SHUBHAM_MAHESHWARI).slack("U02H12GCMGQ").team(CDP).build())
           .build();
 
   private static String prDeveloperId = findDeveloperId(System.getenv(GHPRB_PULL_AUTHOR_EMAIL));

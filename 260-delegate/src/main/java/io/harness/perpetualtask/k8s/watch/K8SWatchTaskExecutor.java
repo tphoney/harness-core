@@ -172,10 +172,9 @@ public class K8SWatchTaskExecutor implements PerpetualTaskExecutor {
                                              .collect(Collectors.toMap(V1ObjectMeta::getUid, V1ObjectMeta::getName));
 
     Map<String, String> podUidNameMap =
-        client.listPodForAllNamespaces(null, null, null, null, null, null, null, null, null, null)
+        client.listPodForAllNamespaces(null, null, "status.phase==Running", null, null, null, null, null, null, null)
             .getItems()
             .stream()
-            .filter(pod -> "Running".equals(pod.getStatus().getPhase()))
             .map(V1Pod::getMetadata)
             .collect(Collectors.toMap(V1ObjectMeta::getUid, V1ObjectMeta::getName));
 

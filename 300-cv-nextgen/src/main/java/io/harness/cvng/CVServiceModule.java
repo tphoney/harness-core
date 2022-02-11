@@ -109,6 +109,7 @@ import io.harness.cvng.core.services.api.DataCollectionTaskManagementService;
 import io.harness.cvng.core.services.api.DataCollectionTaskService;
 import io.harness.cvng.core.services.api.DataSourceConnectivityChecker;
 import io.harness.cvng.core.services.api.DatadogService;
+import io.harness.cvng.core.services.api.DebugService;
 import io.harness.cvng.core.services.api.DeleteEntityByHandler;
 import io.harness.cvng.core.services.api.DeletedCVConfigService;
 import io.harness.cvng.core.services.api.DynatraceService;
@@ -151,6 +152,7 @@ import io.harness.cvng.core.services.impl.CustomHealthServiceImpl;
 import io.harness.cvng.core.services.impl.DataCollectionTaskServiceImpl;
 import io.harness.cvng.core.services.impl.DatadogMetricDataCollectionInfoMapper;
 import io.harness.cvng.core.services.impl.DatadogServiceImpl;
+import io.harness.cvng.core.services.impl.DebugServiceImpl;
 import io.harness.cvng.core.services.impl.DefaultDeleteEntityByHandler;
 import io.harness.cvng.core.services.impl.DeletedCVConfigServiceImpl;
 import io.harness.cvng.core.services.impl.DynatraceDataCollectionInfoMapper;
@@ -695,6 +697,7 @@ public class CVServiceModule extends AbstractModule {
     bind(ServiceLevelIndicatorService.class).to(ServiceLevelIndicatorServiceImpl.class).in(Singleton.class);
     bind(SLIDataProcessorService.class).to(SLIDataProcessorServiceImpl.class);
     bind(ServiceLevelIndicatorEntityAndDTOTransformer.class);
+    bind(DebugService.class).to(DebugServiceImpl.class).in(Singleton.class);
     MapBinder<SLIMetricType, ServiceLevelIndicatorTransformer> serviceLevelIndicatorTransformerMapBinder =
         MapBinder.newMapBinder(binder(), SLIMetricType.class, ServiceLevelIndicatorTransformer.class);
     serviceLevelIndicatorTransformerMapBinder.addBinding(SLIMetricType.RATIO)

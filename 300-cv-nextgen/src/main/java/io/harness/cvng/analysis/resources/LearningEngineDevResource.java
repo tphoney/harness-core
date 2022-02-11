@@ -17,8 +17,10 @@ import io.harness.cvng.analysis.entities.TimeSeriesCumulativeSums;
 import io.harness.cvng.analysis.entities.TimeSeriesRiskSummary;
 import io.harness.cvng.analysis.entities.TimeSeriesShortTermHistory;
 import io.harness.cvng.analysis.services.api.LearningEngineDevService;
+import io.harness.cvng.analysis.services.api.LearningEngineTaskService;
 import io.harness.rest.RestResponse;
 import io.harness.security.annotations.LearningEngineAuth;
+import io.harness.security.annotations.PublicApi;
 
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.Timed;
@@ -44,6 +46,7 @@ public class LearningEngineDevResource {
  */
 
   @Inject LearningEngineDevService learningEngineDevService;
+  @Inject LearningEngineTaskService learningEngineTaskService;
 
   @GET
   @Path("/timeseries-risk-summary-by-time")
@@ -135,5 +138,15 @@ public class LearningEngineDevResource {
       @QueryParam("analysisEndTime") String epochEndInstant) {
     return new RestResponse<>(learningEngineDevService.getClusteredLogsByTimeRange(
         verificationTaskId, Instant.parse(epochStartInstant), Instant.parse(epochEndInstant)));
+  }
+
+  @GET
+  @Path("/save-for-events")
+  @Timed
+  @ExceptionMetered
+  @PublicApi
+  @ApiOperation(value = "get risk analysis cumulative sums", nickname = "testEventTask")
+  public void testEventTrigger(@QueryParam("taskId") String taskId) {
+    learningEngineTaskService.markCompleted(taskId);
   }
 }

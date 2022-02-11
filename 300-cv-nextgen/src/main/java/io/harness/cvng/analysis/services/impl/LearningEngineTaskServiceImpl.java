@@ -22,6 +22,7 @@ import io.harness.cvng.analysis.entities.LearningEngineTask.LearningEngineTaskTy
 import io.harness.cvng.analysis.services.api.LearningEngineTaskService;
 import io.harness.cvng.core.entities.VerificationTask;
 import io.harness.cvng.core.entities.VerificationTask.TaskType;
+import io.harness.cvng.core.jobs.StateMachineEventPublisherService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.cvng.metrics.CVNGMetricsUtils;
 import io.harness.cvng.metrics.beans.AccountMetricContext;
@@ -56,6 +57,7 @@ public class LearningEngineTaskServiceImpl implements LearningEngineTaskService 
   @Inject private VerificationTaskService verificationTaskService;
   @Inject private Clock clock;
   @Inject private MetricContextBuilder metricContextBuilder;
+  @Inject private StateMachineEventPublisherService stateMachineEventPublisherService;
 
   @Override
   public LearningEngineTask getNextAnalysisTask() {
@@ -178,6 +180,7 @@ public class LearningEngineTaskServiceImpl implements LearningEngineTaskService 
     hPersistence.update(hPersistence.createQuery(LearningEngineTask.class).filter(LearningEngineTaskKeys.uuid, taskId),
         updateOperations);
     LearningEngineTask task = get(taskId);
+    stateMachineEventPublisherService.registerTaskComplete(task.getAccountId(), taskId, task.getVerificationTaskId());
     incTaskStatusMetric(task.getAccountId(), ExecutionStatus.SUCCESS);
     addTimeToFinishMetrics(task);
   }

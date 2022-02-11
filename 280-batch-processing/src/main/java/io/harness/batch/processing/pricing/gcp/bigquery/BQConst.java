@@ -70,7 +70,7 @@ public class BQConst {
       + "FROM `%s` "
       + "WHERE azureVMProviderId IN "
       + "( '%s' )  AND "
-      + "usagestartdate  >= '%s' AND usagestartdate < '%s' AND cloudProvider = 'AZURE' "
+      + "startTime  >= '%s' AND startTime < '%s' AND cloudProvider = 'AZURE' "
       + "GROUP BY  azureVMProviderId; ";
 
   public static final String CLOUD_PROVIDER_AGG_DATA =

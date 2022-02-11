@@ -112,4 +112,13 @@ public class UserProfileHelper {
     }
     return sourceCodeManagerDTO.get();
   }
+
+  public boolean validateIfScmUserProfileIsSet(String accountIdentifier) {
+    List<SourceCodeManagerDTO> sourceCodeManagerDTOS = sourceCodeManagerService.get(accountIdentifier);
+    if (sourceCodeManagerDTOS.isEmpty()) {
+      throw new InvalidRequestException("We don’t have your git credentials for the selected folder."
+          + " Please update the credentials in user profile.");
+    }
+    return true;
+  }
 }

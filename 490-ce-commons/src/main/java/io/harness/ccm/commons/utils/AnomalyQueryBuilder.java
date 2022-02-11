@@ -97,10 +97,11 @@ public class AnomalyQueryBuilder {
   private Condition applyStringFilters(@NotNull List<CCMStringFilter> filters, Condition condition) {
     for (CCMStringFilter filter : filters) {
       if (filter.getField() == ALL && filter.getOperator() == LIKE) {
-        condition = constructSearchCondition(filter.getValues());
+        condition = condition.and(constructSearchCondition(filter.getValues()));
+      } else {
+        condition = condition.and(
+            constructCondition(getTableField(filter.getField()), filter.getValues(), filter.getOperator()));
       }
-      condition =
-          condition.and(constructCondition(getTableField(filter.getField()), filter.getValues(), filter.getOperator()));
     }
     return condition;
   }
@@ -190,10 +191,12 @@ public class AnomalyQueryBuilder {
 
   @NotNull
   private static Condition constructSearchCondition(List<String> values) {
-    String searchKey = !isEmpty(values) ? values.get(0) : null;
+    String searchKey = !isEmpty(values) ? values.get(0) + "%" : null;
     Condition condition = DSL.noCondition();
     if (searchKey != null) {
-      ANOMALY_TABLE_ENTITIES.forEach(entity -> condition.or(entity.likeIgnoreCase(searchKey)));
+      for (TableField<AnomaliesRecord, String> entity : ANOMALY_TABLE_ENTITIES) {
+        condition = condition.or(entity.likeIgnoreCase(searchKey));
+      }
     }
     return condition;
   }

@@ -13,6 +13,7 @@ import static io.harness.chartmuseum.ChartMuseumConstants.AWS_SECRET_ACCESS_KEY;
 import static io.harness.chartmuseum.ChartMuseumConstants.GOOGLE_APPLICATION_CREDENTIALS;
 import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.ACHYUTH;
+import static io.harness.rule.OwnerRule.NAMAN_TALAYCHA;
 import static io.harness.rule.OwnerRule.TATHAGAT;
 
 import static java.lang.String.format;
@@ -62,6 +63,7 @@ public class ChartMuseumClientHelperTest extends CategoryTest {
     MockitoAnnotations.initMocks(this);
 
     doReturn(CHARTMUSEUM_BIN_PATH).when(k8sGlobalConfigService).getChartMuseumPath(false);
+    doReturn(CHARTMUSEUM_BIN_PATH).when(k8sGlobalConfigService).getChartMuseumPath(true);
     doReturn(startedProcess)
         .when(clientHelper)
         .startProcess(anyString(), anyMapOf(String.class, String.class), any(StringBuffer.class));
@@ -89,6 +91,27 @@ public class ChartMuseumClientHelperTest extends CategoryTest {
     assertThat(command).contains(
         format("--storage=amazon --storage-amazon-bucket=%s --storage-amazon-prefix=%s --storage-amazon-region=%s",
             bucketName, basePath, region));
+    assertThat(command).doesNotContain("--port=${PORT}");
+  }
+
+  @Test
+  @Owner(developers = NAMAN_TALAYCHA)
+  @Category(UnitTests.class)
+  public void testStartS3ChartMuseumServerLatestChartMuseumBin() throws Exception {
+    final String bucketName = "s3-bucket";
+    final String basePath = "charts";
+    final String region = "us-west1";
+    doReturn(CHARTMUSEUM_BIN_PATH).when(k8sGlobalConfigService).getChartMuseumPath(false);
+    ChartMuseumServer startedServer =
+        clientHelper.startS3ChartMuseumServer(bucketName, basePath, region, true, null, null, false, true);
+    assertThat(startedServer.getStartedProcess()).isEqualTo(startedProcess);
+    ArgumentCaptor<String> commandCaptor = ArgumentCaptor.forClass(String.class);
+
+    verify(clientHelper, times(1))
+        .startProcess(commandCaptor.capture(), eq(Collections.emptyMap()), any(StringBuffer.class));
+
+    String command = commandCaptor.getValue();
+    assertThat(command).contains(format("--disable-statefiles", bucketName, basePath, region));
     assertThat(command).doesNotContain("--port=${PORT}");
   }
 
@@ -137,6 +160,33 @@ public class ChartMuseumClientHelperTest extends CategoryTest {
             bucketName, basePath, region));
 
     assertThat(command).doesNotContain("--port=${PORT}");
+  }
+
+  @Test
+  @Owner(developers = ABOSII)
+  @Category(UnitTests.class)
+  public void testStartGCSChartMuseumServerLatestChartMuseumBin() throws Exception {
+    final String bucketName = "gcs-bucket";
+    final String basePath = "charts";
+    final String resourceDirectory = "resources";
+    final char[] serviceAccountKey = "service-account-key".toCharArray();
+    final String credentialsFilePath = "resources/credentials.json";
+
+    doReturn(credentialsFilePath).when(clientHelper).writeGCSCredentialsFile(resourceDirectory, serviceAccountKey);
+
+    ChartMuseumServer startedServer =
+        clientHelper.startGCSChartMuseumServer(bucketName, basePath, serviceAccountKey, resourceDirectory, true);
+    assertThat(startedServer.getStartedProcess()).isEqualTo(startedProcess);
+    ArgumentCaptor<String> commandCaptor = ArgumentCaptor.forClass(String.class);
+
+    verify(clientHelper, times(1))
+        .startProcess(commandCaptor.capture(), eq(ImmutableMap.of(GOOGLE_APPLICATION_CREDENTIALS, credentialsFilePath)),
+            any(StringBuffer.class));
+
+    String command = commandCaptor.getValue();
+    assertThat(command).contains(format("--disable-statefiles", bucketName, basePath));
+    assertThat(command).doesNotContain("--port=${PORT}");
+    assertThat(true).isTrue();
   }
 
   @Test

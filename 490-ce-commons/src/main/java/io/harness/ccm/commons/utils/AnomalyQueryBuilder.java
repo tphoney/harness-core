@@ -1,5 +1,7 @@
 package io.harness.ccm.commons.utils;
 
+import static io.harness.ccm.commons.entities.CCMField.ALL;
+import static io.harness.ccm.commons.entities.CCMOperator.LIKE;
 import static io.harness.ccm.commons.utils.TimeUtils.toOffsetDateTime;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.timescaledb.Tables.ANOMALIES;
@@ -17,6 +19,7 @@ import io.harness.timescaledb.tables.records.AnomaliesRecord;
 import com.sun.istack.internal.NotNull;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.Condition;
@@ -26,6 +29,11 @@ import org.jooq.impl.DSL;
 
 @Slf4j
 public class AnomalyQueryBuilder {
+  private static final List<TableField<AnomaliesRecord, String>> ANOMALY_TABLE_ENTITIES =
+      new ArrayList<>(Arrays.asList(ANOMALIES.WORKLOADNAME, ANOMALIES.NAMESPACE, ANOMALIES.CLUSTERNAME,
+          ANOMALIES.AWSACCOUNT, ANOMALIES.AWSSERVICE, ANOMALIES.AWSINSTANCETYPE, ANOMALIES.AWSUSAGETYPE,
+          ANOMALIES.GCPPRODUCT, ANOMALIES.GCPPROJECT, ANOMALIES.GCPSKUDESCRIPTION, ANOMALIES.GCPSKUID));
+
   @NotNull
   public List<OrderField<?>> getOrderByFields(@NotNull List<CCMSort> sortList) {
     List<OrderField<?>> orderByFields = new ArrayList<>();
@@ -88,6 +96,9 @@ public class AnomalyQueryBuilder {
   @NotNull
   private Condition applyStringFilters(@NotNull List<CCMStringFilter> filters, Condition condition) {
     for (CCMStringFilter filter : filters) {
+      if (filter.getField() == ALL && filter.getOperator() == LIKE) {
+        condition = constructSearchCondition(filter.getValues());
+      }
       condition =
           condition.and(constructCondition(getTableField(filter.getField()), filter.getValues(), filter.getOperator()));
     }
@@ -175,6 +186,16 @@ public class AnomalyQueryBuilder {
       default:
         throw new InvalidRequestException(String.format("%s not supported for string fields", operator.toString()));
     }
+  }
+
+  @NotNull
+  private static Condition constructSearchCondition(List<String> values) {
+    String searchKey = !isEmpty(values) ? values.get(0) : null;
+    Condition condition = DSL.noCondition();
+    if (searchKey != null) {
+      ANOMALY_TABLE_ENTITIES.forEach(entity -> condition.or(entity.likeIgnoreCase(searchKey)));
+    }
+    return condition;
   }
 
   @NotNull

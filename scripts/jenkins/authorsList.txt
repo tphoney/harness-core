@@ -28,6 +28,7 @@ Ankush Shaw ankush.shaw@harness.io
 Anshul Anshul anshul@harness.io
 Anubhaw Srivastava anubhaw@harness.io
 Archit Singla archit.singla@harness.io
+arpit-harness arpit.jain@harness.io
 Arpit Tiwari arpit.tiwari@harness.io
 Arvind Choudhary arvind.choudhary@harness.io
 Ashish Sanodia ashish.sanodia@harness.io

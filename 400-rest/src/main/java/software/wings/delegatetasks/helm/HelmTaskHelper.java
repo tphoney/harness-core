@@ -265,7 +265,7 @@ public class HelmTaskHelper {
       helmTaskHelperBase.fetchChartFromRepo(helmChartConfigParams.getRepoName(),
           helmChartConfigParams.getRepoDisplayName(), helmChartConfigParams.getChartName(),
           helmChartConfigParams.getChartVersion(), chartDirectory, helmChartConfigParams.getHelmVersion(),
-          helmCommandFlag, timeoutInMillis, false);
+          helmCommandFlag, timeoutInMillis, false, false);
     } finally {
       if (chartMuseumServer != null) {
         chartMuseumClient.stopChartMuseumServer(chartMuseumServer.getStartedProcess());
@@ -374,7 +374,8 @@ public class HelmTaskHelper {
     helmTaskHelperBase.fetchChartFromRepo(helmChartConfigParams.getRepoName(),
         helmChartConfigParams.getRepoDisplayName(), helmChartConfigParams.getChartName(),
         helmChartConfigParams.getChartVersion(), chartDirectory, helmChartConfigParams.getHelmVersion(),
-        helmCommandFlag, timeoutInMillis, helmChartConfigParams.isUseRepoFlags());
+        helmCommandFlag, timeoutInMillis, helmChartConfigParams.isUseRepoFlags(),
+        helmChartConfigParams.isCheckIncorrectChartVersion());
   }
 
   public void addHelmRepo(HelmRepoConfig helmRepoConfig, SettingValue connectorConfig, String repoName,
@@ -433,7 +434,7 @@ public class HelmTaskHelper {
             helmChartConfigParams.getHelmVersion(), helmCommandFlag);
       }
       helmTaskHelperBase.executeFetchChartFromRepo(helmChartConfigParams.getChartName(), chartDirectory,
-          helmChartConfigParams.getRepoDisplayName(), helmFetchCommand, timeoutInMillis);
+          helmChartConfigParams.getRepoDisplayName(), helmFetchCommand, timeoutInMillis, "", false);
 
     } finally {
       if (isNotBlank(helmChartConfigParams.getChartUrl())) {

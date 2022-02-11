@@ -203,8 +203,10 @@ public class YamlFunctionalTestHelper {
     Application oldApp = appService.getAppByName(ACCOUNT_ID, oldAppName);
     Application newApp = appService.getAppByName(ACCOUNT_ID, newAppName);
 
-    List<GitFileChange> oldAppChanges = yamlGitService.obtainApplicationYamlGitFileChanges(ACCOUNT_ID, oldApp);
-    List<GitFileChange> newAppChanges = yamlGitService.obtainApplicationYamlGitFileChanges(ACCOUNT_ID, newApp);
+    List<GitFileChange> oldAppChanges =
+        yamlGitService.obtainApplicationYamlGitFileChanges(ACCOUNT_ID, oldApp).getGitFileChanges();
+    List<GitFileChange> newAppChanges =
+        yamlGitService.obtainApplicationYamlGitFileChanges(ACCOUNT_ID, newApp).getGitFileChanges();
 
     Map<String, String> map = new HashMap<>();
 

@@ -1210,5 +1210,18 @@ public class InstallUtils {
       kustomizePath = delegateConfiguration.getKustomizePath();
       isCustomKustomizePath = true;
     }
+    if (isNotEmpty(delegateConfiguration.getKubectlPath())) {
+      kubectlPaths.put(defaultKubectlVersion, delegateConfiguration.getKubectlPath());
+      kubectlPaths.put(newKubectlVersion, delegateConfiguration.getKubectlPath());
+    }
+    if (isNotEmpty(delegateConfiguration.getHelm3Path())) {
+      helmPaths.put(helm3Version, delegateConfiguration.getHelm3Path());
+    }
+    if (isNotEmpty(delegateConfiguration.getHelmPath())) {
+      helmPaths.put(helm2Version, delegateConfiguration.getHelmPath());
+    }
+    if (isNotEmpty(delegateConfiguration.getOcPath())) {
+      ocPath = delegateConfiguration.getOcPath();
+    }
   }
 }

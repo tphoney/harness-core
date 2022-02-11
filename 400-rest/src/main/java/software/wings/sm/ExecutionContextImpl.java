@@ -98,8 +98,10 @@ import software.wings.beans.ErrorStrategy;
 import software.wings.beans.GcpKubernetesInfrastructureMapping;
 import software.wings.beans.InfraMappingSweepingOutput;
 import software.wings.beans.InfrastructureMapping;
+import software.wings.beans.InfrastructureMappingType;
 import software.wings.beans.NameValuePair;
 import software.wings.beans.PcfInfrastructureMapping;
+import software.wings.beans.RancherKubernetesInfrastructureMapping;
 import software.wings.beans.ServiceTemplate;
 import software.wings.beans.ServiceVariable;
 import software.wings.beans.ServiceVariable.Type;
@@ -110,6 +112,7 @@ import software.wings.beans.artifact.Artifact;
 import software.wings.beans.artifact.ArtifactStream;
 import software.wings.beans.customdeployment.CustomDeploymentTypeDTO;
 import software.wings.common.InfrastructureConstants;
+import software.wings.common.RancherK8sClusterProcessor;
 import software.wings.common.VariableProcessor;
 import software.wings.expression.ArtifactLabelEvaluator;
 import software.wings.expression.ManagerExpressionEvaluator;
@@ -1056,6 +1059,19 @@ public class ExecutionContextImpl implements DeploymentExecutionContext {
       contextMap.put("sweepingOutputSecrets",
           SweepingOutputSecretManagerFunctor.builder().simpleEncryption(new SimpleEncryption()).build());
     }
+
+    String infraMappingId = fetchInfraMappingId();
+    if (infraMappingId != null) {
+      String appId = getAppId();
+      InfrastructureMapping infrastructureMapping = infrastructureMappingService.get(appId, infraMappingId);
+      if (infrastructureMapping != null
+          && InfrastructureMappingType.RANCHER_KUBERNETES.name().equals(infrastructureMapping.getInfraMappingType())) {
+        contextMap.put(RancherK8sClusterProcessor.FILTERED_CLUSTERS_EXPR_PREFIX,
+            expressionProcessorFactory.getExpressionProcessor(
+                RancherK8sClusterProcessor.EXPRESSION_EQUAL_PATTERN, this));
+      }
+    }
+
     return contextMap;
   }
 
@@ -1303,6 +1319,8 @@ public class ExecutionContextImpl implements DeploymentExecutionContext {
         namespace = ((AzureKubernetesInfrastructureMapping) infrastructureMapping).getNamespace();
       } else if (infrastructureMapping instanceof DirectKubernetesInfrastructureMapping) {
         namespace = ((DirectKubernetesInfrastructureMapping) infrastructureMapping).getNamespace();
+      } else if (infrastructureMapping instanceof RancherKubernetesInfrastructureMapping) {
+        namespace = ((RancherKubernetesInfrastructureMapping) infrastructureMapping).getNamespace();
       } else {
         unhandled(infrastructureMapping.getInfraMappingType());
       }

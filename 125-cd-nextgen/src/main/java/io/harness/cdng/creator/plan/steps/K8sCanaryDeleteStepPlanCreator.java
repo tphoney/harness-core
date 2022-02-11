@@ -7,13 +7,9 @@
 
 package io.harness.cdng.creator.plan.steps;
 
-import static io.harness.cdng.visitor.YamlTypes.K8S_BG_SWAP_SERVICES;
-import static io.harness.cdng.visitor.YamlTypes.K8S_BLUE_GREEN_DEPLOY;
 import static io.harness.cdng.visitor.YamlTypes.K8S_CANARY_DELETE;
 import static io.harness.cdng.visitor.YamlTypes.K8S_CANARY_DEPLOY;
 
-import io.harness.cdng.k8s.K8sBGSwapServicesStepNode;
-import io.harness.cdng.k8s.K8sBGSwapServicesStepParameters;
 import io.harness.cdng.k8s.K8sCanaryDeleteStepNode;
 import io.harness.cdng.k8s.K8sCanaryDeleteStepParameters;
 import io.harness.executions.steps.StepSpecTypeConstants;

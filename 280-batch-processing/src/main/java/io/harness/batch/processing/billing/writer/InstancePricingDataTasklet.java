@@ -83,13 +83,13 @@ public class InstancePricingDataTasklet implements Tasklet {
         return null;
       }
       log.info("Processing {} instances", instanceDataLists.size());
-      for (InstanceData instanceDataList : instanceDataLists) {
-        if (! (Arrays.asList(new String[]{"AWS", "AZURE"})).contains(instanceDataList.getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER))) continue;
-        log.info("InstanceId: {}, Instance Family: {}, Region: {}, Cloud Provider: {}", instanceDataList.getCloudProviderInstanceId(),
-            instanceDataList.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY),
-            instanceDataList.getMetaData().get(InstanceMetaDataConstants.REGION),
-            instanceDataList.getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER));
-      }
+//      for (InstanceData instanceDataList : instanceDataLists) {
+//        if (! (Arrays.asList(new String[]{"AWS", "AZURE"})).contains(instanceDataList.getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER))) continue;
+//        log.info("InstanceId: {}, Instance Family: {}, Region: {}, Cloud Provider: {}", instanceDataList.getCloudProviderInstanceId(),
+//            instanceDataList.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY),
+//            instanceDataList.getMetaData().get(InstanceMetaDataConstants.REGION),
+//            instanceDataList.getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER));
+//      }
       if (!instanceDataLists.isEmpty()) {
         activeInstanceIterator = instanceDataLists.get(instanceDataLists.size() - 1).getActiveInstanceIterator();
         if (instanceDataLists.get(0).getActiveInstanceIterator().equals(activeInstanceIterator)) {

@@ -9,10 +9,7 @@ package io.harness.delegate.task.serverless.request;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.delegate.task.serverless.ServerlessArtifactConfig;
-import io.harness.delegate.task.serverless.ServerlessCliVersion;
-import io.harness.delegate.task.serverless.ServerlessCommandType;
-import io.harness.delegate.task.serverless.ServerlessManifest;
+import io.harness.delegate.task.serverless.*;
 
 import lombok.Builder;
 import lombok.Value;
@@ -32,5 +29,5 @@ public class ServerlessDeployRequest implements ServerlessCommandRequest {
   String stage;
   ServerlessArtifactConfig serverlessArtifactConfig;
   ServerlessManifest serverlessManifest;
-  //     ServerlessInfraConfig serverlessInfraConfig;
+  ServerlessInfraConfig serverlessInfraConfig;
 }

@@ -84,7 +84,7 @@ public class InstancePricingDataTasklet implements Tasklet {
       }
       log.info("Processing {} instances", instanceDataLists.size());
       for (InstanceData instanceDataList : instanceDataLists) {
-        if (!instanceDataList.getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER).equals("AWS")) continue;
+        if (! (Arrays.asList(new String[]{"AWS", "AZURE"})).contains(instanceDataList.getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER))) continue;
         log.info("InstanceId: {}, Instance Family: {}, Region: {}, Cloud Provider: {}", instanceDataList.getCloudProviderInstanceId(),
             instanceDataList.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY),
             instanceDataList.getMetaData().get(InstanceMetaDataConstants.REGION),

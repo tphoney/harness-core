@@ -83,7 +83,7 @@ public class BitbucketConnectorDTO extends ConnectorConfigDTO implements ScmConn
   }
 
   @Override
-  public ConnectorType getType() {
+  public ConnectorType getConnectorType() {
     return ConnectorType.BITBUCKET;
   }
 }

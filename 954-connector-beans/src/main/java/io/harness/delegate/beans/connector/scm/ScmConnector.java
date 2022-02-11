@@ -20,5 +20,5 @@ import io.harness.delegate.beans.connector.ConnectorType;
 public interface ScmConnector {
   void setUrl(String url);
   String getUrl();
-  ConnectorType getType();
+  ConnectorType getConnectorType();
 }

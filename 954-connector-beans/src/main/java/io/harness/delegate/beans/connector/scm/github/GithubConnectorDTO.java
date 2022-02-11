@@ -88,7 +88,7 @@ public class GithubConnectorDTO
   }
 
   @Override
-  public ConnectorType getType() {
+  public ConnectorType getConnectorType() {
     return ConnectorType.GITHUB;
   }
 }

@@ -58,7 +58,7 @@ public class UserProfileHelper {
     ScmConnector scmConnector = (ScmConnector) connector.getConnector().getConnectorConfig();
     scmConnector.setUrl(yamlGitConfig.getRepo());
 
-    SCMType scmType = SCMType.fromConnectorType(scmConnector.getType());
+    SCMType scmType = SCMType.fromConnectorType(scmConnector.getConnectorType());
     SourceCodeManagerDTO userScmProfile =
         getUserScmProfile(yamlGitConfig.getAccountIdentifier(), getUserPrincipal(), scmType);
     switch (scmType) {
@@ -91,7 +91,7 @@ public class UserProfileHelper {
                 .build());
         break;
       default:
-        throw new IllegalStateException("Unexpected value: " + scmConnector.getType());
+        throw new IllegalStateException("Unexpected value: " + scmConnector.getConnectorType());
     }
   }
 

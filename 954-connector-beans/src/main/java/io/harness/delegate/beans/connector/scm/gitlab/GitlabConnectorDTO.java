@@ -82,7 +82,7 @@ public class GitlabConnectorDTO extends ConnectorConfigDTO implements ScmConnect
   }
 
   @Override
-  public ConnectorType getType() {
+  public ConnectorType getConnectorType() {
     return ConnectorType.GITLAB;
   }
 }

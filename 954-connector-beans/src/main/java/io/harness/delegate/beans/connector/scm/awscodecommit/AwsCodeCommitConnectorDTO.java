@@ -65,7 +65,7 @@ public class AwsCodeCommitConnectorDTO extends ConnectorConfigDTO implements Scm
   }
 
   @Override
-  public ConnectorType getType() {
+  public ConnectorType getConnectorType() {
     return ConnectorType.CODECOMMIT;
   }
 }

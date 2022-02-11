@@ -78,7 +78,7 @@ public class GitConfigDTO extends ConnectorConfigDTO implements ScmConnector, De
   }
 
   @Override
-  public ConnectorType getType() {
+  public ConnectorType getConnectorType() {
     return ConnectorType.GIT;
   }
 }

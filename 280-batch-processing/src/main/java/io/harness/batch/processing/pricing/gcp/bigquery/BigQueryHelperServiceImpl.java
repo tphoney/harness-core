@@ -521,18 +521,25 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
     for (FieldValueList row : fieldValueLists) {
       Pricing.PricingBuilder dataBuilder = Pricing.builder();
       String resourceId = "";
+      boolean errorOccurred = false;
       for (Field field : fields) {
         switch (field.getName()) {
           case BQConst.resourceId:
             resourceId = fetchStringValue(row, field);
             break;
           case BQConst.cost:
-            dataBuilder.pricePerHour(new BigDecimal(getDoubleValue(row, field)));
+            try {
+              dataBuilder.pricePerHour(BigDecimal.valueOf(getDoubleValue(row, field)));
+            } catch (NullPointerException e) {
+              log.error("NullPointerException while getting price from BigQuery", e);
+              errorOccurred = true;
+            }
             break;
           default:
             break;
         }
       }
+      if (errorOccurred) continue;
       dataBuilder.source(PricingSource.CUR_REPORT_INSTANCE_ID);
       instancePricingMap.put(resourceId, dataBuilder.build());
     }
@@ -548,18 +555,25 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
     for (FieldValueList row : fieldValueLists) {
       Pricing.PricingBuilder dataBuilder = Pricing.builder();
       String resourceId = "";
+      boolean errorOccurred = false;
       for (Field field : fields) {
         switch (field.getName()) {
           case BQConst.azureVMProviderId:
             resourceId = fetchStringValue(row, field);
             break;
           case BQConst.cost:
-            dataBuilder.pricePerHour(new BigDecimal(getDoubleValue(row, field)));
+            try {
+              dataBuilder.pricePerHour(BigDecimal.valueOf(getDoubleValue(row, field)));
+            } catch (NullPointerException e) {
+              log.error("NullPointerException while getting price from BigQuery", e);
+              errorOccurred = true;
+            }
             break;
           default:
             break;
         }
       }
+      if (errorOccurred) continue;
       dataBuilder.source(PricingSource.CUR_REPORT_INSTANCE_ID);
       instancePricingMap.put(resourceId, dataBuilder.build());
     }
@@ -575,6 +589,7 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
     for (FieldValueList row : fieldValueLists) {
       Pricing.PricingBuilder pricingBuilder = Pricing.builder();
       InstanceFamilyAndRegion.InstanceFamilyAndRegionBuilder instanceFamilyAndRegionBuilder = InstanceFamilyAndRegion.builder();
+      boolean errorOccurred = false;
       for (Field field : fields) {
         switch (field.getName()) {
           case BQConst.instanceType:
@@ -584,12 +599,18 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
             instanceFamilyAndRegionBuilder.region(fetchStringValue(row, field));
             break;
           case BQConst.cost:
-            pricingBuilder.pricePerHour(new BigDecimal(getDoubleValue(row, field)));
+            try {
+              pricingBuilder.pricePerHour(BigDecimal.valueOf(getDoubleValue(row, field)));
+            } catch (NullPointerException e) {
+              log.error("NullPointerException while getting price from BigQuery", e);
+              errorOccurred = true;
+            }
             break;
           default:
             break;
         }
       }
+      if (errorOccurred) continue;
       pricingBuilder.source(PricingSource.CUR_REPORT_INSTANCE_FAMILY_REGION);
       instancePricingMap.put(instanceFamilyAndRegionBuilder.build(), pricingBuilder.build());
     }
@@ -605,18 +626,25 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
     for (FieldValueList row : fieldValueLists) {
       Pricing.PricingBuilder dataBuilder = Pricing.builder();
       String instanceFamily = "";
+      boolean errorOccurred = false;
       for (Field field : fields) {
         switch (field.getName()) {
           case BQConst.instanceType:
             instanceFamily = fetchStringValue(row, field);
             break;
           case BQConst.cost:
-            dataBuilder.pricePerHour(new BigDecimal(getDoubleValue(row, field)));
+            try {
+              dataBuilder.pricePerHour(BigDecimal.valueOf(getDoubleValue(row, field)));
+            } catch (NullPointerException e) {
+              log.error("NullPointerException while getting price from BigQuery", e);
+              errorOccurred = true;
+            }
             break;
           default:
             break;
         }
       }
+      if (errorOccurred) continue;
       dataBuilder.source(PricingSource.CUR_REPORT_INSTANCE_FAMILY);
       instancePricingMap.put(instanceFamily, dataBuilder.build());
     }

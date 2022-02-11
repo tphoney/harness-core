@@ -59,6 +59,18 @@ resource "google_pubsub_topic" "ce-awsdata-ebs-metrics-topic" {
   project = "${var.projectId}"
 }
 
+# PubSub topic for AWS RDS Inventory data pipeline. scheduler pushes into this
+resource "google_pubsub_topic" "ce-awsdata-rds-inventory-topic" {
+  name = "ce-awsdata-rds-inventory-scheduler"
+  project = "${var.projectId}"
+}
+
+# PubSub topic for AWS RDS Inventory data pipeline. scheduler pushes into this
+resource "google_pubsub_topic" "ce-awsdata-rds-inventory-load-topic" {
+  name = "ce-awsdata-rds-inventory-load-scheduler"
+  project = "${var.projectId}"
+}
+
 # PubSub topic for AWS Connector CRUD events init. ce-nextgen pushes into this
 resource "google_pubsub_topic" "ce-aws-connector-crud-topic" {
   name = "ce-aws-connector-crud"
@@ -394,6 +406,52 @@ data "archive_file" "ce-awsdata-ebs-metrics" {
   }
 }
 
+data "archive_file" "ce-awsdata-rds" {
+  type        = "zip"
+  output_path = "${path.module}/files/ce-awsdata-rds.zip"
+  source {
+    content  = "${file("${path.module}/src/python/aws_rds_data_main.py")}"
+    filename = "main.py"
+  }
+  source {
+    content  = "${file("${path.module}/src/python/bq_schema.py")}"
+    filename = "bq_schema.py"
+  }
+  source {
+    content  = "${file("${path.module}/src/python/util.py")}"
+    filename = "util.py"
+  }
+  source {
+    content  = "${file("${path.module}/src/python/aws_util.py")}"
+    filename = "aws_util.py"
+  }
+  source {
+    content  = "${file("${path.module}/src/python/requirements.txt")}"
+    filename = "requirements.txt"
+  }
+}
+
+data "archive_file" "ce-awsdata-rds-load" {
+  type        = "zip"
+  output_path = "${path.module}/files/ce-awsdata-rds-load.zip"
+  source {
+    content  = "${file("${path.module}/src/python/aws_rds_data_load.py")}"
+    filename = "main.py"
+  }
+  source {
+    content  = "${file("${path.module}/src/python/util.py")}"
+    filename = "util.py"
+  }
+  source {
+    content  = "${file("${path.module}/src/python/bq_schema.py")}"
+    filename = "bq_schema.py"
+  }
+  source {
+    content  = "${file("${path.module}/src/python/requirements.txt")}"
+    filename = "requirements.txt"
+  }
+}
+
 data "archive_file" "ce-gcp-instance-inventory-data" {
   type        = "zip"
   output_path = "${path.module}/files/ce-gcp-instance-inventory-data.zip"
@@ -568,6 +626,20 @@ resource "google_storage_bucket_object" "ce-awsdata-ebs-metrics-archive" {
   bucket = "${google_storage_bucket.bucket1.name}"
   source = "${path.module}/files/ce-awsdata-ebs-metrics.zip"
   depends_on = ["data.archive_file.ce-awsdata-ebs-metrics"]
+}
+
+resource "google_storage_bucket_object" "ce-awsdata-rds-archive" {
+  name = "ce-awsdata.${data.archive_file.ce-awsdata-rds.output_md5}.zip"
+  bucket = "${google_storage_bucket.bucket1.name}"
+  source = "${path.module}/files/ce-awsdata-rds.zip"
+  depends_on = ["data.archive_file.ce-awsdata-rds"]
+}
+
+resource "google_storage_bucket_object" "ce-awsdata-rds-load-archive" {
+  name = "ce-awsdata.${data.archive_file.ce-awsdata-rds-load.output_md5}.zip"
+  bucket = "${google_storage_bucket.bucket1.name}"
+  source = "${path.module}/files/ce-awsdata-rds-load.zip"
+  depends_on = ["data.archive_file.ce-awsdata-rds-load"]
 }
 
 resource "google_storage_bucket_object" "ce-aws-inventory-init-archive" {
@@ -924,6 +996,60 @@ resource "google_cloudfunctions_function" "ce-awsdata-ebs-metrics-function" {
   event_trigger {
     event_type = "google.pubsub.topic.publish"
     resource   = "${google_pubsub_topic.ce-awsdata-ebs-metrics-topic.name}"
+    failure_policy {
+      retry = false
+    }
+  }
+}
+
+resource "google_cloudfunctions_function" "ce-awsdata-rds-function" {
+  name                      = "ce-awsdata-rds-terraform"
+  description               = "This cloudfunction gets triggered upon event in a pubsub topic"
+  entry_point               = "main"
+  available_memory_mb       = 256
+  timeout                   = 540
+  runtime                   = "python38"
+  project                   = "${var.projectId}"
+  region                    = "${var.region}"
+  source_archive_bucket     = "${google_storage_bucket.bucket1.name}"
+  source_archive_object     = "${google_storage_bucket_object.ce-awsdata-rds-archive.name}"
+
+  environment_variables = {
+    disabled = "false"
+    enable_for_accounts = ""
+    GCP_PROJECT = "${var.projectId}"
+  }
+
+  event_trigger {
+    event_type = "google.pubsub.topic.publish"
+    resource   = "${google_pubsub_topic.ce-awsdata-rds-inventory-topic.name}"
+    failure_policy {
+      retry = false
+    }
+  }
+}
+
+resource "google_cloudfunctions_function" "ce-awsdata-rds-load-function" {
+  name                      = "ce-awsdata-rds-load-terraform"
+  description               = "This cloudfunction gets triggered upon event in a pubsub topic"
+  entry_point               = "main"
+  available_memory_mb       = 256
+  timeout                   = 540
+  runtime                   = "python38"
+  project                   = "${var.projectId}"
+  region                    = "${var.region}"
+  source_archive_bucket     = "${google_storage_bucket.bucket1.name}"
+  source_archive_object     = "${google_storage_bucket_object.ce-awsdata-rds-load-archive.name}"
+
+  environment_variables = {
+    disabled = "false"
+    enable_for_accounts = ""
+    GCP_PROJECT = "${var.projectId}"
+  }
+
+  event_trigger {
+    event_type = "google.pubsub.topic.publish"
+    resource   = "${google_pubsub_topic.ce-awsdata-rds-inventory-load-topic.name}"
     failure_policy {
       retry = false
     }

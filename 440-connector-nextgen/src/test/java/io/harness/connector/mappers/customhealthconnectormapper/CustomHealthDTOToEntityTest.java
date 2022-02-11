@@ -46,7 +46,7 @@ public class CustomHealthDTOToEntityTest extends CategoryTest {
               .encryptedValueRef(SecretRefHelper.createSecretRef("21312sdfs"))
               .isValueEncrypted(true)
               .build()});
-  String validationPath = "/sfsdf?ssdf=232";
+  String validationPath = "sfsdf?ssdf=232";
   CustomHealthMethod customHealthMethod = CustomHealthMethod.GET;
 
   List<CustomHealthConnectorKeyAndValue> connectorParams = Arrays.asList(new CustomHealthConnectorKeyAndValue[] {
@@ -112,7 +112,29 @@ public class CustomHealthDTOToEntityTest extends CategoryTest {
     assertThat(customHealthConnector.getValidationPath()).isEqualTo(validationPath);
     assertThat(customHealthConnector.getValidationBody()).isNull();
     assertThat(customHealthConnector.getMethod()).isEqualTo(CustomHealthMethod.GET);
-    System.out.println("sdfsf");
+    assertThat(customHealthConnector.getParams()).isEqualTo(connectorParams);
+    assertThat(customHealthConnector.getHeaders()).isEqualTo(connectorHeaders);
+  }
+
+  @Test
+  @Owner(developers = ANJAN)
+  @Category(UnitTests.class)
+  public void testCustomHealthDTOToEntityConnector_withValidationPathSlash() {
+    CustomHealthConnectorDTO connectorDTO = CustomHealthConnectorDTO.builder()
+                                                .baseURL(baseURLlWithSlash)
+                                                .delegateSelectors(Collections.emptySet())
+                                                .validationPath("/" + validationPath)
+                                                .headers(dtoHeaders)
+                                                .params(dtoParams)
+                                                .method(customHealthMethod)
+                                                .build();
+
+    CustomHealthConnector customHealthConnector = customHealthDTOToEntity.toConnectorEntity(connectorDTO);
+    assertThat(customHealthConnector).isNotNull();
+    assertThat(customHealthConnector.getBaseURL()).isEqualTo(baseURLlWithSlash);
+    assertThat(customHealthConnector.getValidationPath()).isEqualTo(validationPath);
+    assertThat(customHealthConnector.getValidationBody()).isNull();
+    assertThat(customHealthConnector.getMethod()).isEqualTo(CustomHealthMethod.GET);
     assertThat(customHealthConnector.getParams()).isEqualTo(connectorParams);
     assertThat(customHealthConnector.getHeaders()).isEqualTo(connectorHeaders);
   }

@@ -31,6 +31,7 @@ import io.harness.ci.config.CIExecutionServiceConfig;
 import io.harness.ci.utils.QuantityUtils;
 import io.harness.delegate.beans.ci.pod.CIContainerType;
 import io.harness.delegate.beans.ci.pod.ContainerResourceParams;
+import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.plancreator.stages.stage.StageElementConfig;
 import io.harness.stateutils.buildstate.providers.ServiceContainerUtils;
 import io.harness.util.PortFinder;
@@ -95,6 +96,12 @@ public class CIServiceBuilder {
 
     Map<String, String> envVariables = RunTimeInputHandler.resolveMapParameter(
         "envVariables", "serviceDependency", identifier, service.getEnvVariables(), false);
+
+    Map<String, String> portBindings = RunTimeInputHandler.resolveMapParameter(
+        "portBindings", "serviceDependency", identifier, service.getPortBindings(), false);
+    if (isNotEmpty(portBindings)) {
+      throw new CIStageExecutionException("port bindings can't be set in k8s infrastructure");
+    }
 
     if (envVariables == null) {
       envVariables = new HashMap<>();

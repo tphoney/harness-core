@@ -8,11 +8,9 @@
 package io.harness.ng.userprofile.services.impl;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
+
 import static java.lang.String.format;
 
-import com.google.inject.Inject;
-
-import com.hazelcast.util.Preconditions;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
@@ -24,14 +22,16 @@ import io.harness.ng.userprofile.services.api.SourceCodeManagerService;
 import io.harness.repositories.ng.userprofile.spring.SourceCodeManagerRepository;
 import io.harness.security.SourcePrincipalContextBuilder;
 import io.harness.security.dto.PrincipalType;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import org.springframework.dao.DuplicateKeyException;
 
+import com.google.inject.Inject;
+import com.hazelcast.util.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 
 @OwnedBy(PL)
 @NoArgsConstructor

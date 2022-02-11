@@ -9,9 +9,6 @@ package io.harness.gitsync.common.helper;
 
 import static io.harness.annotations.dev.HarnessTeam.DX;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
@@ -38,10 +35,12 @@ import io.harness.ng.userprofile.commons.SourceCodeManagerDTO;
 import io.harness.ng.userprofile.services.api.SourceCodeManagerService;
 import io.harness.security.SourcePrincipalContextBuilder;
 import io.harness.security.dto.PrincipalType;
-import lombok.extern.slf4j.Slf4j;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 @Singleton
 @OwnedBy(DX)
@@ -55,35 +54,41 @@ public class UserProfileHelper {
     this.sourceCodeManagerService = sourceCodeManagerService;
   }
 
-  public void setConnectorDetailsFromUserProfile(
-      YamlGitConfigDTO yamlGitConfig, ConnectorResponseDTO connector) {
+  public void setConnectorDetailsFromUserProfile(YamlGitConfigDTO yamlGitConfig, ConnectorResponseDTO connector) {
     ScmConnector scmConnector = (ScmConnector) connector.getConnector().getConnectorConfig();
     scmConnector.setUrl(yamlGitConfig.getRepo());
 
     SCMType scmType = SCMType.fromConnectorType(scmConnector.getType());
-    SourceCodeManagerDTO userScmProfile = getUserScmProfile(yamlGitConfig.getAccountIdentifier(), getUserPrincipal(), scmType);
+    SourceCodeManagerDTO userScmProfile =
+        getUserScmProfile(yamlGitConfig.getAccountIdentifier(), getUserPrincipal(), scmType);
     switch (scmType) {
       case GITHUB:
         GithubConnectorDTO githubConnectorDTO = (GithubConnectorDTO) scmConnector;
 
-        SecretRefData tokenRef = ((GithubUsernameTokenDTO) ((GithubHttpCredentialsDTO) ((GithubSCMDTO) userScmProfile).getAuthentication().getCredentials())
-            .getHttpCredentialsSpec()).getTokenRef();
+        SecretRefData tokenRef = ((GithubUsernameTokenDTO) ((GithubHttpCredentialsDTO) ((GithubSCMDTO) userScmProfile)
+                                                                .getAuthentication()
+                                                                .getCredentials())
+                                      .getHttpCredentialsSpec())
+                                     .getTokenRef();
         githubConnectorDTO.setApiAccess(GithubApiAccessDTO.builder()
-            .type(GithubApiAccessType.TOKEN)
-            .spec(GithubTokenSpecDTO.builder().tokenRef(tokenRef).build())
-            .build());
+                                            .type(GithubApiAccessType.TOKEN)
+                                            .spec(GithubTokenSpecDTO.builder().tokenRef(tokenRef).build())
+                                            .build());
         break;
 
       case BITBUCKET:
         BitbucketConnectorDTO bitbucketConnectorDTO = (BitbucketConnectorDTO) scmConnector;
 
-        tokenRef = ((BitbucketUsernamePasswordDTO) ((BitbucketHttpCredentialsDTO) ((BitbucketSCMDTO) userScmProfile).getAuthentication()
-            .getCredentials())
-            .getHttpCredentialsSpec()).getPasswordRef();
-        bitbucketConnectorDTO.setApiAccess(BitbucketApiAccessDTO.builder()
-            .type(BitbucketApiAccessType.USERNAME_AND_TOKEN)
-            .spec(BitbucketUsernameTokenApiAccessDTO.builder().tokenRef(tokenRef).build())
-            .build());
+        tokenRef = ((BitbucketUsernamePasswordDTO) ((BitbucketHttpCredentialsDTO) ((BitbucketSCMDTO) userScmProfile)
+                                                        .getAuthentication()
+                                                        .getCredentials())
+                        .getHttpCredentialsSpec())
+                       .getPasswordRef();
+        bitbucketConnectorDTO.setApiAccess(
+            BitbucketApiAccessDTO.builder()
+                .type(BitbucketApiAccessType.USERNAME_AND_TOKEN)
+                .spec(BitbucketUsernameTokenApiAccessDTO.builder().tokenRef(tokenRef).build())
+                .build());
         break;
       default:
         throw new IllegalStateException("Unexpected value: " + scmConnector.getType());

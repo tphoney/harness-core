@@ -10,8 +10,6 @@ package io.harness.gitsync.common.impl;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.exception.WingsException.USER;
 
-import com.google.inject.Inject;
-
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.EmbeddedUser;
@@ -38,12 +36,13 @@ import io.harness.impl.ScmResponseStatusUtils;
 import io.harness.ng.userprofile.commons.SCMType;
 import io.harness.product.ci.scm.proto.FileContent;
 import io.harness.utils.IdentifierRefHelper;
+
+import com.google.inject.Inject;
+import java.util.List;
+import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @FieldDefaults(level = AccessLevel.PROTECTED)

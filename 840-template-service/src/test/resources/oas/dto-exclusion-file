@@ -1,6 +1,0 @@
-io.harness.gitsync.interceptor.GitEntityUpdateInfoDTO
-io.harness.template.beans.TemplateDeleteListRequestDTO
-io.harness.template.TemplateFilterPropertiesDTO
-io.harness.gitsync.interceptor.GitEntityFindInfoDTO
-io.harness.gitsync.interceptor.GitEntityCreateInfoDTO
-io.harness.gitsync.interceptor.GitEntityDeleteInfoDTO

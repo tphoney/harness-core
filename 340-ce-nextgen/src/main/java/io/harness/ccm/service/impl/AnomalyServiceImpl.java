@@ -102,7 +102,7 @@ public class AnomalyServiceImpl implements AnomalyService {
         : DSL.noCondition();
 
     if (anomalyQuery.getGroupBy().size() == 0) {
-      return buildDummyAnomalySummaryData(CCMGroupBy.builder().groupByField(CCMField.AWS_ACCOUNT).build());
+      return anomalyDao.fetchAnomaliesTotalCost(accountIdentifier, condition);
     }
     return buildDummyAnomalySummaryData(anomalyQuery.getGroupBy().get(0));
   }

@@ -74,6 +74,7 @@ import io.harness.terraform.request.TerraformRefreshCommandRequest;
 
 import software.wings.beans.LogColor;
 import software.wings.beans.LogWeight;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
@@ -436,6 +437,8 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
   public GitBaseRequest getGitBaseRequestForConfigFile(
       String accountId, GitStoreDelegateConfig confileFileGitStore, GitConfigDTO configFileGitConfigDTO) {
     secretDecryptionService.decrypt(configFileGitConfigDTO.getGitAuth(), confileFileGitStore.getEncryptedDataDetails());
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
+        configFileGitConfigDTO.getGitAuth(), confileFileGitStore.getEncryptedDataDetails());
 
     SshSessionConfig sshSessionConfig = null;
     if (configFileGitConfigDTO.getGitAuthType() == SSH) {
@@ -599,6 +602,8 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
                 INFO, CommandExecutionStatus.RUNNING);
 
             secretDecryptionService.decrypt(
+                gitConfigDTO.getGitAuth(), gitStoreDelegateConfig.getEncryptedDataDetails());
+            ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
                 gitConfigDTO.getGitAuth(), gitStoreDelegateConfig.getEncryptedDataDetails());
 
             SshSessionConfig sshSessionConfig = null;

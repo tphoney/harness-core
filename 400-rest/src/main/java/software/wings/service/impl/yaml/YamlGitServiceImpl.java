@@ -114,6 +114,7 @@ import software.wings.beans.yaml.GitFileChange;
 import software.wings.beans.yaml.GitFileChange.Builder;
 import software.wings.beans.yaml.YamlConstants;
 import software.wings.beans.yaml.YamlType;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.dl.WingsPersistence;
 import software.wings.exception.YamlProcessingException.ChangeWithErrorMsg;
 import software.wings.service.impl.AppLogContext;
@@ -295,6 +296,7 @@ public class YamlGitServiceImpl implements YamlGitService {
       List<EncryptedDataDetail> encryptionDetails =
           secretManager.getEncryptionDetails(attributeValue, GLOBAL_APP_ID, null);
       managerDecryptionService.decrypt(attributeValue, encryptionDetails);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(attributeValue, encryptionDetails);
       return settingAttributeForSshKey;
     }
 

@@ -37,6 +37,7 @@ import software.wings.beans.command.CommandExecutionContext;
 import software.wings.beans.infrastructure.Host;
 import software.wings.core.winrm.executors.WinRmSession;
 import software.wings.core.winrm.executors.WinRmSessionConfig;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.service.intfc.security.SecretManagementDelegateService;
 
@@ -68,6 +69,8 @@ public class HostValidationServiceImpl implements HostValidationService {
     List<HostValidationResponse> hostValidationResponses = new ArrayList<>();
 
     encryptionService.decrypt((EncryptableSetting) connectionSetting.getValue(), encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
+        (EncryptableSetting) connectionSetting.getValue(), encryptionDetails);
     if (connectionSetting.getValue() instanceof HostConnectionAttributes
         && ((HostConnectionAttributes) connectionSetting.getValue()).isVaultSSH()) {
       secretManagementDelegateService.signPublicKey(

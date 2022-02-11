@@ -38,6 +38,7 @@ import io.harness.security.encryption.SecretDecryptionService;
 
 import software.wings.annotation.EncryptableSetting;
 import software.wings.beans.artifact.ArtifactStreamAttributes;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.settings.SettingValue;
 
 import com.google.inject.Inject;
@@ -59,6 +60,8 @@ public class AzureSecretHelper {
   public AzureConfig decryptAndGetAzureConfig(
       AzureConfigDTO azureConfigDTO, List<EncryptedDataDetail> azureConfigEncryptionDetails) {
     secretDecryptionService.decrypt(azureConfigDTO, azureConfigEncryptionDetails);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(azureConfigDTO, azureConfigEncryptionDetails);
+
     return AzureConfig.builder()
         .clientId(azureConfigDTO.getClientId())
         .tenantId(azureConfigDTO.getTenantId())
@@ -73,6 +76,7 @@ public class AzureSecretHelper {
       AzureVMAuthDTO azureVmAuthDTO = setupTaskParameters.getAzureVmAuthDTO();
       List<EncryptedDataDetail> vmAuthDTOEncryptionDetails = setupTaskParameters.getVmAuthDTOEncryptionDetails();
       secretDecryptionService.decrypt(azureVmAuthDTO, vmAuthDTOEncryptionDetails);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(azureVmAuthDTO, vmAuthDTOEncryptionDetails);
     }
   }
 
@@ -96,6 +100,8 @@ public class AzureSecretHelper {
     ConnectorConfigDTO connectorConfigDTO = azureAppServiceTaskParameters.getConnectorConfigDTO();
     Optional<DecryptableEntity> authCredentialsDTO = azureRegistry.getAuthCredentialsDTO(connectorConfigDTO);
     authCredentialsDTO.ifPresent(credentials -> secretDecryptionService.decrypt(credentials, encryptedDataDetails));
+    authCredentialsDTO.ifPresent(
+        credentials -> ExceptionMessageSanitizer.storeAllSecretsForSanitizing(credentials, encryptedDataDetails));
   }
 
   private void decryptAzureWebAppRollbackParameters(AzureWebAppRollbackParameters azureWebAppRollbackParameters) {

@@ -86,6 +86,7 @@ import io.harness.terraform.request.TerraformRefreshCommandRequest;
 
 import software.wings.beans.LogColor;
 import software.wings.beans.LogWeight;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
@@ -456,6 +457,8 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
   public GitBaseRequest getGitBaseRequestForConfigFile(
       String accountId, GitStoreDelegateConfig confileFileGitStore, GitConfigDTO configFileGitConfigDTO) {
     secretDecryptionService.decrypt(configFileGitConfigDTO.getGitAuth(), confileFileGitStore.getEncryptedDataDetails());
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
+        configFileGitConfigDTO.getGitAuth(), confileFileGitStore.getEncryptedDataDetails());
 
     SshSessionConfig sshSessionConfig = null;
     if (configFileGitConfigDTO.getGitAuthType() == SSH) {
@@ -550,6 +553,8 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
         (ArtifactoryConnectorDTO) artifactoryStoreDelegateConfig.getConnectorDTO().getConnectorConfig();
     secretDecryptionService.decrypt(
         artifactoryConnectorDTO.getAuth().getCredentials(), artifactoryStoreDelegateConfig.getEncryptedDataDetails());
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
+            artifactoryConnectorDTO.getAuth().getCredentials(), artifactoryStoreDelegateConfig.getEncryptedDataDetails());
     ArtifactoryConfigRequest artifactoryConfigRequest =
         artifactoryRequestMapper.toArtifactoryRequest(artifactoryConnectorDTO);
     Map<String, String> artifactMetadata = new HashMap<>();
@@ -744,6 +749,8 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
         (ArtifactoryConnectorDTO) artifactoryStoreDelegateConfig.getConnectorDTO().getConnectorConfig();
     secretDecryptionService.decrypt(
         artifactoryConnectorDTO.getAuth().getCredentials(), artifactoryStoreDelegateConfig.getEncryptedDataDetails());
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
+            artifactoryConnectorDTO.getAuth().getCredentials(), artifactoryStoreDelegateConfig.getEncryptedDataDetails());
     ArtifactoryConfigRequest artifactoryConfigRequest =
         artifactoryRequestMapper.toArtifactoryRequest(artifactoryConnectorDTO);
 
@@ -780,6 +787,7 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
         CommandExecutionStatus.RUNNING);
 
     secretDecryptionService.decrypt(gitConfigDTO.getGitAuth(), gitStoreDelegateConfig.getEncryptedDataDetails());
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(gitConfigDTO.getGitAuth(), gitStoreDelegateConfig.getEncryptedDataDetails());
 
     SshSessionConfig sshSessionConfig = null;
     if (gitConfigDTO.getGitAuthType() == SSH) {

@@ -10,6 +10,7 @@ package io.harness.cvng.dashboard.entities;
 import io.harness.annotation.HarnessEntity;
 import io.harness.annotation.StoreIn;
 import io.harness.cvng.beans.CVMonitoringCategory;
+import io.harness.cvng.core.beans.monitoredService.DurationDTO;
 import io.harness.mongo.index.CompoundMongoIndex;
 import io.harness.mongo.index.FdIndex;
 import io.harness.mongo.index.FdTtlIndex;
@@ -148,6 +149,15 @@ public final class HeatMap implements UuidAware, CreatedAtAware, AccountAccess, 
 
     public Duration getBucketSize() {
       return bucketSize;
+    }
+
+    public Instant getNextResolutionEndTime(Instant instant) {
+      long timeStamp = instant.toEpochMilli();
+      return Instant.ofEpochMilli(timeStamp - (timeStamp % this.resolution.toMillis())).plus(this.resolution);
+    }
+
+    public static HeatMapResolution resolutionForDurationDTO(DurationDTO duration) {
+      return DurationDTO.FOUR_HOURS.equals(duration) ? HeatMapResolution.FIVE_MIN : HeatMapResolution.THIRTY_MINUTES;
     }
 
     public static HeatMapResolution getHeatMapResolution(Instant startTime, Instant endTime) {

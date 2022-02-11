@@ -182,6 +182,9 @@ aggregatorModuleConfig:
     key.converter.schemas.enable: ${KEY_CONVERTER_SCHEMAS_ENABLE:-false}
     value.converter.schemas.enable: ${VALUE_CONVERTER_SCHEMAS_ENABLE:-false}
     offset.flush.interval.ms: ${OFFSET_FLUSH_INTERVAL_MS:-5000}
+    connect.backoff.initial.delay.ms: ${CONNECT_BACKOFF_INITIAL_DELAY_MS:-1000}
+    connect.backoff.max.delay.ms: ${CONNECT_BACKOFF_MAX_DELAY_MS:-10000}
+    connect.max.attempts: ${CONNECT_MAX_ATTEMPTS:-3}
     mongodb.hosts: ${MONGODB_HOSTS:-rs0/localhost:27018,rs0/localhost:27019,rs0/localhost:27020}
     mongodb.name: ${MONGODB_NAME:-access_control_db}
     mongodb.user: ${MONGODB_USER:-""}

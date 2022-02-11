@@ -112,7 +112,9 @@ public class InstanceDataBulkWriteServiceImpl implements InstanceDataBulkWriteSe
 
           BasicDBObject updateOperations =
               new BasicDBObject(InstanceDataKeys.instanceState, InstanceState.RUNNING.name())
-                  .append(InstanceDataKeys.lastUpdatedAt, Instant.now().toEpochMilli());
+                  .append(InstanceDataKeys.lastUpdatedAt, Instant.now().toEpochMilli())
+                  .append(InstanceDataKeys.activeInstanceIterator,
+                      ActiveInstanceIterator.getActiveInstanceIteratorFromStartTime(instanceTime));
 
           bulkWriteOperation.find(filter).update(
               new BasicDBObject("$set", updateOperations)
@@ -296,7 +298,10 @@ public class InstanceDataBulkWriteServiceImpl implements InstanceDataBulkWriteSe
       }
     }
     result = bulkWriteOperation.execute();
-    log.info("BulkWriteExecutor result: {}", result.toString());
+    log.info(
+        "BulkWriteExecutor result [acknowledged:{}, insertedCount:{}, matchedCount:{}, modifiedCount:{}, removedCount:{}]",
+        result.isAcknowledged(), result.getInsertedCount(), result.getMatchedCount(), result.getModifiedCount(),
+        result.getRemovedCount());
     return result;
   }
 }

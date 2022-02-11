@@ -68,7 +68,7 @@ public class BQConst {
 
   public static final String AZURE_PRICING_DATA_BY_RESOURCE_IDS = "SELECT azureVMProviderId, MAX(azureResourceRate) as cost "
       + "FROM `%s` "
-      + "WHERE resourceid IN "
+      + "WHERE azureVMProviderId IN "
       + "( '%s' )  AND "
       + "usagestartdate  >= '%s' AND usagestartdate < '%s' AND cloudProvider = 'AZURE' "
       + "GROUP BY  azureVMProviderId; ";

@@ -42,6 +42,7 @@ import retrofit2.Response;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -71,6 +72,9 @@ public class InstancePricingDataTasklet implements Tasklet {
     log.info("Instance Pricing Job Started for Account ID: {}", accountId);
     Instant startTime = getFieldValueFromJobParams(CCMJobConstants.JOB_START_DATE);
     Instant endTime = getFieldValueFromJobParams(CCMJobConstants.JOB_END_DATE);
+    // for testing
+    startTime = startTime.minus(Period.ofDays(1));
+    endTime = startTime.plus(Period.ofDays(1));
     batchJobType = CCMJobConstants.getBatchJobTypeFromJobParams(parameters, CCMJobConstants.BATCH_JOB_TYPE);
     List<InstanceData> instanceDataLists;
     Instant activeInstanceIterator = startTime;

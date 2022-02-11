@@ -454,7 +454,11 @@ func GetLatestCommitOnFile(ctx context.Context, p pb.Provider, slug, branch, fil
 	if err != nil {
 		return "", err
 	}
-	return listCommitsResponse.CommitIds[0], nil
+	if (listCommitsResponse.CommitIds != nil && len(listCommitsResponse.CommitIds) !=0) {
+		return listCommitsResponse.CommitIds[0], nil
+	}
+	// TODO Return an error saying no commit found for the given file
+	return "", nil
 }
 
 func convertChangesList(from []*scm.Change) (to []*pb.PRFile) {

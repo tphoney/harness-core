@@ -30,4 +30,8 @@ public class ServerlessDeployRequest implements ServerlessCommandRequest {
   ServerlessArtifactConfig serverlessArtifactConfig;
   ServerlessManifest serverlessManifest;
   ServerlessInfraConfig serverlessInfraConfig;
+  Boolean forceDeploymentFlag;
+  Boolean awsS3AccelerateFlag;
+  String configFileName;
+  Boolean configFileFlag;
 }

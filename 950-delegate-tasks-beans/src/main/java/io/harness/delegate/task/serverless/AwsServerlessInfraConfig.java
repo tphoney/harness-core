@@ -23,4 +23,8 @@ public class AwsServerlessInfraConfig implements ServerlessInfraConfig {
   ServerlessInfraType serverlessInfraType;
   AwsConnectorDTO awsConnectorDTO;
   List<EncryptedDataDetail> encryptionDataDetails;
+  String region;
+  Boolean regionFlag;
+  String stage;
+  Boolean stageFlag;
 }

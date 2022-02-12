@@ -55,6 +55,7 @@ public interface ServerlessCommandRequest extends TaskParameters, ExecutionCapab
       }
       capabilities.addAll(AwsCapabilityHelper.fetchRequiredExecutionCapabilities(awsConnectorDTO, maskingEvaluator));
     }
+    // todo:sls installation capability
     return capabilities;
   }
 }

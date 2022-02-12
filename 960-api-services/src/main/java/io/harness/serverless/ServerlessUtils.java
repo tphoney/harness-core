@@ -10,6 +10,7 @@ package io.harness.serverless;
 import java.io.File;
 import java.io.OutputStream;
 import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.StringUtils;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.ProcessResult;
 
@@ -24,5 +25,13 @@ public class ServerlessUtils {
                                           .redirectOutput(output)
                                           .redirectError(error);
     return processExecutor.execute();
+  }
+
+  public static String encloseWithQuotesIfNeeded(String path) {
+    String result = path.trim();
+    if (StringUtils.containsWhitespace(result)) {
+      result = "\"" + result + "\"";
+    }
+    return result;
   }
 }

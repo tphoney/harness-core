@@ -5888,4 +5888,18 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
       }
     }
   }
+
+  @Override
+  public List<WorkflowExecution> getLatestSuccessWorkflowExecutions(String appId, String workflowId,
+      List<String> serviceIds, int executionsToSkip, int executionsToIncludeInResponse) {
+    return wingsPersistence.createQuery(WorkflowExecution.class)
+        .filter("appId", appId)
+        .filter(WorkflowExecutionKeys.workflowId, workflowId)
+        .filter(WorkflowExecutionKeys.status, SUCCESS)
+        .filter(WorkflowExecutionKeys.workflowType, ORCHESTRATION)
+        .field(WorkflowExecutionKeys.serviceIds)
+        .in(serviceIds)
+        .order(Sort.descending(WorkflowExecutionKeys.createdAt))
+        .asList(new FindOptions().skip(executionsToSkip).limit(executionsToIncludeInResponse));
+  }
 }

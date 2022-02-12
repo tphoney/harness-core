@@ -23,7 +23,7 @@ import io.harness.logging.LogCallback;
 import software.wings.delegatetasks.azure.AzureServiceCallBack;
 
 @TargetModule(HarnessModule._930_DELEGATE_TASKS)
-public class SlotSwapper implements Runnable {
+public class SwapSlotTask implements Runnable {
   private final String sourceSlotName;
   private final String targetSlotName;
   private final AzureWebClient azureWebClient;
@@ -31,7 +31,7 @@ public class SlotSwapper implements Runnable {
   private final AzureServiceCallBack callBack;
   private final LogCallback slotSwapLogCallback;
 
-  public SlotSwapper(String sourceSlotName, String targetSlotName, AzureWebClient azureWebClient,
+  public SwapSlotTask(String sourceSlotName, String targetSlotName, AzureWebClient azureWebClient,
       AzureWebClientContext webClientContext, AzureServiceCallBack callBack, LogCallback slotSwapLogCallback) {
     this.sourceSlotName = sourceSlotName;
     this.targetSlotName = targetSlotName;

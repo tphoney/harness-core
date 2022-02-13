@@ -138,6 +138,7 @@ public class InstancePricingDataTasklet implements Tasklet {
             ;
           }
         }
+        log.info("leftOverInstances: {}, instanceFamilyAndRegions: {}", leftOverInstances, instanceFamilyAndRegions);
         Map<InstanceFamilyAndRegion, Pricing> pricingDataByInstanceFamilyAndRegion =
             bigQueryHelperService.getAwsPricingDataByInstanceFamilyAndRegion(new ArrayList<>(instanceFamilyAndRegions),
                 startTime, endTime, awsDataSetId);
@@ -153,6 +154,7 @@ public class InstancePricingDataTasklet implements Tasklet {
               }
             })
         );
+        log.info("Updated instances");
         Set<String> instanceFamilies = new HashSet<>();
         leftOverInstances.removeIf((String resourceId) -> {
           if (resourceId.equals("")) return false;
@@ -166,6 +168,7 @@ public class InstancePricingDataTasklet implements Tasklet {
             return false;
           }
         });
+        log.info("leftOverInstances: {}, instanceFamilies: {}", leftOverInstances, instanceFamilies);
         Map<String, Pricing> pricingDataByInstanceFamily = bigQueryHelperService.getAwsPricingDataByInstanceFamily(
             new ArrayList<>(instanceFamilies), startTime, endTime, awsDataSetId);
         log.info("Got response from BQ Family and Region, map: {}, size: {}", pricingDataByInstanceFamily, pricingDataByInstanceFamily.size());
@@ -182,6 +185,7 @@ public class InstancePricingDataTasklet implements Tasklet {
             }
           });
         });
+        log.info("Updated instances");
         leftOverInstances.removeIf((String resourceId) -> pricingDataByInstanceFamily.containsKey(
             awsInstances.get(resourceId).get(0).getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY))
             && !resourceId.equals(""));
@@ -190,7 +194,6 @@ public class InstancePricingDataTasklet implements Tasklet {
           try {
             Pricing pricing = getPublicPricing(awsInstances.get(resourceId).get(0));
             if (pricing == null) continue;
-            ;
             if (!resourceId.equals("")) {
               awsInstances.get(resourceId).forEach((InstanceData instanceData) ->
                   instanceDataDao.updateInstancePricingData(instanceData, pricing));
@@ -281,6 +284,7 @@ public class InstancePricingDataTasklet implements Tasklet {
             k8sService : COMPUTE_SERVICE,
         instanceData.getMetaData().get(InstanceMetaDataConstants.REGION),
         instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY));
+    log.info("Banzai URL: {}", pricingInfoCall.request().url());
     double pricePerHour = 0;
     Response<ProductDetailResponse> pricingInfo = pricingInfoCall.execute();
     if (null != pricingInfo.body() && null != pricingInfo.body().getProduct()) {

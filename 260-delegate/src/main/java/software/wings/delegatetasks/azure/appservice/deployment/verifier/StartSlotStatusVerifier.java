@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.delegatetasks.azure.appservice.deployment;
+package software.wings.delegatetasks.azure.appservice.deployment.verifier;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
@@ -17,19 +17,19 @@ import software.wings.delegatetasks.azure.AzureServiceCallBack;
 import software.wings.delegatetasks.azure.appservice.deployment.context.StatusVerifierContext;
 
 @TargetModule(HarnessModule._930_DELEGATE_TASKS)
-public class StopSlotStatusVerifier extends SlotStatusVerifier {
-  public StopSlotStatusVerifier(LogCallback logCallback, String slotName, AzureWebClient azureWebClient,
+public class StartSlotStatusVerifier extends SlotStatusVerifier {
+  public StartSlotStatusVerifier(LogCallback logCallback, String slotName, AzureWebClient azureWebClient,
       AzureWebClientContext azureWebClientContext, AzureServiceCallBack restCallBack) {
     super(logCallback, slotName, azureWebClient, azureWebClientContext, restCallBack);
   }
 
-  public StopSlotStatusVerifier(StatusVerifierContext context) {
+  public StartSlotStatusVerifier(StatusVerifierContext context) {
     super(context.getLogCallback(), context.getSlotName(), context.getAzureWebClient(),
         context.getAzureWebClientContext(), context.getRestCallBack());
   }
 
   @Override
   public String getSteadyState() {
-    return SlotStatus.STOPPED.name();
+    return SlotStatus.RUNNING.name();
   }
 }

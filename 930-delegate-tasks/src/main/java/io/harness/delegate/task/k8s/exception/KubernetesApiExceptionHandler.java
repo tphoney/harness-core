@@ -22,12 +22,19 @@ import io.kubernetes.client.openapi.ApiException;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 
 @Slf4j
 @Singleton
 public class KubernetesApiExceptionHandler implements ExceptionHandler {
-  public static String API_CALL_FAIL_MESSAGE = "Kubernetes API call failed with message: %s";
+  private static final String API_CALL_FAIL_MESSAGE = "Kubernetes API call failed with message: %s";
+  private static final String UNAUTHORIZED_ERROR_REGEX =
+      ".* forbidden: User \"(.*?)\".* resource \"(.*?)\" in API group \"(.*?)\".* namespace \"(.*?)\"";
+  private static final Pattern UNAUTHORIZED_ERROR_PATTERN =
+      Pattern.compile(UNAUTHORIZED_ERROR_REGEX, Pattern.MULTILINE);
 
   public static Set<Class<? extends Exception>> exceptions() {
     return ImmutableSet.of(ApiException.class);
@@ -59,8 +66,9 @@ public class KubernetesApiExceptionHandler implements ExceptionHandler {
     } else if (apiException.getCode() > 0) {
       switch (apiException.getCode()) {
         case 403:
+          String parsedExceptionMessage = parseUnauthorizedError(apiException.getResponseBody());
           return NestedExceptionUtils.hintWithExplanationException(KubernetesExceptionHints.K8S_API_FORBIDDEN_EXCEPTION,
-              KubernetesExceptionExplanation.K8S_API_FORBIDDEN_EXCEPTION,
+              parsedExceptionMessage,
               new KubernetesApiTaskException(
                   format(API_CALL_FAIL_MESSAGE, apiException.getMessage()), FailureType.AUTHORIZATION_ERROR));
 
@@ -81,6 +89,21 @@ public class KubernetesApiExceptionHandler implements ExceptionHandler {
           KubernetesExceptionExplanation.K8S_API_VALIDATION_ERROR,
           new KubernetesApiTaskException(apiException.getMessage()));
     }
+  }
+
+  private String parseUnauthorizedError(String responseBody) {
+    try {
+      JSONObject apiExceptionBody = new JSONObject(responseBody);
+      String errorMessage = apiExceptionBody.getString("message");
+      Matcher matcher = UNAUTHORIZED_ERROR_PATTERN.matcher(errorMessage);
+      if (matcher.find()) {
+        return String.format(KubernetesExceptionExplanation.K8S_API_FORBIDDEN_ERROR, matcher.group(1), matcher.group(4),
+            matcher.group(2), matcher.group(3));
+      }
+    } catch (Exception e) {
+      return KubernetesExceptionExplanation.K8S_API_FORBIDDEN_EXCEPTION;
+    }
+    return KubernetesExceptionExplanation.K8S_API_FORBIDDEN_EXCEPTION;
   }
 
   /**

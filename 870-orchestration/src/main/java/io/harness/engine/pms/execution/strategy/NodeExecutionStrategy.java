@@ -31,7 +31,7 @@ public interface NodeExecutionStrategy<T extends Node, N extends PmsNodeExecutio
 
   default N triggerNextNode(
       @NonNull Ambiance ambiance, @NonNull T node, N prevExecution, PmsNodeExecutionMetadata metadata) {
-    throw new UnsupportedOperationException("Trigger Next Node Node not psuppoerted for plan");
+    throw new UnsupportedOperationException("Trigger Next Node Node not supported for plan");
   };
 
   default void startExecution(Ambiance ambiance) {

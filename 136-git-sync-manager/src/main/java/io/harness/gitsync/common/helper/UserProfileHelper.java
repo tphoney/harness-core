@@ -79,16 +79,18 @@ public class UserProfileHelper {
       case BITBUCKET:
         BitbucketConnectorDTO bitbucketConnectorDTO = (BitbucketConnectorDTO) scmConnector;
 
-        tokenRef = ((BitbucketUsernamePasswordDTO) ((BitbucketHttpCredentialsDTO) ((BitbucketSCMDTO) userScmProfile)
-                                                        .getAuthentication()
-                                                        .getCredentials())
-                        .getHttpCredentialsSpec())
-                       .getPasswordRef();
-        bitbucketConnectorDTO.setApiAccess(
-            BitbucketApiAccessDTO.builder()
-                .type(BitbucketApiAccessType.USERNAME_AND_TOKEN)
-                .spec(BitbucketUsernameTokenApiAccessDTO.builder().tokenRef(tokenRef).build())
-                .build());
+        BitbucketUsernamePasswordDTO bitbucketUsernamePasswordDTO =
+            ((BitbucketUsernamePasswordDTO) ((BitbucketHttpCredentialsDTO) ((BitbucketSCMDTO) userScmProfile)
+                                                 .getAuthentication()
+                                                 .getCredentials())
+                    .getHttpCredentialsSpec());
+        bitbucketConnectorDTO.setApiAccess(BitbucketApiAccessDTO.builder()
+                                               .type(BitbucketApiAccessType.USERNAME_AND_TOKEN)
+                                               .spec(BitbucketUsernameTokenApiAccessDTO.builder()
+                                                         .username(bitbucketUsernamePasswordDTO.getUsername())
+                                                         .tokenRef(bitbucketUsernamePasswordDTO.getPasswordRef())
+                                                         .build())
+                                               .build());
         break;
       default:
         throw new IllegalStateException("Unexpected value: " + scmConnector.getConnectorType());

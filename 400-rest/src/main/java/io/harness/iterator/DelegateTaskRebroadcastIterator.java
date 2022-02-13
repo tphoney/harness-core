@@ -12,6 +12,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.DelegateTask;
+import io.harness.beans.DelegateTask.DelegateTaskKeys;
 import io.harness.delegate.task.TaskLogContext;
 import io.harness.logging.AccountLogContext;
 import io.harness.logging.AutoLogContext;
@@ -23,9 +24,10 @@ import io.harness.persistence.HIterator;
 import io.harness.persistence.HPersistence;
 import io.harness.selection.log.BatchDelegateSelectionLog;
 import io.harness.service.intfc.DelegateTaskService;
-import io.harness.workers.background.AccountLevelEntityProcessController;
+import io.harness.workers.background.iterator.AccountLevelEntityProcessTaskRebroadcastController;
 
 import software.wings.beans.Account;
+import software.wings.beans.Account.AccountKeys;
 import software.wings.beans.TaskType;
 import software.wings.core.managerConfiguration.ConfigurationController;
 import software.wings.service.impl.DelegateTaskBroadcastHelper;
@@ -38,7 +40,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Iterator;
@@ -48,7 +49,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-import org.mongodb.morphia.query.FindOptions;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
 
@@ -69,7 +69,6 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
   @Inject private DelegateSelectionLogsService delegateSelectionLogsService;
   @Inject private Clock clock;
 
-
   private static final long DELEGATE_TASK_REBROADCAST_TIMEOUT = 10;
   private static long BROADCAST_INTERVAL = TimeUnit.MINUTES.toMillis(1);
   private static int MAX_BROADCAST_ROUND = 3;
@@ -84,11 +83,11 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
     persistenceIteratorFactory.createPumpIteratorWithDedicatedThreadPool(options, FailDelegateTaskIterator.class,
         MongoPersistenceIterator.<Account, MorphiaFilterExpander<Account>>builder()
             .clazz(Account.class)
-            .fieldName(Account.AccountKeys.delegateTaskRebroadcastIteration)
+            .fieldName(AccountKeys.delegateTaskRebroadcastIteration)
             .targetInterval(Duration.ofSeconds(DELEGATE_TASK_REBROADCAST_TIMEOUT))
             .acceptableNoAlertDelay(Duration.ofSeconds(45))
             .acceptableExecutionTime(Duration.ofSeconds(30))
-            .entityProcessController(new AccountLevelEntityProcessController(accountService))
+            .entityProcessController(new AccountLevelEntityProcessTaskRebroadcastController(accountService))
             .handler(this)
             .schedulingType(MongoPersistenceIterator.SchedulingType.REGULAR)
             .persistenceProvider(persistenceProvider)
@@ -96,35 +95,33 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
   }
 
   @Override
-  public void handle(Account entity) {
-    rebroadcastUnassignedTasks(entity);
+  public void handle(Account account) {
+    rebroadcastUnassignedTasks(account);
   }
 
   @VisibleForTesting
   protected void rebroadcastUnassignedTasks(Account account) {
     // Re-broadcast queued tasks not picked up by any Delegate and not in process of validation
     long now = clock.millis();
-
     Query<DelegateTask> unassignedTasksQuery = persistence.createQuery(DelegateTask.class, excludeAuthority)
-                                                   .filter(DelegateTask.DelegateTaskKeys.accountId, account.getUuid())
-                                                   .filter(DelegateTask.DelegateTaskKeys.status, QUEUED)
-                                                   .field(DelegateTask.DelegateTaskKeys.nextBroadcast)
+                                                   .filter(DelegateTaskKeys.accountId, account.getUuid())
+                                                   .filter(DelegateTaskKeys.status, QUEUED)
+                                                   .field(DelegateTaskKeys.nextBroadcast)
                                                    .lessThan(now)
-                                                   .field(DelegateTask.DelegateTaskKeys.expiry)
+                                                   .field(DelegateTaskKeys.expiry)
                                                    .greaterThan(now)
-                                                   .field(DelegateTask.DelegateTaskKeys.broadcastRound)
+                                                   .field(DelegateTaskKeys.broadcastRound)
                                                    .lessThan(MAX_BROADCAST_ROUND)
-                                                   .field(DelegateTask.DelegateTaskKeys.delegateId)
+                                                   .field(DelegateTaskKeys.delegateId)
                                                    .doesNotExist();
 
     try (HIterator<DelegateTask> iterator = new HIterator<>(unassignedTasksQuery.fetch())) {
       int count = 0;
       while (iterator.hasNext()) {
         DelegateTask delegateTask = iterator.next();
-        Query<DelegateTask> query =
-            persistence.createQuery(DelegateTask.class, excludeAuthority)
-                .filter(DelegateTask.DelegateTaskKeys.uuid, delegateTask.getUuid())
-                .filter(DelegateTask.DelegateTaskKeys.broadcastCount, delegateTask.getBroadcastCount());
+        Query<DelegateTask> query = persistence.createQuery(DelegateTask.class, excludeAuthority)
+                                        .filter(DelegateTaskKeys.uuid, delegateTask.getUuid())
+                                        .filter(DelegateTaskKeys.broadcastCount, delegateTask.getBroadcastCount());
 
         LinkedList<String> eligibleDelegatesList = delegateTask.getEligibleToExecuteDelegateIds();
 
@@ -159,12 +156,12 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
 
         UpdateOperations<DelegateTask> updateOperations =
             persistence.createUpdateOperations(DelegateTask.class)
-                .set(DelegateTask.DelegateTaskKeys.lastBroadcastAt, now)
-                .set(DelegateTask.DelegateTaskKeys.broadcastCount, delegateTask.getBroadcastCount() + 1)
-                .set(DelegateTask.DelegateTaskKeys.eligibleToExecuteDelegateIds, eligibleDelegatesList)
-                .set(DelegateTask.DelegateTaskKeys.nextBroadcast, now + nextInterval)
-                .set(DelegateTask.DelegateTaskKeys.alreadyTriedDelegates, alreadyTriedDelegates)
-                .set(DelegateTask.DelegateTaskKeys.broadcastRound, broadcastRoundCount);
+                .set(DelegateTaskKeys.lastBroadcastAt, now)
+                .set(DelegateTaskKeys.broadcastCount, delegateTask.getBroadcastCount() + 1)
+                .set(DelegateTaskKeys.eligibleToExecuteDelegateIds, eligibleDelegatesList)
+                .set(DelegateTaskKeys.nextBroadcast, now + nextInterval)
+                .set(DelegateTaskKeys.alreadyTriedDelegates, alreadyTriedDelegates)
+                .set(DelegateTaskKeys.broadcastRound, broadcastRoundCount);
         delegateTask = persistence.findAndModify(query, updateOperations, HPersistence.returnNewOptions);
         // update failed, means this was broadcast by some other manager
         if (delegateTask == null) {

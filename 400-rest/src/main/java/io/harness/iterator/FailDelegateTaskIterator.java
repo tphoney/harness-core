@@ -1,15 +1,22 @@
 package io.harness.iterator;
 
-import static io.harness.beans.DelegateTask.Status.*;
 import static io.harness.beans.DelegateTask.Status.ABORTED;
+import static io.harness.beans.DelegateTask.Status.PARKED;
+import static io.harness.beans.DelegateTask.Status.QUEUED;
+import static io.harness.beans.DelegateTask.Status.STARTED;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.delegate.task.TaskFailureReason.EXPIRED;
+import static io.harness.exception.WingsException.USER;
+import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 import static io.harness.metrics.impl.DelegateMetricsServiceImpl.DELEGATE_TASK_EXPIRED;
 import static io.harness.persistence.HQuery.excludeAuthority;
 
+import static java.lang.String.format;
+import static java.lang.String.join;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
 import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -18,19 +25,30 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.DelegateTask;
+import io.harness.beans.DelegateTask.DelegateTaskKeys;
+import io.harness.delegate.beans.Delegate;
+import io.harness.delegate.beans.DelegateResponseData;
 import io.harness.delegate.beans.DelegateTaskResponse;
 import io.harness.delegate.beans.ErrorNotifyResponseData;
+import io.harness.delegate.beans.RemoteMethodReturnValueData;
+import io.harness.delegate.beans.executioncapability.ExecutionCapability;
+import io.harness.delegate.task.TaskLogContext;
+import io.harness.exception.FailureType;
+import io.harness.exception.InvalidRequestException;
+import io.harness.logging.AutoLogContext;
 import io.harness.metrics.intfc.DelegateMetricsService;
 import io.harness.mongo.iterator.MongoPersistenceIterator;
 import io.harness.mongo.iterator.filter.MorphiaFilterExpander;
 import io.harness.mongo.iterator.provider.MorphiaPersistenceProvider;
 import io.harness.persistence.HIterator;
 import io.harness.persistence.HPersistence;
+import io.harness.service.intfc.DelegateCache;
 import io.harness.service.intfc.DelegateTaskService;
 import io.harness.workers.background.AccountLevelEntityProcessController;
-import io.harness.workers.background.AccountStatusBasedEntityProcessController;
 
 import software.wings.beans.Account;
+import software.wings.beans.Account.AccountKeys;
+import software.wings.beans.TaskType;
 import software.wings.core.managerConfiguration.ConfigurationController;
 import software.wings.service.intfc.AccountService;
 import software.wings.service.intfc.AssignDelegateService;
@@ -38,13 +56,15 @@ import software.wings.service.intfc.AssignDelegateService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
 import java.security.SecureRandom;
+import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
@@ -65,6 +85,8 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
   @Inject private AccountService accountService;
   @Inject private ConfigurationController configurationController;
   @Inject private DelegateMetricsService delegateMetricsService;
+  @Inject private Clock clock;
+  @Inject private DelegateCache delegateCache;
 
   private static final long VALIDATION_TIMEOUT = TimeUnit.MINUTES.toMillis(2);
 
@@ -82,7 +104,7 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
     persistenceIteratorFactory.createPumpIteratorWithDedicatedThreadPool(options, FailDelegateTaskIterator.class,
         MongoPersistenceIterator.<Account, MorphiaFilterExpander<Account>>builder()
             .clazz(Account.class)
-            .fieldName(Account.AccountKeys.delegateTaskFailIteration)
+            .fieldName(AccountKeys.delegateTaskFailIteration)
             .targetInterval(Duration.ofSeconds(DELEGATE_TASK_FAIL_TIMEOUT))
             .acceptableNoAlertDelay(Duration.ofSeconds(45))
             .acceptableExecutionTime(Duration.ofSeconds(30))
@@ -104,8 +126,8 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
 
   private void markTimedOutTasksAsFailed() {
     List<Key<DelegateTask>> longRunningTimedOutTaskKeys = persistence.createQuery(DelegateTask.class, excludeAuthority)
-                                                              .filter(DelegateTask.DelegateTaskKeys.status, STARTED)
-                                                              .field(DelegateTask.DelegateTaskKeys.expiry)
+                                                              .filter(DelegateTaskKeys.status, STARTED)
+                                                              .field(DelegateTaskKeys.expiry)
                                                               .lessThan(currentTimeMillis())
                                                               .asKeyList(expiryLimit);
 
@@ -121,16 +143,16 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
   private void markLongQueuedTasksAsFailed() {
     // Find tasks which have been queued for too long
     Query<DelegateTask> query = persistence.createQuery(DelegateTask.class, excludeAuthority)
-                                    .field(DelegateTask.DelegateTaskKeys.status)
+                                    .field(DelegateTaskKeys.status)
                                     .in(asList(QUEUED, PARKED, ABORTED))
-                                    .field(DelegateTask.DelegateTaskKeys.expiry)
+                                    .field(DelegateTaskKeys.expiry)
                                     .lessThan(currentTimeMillis());
 
     // We usually pick from the top, but if we have full bucket we maybe slowing down
     // lets randomize a bit to increase the distribution
     int clusteringValue = clustering.get();
     if (clusteringValue > 1) {
-      query.field(DelegateTask.DelegateTaskKeys.createdAt).mod(clusteringValue, random.nextInt(clusteringValue));
+      query.field(DelegateTaskKeys.createdAt).mod(clusteringValue, random.nextInt(clusteringValue));
     }
 
     List<Key<DelegateTask>> longQueuedTaskKeys = query.asKeyList(expiryLimit);
@@ -152,7 +174,7 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
     List<String> taskIdsToExpire = new ArrayList<>();
     try {
       List<DelegateTask> tasks = persistence.createQuery(DelegateTask.class, excludeAuthority)
-                                     .field(DelegateTask.DelegateTaskKeys.uuid)
+                                     .field(DelegateTaskKeys.uuid)
                                      .in(taskIds)
                                      .asList();
 
@@ -172,9 +194,8 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
       log.error("Failed to deserialize {} tasks. Trying individually...", taskIds.size(), e1);
       for (String taskId : taskIds) {
         try {
-          DelegateTask task = persistence.createQuery(DelegateTask.class, excludeAuthority)
-                                  .filter(DelegateTask.DelegateTaskKeys.uuid, taskId)
-                                  .get();
+          DelegateTask task =
+              persistence.createQuery(DelegateTask.class, excludeAuthority).filter(DelegateTaskKeys.uuid, taskId).get();
           if (shouldExpireTask(task)) {
             taskIdsToExpire.add(taskId);
             delegateTasks.put(taskId, task);
@@ -188,8 +209,8 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
           taskIdsToExpire.add(taskId);
           try {
             String waitId = persistence.createQuery(DelegateTask.class, excludeAuthority)
-                                .filter(DelegateTask.DelegateTaskKeys.uuid, taskId)
-                                .project(DelegateTask.DelegateTaskKeys.waitId, true)
+                                .filter(DelegateTaskKeys.uuid, taskId)
+                                .project(DelegateTaskKeys.waitId, true)
                                 .get()
                                 .getWaitId();
             if (isNotEmpty(waitId)) {
@@ -204,9 +225,8 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
       }
     }
 
-    boolean deleted = persistence.deleteOnServer(persistence.createQuery(DelegateTask.class, excludeAuthority)
-                                                     .field(DelegateTask.DelegateTaskKeys.uuid)
-                                                     .in(taskIdsToExpire));
+    boolean deleted = persistence.deleteOnServer(
+        persistence.createQuery(DelegateTask.class, excludeAuthority).field(DelegateTaskKeys.uuid).in(taskIdsToExpire));
 
     if (deleted) {
       taskIdsToExpire.forEach(taskId -> {
@@ -232,21 +252,121 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
   private boolean shouldExpireTask(DelegateTask task) {
     return !task.isForceExecute();
   }
-  
-  
+
   private void failValidationCompletedQueuedTask(Account account) {
     Query<DelegateTask> validationStartedTaskQuery = persistence.createQuery(DelegateTask.class, excludeAuthority)
-            .filter(DelegateTask.DelegateTaskKeys.accountId, account.getUuid())
-            .filter(DelegateTask.DelegateTaskKeys.status, QUEUED)
-            .field(DelegateTask.DelegateTaskKeys.validationStartedAt)
-            .lessThan(clock.millis() - VALIDATION_TIMEOUT);
+                                                         .filter(DelegateTaskKeys.accountId, account.getUuid())
+                                                         .filter(DelegateTaskKeys.status, QUEUED)
+                                                         .field(DelegateTaskKeys.validationStartedAt)
+                                                         .lessThan(clock.millis() - VALIDATION_TIMEOUT);
     try (HIterator<DelegateTask> iterator = new HIterator<>(validationStartedTaskQuery.fetch())) {
       while (iterator.hasNext()) {
         DelegateTask delegateTask = iterator.next();
-        
+        if (delegateTask.getValidationCompleteDelegateIds().containsAll(
+                delegateTask.getEligibleToExecuteDelegateIds())) {
+          log.info("Found delegate task {} with validation completed by all delegates but not assigned",
+              delegateTask.getUuid());
+          try (AutoLogContext ignore = new TaskLogContext(delegateTask.getUuid(), delegateTask.getData().getTaskType(),
+                   TaskType.valueOf(delegateTask.getData().getTaskType()).getTaskGroup().name(), OVERRIDE_ERROR)) {
+            // Check whether a whitelisted delegate is connected
+            List<String> whitelistedDelegates = assignDelegateService.connectedWhitelistedDelegates(delegateTask);
+            if (isNotEmpty(whitelistedDelegates)) {
+              log.info("Waiting for task {} to be acquired by a whitelisted delegate: {}", delegateTask.getUuid(),
+                  whitelistedDelegates);
+              return;
+            }
+            log.info("Failing task {} due to validation failure ", delegateTask.getUuid());
+            String errorMessage = generateCapabilitiesMessage(delegateTask);
+            log.info(errorMessage);
+            DelegateResponseData response;
+            if (delegateTask.getData().isAsync()) {
+              response = ErrorNotifyResponseData.builder()
+                             .failureTypes(EnumSet.of(FailureType.DELEGATE_PROVISIONING))
+                             .errorMessage(errorMessage)
+                             .build();
+            } else {
+              response = RemoteMethodReturnValueData.builder()
+                             .exception(new InvalidRequestException(errorMessage, USER))
+                             .build();
+            }
+            Query<DelegateTask> taskQuery = persistence.createQuery(DelegateTask.class)
+                                                .filter(DelegateTaskKeys.accountId, delegateTask.getAccountId())
+                                                .filter(DelegateTaskKeys.uuid, delegateTask.getUuid());
+
+            delegateTaskService.handleResponse(delegateTask, taskQuery,
+                DelegateTaskResponse.builder()
+                    .accountId(delegateTask.getAccountId())
+                    .response(response)
+                    .responseCode(DelegateTaskResponse.ResponseCode.OK)
+                    .build());
+          }
+        }
       }
-
-
     }
+  }
+
+  private String generateValidationError(final DelegateTask delegateTask, final boolean areClientToolsInstalled) {
+    final String capabilities = generateCapabilitiesMessage(delegateTask);
+    final String delegates = generateValidatedDelegatesMessage(delegateTask);
+    final String timedoutDelegates = generateTimedoutDelegatesMessage(delegateTask);
+
+    final String clientToolsWarning = !areClientToolsInstalled
+        ? "  -  This could be due to some client tools still being installed on the delegates. If this is the reason please retry in a few minutes."
+        : "";
+    return format(
+               "No connected whitelisted delegates found for task and no eligible delegates could perform the required capabilities for this task: [ %s ]%n"
+                   + "  -  The capabilities were tested by the following delegates: [ %s ]%n"
+                   + "  -  Following delegates were validating but never returned: [ %s ]%n"
+                   + "  -  Other delegates (if any) may have been offline or were not eligible due to tag or scope restrictions.",
+               capabilities, delegates, timedoutDelegates)
+        + clientToolsWarning;
+  }
+
+  private String generateCapabilitiesMessage(final DelegateTask delegateTask) {
+    final List<ExecutionCapability> executionCapabilities = delegateTask.getExecutionCapabilities();
+    final StringBuilder stringBuilder = new StringBuilder("");
+
+    if (isNotEmpty(executionCapabilities)) {
+      stringBuilder.append(
+          (executionCapabilities.size() > 4 ? executionCapabilities.subList(0, 4) : executionCapabilities)
+              .stream()
+              .map(ExecutionCapability::fetchCapabilityBasis)
+              .collect(joining(", ")));
+      if (executionCapabilities.size() > 4) {
+        stringBuilder.append(", and ").append(executionCapabilities.size() - 4).append(" more...");
+      }
+    }
+    return stringBuilder.toString();
+  }
+
+  private String generateValidatedDelegatesMessage(final DelegateTask delegateTask) {
+    final Set<String> validationCompleteDelegateIds = delegateTask.getValidationCompleteDelegateIds();
+
+    if (isNotEmpty(validationCompleteDelegateIds)) {
+      return validationCompleteDelegateIds.stream()
+          .map(delegateId -> {
+            Delegate delegate = delegateCache.get(delegateTask.getAccountId(), delegateId, false);
+            return delegate == null ? delegateId : delegate.getHostName();
+          })
+          .collect(joining(", "));
+    }
+    return "no delegates";
+  }
+
+  private String generateTimedoutDelegatesMessage(final DelegateTask delegateTask) {
+    final Set<String> validationCompleteDelegateIds = delegateTask.getValidationCompleteDelegateIds();
+    final Set<String> validatingDelegateIds = delegateTask.getValidatingDelegateIds();
+
+    if (isNotEmpty(validatingDelegateIds)) {
+      return join(", ",
+          validatingDelegateIds.stream()
+              .filter(p -> !validationCompleteDelegateIds.contains(p))
+              .map(delegateId -> {
+                Delegate delegate = delegateCache.get(delegateTask.getAccountId(), delegateId, false);
+                return delegate == null ? delegateId : delegate.getHostName();
+              })
+              .collect(joining()));
+    }
+    return "no delegates timedout";
   }
 }

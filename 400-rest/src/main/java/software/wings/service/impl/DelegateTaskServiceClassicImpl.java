@@ -23,7 +23,6 @@ import static io.harness.delegate.beans.DelegateTaskEvent.DelegateTaskEventBuild
 import static io.harness.delegate.beans.NgSetupFields.NG;
 import static io.harness.delegate.beans.executioncapability.ExecutionCapability.EvaluationMode;
 import static io.harness.delegate.task.TaskFailureReason.EXPIRED;
-import static io.harness.exception.WingsException.USER;
 import static io.harness.govern.Switch.noop;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_NESTS;
@@ -39,11 +38,9 @@ import static io.harness.persistence.HQuery.excludeAuthority;
 
 import static software.wings.app.ManagerCacheRegistrar.SECRET_TOKEN_CACHE;
 
-import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -79,7 +76,6 @@ import io.harness.delegate.beans.DelegateTaskResponse.ResponseCode;
 import io.harness.delegate.beans.ErrorNotifyResponseData;
 import io.harness.delegate.beans.NoAvailableDelegatesException;
 import io.harness.delegate.beans.NoInstalledDelegatesException;
-import io.harness.delegate.beans.RemoteMethodReturnValueData;
 import io.harness.delegate.beans.SecretDetail;
 import io.harness.delegate.beans.TaskGroup;
 import io.harness.delegate.beans.TaskSelectorMap;
@@ -99,7 +95,6 @@ import io.harness.event.handler.impl.EventPublishHelper;
 import io.harness.exception.CriticalExpressionEvaluationException;
 import io.harness.exception.DelegateNotAvailableException;
 import io.harness.exception.ExceptionUtils;
-import io.harness.exception.FailureType;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.expression.ExpressionEvaluator;
@@ -185,7 +180,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -775,26 +769,16 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
   @Override
   public DelegateTaskPackage reportConnectionResults(String accountId, String delegateId, String taskId,
       String delegateInstanceId, List<DelegateConnectionResult> results) {
+    DelegateTaskPackage delegateTaskPackage = null;
     assignDelegateService.saveConnectionResults(results);
     DelegateTask delegateTask = getUnassignedDelegateTask(accountId, taskId, delegateId);
     if (delegateTask == null) {
-      return null;
+      return delegateTaskPackage;
     }
 
     try (AutoLogContext ignore = new TaskLogContext(taskId, delegateTask.getData().getTaskType(),
              TaskType.valueOf(delegateTask.getData().getTaskType()).getTaskGroup().name(), OVERRIDE_ERROR)) {
       log.info("Delegate completed validating {} task", delegateTask.getData().isAsync() ? ASYNC : SYNC);
-
-      UpdateOperations<DelegateTask> updateOperations =
-          persistence.createUpdateOperations(DelegateTask.class)
-              .addToSet(DelegateTaskKeys.validationCompleteDelegateIds, delegateId);
-      Query<DelegateTask> updateQuery = persistence.createQuery(DelegateTask.class)
-                                            .filter(DelegateTaskKeys.accountId, delegateTask.getAccountId())
-                                            .filter(DelegateTaskKeys.uuid, delegateTask.getUuid())
-                                            .filter(DelegateTaskKeys.status, QUEUED)
-                                            .field(DelegateTaskKeys.delegateId)
-                                            .doesNotExist();
-      persistence.update(updateQuery, updateOperations);
 
       long requiredDelegateCapabilities = 0;
       if (delegateTask.getExecutionCapabilities() != null) {
@@ -807,11 +791,23 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
       // If all delegate task capabilities were evaluated and they were ok, we can assign the task
       if (requiredDelegateCapabilities == size(results)
           && results.stream().allMatch(DelegateConnectionResult::isValidated)) {
-        return assignTask(delegateId, taskId, delegateTask, delegateInstanceId);
+        // set task to assigned status and add delegateId to validationCompleteDelegateIds
+        delegateTaskPackage = assignTask(delegateId, taskId, delegateTask, delegateInstanceId);
+      } else {
+        UpdateOperations<DelegateTask> updateOperations =
+            persistence.createUpdateOperations(DelegateTask.class)
+                .addToSet(DelegateTaskKeys.validationCompleteDelegateIds, delegateId);
+        Query<DelegateTask> updateQuery = persistence.createQuery(DelegateTask.class)
+                                              .filter(DelegateTaskKeys.accountId, delegateTask.getAccountId())
+                                              .filter(DelegateTaskKeys.uuid, delegateTask.getUuid())
+                                              .filter(DelegateTaskKeys.status, QUEUED)
+                                              .field(DelegateTaskKeys.delegateId)
+                                              .doesNotExist();
+        persistence.update(updateQuery, updateOperations);
       }
     }
 
-    return null;
+    return delegateTaskPackage;
   }
 
   @Override
@@ -833,12 +829,12 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
 
       try (AutoLogContext ignore = new TaskLogContext(taskId, delegateTask.getData().getTaskType(),
                TaskType.valueOf(delegateTask.getData().getTaskType()).getTaskGroup().name(), OVERRIDE_ERROR)) {
-       /* if (assignDelegateService.shouldValidate(delegateTask, delegateId)) {
-          setValidationStarted(delegateId, delegateTask);
-          return resolvePreAssignmentExpressions(delegateTask, SecretManagerMode.APPLY);
-        } else if (assignDelegateService.isWhitelisted(delegateTask, delegateId)) {
-          return assignTask(delegateId, taskId, delegateTask, delegateInstanceId);
-        }*/
+        /* if (assignDelegateService.shouldValidate(delegateTask, delegateId)) {
+           setValidationStarted(delegateId, delegateTask);
+           return resolvePreAssignmentExpressions(delegateTask, SecretManagerMode.APPLY);
+         } else if (assignDelegateService.isWhitelisted(delegateTask, delegateId)) {
+           return assignTask(delegateId, taskId, delegateTask, delegateInstanceId);
+         }*/
 
         log.info("Delegate {} is blacklisted for task {}", delegateId, taskId);
         return null;
@@ -848,116 +844,6 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
         log.debug("Done with acquire delegate task{} ", taskId);
       }
     }
-  }
-
-  @Override
-  public void failIfAllDelegatesFailed(
-      final String accountId, final String delegateId, final String taskId, final boolean areClientToolsInstalled) {
-    DelegateTask delegateTask = getUnassignedDelegateTask(accountId, taskId, delegateId);
-    if (delegateTask == null) {
-      log.info("Task {} not found or was already assigned", taskId);
-      return;
-    }
-
-    if (delegateTask.isForceExecute()) {
-      log.debug("Task is set for force execution");
-      return;
-    }
-
-    try (AutoLogContext ignore = new TaskLogContext(taskId, delegateTask.getData().getTaskType(),
-             TaskType.valueOf(delegateTask.getData().getTaskType()).getTaskGroup().name(), OVERRIDE_ERROR)) {
-      if (!isValidationComplete(delegateTask)) {
-        log.info(
-            "Task {} is still being validated with delegate ids {} ", taskId, delegateTask.getValidatingDelegateIds());
-        return;
-      }
-      // Check whether a whitelisted delegate is connected
-      List<String> whitelistedDelegates = assignDelegateService.connectedWhitelistedDelegates(delegateTask);
-      if (isNotEmpty(whitelistedDelegates)) {
-        log.info("Waiting for task {} to be acquired by a whitelisted delegate: {}", taskId, whitelistedDelegates);
-        return;
-      }
-
-      String errorMessage = generateValidationError(delegateTask, areClientToolsInstalled);
-      log.info(errorMessage);
-      DelegateResponseData response;
-      if (delegateTask.getData().isAsync()) {
-        response = ErrorNotifyResponseData.builder()
-                       .failureTypes(EnumSet.of(FailureType.DELEGATE_PROVISIONING))
-                       .errorMessage(errorMessage)
-                       .build();
-      } else {
-        response =
-            RemoteMethodReturnValueData.builder().exception(new InvalidRequestException(errorMessage, USER)).build();
-      }
-      delegateTaskService.processDelegateResponse(accountId, null, taskId,
-          DelegateTaskResponse.builder().accountId(accountId).response(response).responseCode(ResponseCode.OK).build());
-    }
-  }
-
-  private String generateValidationError(final DelegateTask delegateTask, final boolean areClientToolsInstalled) {
-    final String capabilities = generateCapabilitiesMessage(delegateTask);
-    final String delegates = generateValidatedDelegatesMessage(delegateTask);
-    final String timedoutDelegates = generateTimedoutDelegatesMessage(delegateTask);
-
-    final String clientToolsWarning = !areClientToolsInstalled
-        ? "  -  This could be due to some client tools still being installed on the delegates. If this is the reason please retry in a few minutes."
-        : "";
-    return format(
-               "No connected whitelisted delegates found for task and no eligible delegates could perform the required capabilities for this task: [ %s ]%n"
-                   + "  -  The capabilities were tested by the following delegates: [ %s ]%n"
-                   + "  -  Following delegates were validating but never returned: [ %s ]%n"
-                   + "  -  Other delegates (if any) may have been offline or were not eligible due to tag or scope restrictions.",
-               capabilities, delegates, timedoutDelegates)
-        + clientToolsWarning;
-  }
-
-  private String generateCapabilitiesMessage(final DelegateTask delegateTask) {
-    final List<ExecutionCapability> executionCapabilities = delegateTask.getExecutionCapabilities();
-    final StringBuilder stringBuilder = new StringBuilder("");
-
-    if (isNotEmpty(executionCapabilities)) {
-      stringBuilder.append(
-          (executionCapabilities.size() > 4 ? executionCapabilities.subList(0, 4) : executionCapabilities)
-              .stream()
-              .map(ExecutionCapability::fetchCapabilityBasis)
-              .collect(joining(", ")));
-      if (executionCapabilities.size() > 4) {
-        stringBuilder.append(", and ").append(executionCapabilities.size() - 4).append(" more...");
-      }
-    }
-    return stringBuilder.toString();
-  }
-
-  private String generateValidatedDelegatesMessage(final DelegateTask delegateTask) {
-    final Set<String> validationCompleteDelegateIds = delegateTask.getValidationCompleteDelegateIds();
-
-    if (isNotEmpty(validationCompleteDelegateIds)) {
-      return validationCompleteDelegateIds.stream()
-          .map(delegateId -> {
-            Delegate delegate = delegateCache.get(delegateTask.getAccountId(), delegateId, false);
-            return delegate == null ? delegateId : delegate.getHostName();
-          })
-          .collect(joining(", "));
-    }
-    return "no delegates";
-  }
-
-  private String generateTimedoutDelegatesMessage(final DelegateTask delegateTask) {
-    final Set<String> validationCompleteDelegateIds = delegateTask.getValidationCompleteDelegateIds();
-    final Set<String> validatingDelegateIds = delegateTask.getValidatingDelegateIds();
-
-    if (isNotEmpty(validatingDelegateIds)) {
-      return join(", ",
-          validatingDelegateIds.stream()
-              .filter(p -> !validationCompleteDelegateIds.contains(p))
-              .map(delegateId -> {
-                Delegate delegate = delegateCache.get(delegateTask.getAccountId(), delegateId, false);
-                return delegate == null ? delegateId : delegate.getHostName();
-              })
-              .collect(joining()));
-    }
-    return "no delegates timedout";
   }
 
   @VisibleForTesting
@@ -1215,6 +1101,7 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
         persistence.createUpdateOperations(DelegateTask.class)
             .set(DelegateTaskKeys.delegateId, delegateId)
             .set(DelegateTaskKeys.status, STARTED)
+            .addToSet(DelegateTaskKeys.validationCompleteDelegateIds, delegateId)
             .set(DelegateTaskKeys.expiry, currentTimeMillis() + delegateTask.getData().getTimeout());
     // TODO: remove if check once this new field becomes operational
     if (isNotEmpty(delegateInstanceId)) {

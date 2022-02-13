@@ -93,6 +93,7 @@ public class DelegateQueueTask implements Runnable {
   @Inject private DelegateSelectionLogsService delegateSelectionLogsService;
   @Inject private DelegateMetricsService delegateMetricsService;
 
+
   private static long BROADCAST_INTERVAL = TimeUnit.MINUTES.toMillis(1);
   private static int MAX_BROADCAST_ROUND = 3;
 

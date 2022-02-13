@@ -88,6 +88,8 @@ import io.harness.health.HealthMonitor;
 import io.harness.health.HealthService;
 import io.harness.insights.DelegateInsightsSummaryJob;
 import io.harness.iterator.DelegateTaskExpiryCheckIterator;
+import io.harness.iterator.DelegateTaskRebroadcastIterator;
+import io.harness.iterator.FailDelegateTaskIterator;
 import io.harness.lock.AcquiredLock;
 import io.harness.lock.DistributedLockImplementation;
 import io.harness.lock.PersistentLocker;
@@ -1256,9 +1258,9 @@ public class WingsApplication extends Application<MainConfiguration> {
       Injector injector, MainConfiguration configuration, ScheduledExecutorService delegateExecutor) {
     log.info("Initializing delegate service scheduled jobs ...");
     // delegate task broadcasting schedule job
-    injector.getInstance(Key.get(ScheduledExecutorService.class, Names.named("delegateTaskNotifier")))
+    /*injector.getInstance(Key.get(ScheduledExecutorService.class, Names.named("delegateTaskNotifier")))
         .scheduleWithFixedDelay(injector.getInstance(DelegateQueueTask.class), random.nextInt(5), 5L, TimeUnit.SECONDS);
-
+*/
     delegateExecutor.scheduleWithFixedDelay(new Schedulable("Failed while monitoring task progress updates",
                                                 injector.getInstance(ProgressUpdateService.class)),
         0L, 5L, TimeUnit.SECONDS);
@@ -1407,6 +1409,10 @@ public class WingsApplication extends Application<MainConfiguration> {
             iteratorsConfig.getPerpetualTaskRebalanceIteratorConfig().getThreadPoolSize());
     injector.getInstance(DelegateTaskExpiryCheckIterator.class)
         .registerIterators(iteratorsConfig.getDelegateTaskExpiryCheckIteratorConfig().getThreadPoolSize());
+    injector.getInstance(DelegateTaskRebroadcastIterator.class)
+            .registerIterators(5);
+    injector.getInstance(FailDelegateTaskIterator.class)
+            .registerIterators(5);
     injector.getInstance(DelegateTelemetryPublisher.class).registerIterators();
   }
 

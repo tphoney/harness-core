@@ -833,12 +833,12 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
 
       try (AutoLogContext ignore = new TaskLogContext(taskId, delegateTask.getData().getTaskType(),
                TaskType.valueOf(delegateTask.getData().getTaskType()).getTaskGroup().name(), OVERRIDE_ERROR)) {
-        if (assignDelegateService.shouldValidate(delegateTask, delegateId)) {
+       /* if (assignDelegateService.shouldValidate(delegateTask, delegateId)) {
           setValidationStarted(delegateId, delegateTask);
           return resolvePreAssignmentExpressions(delegateTask, SecretManagerMode.APPLY);
         } else if (assignDelegateService.isWhitelisted(delegateTask, delegateId)) {
           return assignTask(delegateId, taskId, delegateTask, delegateInstanceId);
-        }
+        }*/
 
         log.info("Delegate {} is blacklisted for task {}", delegateId, taskId);
         return null;

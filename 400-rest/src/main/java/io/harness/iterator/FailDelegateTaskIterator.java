@@ -232,8 +232,8 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
   private boolean shouldExpireTask(DelegateTask task) {
     return !task.isForceExecute();
   }
-
-
+  
+  
   private void failValidationCompletedQueuedTask(Account account) {
     Query<DelegateTask> validationStartedTaskQuery = persistence.createQuery(DelegateTask.class, excludeAuthority)
             .filter(DelegateTask.DelegateTaskKeys.accountId, account.getUuid())

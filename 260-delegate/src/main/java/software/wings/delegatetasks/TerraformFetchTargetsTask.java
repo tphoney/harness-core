@@ -22,6 +22,7 @@ import io.harness.delegate.task.AbstractDelegateRunnableTask;
 import io.harness.delegate.task.TaskParameters;
 import io.harness.exception.UnexpectedException;
 import io.harness.exception.WingsException;
+import io.harness.secret.SecretSanitizerThreadLocal;
 
 import software.wings.api.TerraformExecutionData;
 import software.wings.beans.GitConfig;
@@ -58,6 +59,8 @@ public class TerraformFetchTargetsTask extends AbstractDelegateRunnableTask {
       ILogStreamingTaskClient logStreamingTaskClient, Consumer<DelegateTaskResponse> consumer,
       BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override
@@ -88,7 +91,8 @@ public class TerraformFetchTargetsTask extends AbstractDelegateRunnableTask {
       } catch (Exception e) {
         return TerraformExecutionData.builder()
             .executionStatus(ExecutionStatus.FAILED)
-            .errorMessage(TerraformTaskUtils.getGitExceptionMessageIfExists(e))
+            .errorMessage(
+                TerraformTaskUtils.getGitExceptionMessageIfExists(ExceptionMessageSanitizer.sanitizeException(e)))
             .build();
       }
 

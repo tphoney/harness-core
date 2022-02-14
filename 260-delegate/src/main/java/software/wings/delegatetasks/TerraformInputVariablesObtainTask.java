@@ -25,6 +25,7 @@ import io.harness.exception.ExceptionUtils;
 import io.harness.exception.ExplanationException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
+import io.harness.secret.SecretSanitizerThreadLocal;
 
 import software.wings.api.TerraformExecutionData;
 import software.wings.beans.GitConfig;
@@ -65,6 +66,7 @@ public class TerraformInputVariablesObtainTask extends AbstractDelegateRunnableT
       ILogStreamingTaskClient logStreamingTaskClient, Consumer<DelegateTaskResponse> consumer,
       BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override

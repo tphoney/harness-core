@@ -118,6 +118,7 @@ import software.wings.beans.delegation.TerraformProvisionParameters.TerraformPro
 import software.wings.beans.infrastructure.TerraformConfig;
 import software.wings.beans.infrastructure.TerraformConfig.TerraformConfigKeys;
 import software.wings.common.TemplateExpressionProcessor;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.dl.WingsPersistence;
 import software.wings.service.impl.GitConfigHelperService;
 import software.wings.service.impl.GitFileConfigHelperService;
@@ -265,7 +266,7 @@ public abstract class TerraformProvisionState extends State {
       json.forEach((key, object) -> outputs.put(key, ((Map<String, Object>) object).get("value")));
 
     } catch (IOException exception) {
-      log.error("", exception);
+      log.error("", ExceptionMessageSanitizer.sanitizeException(exception));
     }
 
     return outputs;

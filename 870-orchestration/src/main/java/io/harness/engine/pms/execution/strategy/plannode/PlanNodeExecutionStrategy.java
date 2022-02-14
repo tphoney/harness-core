@@ -55,6 +55,7 @@ import io.harness.pms.execution.utils.StatusUtils;
 import io.harness.pms.expression.PmsEngineExpressionService;
 import io.harness.pms.sdk.core.steps.io.StepResponseNotifyData;
 import io.harness.pms.utils.OrchestrationMapBackwardCompatibilityUtils;
+import io.harness.serializer.KryoSerializer;
 import io.harness.springdata.TransactionHelper;
 import io.harness.waiter.WaitNotifyEngine;
 
@@ -95,32 +96,11 @@ public class PlanNodeExecutionStrategy extends AbstractNodeExecutionStrategy<Pla
   @Inject private PmsOutcomeService outcomeService;
   @Inject private TransactionHelper transactionHelper;
   @Inject private PmsGraphStepDetailsService pmsGraphStepDetailsService;
+  @Inject private KryoSerializer kryoSerializer;
 
   @Override
-  public NodeExecution createNodeExecution(
-      @NotNull Ambiance ambiance, @NotNull PlanNode node, String notifyId, String parentId, String previousId) {
-    final NodeExecution persistedNodeExecution = persistNodeExecution(ambiance, node, notifyId, parentId, previousId);
-    if (persistedNodeExecution == null) {
-      throw new RuntimeException("Failed to save node execution");
-    }
-
-    return transactionHelper.performTransaction(() -> {
-      boolean skipUnresolvedExpressionsCheck = node.isSkipUnresolvedExpressionsCheck();
-      log.info("Starting to Resolve step parameters and Inputs");
-      PmsStepParameters resolvedParameters =
-          resolveParameters(ambiance, node.getStepParameters(), skipUnresolvedExpressionsCheck);
-      PmsStepParameters resolvedInputs =
-          resolveParameters(ambiance, node.getStepInputs(), skipUnresolvedExpressionsCheck);
-      NodeExecution updatedNodeExecution =
-          nodeExecutionService.update(persistedNodeExecution.withResolvedParams(resolvedParameters));
-      pmsGraphStepDetailsService.addStepInputs(
-          persistedNodeExecution.getUuid(), ambiance.getPlanExecutionId(), resolvedInputs);
-      return updatedNodeExecution;
-    });
-  }
-
-  private NodeExecution persistNodeExecution(
-      @NotNull Ambiance ambiance, @NotNull PlanNode node, String notifyId, String parentId, String previousId) {
+  public NodeExecution createNodeExecution(@NotNull Ambiance ambiance, @NotNull PlanNode node,
+      NodeExecutionMetadata metadata, String notifyId, String parentId, String previousId) {
     String uuid = AmbianceUtils.obtainCurrentRuntimeId(ambiance);
     NodeExecution nodeExecution = NodeExecution.builder()
                                       .uuid(uuid)
@@ -143,7 +123,27 @@ public class PlanNodeExecutionStrategy extends AbstractNodeExecutionStrategy<Pla
     return nodeExecutionService.save(nodeExecution);
   }
 
-  private PmsStepParameters resolveParameters(
+  private NodeExecution resolveParameters(Ambiance ambiance, PlanNode node) {
+    return transactionHelper.performTransaction(() -> {
+      String nodeExecutionId = AmbianceUtils.obtainCurrentRuntimeId(ambiance);
+      boolean skipUnresolvedExpressionsCheck = node.isSkipUnresolvedExpressionsCheck();
+      log.info("Starting to Resolve step parameters and Inputs");
+      PmsStepParameters resolvedParameters =
+          resolveOrchestrationMap(ambiance, node.getStepParameters(), skipUnresolvedExpressionsCheck);
+      PmsStepParameters resolvedInputs =
+          resolveOrchestrationMap(ambiance, node.getStepInputs(), skipUnresolvedExpressionsCheck);
+
+      // TODO (prashant) : This is a hack right now to serialize in binary as findAndModify is not honoring converter
+      // for maps Find a better way to do this
+      NodeExecution updatedNodeExecution = nodeExecutionService.update(nodeExecutionId,
+          ops -> ops.set(NodeExecutionKeys.resolvedParams, kryoSerializer.asDeflatedBytes(resolvedParameters)));
+
+      pmsGraphStepDetailsService.addStepInputs(nodeExecutionId, ambiance.getPlanExecutionId(), resolvedInputs);
+      return updatedNodeExecution;
+    });
+  }
+
+  private PmsStepParameters resolveOrchestrationMap(
       Ambiance ambiance, OrchestrationMap unresolvedParams, boolean skipUnresolvedCheck) {
     Object resolvedStepParameters = pmsEngineExpressionService.resolve(ambiance, unresolvedParams, skipUnresolvedCheck);
     return PmsStepParameters.parse(
@@ -162,6 +162,8 @@ public class PlanNodeExecutionStrategy extends AbstractNodeExecutionStrategy<Pla
         return;
       }
       log.info("Proceeding with  Execution. Reason : {}", check.getReason());
+
+      resolveParameters(ambiance, planNode);
 
       if (facilitationHelper.customFacilitatorPresent(planNode)) {
         facilitateEventPublisher.publishEvent(ambiance, planNode);

@@ -12,7 +12,6 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.engine.ExecutionEngineDispatcher;
 import io.harness.engine.OrchestrationEngine;
 import io.harness.engine.executions.node.NodeExecutionService;
 import io.harness.engine.utils.PmsLevelUtils;
@@ -61,13 +60,15 @@ public class RetryHelper {
     Level currentLevel = AmbianceUtils.obtainCurrentLevel(oldAmbiance);
     Ambiance ambiance = AmbianceUtils.cloneForFinish(oldAmbiance);
     int newRetryIndex = currentLevel != null ? currentLevel.getRetryIndex() + 1 : 0;
-    ambiance = ambiance.toBuilder().addLevels(PmsLevelUtils.buildLevelFromNode(newUuid, newRetryIndex, node)).build();
-    NodeExecution newNodeExecution = cloneForRetry(updatedRetriedNode, newUuid, ambiance, interruptConfig, interruptId);
+    Ambiance finalAmbiance =
+        ambiance.toBuilder().addLevels(PmsLevelUtils.buildLevelFromNode(newUuid, newRetryIndex, node)).build();
+    NodeExecution newNodeExecution =
+        cloneForRetry(updatedRetriedNode, newUuid, finalAmbiance, interruptConfig, interruptId);
     NodeExecution savedNodeExecution = nodeExecutionService.save(newNodeExecution);
 
     nodeExecutionService.updateRelationShipsForRetryNode(updatedRetriedNode.getUuid(), savedNodeExecution.getUuid());
     nodeExecutionService.markRetried(updatedRetriedNode.getUuid());
-    executorService.submit(ExecutionEngineDispatcher.builder().ambiance(ambiance).orchestrationEngine(engine).build());
+    executorService.submit(() -> engine.startNodeExecution(finalAmbiance));
   }
 
   private NodeExecution updateRetriedNodeMetadata(NodeExecution nodeExecution) {

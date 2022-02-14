@@ -267,7 +267,6 @@ public class InstanceDataDaoImpl implements InstanceDataDao {
         hPersistence.createUpdateOperations(InstanceData.class)
             .set(InstanceDataKeys.pricing, pricing);
     Query<InstanceData> query = hPersistence.createQuery(InstanceData.class)
-        .filter(InstanceDataKeys.uuid, instanceData.getUuid())
         .filter(InstanceDataKeys.instanceId, instanceData.getInstanceId());
 
     hPersistence.upsert(query, instanceDataUpdateOperations, upsertReturnOldOptions);

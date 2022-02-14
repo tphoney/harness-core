@@ -69,7 +69,7 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
   @Inject private DelegateSelectionLogsService delegateSelectionLogsService;
   @Inject private Clock clock;
 
-  private static final long DELEGATE_TASK_REBROADCAST_TIMEOUT = 10;
+  private static final long DELEGATE_TASK_REBROADCAST_TIMEOUT = 5;
   private static long BROADCAST_INTERVAL = TimeUnit.MINUTES.toMillis(1);
   private static int MAX_BROADCAST_ROUND = 3;
 

@@ -90,7 +90,7 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
 
   private static final long VALIDATION_TIMEOUT = TimeUnit.MINUTES.toMillis(2);
 
-  private static final long DELEGATE_TASK_FAIL_TIMEOUT = 10;
+  private static final long DELEGATE_TASK_FAIL_TIMEOUT = 5;
   private static final FindOptions expiryLimit = new FindOptions().limit(100);
   private static final SecureRandom random = new SecureRandom();
 

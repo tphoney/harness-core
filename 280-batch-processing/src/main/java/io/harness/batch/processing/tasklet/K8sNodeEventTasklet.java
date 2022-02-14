@@ -60,7 +60,7 @@ public class K8sNodeEventTasklet implements Tasklet {
                                                   .filter(instanceInfo -> null != instanceInfo.getAccountId())
                                                   .collect(Collectors.toList());
 
-      instanceDataBulkWriteService.updateList(instanceEventList);
+      instanceDataBulkWriteService.updateInstanceEvent(instanceEventList);
       if (featureFlagService.isEnabled(FeatureName.NODE_RECOMMENDATION_1, jobConstants.getAccountId())) {
         // we are not using START event now-a-days.
         instanceInfoTimescaleDAO.updateNodeStopEvent(

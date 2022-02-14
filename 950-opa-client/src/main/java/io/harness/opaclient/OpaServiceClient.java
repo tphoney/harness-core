@@ -11,6 +11,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.opaclient.model.OpaEvaluationResponseHolder;
 
+import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
@@ -25,4 +26,9 @@ public interface OpaServiceClient {
       @Query("accountIdentifier") String accountIdentifier, @Query("orgIdentifier") String orgIdentifier,
       @Query("projectIdentifier") String projectIdentifier, @Query("action") String action,
       @Query("entity") String entity, @Query("entityMetadata") String entityMetadata, @Body Object context);
+
+  @POST(API_PREFIX + "evaluate-by-ids")
+  Call<OpaEvaluationResponseHolder> evaluateWithCredentialsByID(@Query("accountIdentifier") String accountId,
+      @Query("orgIdentifier") String orgId, @Query("projectIdentifier") String projId,
+      @Query("ids") List<String> policySets, @Query("entity") String entity, @Body Object context);
 }

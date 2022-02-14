@@ -253,7 +253,8 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
     return !task.isForceExecute();
   }
 
-  private void failValidationCompletedQueuedTask(Account account) {
+  @VisibleForTesting
+  public void failValidationCompletedQueuedTask(Account account) {
     Query<DelegateTask> validationStartedTaskQuery = persistence.createQuery(DelegateTask.class, excludeAuthority)
                                                          .filter(DelegateTaskKeys.accountId, account.getUuid())
                                                          .filter(DelegateTaskKeys.status, QUEUED)

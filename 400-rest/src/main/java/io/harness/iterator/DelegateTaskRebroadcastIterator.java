@@ -80,7 +80,7 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
             .poolSize(threadPoolSize)
             .name("DelegateTaskRebroadcast")
             .build();
-    persistenceIteratorFactory.createPumpIteratorWithDedicatedThreadPool(options, FailDelegateTaskIterator.class,
+    persistenceIteratorFactory.createPumpIteratorWithDedicatedThreadPool(options, DelegateTaskRebroadcastIterator.class,
         MongoPersistenceIterator.<Account, MorphiaFilterExpander<Account>>builder()
             .clazz(Account.class)
             .fieldName(AccountKeys.delegateTaskRebroadcastIteration)

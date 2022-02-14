@@ -66,7 +66,6 @@ public class ServiceResourceTest extends CategoryTest {
                             .projectIdentifier("PROJECT_ID")
                             .name("Service")
                             .tags(singletonMap("k1", "v1"))
-                            .version(0L)
                             .build();
 
     serviceResponseDTO = ServiceResponseDTO.builder()

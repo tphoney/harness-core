@@ -327,7 +327,7 @@ public class CloudFormationCreateStackState extends CloudFormationState {
     }
     if (useParametersFile) {
       getParametersFilePaths().forEach(parametersFilePath
-              -> renderedGitFileConfig.getFilePathList().add(executionContext.renderExpression(parametersFilePath)));
+          -> renderedGitFileConfig.getFilePathList().add(executionContext.renderExpression(parametersFilePath)));
     }
     renderedGitFileConfig.getFilePathList().add(executionContext.renderExpression(renderedGitFileConfig.getFilePath()));
 
@@ -540,7 +540,7 @@ public class CloudFormationCreateStackState extends CloudFormationState {
     }
 
     GitFetchFilesFromMultipleRepoResult gitCommandResult =
-            (GitFetchFilesFromMultipleRepoResult) executionResponse.getGitCommandResult();
+        (GitFetchFilesFromMultipleRepoResult) executionResponse.getGitCommandResult();
 
     List<GitFile> files = gitCommandResult.getFilesFromMultipleRepo().get(CF_PARAMETERS).getFiles();
     if (!useParametersFile) {

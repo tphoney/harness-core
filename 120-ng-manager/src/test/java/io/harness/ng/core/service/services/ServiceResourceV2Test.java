@@ -111,6 +111,7 @@ public class ServiceResourceV2Test extends CategoryTest {
     List<ServiceEntity> serviceEntityList = new ArrayList<>();
     List<ServiceEntity> outputServiceEntitiesList = new ArrayList<>();
     outputServiceEntitiesList.add(entity);
+
     serviceEntityList.add(entity);
     serviceRequestDTOList.add(serviceRequestDTO);
     when(orgAndProjectValidationHelper.checkThatTheOrganizationAndProjectExists(

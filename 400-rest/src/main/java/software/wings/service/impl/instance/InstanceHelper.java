@@ -226,10 +226,15 @@ public class InstanceHelper {
             }
           }
         }
-        if (AWS_SSH.getName().equals(infrastructureMapping.getInfraMappingType())) {
+
+        instanceService.saveOrUpdate(instanceList);
+
+        if (AWS_SSH.getName().equals(infrastructureMapping.getInfraMappingType())
+            || PHYSICAL_DATA_CENTER_SSH.getName().equals(infrastructureMapping.getInfraMappingType())
+            || PHYSICAL_DATA_CENTER_WINRM.getName().equals(infrastructureMapping.getInfraMappingType())) {
           createPerpetualTaskForNewDeploymentIfEnabled(infrastructureMapping, emptyList());
         }
-        instanceService.saveOrUpdate(instanceList);
+
       } else {
         Optional<InstanceHandler> instanceHandlerOptional = getInstanceHandler(infrastructureMapping);
         if (!instanceHandlerOptional.isPresent()) {
@@ -549,8 +554,7 @@ public class InstanceHelper {
 
   @VisibleForTesting
   boolean isSupported(InfrastructureMappingType infrastructureMappingType) {
-    return PHYSICAL_DATA_CENTER_SSH != infrastructureMappingType
-        && PHYSICAL_DATA_CENTER_WINRM != infrastructureMappingType;
+    return true;
   }
 
   public boolean isDeployPhaseStep(PhaseStepType phaseStepType) {

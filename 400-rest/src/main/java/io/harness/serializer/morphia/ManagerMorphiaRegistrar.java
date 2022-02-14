@@ -107,6 +107,7 @@ import software.wings.api.ShellScriptProvisionerOutputElement;
 import software.wings.api.SimpleWorkflowParam;
 import software.wings.api.SkipStateExecutionData;
 import software.wings.api.SpotinstAmiDeploymentInfo;
+import software.wings.api.SshInstanceDeploymentInfo;
 import software.wings.api.TerraformApplyMarkerParam;
 import software.wings.api.TerraformExecutionData;
 import software.wings.api.TerraformOutputInfoElement;
@@ -1076,6 +1077,7 @@ public class ManagerMorphiaRegistrar implements MorphiaRegistrar {
     w.put("api.AwsAmiSetupExecutionData", AwsAmiSetupExecutionData.class);
     w.put("api.AwsAmiSwitchRoutesStateExecutionData", AwsAmiSwitchRoutesStateExecutionData.class);
     w.put("api.AwsAutoScalingGroupDeploymentInfo", AwsAutoScalingGroupDeploymentInfo.class);
+    w.put("api.SshInstanceDeploymentInfo", SshInstanceDeploymentInfo.class);
     w.put("api.AwsCodeDeployDeploymentInfo", AwsCodeDeployDeploymentInfo.class);
     w.put("api.AwsCodeDeployRequestElement", AwsCodeDeployRequestElement.class);
     w.put("api.AwsLambdaContextElement", AwsLambdaContextElement.class);

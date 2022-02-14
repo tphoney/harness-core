@@ -183,6 +183,7 @@ public class InstanceHelperTest extends WingsBaseTest {
   @InjectMocks @Inject private AzureInstanceHandler azureInstanceHandler;
   @InjectMocks @Inject private SpotinstAmiInstanceHandler spotinstAmiInstanceHandler;
   @InjectMocks @Inject private AwsLambdaInstanceHandler awsLambdaInstanceHandler;
+  @InjectMocks @Inject private PdcInstanceHandler pdcInstanceHandler;
   @InjectMocks @Inject private CustomDeploymentInstanceHandler customDeploymentInstanceHandler;
   @InjectMocks @Inject private AzureVMSSInstanceHandler azureVMSSInstanceHandler;
   @InjectMocks @Inject private AzureWebAppInstanceHandler azureWebAppInstanceHandler;
@@ -971,8 +972,8 @@ public class InstanceHelperTest extends WingsBaseTest {
   public void testManualSyncSuccess() throws Exception {
     InstanceHandlerFactory instanceHandlerFactory = spy(new InstanceHandlerFactory(containerInstanceHandler,
         awsInstanceHandler, awsAmiInstanceHandler, awsCodeDeployInstanceHandler, pcfInstanceHandler,
-        azureInstanceHandler, spotinstAmiInstanceHandler, awsLambdaInstanceHandler, customDeploymentInstanceHandler,
-        azureVMSSInstanceHandler, azureWebAppInstanceHandler));
+        azureInstanceHandler, spotinstAmiInstanceHandler, awsLambdaInstanceHandler, pdcInstanceHandler,
+        customDeploymentInstanceHandler, azureVMSSInstanceHandler, azureWebAppInstanceHandler));
     FieldUtils.writeField(instanceHelper, "instanceHandlerFactory", instanceHandlerFactory, true);
 
     doReturn(new InstanceHandler() {
@@ -1033,8 +1034,8 @@ public class InstanceHelperTest extends WingsBaseTest {
   public void testManualSyncFailure() throws Exception {
     InstanceHandlerFactory instanceHandlerFactory = spy(new InstanceHandlerFactory(containerInstanceHandler,
         awsInstanceHandler, awsAmiInstanceHandler, awsCodeDeployInstanceHandler, pcfInstanceHandler,
-        azureInstanceHandler, spotinstAmiInstanceHandler, awsLambdaInstanceHandler, customDeploymentInstanceHandler,
-        azureVMSSInstanceHandler, azureWebAppInstanceHandler));
+        azureInstanceHandler, spotinstAmiInstanceHandler, awsLambdaInstanceHandler, pdcInstanceHandler,
+        customDeploymentInstanceHandler, azureVMSSInstanceHandler, azureWebAppInstanceHandler));
     FieldUtils.writeField(instanceHelper, "instanceHandlerFactory", instanceHandlerFactory, true);
 
     doReturn(new InstanceHandler() {

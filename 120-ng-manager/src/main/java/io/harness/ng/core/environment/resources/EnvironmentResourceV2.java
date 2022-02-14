@@ -37,7 +37,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageResponse;
-import io.harness.ng.core.Helper;
+import io.harness.ng.core.OrgAndProjectValidationHelper;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
@@ -125,7 +125,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 public class EnvironmentResourceV2 {
   private final EnvironmentService environmentService;
   private final AccessControlClient accessControlClient;
-  private final Helper helper;
+  private final OrgAndProjectValidationHelper orgAndProjectValidationHelper;
 
   public static final String ENVIRONMENT_PARAM_MESSAGE = "Environment Identifier for the entity";
 
@@ -181,7 +181,7 @@ public class EnvironmentResourceV2 {
           "Type for an environment cannot be empty. Possible values: " + Arrays.toString(EnvironmentType.values()));
     }
     Environment environmentEntity = EnvironmentMapper.toEnvironmentEntity(accountId, environmentRequestDTO);
-    helper.checkThatTheOrganizationAndProjectExists(environmentEntity.getOrgIdentifier(),
+    orgAndProjectValidationHelper.checkThatTheOrganizationAndProjectExists(environmentEntity.getOrgIdentifier(),
         environmentEntity.getProjectIdentifier(), environmentEntity.getAccountId());
     Environment createdEnvironment = environmentService.create(environmentEntity);
     return ResponseDTO.newResponse(
@@ -260,7 +260,7 @@ public class EnvironmentResourceV2 {
 
     Environment requestEnvironment = EnvironmentMapper.toEnvironmentEntity(accountId, environmentRequestDTO);
     requestEnvironment.setVersion(isNumeric(ifMatch) ? parseLong(ifMatch) : null);
-    helper.checkThatTheOrganizationAndProjectExists(requestEnvironment.getOrgIdentifier(),
+    orgAndProjectValidationHelper.checkThatTheOrganizationAndProjectExists(requestEnvironment.getOrgIdentifier(),
         requestEnvironment.getProjectIdentifier(), requestEnvironment.getAccountId());
     Environment upsertedEnvironment = environmentService.upsert(requestEnvironment);
     return ResponseDTO.newResponse(

@@ -23,7 +23,7 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
 @OwnedBy(HarnessTeam.PIPELINE)
-public class Helper {
+public class OrgAndProjectValidationHelper {
   private final ProjectService projectService;
   private final OrganizationService organizationService;
 

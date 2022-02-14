@@ -36,16 +36,12 @@ import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.steps.StepSpecTypeConstants;
 import io.harness.steps.policy.PolicyStepConstants;
-import io.harness.steps.policy.PolicyStepInfo;
 import io.harness.steps.policy.PolicyStepSpecParameters;
 import io.harness.steps.policy.custom.CustomPolicyStepSpec;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
@@ -121,9 +117,8 @@ public class PolicyStep implements SyncExecutable<StepElementParameters> {
     String projectIdentifier = AmbianceUtils.getProjectIdentifier(ambiance);
     OpaEvaluationResponseHolder opaEvaluationResponseHolder;
     try {
-      String entityString = getEntityString(accountId, orgIdentifier, projectIdentifier, "asdsad");
       opaEvaluationResponseHolder = SafeHttpCall.executeWithExceptions(opaServiceClient.evaluateWithCredentialsByID(
-          accountId, orgIdentifier, projectIdentifier, policySets, entityString, payload));
+          accountId, orgIdentifier, projectIdentifier, policySets, payload));
     } catch (Exception ex) {
       log.error("Exception while evaluating OPA rules", ex);
       FailureData failureData = FailureData.newBuilder()
@@ -157,13 +152,5 @@ public class PolicyStep implements SyncExecutable<StepElementParameters> {
   @Override
   public Class<StepElementParameters> getStepParametersClass() {
     return StepElementParameters.class;
-  }
-
-  private String getEntityString(String accountId, String orgIdentifier, String projectIdentifier,
-      String pipelineIdentifier) throws UnsupportedEncodingException {
-    String entityStringRaw =
-        String.format("accountIdentifier:%s/orgIdentifier:%s/projectIdentifier:%s/pipelineIdentifier:%s", accountId,
-            orgIdentifier, projectIdentifier, pipelineIdentifier);
-    return URLEncoder.encode(entityStringRaw, StandardCharsets.UTF_8.toString());
   }
 }

@@ -30,8 +30,10 @@ public class PolicyStepOutcomeMapper {
 
   private PolicySetOutcome toPolicySetOutcome(OpaPolicySetEvaluationResponse policySetDetails) {
     List<OpaPolicyEvaluationResponse> policyDetails = policySetDetails.getDetails();
-    List<PolicyOutcome> policyOutcomes =
-        policyDetails.stream().map(PolicyStepOutcomeMapper::toPolicyOutcome).collect(Collectors.toList());
+    Map<String, PolicyOutcome> policyOutcomes =
+        policyDetails.stream()
+            .map(PolicyStepOutcomeMapper::toPolicyOutcome)
+            .collect(Collectors.toMap(PolicyOutcome::getIdentifier, Function.identity()));
     return PolicySetOutcome.builder()
         .status(policySetDetails.getStatus())
         .identifier(policySetDetails.getIdentifier())

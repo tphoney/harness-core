@@ -4,7 +4,7 @@ import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotations.dev.OwnedBy;
 
-import java.util.List;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,5 +15,5 @@ public class PolicySetOutcome {
   String status;
   String identifier;
   String name;
-  List<PolicyOutcome> policyDetails;
+  Map<String, PolicyOutcome> policyDetails;
 }

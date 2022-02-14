@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ng.core.environment.environments;
+package io.harness.ng.core;
 
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
@@ -23,12 +23,11 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
 @OwnedBy(HarnessTeam.PIPELINE)
-public class EnvironmentEntityManagementServiceImpl implements EnvironmentEntityManagementService {
+public class Helper {
   private final ProjectService projectService;
   private final OrganizationService organizationService;
 
-  @Override
-  public void checkThatTheOrganizationAndProjectExists(
+  public boolean checkThatTheOrganizationAndProjectExists(
       String orgIdentifier, String projectIdentifier, String accountIdentifier) {
     if (isNotEmpty(orgIdentifier)) {
       final Optional<Organization> organization = organizationService.get(accountIdentifier, orgIdentifier);
@@ -43,5 +42,6 @@ public class EnvironmentEntityManagementServiceImpl implements EnvironmentEntity
         throw new NotFoundException(String.format("project [%s] not found.", projectIdentifier));
       }
     }
+    return true;
   }
 }

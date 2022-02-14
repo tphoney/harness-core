@@ -130,8 +130,6 @@ import io.harness.ng.core.entityactivity.event.EntityActivityCrudEventMessageLis
 import io.harness.ng.core.entitysetupusage.EntitySetupUsageModule;
 import io.harness.ng.core.entitysetupusage.event.SetupUsageChangeEventMessageListener;
 import io.harness.ng.core.entitysetupusage.event.SetupUsageChangeEventMessageProcessor;
-import io.harness.ng.core.environment.environments.EnvironmentEntityManagementService;
-import io.harness.ng.core.environment.environments.EnvironmentEntityManagementServiceImpl;
 import io.harness.ng.core.event.AccountSetupListener;
 import io.harness.ng.core.event.ConnectorEntityCRUDStreamListener;
 import io.harness.ng.core.event.MessageListener;
@@ -672,7 +670,6 @@ public class NextGenModule extends AbstractModule {
     bind(FeedbackService.class).to(FeedbackServiceImpl.class);
     bind(PollingService.class).to(PollingServiceImpl.class);
     bind(PollingPerpetualTaskService.class).to(PollingPerpetualTaskServiceImpl.class);
-    bind(EnvironmentEntityManagementService.class).to(EnvironmentEntityManagementServiceImpl.class);
     bind(ScheduledExecutorService.class)
         .annotatedWith(Names.named("ngTelemetryPublisherExecutor"))
         .toInstance(new ScheduledThreadPoolExecutor(1,

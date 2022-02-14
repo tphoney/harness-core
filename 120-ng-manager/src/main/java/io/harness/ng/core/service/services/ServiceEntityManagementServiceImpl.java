@@ -49,23 +49,4 @@ public class ServiceEntityManagementServiceImpl implements ServiceEntityManageme
     return serviceEntityService.delete(
         accountId, orgIdentifier, projectIdentifier, serviceIdentifier, isNumeric(ifMatch) ? parseLong(ifMatch) : null);
   }
-
-  @Override
-  public boolean checkThatTheOrganizationAndProjectExists(
-      String orgIdentifier, String projectIdentifier, String accountIdentifier) {
-    if (isNotEmpty(orgIdentifier)) {
-      final Optional<Organization> organization = organizationService.get(accountIdentifier, orgIdentifier);
-      if (!organization.isPresent()) {
-        throw new NotFoundException(String.format("org [%s] not found.", orgIdentifier));
-      }
-    }
-
-    if (isNotEmpty(orgIdentifier) && isNotEmpty(projectIdentifier)) {
-      final Optional<Project> project = projectService.get(accountIdentifier, orgIdentifier, projectIdentifier);
-      if (!project.isPresent()) {
-        throw new NotFoundException(String.format("project [%s] not found.", projectIdentifier));
-      }
-    }
-    return true;
-  }
 }

@@ -87,19 +87,6 @@ public class ServiceEntityManagementServiceTest extends CategoryTest {
     verify(serviceEntityService).delete(accountIdentifier, orgIdentifier, projectIdentifier, identifier, null);
   }
 
-  @Test
-  @Owner(developers = SHIVAM)
-  @Category(UnitTests.class)
-  public void verifyOrgProjectExist() {
-    when(organizationService.get(accountIdentifier, orgIdentifier))
-        .thenReturn(Optional.of(Organization.builder().build()));
-    when(projectService.get(accountIdentifier, orgIdentifier, projectIdentifier))
-        .thenReturn(Optional.of(Project.builder().build()));
-    boolean check = serviceEntityManagementService.checkThatTheOrganizationAndProjectExists(
-        orgIdentifier, projectIdentifier, accountIdentifier);
-    assertThat(check).isEqualTo(true);
-  }
-
   private InstanceDTO getInstance() {
     return InstanceDTO.builder()
         .instanceKey(identifier)

@@ -37,6 +37,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageResponse;
+import io.harness.ng.core.Helper;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
@@ -45,7 +46,6 @@ import io.harness.ng.core.environment.beans.Environment.EnvironmentKeys;
 import io.harness.ng.core.environment.beans.EnvironmentType;
 import io.harness.ng.core.environment.dto.EnvironmentRequestDTO;
 import io.harness.ng.core.environment.dto.EnvironmentResponse;
-import io.harness.ng.core.environment.environments.EnvironmentEntityManagementService;
 import io.harness.ng.core.environment.mappers.EnvironmentMapper;
 import io.harness.ng.core.environment.services.EnvironmentService;
 import io.harness.ng.core.utils.CoreCriteriaUtils;
@@ -125,7 +125,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 public class EnvironmentResourceV2 {
   private final EnvironmentService environmentService;
   private final AccessControlClient accessControlClient;
-  private final EnvironmentEntityManagementService environmentEntityManagementService;
+  private final Helper helper;
 
   public static final String ENVIRONMENT_PARAM_MESSAGE = "Environment Identifier for the entity";
 
@@ -181,7 +181,7 @@ public class EnvironmentResourceV2 {
           "Type for an environment cannot be empty. Possible values: " + Arrays.toString(EnvironmentType.values()));
     }
     Environment environmentEntity = EnvironmentMapper.toEnvironmentEntity(accountId, environmentRequestDTO);
-    environmentEntityManagementService.checkThatTheOrganizationAndProjectExists(environmentEntity.getOrgIdentifier(),
+    helper.checkThatTheOrganizationAndProjectExists(environmentEntity.getOrgIdentifier(),
         environmentEntity.getProjectIdentifier(), environmentEntity.getAccountId());
     Environment createdEnvironment = environmentService.create(environmentEntity);
     return ResponseDTO.newResponse(
@@ -260,7 +260,7 @@ public class EnvironmentResourceV2 {
 
     Environment requestEnvironment = EnvironmentMapper.toEnvironmentEntity(accountId, environmentRequestDTO);
     requestEnvironment.setVersion(isNumeric(ifMatch) ? parseLong(ifMatch) : null);
-    environmentEntityManagementService.checkThatTheOrganizationAndProjectExists(requestEnvironment.getOrgIdentifier(),
+    helper.checkThatTheOrganizationAndProjectExists(requestEnvironment.getOrgIdentifier(),
         requestEnvironment.getProjectIdentifier(), requestEnvironment.getAccountId());
     Environment upsertedEnvironment = environmentService.upsert(requestEnvironment);
     return ResponseDTO.newResponse(

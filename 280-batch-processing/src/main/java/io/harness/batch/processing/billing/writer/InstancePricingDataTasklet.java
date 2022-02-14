@@ -120,7 +120,14 @@ public class InstancePricingDataTasklet implements Tasklet {
         // update awsInstances
         pricingDataByResourceId.forEach(
             (String resourceId, Pricing pricing) -> awsInstances.get(resourceId).forEach(
-                (InstanceData instanceData) -> instanceDataDao.updateInstancePricingData(instanceData, pricing))
+                (InstanceData instanceData) -> {
+                  log.info("Updating instance: {}, pricing: {}", instanceData, pricing);
+                  try {
+                    instanceDataDao.updateInstancePricingData(instanceData, pricing);
+                  } catch (Exception e) {
+                    log.error("Error updating in mongo", e);
+                  }
+                })
         );
         leftOverInstances.removeAll(pricingDataByResourceId.keySet());
         Set<InstanceFamilyAndRegion> instanceFamilyAndRegions = new HashSet<>();
@@ -150,7 +157,13 @@ public class InstancePricingDataTasklet implements Tasklet {
                   instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY),
                   instanceData.getMetaData().get(InstanceMetaDataConstants.REGION));
               if (pricingDataByInstanceFamilyAndRegion.containsKey(instanceFamilyAndRegion)) {
-                instanceDataDao.updateInstancePricingData(instanceData, pricingDataByInstanceFamilyAndRegion.get(instanceFamilyAndRegion));
+                Pricing pricing = pricingDataByInstanceFamilyAndRegion.get(instanceFamilyAndRegion);
+                log.info("Updating instance: {}, pricing: {}", instanceData, pricing);
+                try {
+                  instanceDataDao.updateInstancePricingData(instanceData, pricing);
+                } catch (Exception e) {
+                  log.error("Error updating in mongo", e);
+                }
               }
             })
         );
@@ -181,7 +194,13 @@ public class InstancePricingDataTasklet implements Tasklet {
             String instanceFamily = instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY);
             if (pricingDataByInstanceFamily.containsKey(instanceFamily) &&
                 !pricingDataByInstanceFamilyAndRegion.containsKey(instanceFamilyAndRegion)) {
-              instanceDataDao.updateInstancePricingData(instanceData, pricingDataByInstanceFamily.get(instanceFamily));
+              Pricing pricing = pricingDataByInstanceFamily.get(instanceFamily);
+              log.info("Updating instance: {}, pricing: {}", instanceData, pricing);
+              try {
+                instanceDataDao.updateInstancePricingData(instanceData, pricing);
+              } catch (Exception e) {
+                log.error("Error updating in mongo", e);
+              }
             }
           });
         });
@@ -195,19 +214,42 @@ public class InstancePricingDataTasklet implements Tasklet {
             Pricing pricing = getPublicPricing(awsInstances.get(resourceId).get(0));
             if (pricing == null) continue;
             if (!resourceId.equals("")) {
-              awsInstances.get(resourceId).forEach((InstanceData instanceData) ->
-                  instanceDataDao.updateInstancePricingData(instanceData, pricing));
+              Pricing finalPricing = pricing;
+              awsInstances.get(resourceId).forEach((InstanceData instanceData) -> {
+                log.info("Updating instance: {}, pricing: {}", instanceData, finalPricing);
+                try {
+                  instanceDataDao.updateInstancePricingData(instanceData, finalPricing);
+                } catch (Exception e) {
+                  log.error("Error updating in mongo", e);
+                }
+              });
             } else {
-              instanceDataDao.updateInstancePricingData(awsInstances.get(resourceId).get(0), pricing);
+              InstanceData instanceData = awsInstances.get(resourceId).get(0);
+              log.info("Updating instance: {}, pricing: {}", instanceData, pricing);
+              try {
+                instanceDataDao.updateInstancePricingData(instanceData, pricing);
+              } catch (Exception e) {
+                log.error("Error updating in mongo", e);
+              }
+              // TODO: remove the upper part
+//              instanceDataDao.updateInstancePricingData(awsInstances.get(resourceId).get(0), pricing);
               for (int i = 1; i < awsInstances.get(resourceId).size(); i++) {
-                InstanceData instanceData = awsInstances.get(resourceId).get(i);
+                instanceData = awsInstances.get(resourceId).get(i);
                 InstanceFamilyAndRegion instanceFamilyAndRegion = new InstanceFamilyAndRegion(
                     instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY),
                     instanceData.getMetaData().get(InstanceMetaDataConstants.REGION));
                 String instanceFamily = instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY);
                 if (!pricingDataByInstanceFamilyAndRegion.containsKey(instanceFamilyAndRegion) &&
                     !pricingDataByInstanceFamily.containsKey(instanceFamily)) {
-                  instanceDataDao.updateInstancePricingData(instanceData, getPublicPricing(instanceData));
+                  pricing = getPublicPricing(instanceData);
+                  log.info("Updating instance: {}, pricing: {}", instanceData, pricing);
+                  try {
+                    instanceDataDao.updateInstancePricingData(instanceData, pricing);
+                  } catch (Exception e) {
+                    log.error("Error updating in mongo", e);
+                  }
+                  // TODO: remove the upper part
+//                  instanceDataDao.updateInstancePricingData(instanceData, getPublicPricing(instanceData));
                 }
               }
             }
@@ -238,7 +280,14 @@ public class InstancePricingDataTasklet implements Tasklet {
         // update awsInstances
         pricingDataByResourceId.forEach(
             (String resourceId, Pricing pricing) -> azureInstances.get(resourceId).forEach(
-                (InstanceData instanceData) -> instanceDataDao.updateInstancePricingData(instanceData, pricing))
+                (InstanceData instanceData) -> {
+                  log.info("Updating instance: {}, pricing: {}", instanceData, pricing);
+                  try {
+                    instanceDataDao.updateInstancePricingData(instanceData, pricing);
+                  } catch (Exception e) {
+                    log.error("Error updating in mongo", e);
+                  }
+                })
         );
         leftOverInstances.removeAll(pricingDataByResourceId.keySet());
 
@@ -249,13 +298,35 @@ public class InstancePricingDataTasklet implements Tasklet {
             if (pricing == null) continue;
             ;
             if (!resourceId.equals("")) {
-              azureInstances.get(resourceId).forEach((InstanceData instanceData) ->
-                  instanceDataDao.updateInstancePricingData(instanceData, pricing));
+              Pricing finalPricing = pricing;
+              azureInstances.get(resourceId).forEach((InstanceData instanceData) -> {
+                log.info("Updating instance: {}, pricing: {}", instanceData, finalPricing);
+                try {
+                  instanceDataDao.updateInstancePricingData(instanceData, finalPricing);
+                } catch (Exception e) {
+                  log.error("Error updating in mongo", e);
+                }
+              });
             } else {
-              instanceDataDao.updateInstancePricingData(azureInstances.get(resourceId).get(0), pricing);
+              InstanceData instanceData = azureInstances.get(resourceId).get(0);
+              log.info("Updating instance: {}, pricing: {}", instanceData, pricing);
+              try {
+                instanceDataDao.updateInstancePricingData(instanceData, pricing);
+              } catch (Exception e) {
+                log.error("Error updating in mongo", e);
+              }
+//              instanceDataDao.updateInstancePricingData(azureInstances.get(resourceId).get(0), pricing);
               for (int i = 1; i < azureInstances.get(resourceId).size(); i++) {
-                InstanceData instanceData = azureInstances.get(resourceId).get(i);
-                instanceDataDao.updateInstancePricingData(instanceData, getPublicPricing(instanceData));
+                instanceData = azureInstances.get(resourceId).get(i);
+                pricing = getPublicPricing(instanceData);
+                  log.info("Updating instance: {}, pricing: {}", instanceData, pricing);
+                  try {
+                    instanceDataDao.updateInstancePricingData(instanceData, pricing);
+                  } catch (Exception e) {
+                    log.error("Error updating in mongo", e);
+                  }
+                  // TODO: Remove the upper part
+//                instanceDataDao.updateInstancePricingData(instanceData, getPublicPricing(instanceData));
               }
             }
           } catch (IOException e) {

@@ -19,6 +19,7 @@ import software.wings.beans.GitConfig;
 import software.wings.beans.InfrastructureProvisioner;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TerraformInfrastructureProvisioner;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.dl.WingsPersistence;
 import software.wings.service.intfc.InfrastructureProvisionerService;
 import software.wings.service.intfc.SettingsService;
@@ -65,11 +66,12 @@ public class TerraformIsTemplatizedMigration implements Migration {
           }
         } catch (Exception ex) {
           log.error("Error while updating isTemplatized field for provisioner: {}",
-              provisioner != null ? provisioner.getName() : "", ex);
+              provisioner != null ? provisioner.getName() : "", ExceptionMessageSanitizer.sanitizeException(ex));
         }
       }
     } catch (Exception ex) {
-      log.error("Failed - Populating templatized field in TerraformInfrastructureProvisioner", ex);
+      log.error("Failed - Populating templatized field in TerraformInfrastructureProvisioner",
+          ExceptionMessageSanitizer.sanitizeException(ex));
     }
   }
 }

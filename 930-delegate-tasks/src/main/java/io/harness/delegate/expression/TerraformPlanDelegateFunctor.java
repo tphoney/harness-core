@@ -19,6 +19,8 @@ import io.harness.exception.FunctorException;
 import io.harness.expression.ExpressionFunctor;
 import io.harness.terraform.expression.TerraformPlanExpressionInterface;
 
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
+
 import com.google.inject.Inject;
 import java.io.File;
 import java.io.IOException;
@@ -88,7 +90,8 @@ public class TerraformPlanDelegateFunctor implements ExpressionFunctor {
 
       return TerraformPlan.builder().jsonPlanFilePath(outputFilePath.toString()).build();
     } catch (IOException e) {
-      throw new FunctorException(format("Failed to download file '%s'", fileId), e);
+      throw new FunctorException(
+          format("Failed to download file '%s'", fileId), ExceptionMessageSanitizer.sanitizeException(e));
     }
   }
 }

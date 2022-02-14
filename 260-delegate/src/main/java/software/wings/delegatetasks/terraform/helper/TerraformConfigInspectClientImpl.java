@@ -22,6 +22,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnexpectedException;
 import io.harness.exception.WingsException;
 
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.delegatetasks.terraform.TerraformConfigInspectClient;
 
 import com.google.inject.Singleton;
@@ -56,7 +57,8 @@ public class TerraformConfigInspectClientImpl implements TerraformConfigInspectC
       parsingError.ifPresent(error -> { throw new InvalidRequestException(error, WingsException.USER); });
       return fields;
     } catch (JSONException err) {
-      throw new InvalidRequestException(err.getMessage(), WingsException.USER);
+      throw new InvalidRequestException(
+          ExceptionMessageSanitizer.sanitizeException(err).getMessage(), WingsException.USER);
     }
   }
 

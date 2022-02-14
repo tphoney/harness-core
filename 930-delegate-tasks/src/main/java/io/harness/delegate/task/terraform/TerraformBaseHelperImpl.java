@@ -448,7 +448,8 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
           return firstCommit.toString().split(" ")[1];
         }
       } catch (IOException | GitAPIException e) {
-        log.error("Failed to extract the commit id from the cloned repo.", e);
+        log.error(
+            "Failed to extract the commit id from the cloned repo.", ExceptionMessageSanitizer.sanitizeException(e));
       }
     }
     return null;
@@ -537,7 +538,8 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
       TerraformHelperUtils.ensureLocalCleanup(scriptDirectory);
       downloadTfStateFile(workspace, accountId, currentStateFileId, scriptDirectory);
     } catch (IOException ioException) {
-      log.warn("Exception Occurred when cleaning Terraform local directory", ioException);
+      log.warn("Exception Occurred when cleaning Terraform local directory",
+          ExceptionMessageSanitizer.sanitizeException(ioException));
     }
     return scriptDirectory;
   }
@@ -602,11 +604,13 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
     try {
       gitClient.ensureRepoLocallyClonedAndUpdated(gitBaseRequestForConfigFile);
     } catch (RuntimeException ex) {
-      String msg = isNotEmpty(ex.getMessage()) ? format("Failed performing git operation. Reason: %s", ex.getMessage())
-                                               : "Failed performing git operation.";
+      Exception sanitizeException = ExceptionMessageSanitizer.sanitizeException(ex);
+      String msg = isNotEmpty(sanitizeException.getMessage())
+          ? format("Failed performing git operation. Reason: %s", sanitizeException.getMessage())
+          : "Failed performing git operation.";
       logCallback.saveExecutionLog(msg, ERROR, CommandExecutionStatus.RUNNING);
-      throw new JGitRuntimeException(msg, ex.getCause(), DEFAULT_ERROR_CODE, gitBaseRequestForConfigFile.getCommitId(),
-          gitBaseRequestForConfigFile.getBranch());
+      throw new JGitRuntimeException(msg, sanitizeException.getCause(), DEFAULT_ERROR_CODE,
+          gitBaseRequestForConfigFile.getCommitId(), gitBaseRequestForConfigFile.getBranch());
     }
   }
 

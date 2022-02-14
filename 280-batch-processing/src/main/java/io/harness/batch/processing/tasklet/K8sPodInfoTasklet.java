@@ -110,7 +110,7 @@ public class K8sPodInfoTasklet implements Tasklet {
                                                 .filter(instanceInfo -> null != instanceInfo.getAccountId())
                                                 .collect(Collectors.toList());
 
-      instanceDataBulkWriteService.updateList(
+      instanceDataBulkWriteService.upsertInstanceInfo(
           instanceInfoList.stream()
               .filter(x
                   -> getValueForKeyFromInstanceMetaData(InstanceMetaDataConstants.INSTANCE_CATEGORY, x.getMetaData())

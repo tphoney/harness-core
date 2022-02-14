@@ -420,6 +420,30 @@ func TestListCommitsBitbucket(t *testing.T) {
 		Type: &pb.ListCommitsRequest_Branch{
 			Branch: "master",
 		},
+		Provider: &pb.Provider{
+			Hook: &pb.Provider_BitbucketCloud{
+				BitbucketCloud: &pb.BitbucketCloudProvider{
+					Username:    "mohitgargharness",
+					AppPassword: "d58ztzmwJksybeatmP4e",
+				},
+			},
+		},
+	}
+
+	log, _ := logs.GetObservedLogger(zap.InfoLevel)
+	got, err := ListCommits(context.Background(), in, log.Sugar())
+
+	assert.Nil(t, err, "no errors")
+	assert.NotNil(t, len(got.CommitIds), "has commit")
+}
+
+
+func TestListCommitsBitbucketOnFile(t *testing.T) {
+	in := &pb.ListCommitsRequest{
+		Slug: "mohitgargharness/test-repository",
+		Type: &pb.ListCommitsRequest_Branch{
+			Branch: "master",
+		},
 		FilePath: "DO-NOT-DELETE.txt",
 		Provider: &pb.Provider{
 			Hook: &pb.Provider_BitbucketCloud{
@@ -437,6 +461,7 @@ func TestListCommitsBitbucket(t *testing.T) {
 	assert.Nil(t, err, "no errors")
 	assert.NotNil(t, len(got.CommitIds), "has commit")
 }
+
 
 func TestListCommitsBitbucketOnNewFileThatDoesntExist(t *testing.T) {
 	in := &pb.ListCommitsRequest{

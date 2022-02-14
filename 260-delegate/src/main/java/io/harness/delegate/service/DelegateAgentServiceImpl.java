@@ -102,6 +102,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.DelegateHeartbeatResponse;
 import io.harness.beans.DelegateTaskEventsResponse;
+import io.harness.cf.openapi.ApiException;
 import io.harness.concurrent.HTimeLimiter;
 import io.harness.configuration.DeployMode;
 import io.harness.data.structure.NullSafeImmutableMap;
@@ -265,6 +266,7 @@ import org.zeroturnaround.exec.StartedProcess;
 import org.zeroturnaround.exec.stream.LogOutputStream;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 @Singleton
@@ -2282,47 +2284,34 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         }
       }
 
-      Response<ResponseBody> response = null;
-      try {
-        response = HTimeLimiter.callInterruptible21(taskResponseTimeLimiter, Duration.ofSeconds(30), () -> {
-          Response<ResponseBody> resp = null;
-          int retries = 5;
-          for (int attempt = 0; attempt < retries; attempt++) {
-            resp = delegateAgentManagerClient.sendTaskStatus(delegateId, taskId, accountId, taskResponse).execute();
-            if (resp != null && resp.code() >= 200 && resp.code() <= 299) {
-              log.info("Task {} response sent to manager", taskId);
-              return resp;
-            } else {
-              log.warn("Failed to send response for task {}: {}. {}", taskId, resp == null ? "null" : resp.code(),
-                  retries > 0 ? "Retrying." : "Giving up.");
-              sleep(ofSeconds(FibonacciBackOff.getFibonacciElement(attempt)));
-            }
-          }
-          return resp;
-        });
-      } catch (UncheckedTimeoutException ex) {
-        log.warn("Timed out sending response to manager", ex);
-      } catch (Exception e) {
-        log.error("Unable to send response to manager", e);
-      } finally {
-        if (sanitizer != null) {
-          delegateLogService.unregisterLogSanitizer(sanitizer);
+      delegateAgentManagerClient.sendTaskStatus(delegateId, taskId, accountId, taskResponse).enqueue(new Callback() {
+        @Override
+        public void onFailure(Call call, Throwable e) {
+          log.warn("Failed to send response for task {}: {}", taskId, e.getMessage());
+          taskExecutor.submit(() -> performCleanUp(false));
+        }
+        @Override
+        public void onResponse(Call call, Response response) {
+          taskExecutor.submit(() -> performCleanUp(true));
         }
 
-        if (delegateExpressionEvaluator != null) {
-          delegateExpressionEvaluator.cleanup();
+        private void performCleanUp(boolean isSuccess) {
+          if (isSuccess) {
+            log.info("Task {} response sent to manager", taskId);
+          }
+          if (sanitizer != null) {
+            delegateLogService.unregisterLogSanitizer(sanitizer);
+          }
+
+          if (delegateExpressionEvaluator != null) {
+            delegateExpressionEvaluator.cleanup();
+          }
+          currentlyExecutingTasks.remove(taskId);
+          if (currentlyExecutingFutures.remove(taskId) != null) {
+            log.debug("Removed from executing futures on post execution");
+          }
         }
-        currentlyExecutingTasks.remove(taskId);
-        if (currentlyExecutingFutures.remove(taskId) != null) {
-          log.debug("Removed from executing futures on post execution");
-        }
-        if (response != null && response.errorBody() != null && !response.isSuccessful()) {
-          response.errorBody().close();
-        }
-        if (response != null && response.body() != null && response.isSuccessful()) {
-          response.body().close();
-        }
-      }
+      });
     };
   }
 

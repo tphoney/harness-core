@@ -13,7 +13,10 @@ import static io.harness.rbac.CDNGRbacPermissions.SERVICE_UPDATE_PERMISSION;
 import static io.harness.rule.OwnerRule.SHIVAM;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
 import io.harness.accesscontrol.clients.AccessControlClient;
@@ -21,10 +24,8 @@ import io.harness.accesscontrol.clients.Resource;
 import io.harness.accesscontrol.clients.ResourceScope;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.service.dto.ServiceRequestDTO;
 import io.harness.ng.core.service.entity.ServiceEntity;
-import io.harness.ng.core.service.mappers.ServiceElementMapper;
 import io.harness.ng.core.service.resources.ServiceResourceV2;
 import io.harness.pms.rbac.NGResourceType;
 import io.harness.rule.Owner;
@@ -39,7 +40,6 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 @OwnedBy(CDC)

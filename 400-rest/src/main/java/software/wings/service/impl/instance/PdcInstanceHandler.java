@@ -34,8 +34,11 @@ import software.wings.beans.HostReachabilityResponse;
 import software.wings.beans.HostValidationTaskParameters;
 import software.wings.beans.InfrastructureMapping;
 import software.wings.beans.PhysicalInfrastructureMapping;
+import software.wings.beans.PhysicalInfrastructureMappingBase;
+import software.wings.beans.PhysicalInfrastructureMappingWinRm;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
+import software.wings.beans.WinRmConnectionAttributes;
 import software.wings.beans.WorkflowExecution;
 import software.wings.beans.artifact.Artifact;
 import software.wings.beans.infrastructure.instance.Instance;
@@ -74,19 +77,33 @@ public class PdcInstanceHandler extends InstanceHandler implements InstanceSyncB
   @Override
   public void syncInstances(String appId, String infraMappingId, InstanceSyncFlow instanceSyncFlow) {
     InfrastructureMapping infrastructureMapping = infraMappingService.get(appId, infraMappingId);
-    if (!(infrastructureMapping instanceof PhysicalInfrastructureMapping)) {
-      String msg = "Incompatible infra mapping type. Expecting PhysicalInfrastructureMapping, found:"
+    if (!(infrastructureMapping instanceof PhysicalInfrastructureMappingBase)) {
+      String msg = "Incompatible infra mapping type. Expecting PhysicalInfrastructureMappingBase, found:"
           + infrastructureMapping.getInfraMappingType();
       log.error(msg);
       throw WingsException.builder().message(msg).build();
     }
-    PhysicalInfrastructureMapping physicalInfrastructureMapping = (PhysicalInfrastructureMapping) infrastructureMapping;
-    List<String> hosts = physicalInfrastructureMapping.getHostNames();
-    SettingAttribute settingAttribute = settingsService.get(infrastructureMapping.getHostConnectionAttrs());
-    HostConnectionAttributes hostConnectionAttributes = (HostConnectionAttributes) settingAttribute.getValue();
-    List<EncryptedDataDetail> encryptedDataDetails =
-        secretManager.getEncryptionDetails(hostConnectionAttributes, null, null);
 
+    SettingAttribute settingAttribute;
+    List<EncryptedDataDetail> encryptedDataDetails;
+
+    if (infrastructureMapping instanceof PhysicalInfrastructureMapping) {
+      PhysicalInfrastructureMapping mapping = (PhysicalInfrastructureMapping) infrastructureMapping;
+      settingAttribute = settingsService.get(mapping.getHostConnectionAttrs());
+      HostConnectionAttributes value = (HostConnectionAttributes) settingAttribute.getValue();
+      encryptedDataDetails = secretManager.getEncryptionDetails(value, null, null);
+    } else if (infrastructureMapping instanceof PhysicalInfrastructureMappingWinRm) {
+      PhysicalInfrastructureMappingWinRm mapping = (PhysicalInfrastructureMappingWinRm) infrastructureMapping;
+      settingAttribute = settingsService.get(mapping.getWinRmConnectionAttributes());
+      WinRmConnectionAttributes value = (WinRmConnectionAttributes) settingAttribute.getValue();
+      encryptedDataDetails = secretManager.getEncryptionDetails(value, null, null);
+    } else {
+      String msg = "Unexpected infra mapping type found:" + infrastructureMapping.getInfraMappingType();
+      log.error(msg);
+      throw WingsException.builder().message(msg).build();
+    }
+
+    List<String> hosts = ((PhysicalInfrastructureMappingBase) infrastructureMapping).getHostNames();
     boolean canUpdateDb = canUpdateInstancesInDb(instanceSyncFlow, infrastructureMapping.getAccountId());
     List<Instance> instances = getInstances(appId, infraMappingId);
 

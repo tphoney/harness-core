@@ -50,12 +50,6 @@ public class PdcInstanceSyncPerpetualTaskCreator extends AbstractInstanceSyncPer
   }
 
   private List<String> create(PdcPTClientParams clientParams, InfrastructureMapping infraMapping) {
-    Map<String, String> clientParamMap = ImmutableMap.of(InstanceSyncConstants.INFRASTRUCTURE_MAPPING_ID,
-        clientParams.getInframappingId(), InstanceSyncConstants.HARNESS_APPLICATION_ID, clientParams.getAppId());
-
-    PerpetualTaskClientContext clientContext =
-        PerpetualTaskClientContext.builder().clientParams(clientParamMap).build();
-
     PerpetualTaskSchedule schedule = PerpetualTaskSchedule.newBuilder()
                                          .setInterval(Durations.fromMinutes(InstanceSyncConstants.INTERVAL_MINUTES))
                                          .setTimeout(Durations.fromSeconds(InstanceSyncConstants.TIMEOUT_SECONDS))
@@ -64,7 +58,14 @@ public class PdcInstanceSyncPerpetualTaskCreator extends AbstractInstanceSyncPer
     List<String> hosts = ((PhysicalInfrastructureMappingBase) infraMapping).getHostNames();
     List<String> tasks = new ArrayList<>();
     hosts.forEach(h -> {
-      String task = perpetualTaskService.createTask(PerpetualTaskType.SSH_INSTANCE_SYNC, infraMapping.getAccountId(),
+      Map<String, String> clientParamMap =
+          ImmutableMap.of(InstanceSyncConstants.INFRASTRUCTURE_MAPPING_ID, clientParams.getInframappingId(),
+              InstanceSyncConstants.HARNESS_APPLICATION_ID, clientParams.getAppId(), InstanceSyncConstants.HOSTNAME, h);
+
+      PerpetualTaskClientContext clientContext =
+          PerpetualTaskClientContext.builder().clientParams(clientParamMap).build();
+
+      String task = perpetualTaskService.createTask(PerpetualTaskType.PDC_INSTANCE_SYNC, infraMapping.getAccountId(),
           clientContext, schedule, false, getTaskDescription(infraMapping));
       tasks.add(task);
     });

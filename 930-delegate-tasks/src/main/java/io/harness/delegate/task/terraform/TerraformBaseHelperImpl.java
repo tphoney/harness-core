@@ -587,7 +587,8 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
       TerraformHelperUtils.ensureLocalCleanup(scriptDirectory);
       downloadTfStateFile(workspace, accountId, currentStateFileId, scriptDirectory);
     } catch (IOException ioException) {
-      log.warn("Exception Occurred when cleaning Terraform local directory", ioException);
+      log.warn("Exception Occurred when cleaning Terraform local directory",
+          ExceptionMessageSanitizer.sanitizeException(ioException));
     }
     return scriptDirectory;
   }

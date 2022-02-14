@@ -345,12 +345,18 @@ public class InstancePricingDataTasklet implements Tasklet {
   }
 
   private Pricing getPublicPricing(InstanceData instanceData) throws IOException {
-    String cloudProvider = instanceData.getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER);
-    String k8sService = (cloudProvider.equalsIgnoreCase(CloudProvider.AWS.getCloudProviderName())) ?
-        CloudProvider.AWS.getK8sService() : CloudProvider.AZURE.getK8sService();
+    String cloudProviderStr = instanceData.getMetaData().get(InstanceMetaDataConstants.CLOUD_PROVIDER);
+    CloudProvider cloudProvider;
+    try {
+      cloudProvider = CloudProvider.valueOf(cloudProviderStr);
+    } catch (IllegalArgumentException e) {
+      log.info("Invalid Cloud Provider: {}", cloudProviderStr, e);
+      return null;
+    }
+    String k8sService = cloudProvider.getK8sService();
     log.info("Getting public Pricing for cloudProvider: {}, service: {}, region: {}, instanceFamily: {}", cloudProvider, k8sService, instanceData.getMetaData().get(InstanceMetaDataConstants.REGION), instanceData.getMetaData().get(InstanceMetaDataConstants.INSTANCE_FAMILY));
     Call<ProductDetailResponse> pricingInfoCall = banzaiPricingClient.getPricingInfo(
-        cloudProvider,
+        cloudProvider.getCloudProviderName(),
         instanceData.getMetaData().get(InstanceMetaDataConstants.CLUSTER_TYPE).equals(ClusterType.K8S.name()) ?
             k8sService : COMPUTE_SERVICE,
         instanceData.getMetaData().get(InstanceMetaDataConstants.REGION),

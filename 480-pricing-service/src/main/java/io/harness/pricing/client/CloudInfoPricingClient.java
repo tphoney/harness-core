@@ -21,7 +21,7 @@ public interface CloudInfoPricingClient {
   Call<ProductDetailsResponse> getPricingInfo(
       @Path("providers") String providers, @Path("services") String services, @Path("regions") String regions);
 
-  @GET("api/v1/providers/{providers}/services/{services}/regions/{regions}/products/{product}")
+  @GET("api/v1/providers/{providers}/services/{services}/regions/{regions}/product/{product}")
   Call<ProductDetailResponse> getPricingInfo(@Path("providers") String providers, @Path("services") String services,
       @Path("regions") String regions, @Path("product") String product);
 }

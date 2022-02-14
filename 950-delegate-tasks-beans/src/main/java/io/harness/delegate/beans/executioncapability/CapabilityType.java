@@ -20,6 +20,7 @@ import io.harness.annotations.dev.TargetModule;
 @OwnedBy(HarnessTeam.DEL)
 public enum CapabilityType {
   SOCKET,
+  SOCKET_BULK_OR,
   ALWAYS_TRUE,
   PROCESS_EXECUTOR,
   AWS_REGION,

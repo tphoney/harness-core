@@ -9,13 +9,22 @@ package io.harness.terraform;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.provision.TerraformConstants.TERRAFORM_PLAN_FILE_OUTPUT_NAME;
+import static io.harness.rule.OwnerRule.ABOSII;
+import static io.harness.rule.OwnerRule.BOGDAN;
 import static io.harness.rule.OwnerRule.ROHITKARELIA;
 import static io.harness.terraform.TerraformConstants.DEFAULT_TERRAFORM_COMMAND_TIMEOUT;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.AdditionalMatchers.and;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyMapOf;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 
 import io.harness.CategoryTest;
@@ -27,8 +36,11 @@ import io.harness.exception.runtime.TerraformCliRuntimeException;
 import io.harness.filesystem.FileIo;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
+import io.harness.logging.LogLevel;
+import io.harness.logging.NoopExecutionCallback;
 import io.harness.logging.PlanJsonLogOutputStream;
 import io.harness.rule.Owner;
+import io.harness.terraform.beans.TerraformVersion;
 import io.harness.terraform.request.TerraformApplyCommandRequest;
 import io.harness.terraform.request.TerraformDestroyCommandRequest;
 import io.harness.terraform.request.TerraformInitCommandRequest;
@@ -43,9 +55,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.zeroturnaround.exec.stream.LogOutputStream;
 
 @OwnedBy(CDP)
 public class TerraformClientImplTest extends CategoryTest {
@@ -91,14 +105,26 @@ public class TerraformClientImplTest extends CategoryTest {
   @Test
   @Owner(developers = ROHITKARELIA)
   @Category(UnitTests.class)
-  public void testDestroyCommand() throws InterruptedException, IOException, TimeoutException {
+  public void testDestroyCommandUsingTf012() throws InterruptedException, IOException, TimeoutException {
+    testDestroyCommandUsingVersion(TerraformVersion.create(0, 12, 3));
+  }
+
+  @Test
+  @Owner(developers = ABOSII)
+  @Category(UnitTests.class)
+  public void testDestroyCommandUsingTf015() throws InterruptedException, IOException, TimeoutException {
+    testDestroyCommandUsingVersion(TerraformVersion.create(0, 15, 3));
+  }
+
+  private void testDestroyCommandUsingVersion(TerraformVersion version)
+      throws InterruptedException, IOException, TimeoutException {
     CliResponse cliResponse = getCliResponse();
     TerraformDestroyCommandRequest terraformDestroyCommandRequest =
         TerraformDestroyCommandRequest.builder()
             .targets(Arrays.asList("10.0.10.1", "10.0.10.2"))
             .varFilePaths(Arrays.asList("variableParams"))
             .build();
-    String command = format("terraform destroy -force %s %s",
+    String command = format("terraform destroy %s %s %s", TerraformHelperUtils.getAutoApproveArgument(version),
         TerraformHelperUtils.generateCommandFlagsString(terraformDestroyCommandRequest.getTargets(), "-target="),
         TerraformHelperUtils.generateCommandFlagsString(
             terraformDestroyCommandRequest.getVarFilePaths(), "-var-file="));
@@ -106,6 +132,11 @@ public class TerraformClientImplTest extends CategoryTest {
         .when(cliHelper)
         .executeCliCommand(eq(command), eq(DEFAULT_TERRAFORM_COMMAND_TIMEOUT), eq(Collections.emptyMap()),
             eq(SCRIPT_FILES_DIRECTORY), eq(logCallback), eq(command), any());
+
+    doReturn(getCliResponseTfVersion(version.getMajor(), version.getMinor(), version.getPatch()))
+        .when(cliHelper)
+        .executeCliCommand(eq("terraform version"), eq(DEFAULT_TERRAFORM_COMMAND_TIMEOUT), eq(Collections.emptyMap()),
+            eq(SCRIPT_FILES_DIRECTORY), any(LogCallback.class));
 
     CliResponse actualResponse = terraformClientImpl.destroy(terraformDestroyCommandRequest,
         DEFAULT_TERRAFORM_COMMAND_TIMEOUT, Collections.emptyMap(), SCRIPT_FILES_DIRECTORY, logCallback);
@@ -234,6 +265,11 @@ public class TerraformClientImplTest extends CategoryTest {
   @Owner(developers = ROHITKARELIA)
   @Category(UnitTests.class)
   public void testshowCommand() throws InterruptedException, IOException, TimeoutException {
+    doReturn(getCliResponseTfVersion(1, 0, 1))
+        .when(cliHelper)
+        .executeCliCommand(and(contains("terraform"), contains("version")), anyLong(),
+            anyMapOf(String.class, String.class), anyString(), any(LogCallback.class));
+
     CliResponse cliResponse = getCliResponse();
     String plan = "planName";
     String command = "terraform show -json " + plan;
@@ -246,6 +282,86 @@ public class TerraformClientImplTest extends CategoryTest {
         Collections.emptyMap(), SCRIPT_FILES_DIRECTORY, logCallback, planJsonLogOutputStream);
 
     assertThat(actualResponse).isEqualTo(cliResponse);
+  }
+
+  @Test
+  @Owner(developers = BOGDAN)
+  @Category(UnitTests.class)
+  public void testshowCommand_skipIfVersionLessThan_0_12_0()
+      throws InterruptedException, IOException, TimeoutException {
+    doReturn(getCliResponseTfVersion(0, 11, 15))
+        .when(cliHelper)
+        .executeCliCommand(and(contains("terraform"), contains("version")), anyLong(),
+            anyMapOf(String.class, String.class), anyString(), any(LogCallback.class));
+
+    CliResponse cliResponse = terraformClientImpl.show("planName", DEFAULT_TERRAFORM_COMMAND_TIMEOUT,
+        Collections.emptyMap(), SCRIPT_FILES_DIRECTORY, logCallback, planJsonLogOutputStream);
+
+    verify(cliHelper, never())
+        .executeCliCommand(and(contains("terraform show"), contains("-json")), anyLong(),
+            anyMapOf(String.class, String.class), anyString(), any(LogCallback.class), anyString(),
+            any(LogOutputStream.class));
+    assertThat(cliResponse.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.SKIPPED);
+  }
+
+  @Test
+  @Owner(developers = BOGDAN)
+  @Category(UnitTests.class)
+  public void testshowCommand_skipIfVersionLessThan_0_12_0_logMessage()
+      throws InterruptedException, IOException, TimeoutException {
+    doReturn(getCliResponseTfVersion(0, 11, 15))
+        .when(cliHelper)
+        .executeCliCommand(and(contains("terraform"), contains("version")), anyLong(),
+            anyMapOf(String.class, String.class), anyString(), any(LogCallback.class));
+
+    terraformClientImpl.show("planName", DEFAULT_TERRAFORM_COMMAND_TIMEOUT, Collections.emptyMap(),
+        SCRIPT_FILES_DIRECTORY, logCallback, planJsonLogOutputStream);
+
+    verify(logCallback)
+        .saveExecutionLog(
+            contains(
+                "Terraform plan json export not supported in v0.11.15. Minimum version is v0.12.x. Skipping command."),
+            eq(LogLevel.WARN), eq(CommandExecutionStatus.SKIPPED));
+  }
+
+  @Test
+  @Owner(developers = BOGDAN)
+  @Category(UnitTests.class)
+  public void testshowCommand_executeIfVersionEquals_0_12_0()
+      throws InterruptedException, IOException, TimeoutException {
+    doReturn(getCliResponseTfVersion(0, 12, 0))
+        .when(cliHelper)
+        .executeCliCommand(and(contains("terraform"), contains("version")), anyLong(),
+            anyMapOf(String.class, String.class), anyString(), any(LogCallback.class));
+
+    terraformClientImpl.show("planName", DEFAULT_TERRAFORM_COMMAND_TIMEOUT, Collections.emptyMap(),
+        SCRIPT_FILES_DIRECTORY, logCallback, planJsonLogOutputStream);
+
+    ArgumentCaptor<String> commandCaptor = ArgumentCaptor.forClass(String.class);
+    verify(cliHelper).executeCliCommand(commandCaptor.capture(), anyLong(), anyMapOf(String.class, String.class),
+        anyString(), any(LogCallback.class), anyString(), any(LogOutputStream.class));
+    assertThat(commandCaptor.getAllValues().get(0)).contains("terraform show");
+    assertThat(commandCaptor.getAllValues().get(0)).contains("-json");
+  }
+
+  @Test
+  @Owner(developers = BOGDAN)
+  @Category(UnitTests.class)
+  public void testshowCommand_executeIfVersionBiggerThan_0_12_0()
+      throws InterruptedException, IOException, TimeoutException {
+    doReturn(getCliResponseTfVersion(1, 0, 1))
+        .when(cliHelper)
+        .executeCliCommand(and(contains("terraform"), contains("version")), anyLong(),
+            anyMapOf(String.class, String.class), anyString(), any(LogCallback.class));
+
+    terraformClientImpl.show("planName", DEFAULT_TERRAFORM_COMMAND_TIMEOUT, Collections.emptyMap(),
+        SCRIPT_FILES_DIRECTORY, logCallback, planJsonLogOutputStream);
+
+    ArgumentCaptor<String> commandCaptor = ArgumentCaptor.forClass(String.class);
+    verify(cliHelper).executeCliCommand(commandCaptor.capture(), anyLong(), anyMapOf(String.class, String.class),
+        anyString(), any(LogCallback.class), anyString(), any(LogOutputStream.class));
+    assertThat(commandCaptor.getAllValues().get(0)).contains("terraform show");
+    assertThat(commandCaptor.getAllValues().get(0)).contains("-json");
   }
 
   @Test
@@ -281,5 +397,48 @@ public class TerraformClientImplTest extends CategoryTest {
 
     CliResponse actualResponse = terraformClientImpl.output(
         tfOutputsFile, DEFAULT_TERRAFORM_COMMAND_TIMEOUT, Collections.emptyMap(), SCRIPT_FILES_DIRECTORY, logCallback);
+  }
+
+  @Test
+  @Owner(developers = ABOSII)
+  @Category(UnitTests.class)
+  public void testVersionSuccess() throws InterruptedException, TimeoutException, IOException {
+    doReturn(getCliResponseTfVersion(0, 13, 4))
+        .when(cliHelper)
+        .executeCliCommand(eq("terraform version"), eq(DEFAULT_TERRAFORM_COMMAND_TIMEOUT), eq(Collections.emptyMap()),
+            eq(SCRIPT_FILES_DIRECTORY), any(NoopExecutionCallback.class));
+
+    TerraformVersion version = terraformClientImpl.version(DEFAULT_TERRAFORM_COMMAND_TIMEOUT, SCRIPT_FILES_DIRECTORY);
+
+    assertThat(version.getMajor()).isEqualTo(0);
+    assertThat(version.getMinor()).isEqualTo(13);
+    assertThat(version.getPatch()).isEqualTo(4);
+  }
+
+  @Test
+  @Owner(developers = ABOSII)
+  @Category(UnitTests.class)
+  public void testVersionFailed() throws InterruptedException, TimeoutException, IOException {
+    doReturn(CliResponse.builder().commandExecutionStatus(CommandExecutionStatus.FAILURE).build())
+        .when(cliHelper)
+        .executeCliCommand(eq("terraform version"), eq(DEFAULT_TERRAFORM_COMMAND_TIMEOUT), eq(Collections.emptyMap()),
+            eq(SCRIPT_FILES_DIRECTORY), any(NoopExecutionCallback.class));
+
+    TerraformVersion version = terraformClientImpl.version(DEFAULT_TERRAFORM_COMMAND_TIMEOUT, SCRIPT_FILES_DIRECTORY);
+
+    assertThat(version.getMajor()).isNull();
+    assertThat(version.getMinor()).isNull();
+    assertThat(version.getPatch()).isNull();
+  }
+
+  private CliResponse getCliResponseTfVersion(int major, int minor, int patch) {
+    return CliResponse.builder()
+        .commandExecutionStatus(CommandExecutionStatus.SUCCESS)
+        .output(format("Terraform v%d.%d.%d\n"
+                + "\n"
+                + "Your version of Terraform is out of date! The latest version\n"
+                + "is 1.1.4. You can update by downloading from www.terraform.io",
+            major, minor, patch))
+        .build();
   }
 }

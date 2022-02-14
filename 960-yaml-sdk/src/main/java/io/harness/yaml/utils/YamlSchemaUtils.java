@@ -320,6 +320,7 @@ public class YamlSchemaUtils {
     JsonNode stepsNode = executionWrapperConfigProperties.get(STEP_NODE);
 
     for (YamlSchemaWithDetails schemaWithDetails : stepSchemaWithDetails) {
+      // TODO: Use YamlSchemaMetadata.getNamespace instead of moduleType.
       String nameSpaceString = getNamespaceFromModuleType(schemaWithDetails.getModuleType());
       if (validateSchemaMetadata(schemaWithDetails, moduleType, enabledFeatureFlags, featureRestrictionsMap)) {
         oneOfNode.add(JsonNodeUtils.upsertPropertyInObjectNode(new ObjectNode(JsonNodeFactory.instance), REF_NODE,
@@ -338,12 +339,19 @@ public class YamlSchemaUtils {
     JsonNode stepsNode = stageElementWrapperConfigProperties.get(STAGE_NODE);
 
     for (YamlSchemaWithDetails schemaWithDetails : stepSchemaWithDetails) {
-      String nameSpaceString = getNamespaceFromModuleType(schemaWithDetails.getModuleType());
+      String nameSpaceString = getNamespace(schemaWithDetails.getYamlSchemaMetadata().getNamespace());
       oneOfNode.add(JsonNodeUtils.upsertPropertyInObjectNode(new ObjectNode(JsonNodeFactory.instance), REF_NODE,
           "#/definitions/" + nameSpaceString + schemaWithDetails.getSchemaClassName()));
     }
 
     ((ObjectNode) stepsNode).set(ONE_OF_NODE, oneOfNode);
+  }
+
+  private String getNamespace(String namespace) {
+    if (namespace.isEmpty() || namespace.endsWith("/")) {
+      return namespace;
+    }
+    return namespace + "/";
   }
 
   protected boolean validateSchemaMetadata(YamlSchemaWithDetails yamlSchemaWithDetails, ModuleType moduleType,

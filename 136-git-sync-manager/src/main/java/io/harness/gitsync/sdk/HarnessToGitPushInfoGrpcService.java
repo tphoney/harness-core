@@ -30,9 +30,11 @@ import io.harness.logging.MdcContextSetter;
 import io.harness.manage.GlobalContextManager;
 import io.harness.ng.core.entitydetail.EntityDetailProtoToRestMapper;
 import io.harness.security.PrincipalContextData;
+import io.harness.security.SourcePrincipalContextData;
 import io.harness.security.dto.UserPrincipal;
 import io.harness.serializer.KryoSerializer;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.grpc.stub.StreamObserver;
@@ -84,14 +86,18 @@ public class HarnessToGitPushInfoGrpcService extends HarnessToGitPushInfoService
     responseObserver.onCompleted();
   }
 
-  private void setPrincipal(FileInfo request) {
+  @VisibleForTesting
+  void setPrincipal(FileInfo request) {
     final io.harness.security.dto.Principal principal = getPrincipal(request);
     GlobalContextManager.upsertGlobalContextRecord(PrincipalContextData.builder().principal(principal).build());
+    GlobalContextManager.upsertGlobalContextRecord(SourcePrincipalContextData.builder().principal(principal).build());
   }
 
   private io.harness.security.dto.Principal getPrincipal(FileInfo request) {
     final Principal principalFromProto = request.getPrincipal();
-    if (principalFromProto.hasUserPrincipal()) {
+    if (request.getIsFullSyncFlow()) {
+      return harnessToGitHelperService.getFullSyncUser(request);
+    } else if (principalFromProto.hasUserPrincipal()) {
       final io.harness.gitsync.UserPrincipal userPrincipal = principalFromProto.getUserPrincipal();
       return new UserPrincipal(userPrincipal.getUserId().getValue(), userPrincipal.getEmail().getValue(),
           userPrincipal.getUserName().getValue(), request.getAccountId());

@@ -100,7 +100,7 @@ BAZEL_MODULES="\
   //870-orchestration:module \
   //874-orchestration-delay:module \
   //876-orchestration-beans:module \
-  //878-pipeline-service-utilities:module \
+  //878-ng-common-utilities:module \
   //879-pms-sdk:module \
   //882-pms-sdk-core:module \
   //884-pms-commons:module \
@@ -116,7 +116,6 @@ BAZEL_MODULES="\
   //920-delegate-service-beans/src/main/proto:all \
   //920-delegate-service-beans:module \
   //920-ng-signup:module \
-  //925-access-control-service:module \
   //925-enforcement-service:module \
   //930-delegate-tasks:module \
   //930-ng-core-clients:module \
@@ -126,7 +125,6 @@ BAZEL_MODULES="\
   //940-feature-flag:module \
   //940-ng-audit-service:module \
   //940-notification-client:module \
-  //940-notification-client:module \
   //940-notification-client:module_deploy.jar \
   //940-resource-group-beans:module \
   //940-secret-manager-client:module \
@@ -135,12 +133,9 @@ BAZEL_MODULES="\
   //945-account-mgmt:module \
   //945-license-usage-sdk:module \
   //945-ng-audit-client:module \
-  //946-access-control-aggregator:module \
-  //947-access-control-core:module \
   //947-scim-core:module \
   //948-access-control-admin-client:module \
   //948-access-control-sdk:module \
-  //949-access-control-commons:module \
   //950-command-library-common:module \
   //959-common-entities:module \
   //950-delegate-tasks-beans/src/main/proto:all \
@@ -195,9 +190,13 @@ BAZEL_MODULES="\
   //970-telemetry-beans:module \
   //970-watcher-beans:module \
   //980-commons:module \
-  //980-recaster:module \
+  //979-recaster:module \
   //990-commons-test:module \
   //999-annotations:module \
+  //access-control/service:module \
+  //access-control/libraries/80-aggregator:module \
+  //access-control/libraries/90-core:module \
+  //access-control/contracts:module \
   //product/ci/engine/proto:all \
   //product/ci/scm/proto:all \
 "
@@ -320,7 +319,7 @@ build_bazel_module 870-cg-orchestration
 build_bazel_module 870-orchestration
 build_bazel_module 874-orchestration-delay
 build_bazel_module 876-orchestration-beans
-build_bazel_module 878-pipeline-service-utilities
+build_bazel_module 878-ng-common-utilities
 build_bazel_module 879-pms-sdk
 build_bazel_module 882-pms-sdk-core
 build_bazel_module 884-pms-commons
@@ -340,12 +339,9 @@ build_bazel_module 940-ng-audit-service
 build_bazel_module 940-resource-group-beans
 build_bazel_module 940-secret-manager-client
 build_bazel_module 945-ng-audit-client
-build_bazel_module 946-access-control-aggregator
-build_bazel_module 947-access-control-core
 build_bazel_module 947-scim-core
 build_bazel_module 948-access-control-admin-client
 build_bazel_module 948-access-control-sdk
-build_bazel_module 949-access-control-commons
 build_bazel_module 950-command-library-common
 build_bazel_module 959-common-entities
 build_bazel_module 950-delegate-tasks-beans
@@ -385,7 +381,7 @@ build_bazel_module 970-grpc
 build_bazel_module 970-ng-commons
 build_bazel_module 970-rbac-core
 build_bazel_module 970-watcher-beans
-build_bazel_module 980-recaster
+build_bazel_module 979-recaster
 build_bazel_module 980-commons
 build_bazel_module 990-commons-test
 build_bazel_module 999-annotations

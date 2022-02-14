@@ -25,6 +25,9 @@ public class NotAllowedExceptionMapper implements ExceptionMapper<NotAllowedExce
     log.error("Exception occurred: " + ExceptionUtils.getMessage(exception), exception);
     FailureDTO failureDTO =
         FailureDTO.toBody(Status.FAILURE, ErrorCode.RESOURCE_NOT_FOUND_EXCEPTION, exception.getMessage(), null);
-    return Response.status(Response.Status.BAD_REQUEST).entity(failureDTO).type(MediaType.APPLICATION_JSON).build();
+    return Response.status(Response.Status.METHOD_NOT_ALLOWED)
+        .entity(failureDTO)
+        .type(MediaType.APPLICATION_JSON)
+        .build();
   }
 }

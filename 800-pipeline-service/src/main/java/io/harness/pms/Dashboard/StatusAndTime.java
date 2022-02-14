@@ -10,7 +10,6 @@ package io.harness.pms.Dashboard;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
-import java.util.List;
 import lombok.Builder;
 import lombok.Value;
 
@@ -18,6 +17,11 @@ import lombok.Value;
 @Value
 @Builder
 public class StatusAndTime {
-  private List<Long> time;
-  private List<String> status;
+  private String status;
+  private long startts;
+
+  public StatusAndTime(String status, long startts) {
+    this.status = status;
+    this.startts = startts;
+  }
 }

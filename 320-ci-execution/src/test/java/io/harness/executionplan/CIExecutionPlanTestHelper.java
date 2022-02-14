@@ -808,7 +808,10 @@ public class CIExecutionPlanTestHelper {
   public Infrastructure getInfrastructure() {
     return K8sDirectInfraYaml.builder()
         .type(Infrastructure.Type.KUBERNETES_DIRECT)
-        .spec(K8sDirectInfraYamlSpec.builder().connectorRef("testKubernetesCluster").namespace("testNamespace").build())
+        .spec(K8sDirectInfraYamlSpec.builder()
+                  .connectorRef(createValueField("testKubernetesCluster"))
+                  .namespace(createValueField("testNamespace"))
+                  .build())
         .build();
   }
 
@@ -1017,7 +1020,7 @@ public class CIExecutionPlanTestHelper {
                            .identifier("gitConnector")
                            .connectorType(ConnectorType.GIT)
                            .connectorConfig(GitConfigDTO.builder()
-                                                .url("https://github.com/wings-software/portal.git")
+                                                .url("https://github.com/harness/harness-core.git")
                                                 .branchName("master")
                                                 .gitAuthType(GitAuthType.HTTP)
                                                 .gitConnectionType(GitConnectionType.REPO)
@@ -1043,7 +1046,7 @@ public class CIExecutionPlanTestHelper {
                 .connectorType(ConnectorType.GITHUB)
                 .connectorConfig(
                     GithubConnectorDTO.builder()
-                        .url("https://github.com/wings-software/portal.git")
+                        .url("https://github.com/harness/harness-core.git")
                         .connectionType(GitConnectionType.REPO)
                         .authentication(
                             GithubAuthenticationDTO.builder()

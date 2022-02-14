@@ -27,6 +27,7 @@ import io.harness.gitsync.common.beans.BranchSyncStatus;
 import io.harness.gitsync.common.beans.GitBranch;
 import io.harness.gitsync.common.beans.InfoForGitPush;
 import io.harness.gitsync.common.helper.GitSyncGrpcClientUtils;
+import io.harness.gitsync.common.helper.UserPrincipalMapper;
 import io.harness.gitsync.common.service.GitBranchService;
 import io.harness.gitsync.common.service.ScmOrchestratorService;
 import io.harness.gitsync.common.service.YamlGitConfigService;
@@ -34,6 +35,7 @@ import io.harness.gitsync.core.beans.GitFullSyncEntityInfo;
 import io.harness.gitsync.core.fullsync.entity.GitFullSyncJob;
 import io.harness.gitsync.core.fullsync.service.FullSyncJobService;
 import io.harness.ng.core.entitydetail.EntityDetailProtoToRestMapper;
+import io.harness.security.dto.UserPrincipal;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -66,6 +68,7 @@ public class FullSyncAccumulatorServiceImpl implements FullSyncAccumulatorServic
     final ScopeDetails scopeDetails = getScopeDetails(gitConfigScope, messageId);
     YamlGitConfigDTO yamlGitConfigDTO = yamlGitConfigService.get(gitConfigScope.getProjectId().getValue(),
         gitConfigScope.getOrgId().getValue(), gitConfigScope.getAccountId(), gitConfigScope.getIdentifier());
+    boolean isEntitiesAvailableForFullSync = false;
     for (Map.Entry<Microservice, FullSyncServiceBlockingStub> fullSyncStubEntry :
         fullSyncServiceBlockingStubMap.entrySet()) {
       FullSyncServiceBlockingStub fullSyncServiceBlockingStub = fullSyncStubEntry.getValue();
@@ -81,11 +84,19 @@ public class FullSyncAccumulatorServiceImpl implements FullSyncAccumulatorServic
         continue;
       }
       int fileNumber = entitiesForFullSync == null ? 0 : emptyIfNull(entitiesForFullSync.getFileChangesList()).size();
+      if (fileNumber > 0) {
+        isEntitiesAvailableForFullSync = true;
+      }
       log.info("Saving {} files for the microservice {}", fileNumber, microservice);
       emptyIfNull(entitiesForFullSync.getFileChangesList()).forEach(entityForFullSync -> {
         saveFullSyncEntityInfo(gitConfigScope, messageId, microservice, entityForFullSync,
             fullSyncEventRequest.getBranch(), fullSyncEventRequest.getRootFolder(), yamlGitConfigDTO);
       });
+    }
+
+    if (!isEntitiesAvailableForFullSync) {
+      log.info("No entities to perform full-sync for message id {}", messageId);
+      return;
     }
     if (fullSyncEventRequest.getIsNewBranch()) {
       createNewBranch(fullSyncEventRequest, yamlGitConfigDTO.getRepo());
@@ -102,6 +113,8 @@ public class FullSyncAccumulatorServiceImpl implements FullSyncAccumulatorServic
 
   private GitFullSyncJob saveTheFullSyncJob(FullSyncEventRequest fullSyncEventRequest, String messageId) {
     final EntityScopeInfo gitConfigScope = fullSyncEventRequest.getGitConfigScope();
+    final UserPrincipal userPrincipal =
+        UserPrincipalMapper.toRest(fullSyncEventRequest.getUserPrincipal(), gitConfigScope.getAccountId());
     GitFullSyncJob fullSyncJob = GitFullSyncJob.builder()
                                      .accountIdentifier(gitConfigScope.getAccountId())
                                      .orgIdentifier(getStringValueFromProtoString(gitConfigScope.getOrgId()))
@@ -114,6 +127,7 @@ public class FullSyncAccumulatorServiceImpl implements FullSyncAccumulatorServic
                                      .targetBranch(fullSyncEventRequest.getTargetBranch())
                                      .branch(fullSyncEventRequest.getBranch())
                                      .prTitle(fullSyncEventRequest.getPrTitle())
+                                     .triggeredBy(userPrincipal)
                                      .build();
     try {
       return fullSyncJobService.save(fullSyncJob);

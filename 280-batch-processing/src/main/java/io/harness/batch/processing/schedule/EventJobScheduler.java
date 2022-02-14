@@ -33,6 +33,7 @@ import io.harness.batch.processing.service.impl.InstanceDataServiceImpl;
 import io.harness.batch.processing.service.intfc.BillingDataPipelineHealthStatusService;
 import io.harness.batch.processing.shard.AccountShardService;
 import io.harness.batch.processing.tasklet.support.HarnessServiceInfoFetcher;
+import io.harness.batch.processing.tasklet.support.K8SWorkloadService;
 import io.harness.batch.processing.tasklet.support.K8sLabelServiceInfoFetcher;
 import io.harness.batch.processing.view.CEMetaDataRecordUpdateService;
 import io.harness.batch.processing.view.ViewCostUpdateService;
@@ -87,6 +88,7 @@ public class EventJobScheduler {
   @Autowired private CfClient cfClient;
   @Autowired private FeatureFlagService featureFlagService;
   @Autowired private ConnectorsHealthUpdateService connectorsHealthUpdateService;
+  @Autowired private K8SWorkloadService k8SWorkloadService;
 
   @PostConstruct
   public void orderJobs() {
@@ -300,6 +302,7 @@ public class EventJobScheduler {
     harnessServiceInfoFetcher.logCacheStats();
     instanceDataService.logCacheStats();
     k8sLabelServiceInfoFetcher.logCacheStats();
+    k8SWorkloadService.logCacheStats();
   }
 
   @Scheduled(cron = "0 0 6 * * ?")

@@ -24,7 +24,7 @@ import io.harness.rule.Owner;
 import io.harness.steps.common.NGExecutionStep;
 import io.harness.steps.common.NGSectionStepParameters;
 
-import com.google.common.base.Charsets;
+import com.google.api.client.util.Charsets;
 import com.google.common.io.Resources;
 import java.io.IOException;
 import java.net.URL;
@@ -77,31 +77,15 @@ public class ExecutionPmsPlanCreatorTest {
     ExecutionPmsPlanCreator executionPmsPlanCreator = new ExecutionPmsPlanCreator();
     LinkedHashMap<String, PlanCreationResponse> planForChildrenNodes =
         executionPmsPlanCreator.createPlanForChildrenNodes(context, executionElementConfig);
-    assertThat(planForChildrenNodes).hasSize(3);
+    assertThat(planForChildrenNodes).hasSize(1);
 
     assertThat(planForChildrenNodes.containsKey(stepsField.getNode().getUuid())).isTrue();
     PlanCreationResponse stepsResponse = planForChildrenNodes.get(stepsField.getNode().getUuid());
-    assertThat(stepsResponse.getDependencies()).isNull();
-    assertThat(stepsResponse.getNodes()).hasSize(1);
-    assertThat(stepsResponse.getNodes().containsKey(stepsField.getNode().getUuid())).isTrue();
-
-    assertThat(planForChildrenNodes.containsKey(stepGroupField.getNode().getUuid())).isTrue();
-    PlanCreationResponse stepGroupResponse = planForChildrenNodes.get(stepGroupField.getNode().getUuid());
-    assertThat(stepGroupResponse.getNodes()).hasSize(0);
-    assertThat(stepGroupResponse.getDependencies().getDependenciesMap()).hasSize(1);
-    assertThat(stepGroupResponse.getDependencies().getDependenciesMap().containsKey(stepGroupField.getNode().getUuid()))
+    assertThat(stepsResponse.getDependencies()).isNotNull();
+    assertThat(stepsResponse.getDependencies().getDependenciesMap().containsKey(stepsField.getNode().getUuid()))
         .isTrue();
-    assertThat(stepGroupResponse.getDependencies().getDependenciesMap().get(stepGroupField.getNode().getUuid()))
-        .isEqualTo("pipeline/stages/[0]/stage/spec/execution/steps/[0]/stepGroup");
-
-    assertThat(planForChildrenNodes.containsKey(parallelField.getNode().getUuid())).isTrue();
-    PlanCreationResponse parallelResponse = planForChildrenNodes.get(parallelField.getNode().getUuid());
-    assertThat(parallelResponse.getNodes()).hasSize(0);
-    assertThat(parallelResponse.getDependencies().getDependenciesMap()).hasSize(1);
-    assertThat(parallelResponse.getDependencies().getDependenciesMap().containsKey(parallelField.getNode().getUuid()))
-        .isTrue();
-    assertThat(parallelResponse.getDependencies().getDependenciesMap().get(parallelField.getNode().getUuid()))
-        .isEqualTo("pipeline/stages/[0]/stage/spec/execution/steps/[1]/parallel");
+    assertThat(stepsResponse.getDependencies().getDependenciesMap().get(stepsField.getNode().getUuid()))
+        .isEqualTo("pipeline/stages/[0]/stage/spec/execution/steps");
   }
 
   @Test

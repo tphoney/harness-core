@@ -19,9 +19,9 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.beans.ci.vm.CIVmExecuteStepTaskParams;
 import io.harness.delegate.beans.ci.vm.VmTaskExecutionResponse;
-import io.harness.delegate.beans.ci.vm.runner.ExecuteStepResponse;
 import io.harness.delegate.beans.ci.vm.steps.VmRunStep;
 import io.harness.delegate.task.citasks.vm.helper.HttpHelper;
+import io.harness.delegate.task.citasks.vm.helper.StepExecutionHelper;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.rule.Owner;
 
@@ -33,12 +33,12 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import retrofit2.Response;
 
 @Slf4j
 @OwnedBy(HarnessTeam.CI)
 public class CIVMExecuteStepTaskHandlerTest extends CategoryTest {
   @Mock private HttpHelper httpHelper;
+  @Mock private StepExecutionHelper stepExecutionHelper;
   @InjectMocks private io.harness.delegate.task.citasks.vm.CIVMExecuteStepTaskHandler CIVMExecuteStepTaskHandler;
 
   @Before
@@ -55,9 +55,8 @@ public class CIVMExecuteStepTaskHandlerTest extends CategoryTest {
                                            .stepRuntimeId("step")
                                            .stepInfo(VmRunStep.builder().build())
                                            .build();
-    Response<ExecuteStepResponse> executeStepResponse =
-        Response.success(ExecuteStepResponse.builder().error("").build());
-    when(httpHelper.executeStepWithRetries(any())).thenReturn(executeStepResponse);
+    when(stepExecutionHelper.callRunnerForStepExecution(any()))
+        .thenReturn(VmTaskExecutionResponse.builder().commandExecutionStatus(CommandExecutionStatus.SUCCESS).build());
     VmTaskExecutionResponse response = CIVMExecuteStepTaskHandler.executeTaskInternal(params, "");
     assertEquals(CommandExecutionStatus.SUCCESS, response.getCommandExecutionStatus());
   }
@@ -66,10 +65,17 @@ public class CIVMExecuteStepTaskHandlerTest extends CategoryTest {
   @Owner(developers = SHUBHAM)
   @Category(UnitTests.class)
   public void executeTaskInternalFailure() {
-    CIVmExecuteStepTaskParams params = CIVmExecuteStepTaskParams.builder().stageRuntimeId("stage").build();
-    Response<ExecuteStepResponse> executeStepResponse =
-        Response.success(ExecuteStepResponse.builder().error("exit code 1").build());
-    when(httpHelper.executeStepWithRetries(any())).thenReturn(executeStepResponse);
+    CIVmExecuteStepTaskParams params = CIVmExecuteStepTaskParams.builder()
+                                           .stageRuntimeId("stage")
+                                           .stepRuntimeId("test")
+                                           .stepInfo(VmRunStep.builder().build())
+                                           .build();
+    when(stepExecutionHelper.callRunnerForStepExecution(any()))
+        .thenReturn(VmTaskExecutionResponse.builder()
+                        .commandExecutionStatus(CommandExecutionStatus.FAILURE)
+                        .errorMessage("exit code 1")
+                        .build());
+
     VmTaskExecutionResponse response = CIVMExecuteStepTaskHandler.executeTaskInternal(params, "");
     assertEquals(CommandExecutionStatus.FAILURE, response.getCommandExecutionStatus());
   }

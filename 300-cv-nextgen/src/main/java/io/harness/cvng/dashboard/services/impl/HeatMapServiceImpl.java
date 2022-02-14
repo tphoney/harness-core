@@ -9,7 +9,6 @@ package io.harness.cvng.dashboard.services.impl;
 
 import static io.harness.cvng.core.utils.DateTimeUtils.roundDownTo5MinBoundary;
 import static io.harness.cvng.core.utils.DateTimeUtils.roundDownToMinBoundary;
-import static io.harness.cvng.dashboard.entities.HeatMap.HeatMapResolution.FIVE_MIN;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.persistence.HQuery.excludeAuthority;
 
@@ -22,6 +21,7 @@ import io.harness.cvng.core.beans.monitoredService.HistoricalTrend;
 import io.harness.cvng.core.beans.monitoredService.RiskData;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.entities.CVConfig;
+import io.harness.cvng.core.services.CVNextGenConstants;
 import io.harness.cvng.core.services.api.CVConfigService;
 import io.harness.cvng.core.utils.ServiceEnvKey;
 import io.harness.cvng.dashboard.beans.HeatMapDTO;
@@ -379,18 +379,10 @@ public class HeatMapServiceImpl implements HeatMapService {
   @Override
   public HistoricalTrend getOverAllHealthScore(ProjectParams projectParams, String serviceIdentifier,
       String environmentIdentifier, DurationDTO duration, Instant endTime) {
-    if (duration.equals(DurationDTO.FOUR_HOURS)) {
-      return getHealthScoreBars(projectParams, serviceIdentifier, environmentIdentifier, duration, endTime, FIVE_MIN);
-    } else {
-      return getHealthScoreBars(projectParams, serviceIdentifier, environmentIdentifier, duration, endTime);
-    }
-  }
-
-  private HistoricalTrend getHealthScoreBars(ProjectParams projectParams, String serviceIdentifier,
-      String environmentIdentifier, DurationDTO duration, Instant endTime) {
-    HistoricalTrend historicalTrend = getHealthScoreBars(
-        projectParams, serviceIdentifier, environmentIdentifier, duration, endTime, HeatMapResolution.THIRTY_MINUTES);
-    historicalTrend.reduceHealthScoreDataToXPoints((int) duration.getDuration().toHours() / 24);
+    HistoricalTrend historicalTrend = getHealthScoreBars(projectParams, serviceIdentifier, environmentIdentifier,
+        duration, endTime, HeatMapResolution.resolutionForDurationDTO(duration));
+    historicalTrend.reduceHealthScoreDataToXPoints(
+        historicalTrend.getHealthScores().size() / CVNextGenConstants.CVNG_TIMELINE_BUCKET_COUNT);
     return historicalTrend;
   }
 
@@ -402,8 +394,7 @@ public class HeatMapServiceImpl implements HeatMapService {
             resolutionToReadFrom.getResolution().toMinutes()));
     int totalSize = (int) duration.getDuration().toMinutes() / (int) resolutionToReadFrom.getResolution().toMinutes();
     HeatMapResolution heatMapResolution = resolutionToReadFrom;
-    Instant trendEndTime = getBoundaryOfResolution(endTime, heatMapResolution.getResolution())
-                               .plusMillis(heatMapResolution.getResolution().toMillis());
+    Instant trendEndTime = resolutionToReadFrom.getNextResolutionEndTime(endTime);
     Instant trendStartTime = trendEndTime.minus(duration.getDuration());
     HistoricalTrend historicalTrend =
         HistoricalTrend.builder().size(totalSize).trendStartTime(trendStartTime).trendEndTime(trendEndTime).build();

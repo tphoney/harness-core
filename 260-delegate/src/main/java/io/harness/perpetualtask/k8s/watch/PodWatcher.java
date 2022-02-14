@@ -113,8 +113,8 @@ public class PodWatcher implements ResourceEventHandler<V1Pod> {
                 -> {
               try {
                 return coreV1Api.listPodForAllNamespacesCall(null, null, null, null, null, null,
-                    callGeneratorParams.resourceVersion, callGeneratorParams.timeoutSeconds, callGeneratorParams.watch,
-                    null);
+                    callGeneratorParams.resourceVersion, null, callGeneratorParams.timeoutSeconds,
+                    callGeneratorParams.watch, null);
               } catch (ApiException e) {
                 log.error("Unknown exception occurred", e);
                 throw e;

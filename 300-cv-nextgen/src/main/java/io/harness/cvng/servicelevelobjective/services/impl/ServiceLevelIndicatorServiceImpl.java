@@ -213,15 +213,19 @@ public class ServiceLevelIndicatorServiceImpl implements ServiceLevelIndicatorSe
 
   @Override
   public List<ServiceLevelIndicatorDTO> get(ProjectParams projectParams, List<String> serviceLevelIndicators) {
-    List<ServiceLevelIndicator> serviceLevelIndicatorList =
-        hPersistence.createQuery(ServiceLevelIndicator.class)
-            .filter(ServiceLevelIndicatorKeys.accountId, projectParams.getAccountIdentifier())
-            .filter(ServiceLevelIndicatorKeys.orgIdentifier, projectParams.getOrgIdentifier())
-            .filter(ServiceLevelIndicatorKeys.projectIdentifier, projectParams.getProjectIdentifier())
-            .field(ServiceLevelIndicatorKeys.identifier)
-            .in(serviceLevelIndicators)
-            .asList();
+    List<ServiceLevelIndicator> serviceLevelIndicatorList = getEntities(projectParams, serviceLevelIndicators);
     return serviceLevelIndicatorList.stream().map(this::sliEntityToDTO).collect(Collectors.toList());
+  }
+
+  @Override
+  public List<ServiceLevelIndicator> getEntities(ProjectParams projectParams, List<String> serviceLevelIndicators) {
+    return hPersistence.createQuery(ServiceLevelIndicator.class)
+        .filter(ServiceLevelIndicatorKeys.accountId, projectParams.getAccountIdentifier())
+        .filter(ServiceLevelIndicatorKeys.orgIdentifier, projectParams.getOrgIdentifier())
+        .filter(ServiceLevelIndicatorKeys.projectIdentifier, projectParams.getProjectIdentifier())
+        .field(ServiceLevelIndicatorKeys.identifier)
+        .in(serviceLevelIndicators)
+        .asList();
   }
 
   @Override
@@ -295,9 +299,9 @@ public class ServiceLevelIndicatorServiceImpl implements ServiceLevelIndicatorSe
         hPersistence.createUpdateOperations(ServiceLevelIndicator.class);
     ServiceLevelIndicator updatableServiceLevelIndicator =
         convertDTOToEntity(projectParams, serviceLevelIndicatorDTO, monitoredServiceIndicator, healthSourceIndicator);
-    updatableEntity.setUpdateOperations(updateOperations, updatableServiceLevelIndicator);
     if (serviceLevelIndicator.shouldReAnalysis(updatableServiceLevelIndicator)) {
-      Instant startTime = timePeriod.getStartTime(ZoneOffset.UTC);
+      updatableEntity.setUpdateOperations(updateOperations, updatableServiceLevelIndicator);
+      Instant startTime = timePeriod.getStartTime(ZoneOffset.UTC).minus(INTERVAL_HOURS, ChronoUnit.HOURS);
       Instant endTime = DateTimeUtils.roundDownTo5MinBoundary(clock.instant());
       for (Instant intervalStartTime = startTime; intervalStartTime.isBefore(endTime);) {
         Instant intervalEndTime = intervalStartTime.plus(INTERVAL_HOURS, ChronoUnit.HOURS);
@@ -309,8 +313,8 @@ public class ServiceLevelIndicatorServiceImpl implements ServiceLevelIndicatorSe
             intervalStartTime, intervalEndTime);
         intervalStartTime = intervalEndTime;
       }
+      hPersistence.update(serviceLevelIndicator, updateOperations);
     }
-    hPersistence.update(serviceLevelIndicator, updateOperations);
   }
 
   private void saveServiceLevelIndicatorEntity(ProjectParams projectParams,

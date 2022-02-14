@@ -20,6 +20,7 @@ import io.harness.pms.serializer.kryo.PmsContractsKryoRegistrar;
 import io.harness.serializer.kryo.CVNGKryoRegistrar;
 import io.harness.serializer.morphia.CVNextGenMorphiaRegister;
 import io.harness.serializer.morphia.NotificationClientRegistrars;
+import io.harness.yaml.schema.beans.SchemaNamespaceConstants;
 import io.harness.yaml.schema.beans.YamlGroup;
 import io.harness.yaml.schema.beans.YamlSchemaMetadata;
 import io.harness.yaml.schema.beans.YamlSchemaRootClass;
@@ -80,6 +81,7 @@ public class CvNextGenRegistrars {
                    .availableAtAccountLevel(false)
                    .clazz(CVVerifyStepNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.CVNG)
                                            .modulesSupported(Collections.singletonList(ModuleType.CD))
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
                                            .build())

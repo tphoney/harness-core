@@ -30,7 +30,7 @@ import io.harness.cvng.client.VerificationManagerService;
 import io.harness.cvng.core.beans.change.ChangeSummaryDTO;
 import io.harness.cvng.core.beans.monitoredService.ChangeSourceDTO;
 import io.harness.cvng.core.beans.monitoredService.changeSourceSpec.KubernetesChangeSourceSpec;
-import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
+import io.harness.cvng.core.beans.params.MonitoredServiceParams;
 import io.harness.cvng.core.entities.changeSource.ChangeSource;
 import io.harness.cvng.core.entities.changeSource.ChangeSource.ChangeSourceKeys;
 import io.harness.cvng.core.entities.changeSource.KubernetesChangeSource;
@@ -62,20 +62,14 @@ public class ChangeSourceServiceImplTest extends CvNextGenTestBase {
   @Mock ChangeEventService changeEventService;
   BuilderFactory builderFactory;
 
-  ServiceEnvironmentParams environmentParams;
+  MonitoredServiceParams monitoredServiceParams;
 
   @Before
   public void setup() throws IllegalAccessException {
     FieldUtils.writeField(changeSourceService, "changeEventService", changeEventService, true);
 
     builderFactory = BuilderFactory.getDefault();
-    environmentParams = ServiceEnvironmentParams.builder()
-                            .accountIdentifier(builderFactory.getContext().getAccountId())
-                            .orgIdentifier(builderFactory.getContext().getOrgIdentifier())
-                            .projectIdentifier(builderFactory.getContext().getProjectIdentifier())
-                            .serviceIdentifier(builderFactory.getContext().getServiceIdentifier())
-                            .environmentIdentifier(builderFactory.getContext().getProjectIdentifier())
-                            .build();
+    monitoredServiceParams = builderFactory.getContext().getMonitoredServiceParams();
   }
 
   @Test
@@ -85,13 +79,13 @@ public class ChangeSourceServiceImplTest extends CvNextGenTestBase {
     ChangeSourceDTO changeSourceDTO = builderFactory.getHarnessCDChangeSourceDTOBuilder().build();
     Set<ChangeSourceDTO> changeSourceDTOToBeCreated = new HashSet<>(Arrays.asList(changeSourceDTO));
 
-    changeSourceService.create(environmentParams, changeSourceDTOToBeCreated);
+    changeSourceService.create(monitoredServiceParams, changeSourceDTOToBeCreated);
 
     Set<ChangeSourceDTO> changeSourceDTOSetFromDb =
-        changeSourceService.get(environmentParams, Arrays.asList(changeSourceDTO.getIdentifier()));
+        changeSourceService.get(monitoredServiceParams, Arrays.asList(changeSourceDTO.getIdentifier()));
 
     assertThat(changeSourceDTOSetFromDb.size()).isEqualTo(1);
-    ChangeSource changeSource = changeSourceService.get(environmentParams, changeSourceDTO.getIdentifier());
+    ChangeSource changeSource = changeSourceService.get(monitoredServiceParams, changeSourceDTO.getIdentifier());
     assertThat(changeSource.isEligibleForDemo()).isFalse();
   }
 
@@ -102,8 +96,8 @@ public class ChangeSourceServiceImplTest extends CvNextGenTestBase {
     ChangeSourceDTO changeSourceDTO =
         builderFactory.getHarnessCDChangeSourceDTOBuilder().identifier("cdng_dev").build();
     Set<ChangeSourceDTO> changeSourceDTOToBeCreated = new HashSet<>(Arrays.asList(changeSourceDTO));
-    changeSourceService.create(environmentParams, changeSourceDTOToBeCreated);
-    ChangeSource changeSource = changeSourceService.get(environmentParams, changeSourceDTO.getIdentifier());
+    changeSourceService.create(monitoredServiceParams, changeSourceDTOToBeCreated);
+    ChangeSource changeSource = changeSourceService.get(monitoredServiceParams, changeSourceDTO.getIdentifier());
     assertThat(changeSource).isNotNull();
     assertThat(changeSource.isConfiguredForDemo()).isFalse();
   }
@@ -120,8 +114,8 @@ public class ChangeSourceServiceImplTest extends CvNextGenTestBase {
              eq(builderFactory.getContext().getAccountId()), eq(FeatureFlagNames.CVNG_MONITORED_SERVICE_DEMO)))
         .thenReturn(true);
     FieldUtils.writeField(changeSourceService, "featureFlagService", featureFlagService, true);
-    changeSourceService.create(environmentParams, changeSourceDTOToBeCreated);
-    ChangeSource changeSource = changeSourceService.get(environmentParams, changeSourceDTO.getIdentifier());
+    changeSourceService.create(monitoredServiceParams, changeSourceDTOToBeCreated);
+    ChangeSource changeSource = changeSourceService.get(monitoredServiceParams, changeSourceDTO.getIdentifier());
     assertThat(changeSource).isNotNull();
     assertThat(changeSource.isConfiguredForDemo()).isTrue();
     assertThat(changeSource.isEligibleForDemo()).isTrue();
@@ -135,7 +129,7 @@ public class ChangeSourceServiceImplTest extends CvNextGenTestBase {
     ChangeSourceDTO changeSourceDto2 =
         builderFactory.getHarnessCDChangeSourceDTOBuilder().identifier(changeSourceDto1.getIdentifier()).build();
     Set<ChangeSourceDTO> changeSourceDTOToBeCreated = new HashSet<>(Arrays.asList(changeSourceDto1, changeSourceDto2));
-    assertThatThrownBy(() -> changeSourceService.create(environmentParams, changeSourceDTOToBeCreated))
+    assertThatThrownBy(() -> changeSourceService.create(monitoredServiceParams, changeSourceDTOToBeCreated))
         .isInstanceOf(InvalidRequestException.class);
   }
 
@@ -148,11 +142,11 @@ public class ChangeSourceServiceImplTest extends CvNextGenTestBase {
     Set<ChangeSourceDTO> updateDtos = new HashSet<>(Arrays.asList(changeSourceDto, kubeChangeSourceDto));
     String updatedName = "UPDATED_NAME";
 
-    changeSourceService.create(environmentParams, updateDtos);
+    changeSourceService.create(monitoredServiceParams, updateDtos);
     ChangeSource initialChangeSource = getChangeSourceFromDb(changeSourceDto.getIdentifier());
     changeSourceDto.setName(updatedName);
     updateDtos.remove(kubeChangeSourceDto);
-    changeSourceService.update(environmentParams, updateDtos);
+    changeSourceService.update(monitoredServiceParams, updateDtos);
 
     ChangeSource updatedChangeSource = getChangeSourceFromDb(changeSourceDto.getIdentifier());
 
@@ -168,9 +162,9 @@ public class ChangeSourceServiceImplTest extends CvNextGenTestBase {
   public void testDelete() {
     ChangeSourceDTO changeSourceDto = builderFactory.getHarnessCDChangeSourceDTOBuilder().build();
     Set<ChangeSourceDTO> dtos = new HashSet<>(Arrays.asList(changeSourceDto));
-    changeSourceService.create(environmentParams, dtos);
+    changeSourceService.create(monitoredServiceParams, dtos);
 
-    changeSourceService.delete(environmentParams, Arrays.asList(changeSourceDto.getIdentifier()));
+    changeSourceService.delete(monitoredServiceParams, Arrays.asList(changeSourceDto.getIdentifier()));
     ChangeSource changeSourceFromDb = getChangeSourceFromDb(changeSourceDto.getIdentifier());
 
     assertThat(changeSourceFromDb).isNull();
@@ -238,8 +232,8 @@ public class ChangeSourceServiceImplTest extends CvNextGenTestBase {
                              .spec(KubernetesChangeSourceSpec.builder().connectorRef(kubeConnectorIdentifier).build())
                              .build());
 
-    changeSourceService.create(environmentParams, changeSourceDTOS);
-    ChangeSource changeSource = changeSourceService.get(environmentParams, identifier);
+    changeSourceService.create(monitoredServiceParams, changeSourceDTOS);
+    ChangeSource changeSource = changeSourceService.get(monitoredServiceParams, identifier);
     kubeChangeSource.setUuid(changeSource.getUuid());
 
     when(verificationManagerService.createDataCollectionTask(eq(builderFactory.getContext().getAccountId()),
@@ -248,7 +242,7 @@ public class ChangeSourceServiceImplTest extends CvNextGenTestBase {
         .thenReturn(datacollectionTaskId);
     changeSourceService.enqueueDataCollectionTask(kubeChangeSource);
 
-    changeSource = changeSourceService.get(environmentParams, identifier);
+    changeSource = changeSourceService.get(monitoredServiceParams, identifier);
     assertThat(changeSource.getDataCollectionTaskId()).isEqualTo(datacollectionTaskId);
   }
 

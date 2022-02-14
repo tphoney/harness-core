@@ -8,6 +8,7 @@
 package io.harness.batch.processing.tasklet.support;
 
 import io.harness.batch.processing.service.intfc.WorkloadRepository;
+import io.harness.batch.processing.tasklet.util.CacheUtils;
 import io.harness.ccm.commons.entities.k8s.K8sWorkload;
 
 import com.github.benmanes.caffeine.cache.Cache;
@@ -25,7 +26,7 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class K8SWorkloadService {
+public class K8SWorkloadService extends CacheUtils {
   @Autowired private WorkloadRepository workloadRepository;
   private Cache<CacheKey, Map<String, String>> workloadLabelCache =
       Caffeine.newBuilder().expireAfterWrite(1, TimeUnit.HOURS).build();

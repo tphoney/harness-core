@@ -88,7 +88,7 @@ public class ServiceDependencyServiceImpl implements ServiceDependencyService {
     Set<Key> createKeys = Sets.difference(newDependencyMap.keySet(), oldDependencyMap.keySet());
     List<ServiceDependency> createDependencies =
         createKeys.stream().map(newDependencyMap::get).collect(Collectors.toList());
-    hPersistence.save(createDependencies);
+    hPersistence.saveBatch(createDependencies);
   }
 
   @Override

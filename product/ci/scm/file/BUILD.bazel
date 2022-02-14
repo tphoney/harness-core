@@ -9,7 +9,6 @@ go_library(
         "//commons/go/lib/utils",
         "//product/ci/scm/git",
         "//product/ci/scm/gitclient",
-        "//product/ci/scm/git",
         "//product/ci/scm/proto",
         "@com_github_drone_go_scm//scm",
         "@org_uber_go_zap//:zap",

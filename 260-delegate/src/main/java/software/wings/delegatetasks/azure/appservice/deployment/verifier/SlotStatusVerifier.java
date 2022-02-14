@@ -5,7 +5,11 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.delegatetasks.azure.appservice.deployment;
+package software.wings.delegatetasks.azure.appservice.deployment.verifier;
+
+import static software.wings.beans.LogColor.White;
+import static software.wings.beans.LogHelper.color;
+import static software.wings.beans.LogWeight.Bold;
 
 import static java.lang.String.format;
 
@@ -18,7 +22,8 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.logging.LogCallback;
 
 import software.wings.delegatetasks.azure.AzureServiceCallBack;
-import software.wings.delegatetasks.azure.appservice.deployment.context.SlotDockerDeploymentVerifierContext;
+import software.wings.delegatetasks.azure.appservice.deployment.context.SlotContainerDeploymentVerifierContext;
+import software.wings.delegatetasks.azure.appservice.deployment.context.SlotDeploymentVerifierContext;
 import software.wings.delegatetasks.azure.appservice.deployment.context.StatusVerifierContext;
 import software.wings.delegatetasks.azure.appservice.deployment.context.SwapSlotStatusVerifierContext;
 
@@ -34,7 +39,13 @@ public abstract class SlotStatusVerifier {
   protected final AzureWebClientContext azureWebClientContext;
 
   public enum SlotStatus { STOPPED, RUNNING }
-  public enum SlotStatusVerifierType { STOP_VERIFIER, START_VERIFIER, SWAP_VERIFIER, SLOT_DOCKER_DEPLOYMENT_VERIFIER }
+  public enum SlotStatusVerifierType {
+    STOP_VERIFIER,
+    START_VERIFIER,
+    SWAP_VERIFIER,
+    SLOT_DEPLOYMENT_VERIFIER,
+    SLOT_CONTAINER_DEPLOYMENT_VERIFIER
+  }
 
   public SlotStatusVerifier(LogCallback logCallback, String slotName, AzureWebClient azureWebClient,
       AzureWebClientContext azureWebClientContext, AzureServiceCallBack restCallBack) {
@@ -48,7 +59,8 @@ public abstract class SlotStatusVerifier {
   public boolean hasReachedSteadyState() {
     DeploymentSlot slot = getDeploymentSlot();
     String currentSlotState = slot.state();
-    logCallback.saveExecutionLog(format("Current state for deployment slot is - [%s]", currentSlotState));
+    logCallback.saveExecutionLog(
+        color(format("%nCurrent state for deployment slot is - [%s]", currentSlotState), White, Bold));
     return getSteadyState().equalsIgnoreCase(currentSlotState);
   }
 
@@ -97,8 +109,11 @@ public abstract class SlotStatusVerifier {
         return new StartSlotStatusVerifier(context);
       case "SWAP_VERIFIER":
         return new SwapSlotStatusVerifier((SwapSlotStatusVerifierContext) context);
-      case "SLOT_DOCKER_DEPLOYMENT_VERIFIER":
-        return new SlotDockerDeploymentVerifier((SlotDockerDeploymentVerifierContext) context);
+      case "SLOT_DEPLOYMENT_VERIFIER":
+        return new SlotPackageDeploymentStatusVerifier((SlotDeploymentVerifierContext) context);
+      case "SLOT_CONTAINER_DEPLOYMENT_VERIFIER":
+        return new SlotContainerDeploymentStatusVerifier((SlotContainerDeploymentVerifierContext) context);
+
       default:
         throw new InvalidRequestException(String.format("No slot status verifier defined for - [%s]", verifierType));
     }

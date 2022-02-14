@@ -14,6 +14,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.task.scm.GitWebhookTaskType;
 import io.harness.exception.InvalidRequestException;
 import io.harness.gitsync.common.service.ScmOrchestratorService;
+import io.harness.ng.BaseUrls;
 import io.harness.ng.core.AccountOrgProjectHelper;
 import io.harness.ng.webhook.UpsertWebhookRequestDTO;
 import io.harness.ng.webhook.UpsertWebhookResponseDTO;
@@ -34,13 +35,16 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(PIPELINE)
 public class WebhookServiceImpl implements WebhookService, WebhookEventService {
   private final WebhookEventRepository webhookEventRepository;
+  private final BaseUrls baseUrls;
   private final ScmOrchestratorService scmOrchestratorService;
   private final AccountOrgProjectHelper accountOrgProjectHelper;
 
   @Inject
   public WebhookServiceImpl(WebhookEventRepository webhookEventRepository,
-      ScmOrchestratorService scmOrchestratorService, AccountOrgProjectHelper accountOrgProjectHelper) {
+      ScmOrchestratorService scmOrchestratorService, AccountOrgProjectHelper accountOrgProjectHelper,
+      BaseUrls baseUrls) {
     this.webhookEventRepository = webhookEventRepository;
+    this.baseUrls = baseUrls;
     this.scmOrchestratorService = scmOrchestratorService;
     this.accountOrgProjectHelper = accountOrgProjectHelper;
   }
@@ -73,13 +77,32 @@ public class WebhookServiceImpl implements WebhookService, WebhookEventService {
 
   @VisibleForTesting
   String getTargetUrl(String accountIdentifier) {
-    String accountBaseURL = accountOrgProjectHelper.getBasePortallUrl(accountIdentifier);
-    StringBuilder webhookUrl = new StringBuilder(accountBaseURL)
-                                   .append(WebhookConstants.COMPLETE_WEBHOOK_ENDPOINT)
+    String vanityUrl = accountOrgProjectHelper.getVanityUrl(accountIdentifier);
+    String webhookBaseUrlFromConfig = getWebhookBaseUrl();
+    if (!webhookBaseUrlFromConfig.endsWith("/")) {
+      webhookBaseUrlFromConfig += "/";
+    }
+    log.info("The vanity url is {} and webhook url is {}", vanityUrl, webhookBaseUrlFromConfig);
+    String basewebhookUrl = vanityUrl == null ? webhookBaseUrlFromConfig : getVanityUrlForNG(vanityUrl);
+    StringBuilder webhookUrl = new StringBuilder(basewebhookUrl)
+                                   .append(WebhookConstants.WEBHOOK_ENDPOINT)
                                    .append('?')
                                    .append(NGCommonEntityConstants.ACCOUNT_KEY)
                                    .append('=')
                                    .append(accountIdentifier);
+    log.info("The complete webhook url is {}", webhookUrl.toString());
     return webhookUrl.toString();
+  }
+
+  private String getVanityUrlForNG(String vanityUrl) {
+    if (!vanityUrl.endsWith("/")) {
+      vanityUrl += "/";
+    }
+    return vanityUrl + "ng/api/";
+  }
+
+  @VisibleForTesting
+  String getWebhookBaseUrl() {
+    return baseUrls.getWebhookBaseUrl();
   }
 }

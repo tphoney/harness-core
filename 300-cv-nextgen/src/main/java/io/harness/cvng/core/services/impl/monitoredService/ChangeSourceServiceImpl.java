@@ -18,6 +18,7 @@ import io.harness.cvng.beans.change.HarnessCDCurrentGenEventMetadata;
 import io.harness.cvng.client.VerificationManagerService;
 import io.harness.cvng.core.beans.change.ChangeSummaryDTO;
 import io.harness.cvng.core.beans.monitoredService.ChangeSourceDTO;
+import io.harness.cvng.core.beans.params.MonitoredServiceParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.entities.changeSource.ChangeSource;
 import io.harness.cvng.core.entities.changeSource.ChangeSource.ChangeSourceKeys;
@@ -62,11 +63,11 @@ public class ChangeSourceServiceImpl implements ChangeSourceService {
 
   @Override
   public void create(
-      @NonNull ServiceEnvironmentParams environmentParams, @NonNull Set<ChangeSourceDTO> changeSourceDTOs) {
+      @NonNull MonitoredServiceParams monitoredServiceParams, @NonNull Set<ChangeSourceDTO> changeSourceDTOs) {
     validate(changeSourceDTOs);
-    validateChangeSourcesDoesntExist(environmentParams, changeSourceDTOs);
+    validateChangeSourcesDoesntExist(monitoredServiceParams, changeSourceDTOs);
     List<ChangeSource> changeSources = changeSourceDTOs.stream()
-                                           .map(dto -> changeSourceTransformer.getEntity(environmentParams, dto))
+                                           .map(dto -> changeSourceTransformer.getEntity(monitoredServiceParams, dto))
                                            .collect(Collectors.toList());
     create(changeSources);
   }
@@ -136,15 +137,15 @@ public class ChangeSourceServiceImpl implements ChangeSourceService {
 
   @Override
   public void update(
-      @NonNull ServiceEnvironmentParams environmentParams, @NonNull Set<ChangeSourceDTO> changeSourceDTOs) {
+      @NonNull MonitoredServiceParams monitoredServiceParams, @NonNull Set<ChangeSourceDTO> changeSourceDTOs) {
     validate(changeSourceDTOs);
     Map<String, ChangeSource> newChangeSourceMap =
         changeSourceDTOs.stream()
-            .map(dto -> changeSourceTransformer.getEntity(environmentParams, dto))
+            .map(dto -> changeSourceTransformer.getEntity(monitoredServiceParams, dto))
             .collect(Collectors.toMap(cs -> cs.getIdentifier(), Function.identity()));
 
     Map<String, ChangeSource> existingChangeSourceMap =
-        createQuery(environmentParams)
+        createQuery(monitoredServiceParams)
             .asList()
             .stream()
             .collect(Collectors.toMap(sc -> sc.getIdentifier(), Function.identity()));

@@ -7,8 +7,8 @@
 
 package io.harness.delegate.task.serverless;
 
-import software.wings.beans.artifact.Artifact;
-import software.wings.beans.artifact.ArtifactStreamAttributes;
+// import software.wings.beans.artifact.Artifact;
+// import software.wings.beans.artifact.ArtifactStreamAttributes;
 
 import lombok.Builder;
 import lombok.Value;
@@ -16,6 +16,6 @@ import lombok.Value;
 @Value
 @Builder
 public class AwsServerlessArtifactConfig implements ServerlessArtifactConfig {
-  ArtifactStreamAttributes artifactStreamAttributes;
-  Artifact artifact;
+  //  ArtifactStreamAttributes artifactStreamAttributes;
+  //  Artifact artifact;
 }

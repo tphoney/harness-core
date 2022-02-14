@@ -10,18 +10,32 @@ package io.harness.delegate.task.serverless.response;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.DelegateMetaInfo;
+import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.delegate.beans.serverless.ServerlessDeployResult;
 import io.harness.logging.CommandExecutionStatus;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Value;
+import lombok.experimental.NonFinal;
 
+@Value
 @Builder
-@Data
 @OwnedBy(HarnessTeam.CDP)
 public class ServerlessDeployResponse implements ServerlessCommandResponse {
-  private DelegateMetaInfo delegateMetaInfo;
-  private CommandExecutionStatus commandExecutionStatus;
-  private String errorMessage;
-  private ServerlessDeployResult serverlessDeployResult;
+  @NonFinal DelegateMetaInfo delegateMetaInfo;
+  @NonFinal UnitProgressData unitProgressData;
+  CommandExecutionStatus commandExecutionStatus;
+  String errorMessage;
+  ServerlessDeployResult serverlessDeployResult;
+
+  @Override
+  public void setDelegateMetaInfo(DelegateMetaInfo metaInfo) {
+    this.delegateMetaInfo = metaInfo;
+  }
+
+  @Override
+  public void setCommandUnitsProgress(UnitProgressData unitProgressData) {
+    this.unitProgressData = unitProgressData;
+  }
 }

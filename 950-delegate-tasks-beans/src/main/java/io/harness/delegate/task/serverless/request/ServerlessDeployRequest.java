@@ -9,6 +9,7 @@ package io.harness.delegate.task.serverless.request;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
 import io.harness.delegate.task.serverless.*;
 
 import lombok.Builder;
@@ -28,6 +29,7 @@ public class ServerlessDeployRequest implements ServerlessCommandRequest {
   String region;
   String stage;
   ServerlessArtifactConfig serverlessArtifactConfig;
+  CommandUnitsProgress commandUnitsProgress;
   ServerlessManifest serverlessManifest;
   ServerlessInfraConfig serverlessInfraConfig;
   Boolean forceDeploymentFlag;

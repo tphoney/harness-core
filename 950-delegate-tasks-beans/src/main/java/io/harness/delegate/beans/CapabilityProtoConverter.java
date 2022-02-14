@@ -95,8 +95,10 @@ public class CapabilityProtoConverter {
         HelmInstallationCapability helmInstallationCapability = (HelmInstallationCapability) executionCapability;
         return builder
             .setHelmInstallationParameters(HelmInstallationParameters.newBuilder().setHelmVersion(
-                helmInstallationCapability.getVersion() == HelmVersion.V3 ? HelmInstallationParameters.HelmVersion.V3
-                                                                          : HelmInstallationParameters.HelmVersion.V2))
+                (helmInstallationCapability.getVersion().equals(HelmVersion.V3)
+                    || helmInstallationCapability.getVersion().equals(HelmVersion.V3New))
+                    ? HelmInstallationParameters.HelmVersion.V3
+                    : HelmInstallationParameters.HelmVersion.V2))
             .build();
       case HTTP:
         HttpConnectionExecutionCapability httpConnectionExecutionCapability =

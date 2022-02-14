@@ -120,7 +120,9 @@ public class HelmValuesFetchTask extends AbstractDelegateRunnableTask {
   }
 
   public void printHelmBinaryPathAndVersion(HelmVersion helmVersion, ExecutionLogCallback logCallback) {
-    String helmPath = (helmVersion == HelmVersion.V3) ? InstallUtils.getHelm3Path() : InstallUtils.getHelm2Path();
+    String helmPath = (helmVersion == HelmVersion.V3)
+        ? InstallUtils.getHelm3Path()
+        : (helmVersion == HelmVersion.V3New ? InstallUtils.getNewHelm3Path() : InstallUtils.getHelm2Path());
     logCallback.saveExecutionLog("Path of helm binary picked up: " + helmPath);
 
     try {

@@ -581,7 +581,7 @@ public class HelmDeployState extends State {
     } else {
       StringBuilder builder = new StringBuilder(256);
       builder.append("Failed to find the previous helm release version. ");
-      if (helmVersion == HelmVersion.V3) {
+      if (helmVersion == HelmVersion.V3 || helmVersion == HelmVersion.V3New) {
         builder.append("Make sure Helm 3 is installed");
       } else {
         builder.append("Make sure that the helm client and tiller is installed");

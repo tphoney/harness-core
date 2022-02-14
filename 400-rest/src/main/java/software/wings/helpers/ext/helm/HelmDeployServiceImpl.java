@@ -750,8 +750,10 @@ public class HelmDeployServiceImpl implements HelmDeployService {
     if (commandRequest.getHelmVersion() == null) {
       log.error("Did not expect null value of helmVersion, defaulting to V2");
     }
-    return commandRequest.getHelmVersion() == HelmVersion.V3 ? ensureHelm3Installed(commandRequest)
-                                                             : ensureHelmCliAndTillerInstalled(commandRequest);
+    if (commandRequest.getHelmVersion() == HelmVersion.V2) {
+      return ensureHelmCliAndTillerInstalled(commandRequest);
+    }
+    return ensureHelm3Installed(commandRequest);
   }
 
   boolean isHelm3(String cliResponse) {

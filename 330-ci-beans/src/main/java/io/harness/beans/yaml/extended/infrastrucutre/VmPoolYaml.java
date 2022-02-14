@@ -8,11 +8,15 @@
 package io.harness.beans.yaml.extended.infrastrucutre;
 
 import static io.harness.annotations.dev.HarnessTeam.CI;
+import static io.harness.beans.SwaggerConstants.STRING_CLASSPATH;
 
 import io.harness.annotations.dev.OwnedBy;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import javax.validation.constraints.NotNull;
+
+import io.harness.pms.yaml.ParameterField;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,6 +39,6 @@ public class VmPoolYaml implements VmInfraSpec {
   @NoArgsConstructor
   @AllArgsConstructor
   public static class VmPoolYamlSpec {
-    @NotNull private String identifier;
+    @NotNull @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> identifier;
   }
 }

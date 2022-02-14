@@ -94,7 +94,7 @@ public class VmInitializeTaskUtils {
     }
     VmBuildJobInfo vmBuildJobInfo = (VmBuildJobInfo) initializeStepInfo.getBuildJobEnvInfo();
     VmPoolYaml vmPoolYaml = (VmPoolYaml) vmInfraYaml.getSpec();
-    String poolId = vmPoolYaml.getSpec().getIdentifier();
+    String poolId = RunTimeInputHandler.resolveStringParameter("identifier", "Infrastructure", "poolIdentifier", vmPoolYaml.getSpec().getIdentifier(), true);
     consumeSweepingOutput(ambiance,
         VmStageInfraDetails.builder()
             .poolId(poolId)

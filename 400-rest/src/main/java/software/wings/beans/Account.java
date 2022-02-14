@@ -536,8 +536,7 @@ public class Account extends Base implements PersistentRegularIterable {
 
     else if (AccountKeys.delegateTaskFailIteration.equals(fieldName)) {
       return this.delegateTaskFailIteration;
-    }
-    else if (AccountKeys.delegateTaskRebroadcastIteration.equals(fieldName)) {
+    } else if (AccountKeys.delegateTaskRebroadcastIteration.equals(fieldName)) {
       return this.delegateTaskRebroadcastIteration;
     }
 

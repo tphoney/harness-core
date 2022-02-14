@@ -1409,10 +1409,8 @@ public class WingsApplication extends Application<MainConfiguration> {
             iteratorsConfig.getPerpetualTaskRebalanceIteratorConfig().getThreadPoolSize());
     injector.getInstance(DelegateTaskExpiryCheckIterator.class)
         .registerIterators(iteratorsConfig.getDelegateTaskExpiryCheckIteratorConfig().getThreadPoolSize());
-    injector.getInstance(DelegateTaskRebroadcastIterator.class)
-            .registerIterators(5);
-    injector.getInstance(FailDelegateTaskIterator.class)
-            .registerIterators(5);
+    injector.getInstance(DelegateTaskRebroadcastIterator.class).registerIterators(5);
+    injector.getInstance(FailDelegateTaskIterator.class).registerIterators(5);
     injector.getInstance(DelegateTelemetryPublisher.class).registerIterators();
   }
 

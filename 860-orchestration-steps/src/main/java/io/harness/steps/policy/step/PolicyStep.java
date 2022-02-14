@@ -61,15 +61,8 @@ public class PolicyStep implements SyncExecutable<StepElementParameters> {
     PolicyStepSpecParameters policyStepSpecParameters = (PolicyStepSpecParameters) stepParameters.getSpec();
     ParameterField<List<String>> policySetsPF = policyStepSpecParameters.getPolicySets();
     if (policySetsPF.isExpression()) {
-      FailureData failureData =
-          FailureData.newBuilder()
-              .setCode(ErrorCode.UNRESOLVED_EXPRESSIONS_ERROR.name())
-              .setLevel(Level.ERROR.name())
-              .setMessage("List of policy sets is an unresolved expression: " + policySetsPF.getExpressionValue())
-              .addFailureTypes(FailureType.UNKNOWN_FAILURE)
-              .build();
-      FailureInfo failureInfo = FailureInfo.newBuilder().addFailureData(failureData).build();
-      return StepResponse.builder().status(Status.FAILED).failureInfo(failureInfo).build();
+      return PolicyStepHelper.buildResponseForUnresolvedExpressions(
+          "List of policy sets is an unresolved expression: " + policySetsPF.getExpressionValue());
     }
     List<String> policySets = policySetsPF.getValue();
 
@@ -80,14 +73,8 @@ public class PolicyStep implements SyncExecutable<StepElementParameters> {
         CustomPolicyStepSpec customPolicySpec = (CustomPolicyStepSpec) policyStepSpecParameters.getPolicySpec();
         ParameterField<String> payloadPF = customPolicySpec.getPayload();
         if (payloadPF.isExpression()) {
-          FailureData failureData = FailureData.newBuilder()
-                                        .setCode(ErrorCode.UNRESOLVED_EXPRESSIONS_ERROR.name())
-                                        .setLevel(Level.ERROR.name())
-                                        .setMessage("Custom payload has unresolved expressions in it.")
-                                        .addFailureTypes(FailureType.UNKNOWN_FAILURE)
-                                        .build();
-          FailureInfo failureInfo = FailureInfo.newBuilder().addFailureData(failureData).build();
-          return StepResponse.builder().status(Status.FAILED).failureInfo(failureInfo).build();
+          return PolicyStepHelper.buildResponseForUnresolvedExpressions(
+              "Custom payload has unresolved expressions in it.");
         }
         payload = payloadPF.getValue();
         try {
@@ -105,15 +92,10 @@ public class PolicyStep implements SyncExecutable<StepElementParameters> {
         }
         break;
       default:
-        FailureData failureData = FailureData.newBuilder()
-                                      .setCode(ErrorCode.UNSUPPORTED_OPERATION_EXCEPTION.name())
-                                      .setLevel(Level.ERROR.name())
-                                      .setMessage("Policy Step type " + policyStepType + " is not supported.")
-                                      .addFailureTypes(FailureType.UNKNOWN_FAILURE)
-                                      .build();
-        FailureInfo failureInfo = FailureInfo.newBuilder().addFailureData(failureData).build();
-        return StepResponse.builder().status(Status.FAILED).failureInfo(failureInfo).build();
+        return PolicyStepHelper.buildUnknownFailureStepResponse(
+            ErrorCode.UNSUPPORTED_OPERATION_EXCEPTION, "Policy Step type " + policyStepType + " is not supported.");
     }
+
     String accountId = AmbianceUtils.getAccountId(ambiance);
     String orgIdentifier = AmbianceUtils.getOrgIdentifier(ambiance);
     String projectIdentifier = AmbianceUtils.getProjectIdentifier(ambiance);
@@ -123,14 +105,8 @@ public class PolicyStep implements SyncExecutable<StepElementParameters> {
           accountId, orgIdentifier, projectIdentifier, policySets, payload));
     } catch (Exception ex) {
       log.error("Exception while evaluating OPA rules", ex);
-      FailureData failureData = FailureData.newBuilder()
-                                    .setCode(ErrorCode.HTTP_RESPONSE_EXCEPTION.name())
-                                    .setLevel(Level.ERROR.name())
-                                    .setMessage("Exception while evaluating OPA rules: " + ex.getMessage())
-                                    .addFailureTypes(FailureType.APPLICATION_FAILURE)
-                                    .build();
-      FailureInfo failureInfo = FailureInfo.newBuilder().addFailureData(failureData).build();
-      return StepResponse.builder().status(Status.FAILED).failureInfo(failureInfo).build();
+      return PolicyStepHelper.buildFailureStepResponse(ErrorCode.HTTP_RESPONSE_EXCEPTION,
+          "Error occurred while evaluating Policies", FailureType.APPLICATION_FAILURE, null);
     }
     PolicyStepOutcome policyStepOutcome = PolicyStepOutcomeMapper.toOutcome(opaEvaluationResponseHolder);
     StepOutcome stepOutcome = StepOutcome.builder()
@@ -139,14 +115,8 @@ public class PolicyStep implements SyncExecutable<StepElementParameters> {
                                   .outcome(policyStepOutcome)
                                   .build();
     if (opaEvaluationResponseHolder.getStatus().equals(OpaConstants.OPA_STATUS_ERROR)) {
-      FailureData failureData = FailureData.newBuilder()
-                                    .setCode(ErrorCode.POLICY_EVALUATION_FAILURE.name())
-                                    .setLevel(Level.ERROR.name())
-                                    .setMessage("Policy Evaluation had failures")
-                                    .addFailureTypes(FailureType.POLICY_EVALUATION_FAILURE)
-                                    .build();
-      FailureInfo failureInfo = FailureInfo.newBuilder().addFailureData(failureData).build();
-      return StepResponse.builder().status(Status.FAILED).failureInfo(failureInfo).stepOutcome(stepOutcome).build();
+      return PolicyStepHelper.buildFailureStepResponse(ErrorCode.POLICY_EVALUATION_FAILURE,
+          "Some Policies were not adhered to", FailureType.POLICY_EVALUATION_FAILURE, stepOutcome);
     }
     return StepResponse.builder().status(Status.SUCCEEDED).stepOutcome(stepOutcome).build();
   }

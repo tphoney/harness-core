@@ -45,6 +45,7 @@ import io.harness.delegate.beans.connector.awssecretmanager.AwsSecretManagerCred
 import io.harness.delegate.beans.connector.awssecretmanager.AwsSecretManagerCredentialSpecDTO;
 import io.harness.delegate.beans.connector.awssecretmanager.AwsSecretManagerCredentialType;
 import io.harness.delegate.beans.connector.awssecretmanager.AwsSecretManagerDTO;
+import io.harness.delegate.beans.connector.azureconnector.*;
 import io.harness.delegate.beans.connector.azurekeyvaultconnector.AzureKeyVaultConnectorDTO;
 import io.harness.delegate.beans.connector.ceawsconnector.AwsCurAttributesDTO;
 import io.harness.delegate.beans.connector.ceawsconnector.CEAwsConnectorDTO;
@@ -314,5 +315,12 @@ public class ConnectorBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(CustomHealthMethod.class, 19677);
     kryo.register(ServiceNowConnectorDTO.class, 19678);
     kryo.register(ErrorTrackingConnectorDTO.class, 19679);
+
+    kryo.register(AzureConnectorDTO.class, 19680);
+    kryo.register(AzureConstants.class, 19681);
+    kryo.register(AzureCredentialSpecDTO.class, 19682);
+    kryo.register(AzureManualDetailsDTO.class, 19683);
+    kryo.register(AzureCredentialType.class, 19684);
+    kryo.register(AzureConnectorCredentialDTO.class, 19685);
   }
 }

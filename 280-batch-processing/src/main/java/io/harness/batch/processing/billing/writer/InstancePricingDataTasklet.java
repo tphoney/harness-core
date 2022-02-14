@@ -40,7 +40,6 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
@@ -376,7 +375,7 @@ public class InstancePricingDataTasklet implements Tasklet {
             .map(ZonePrice::getPrice)
             .orElse(pricePerHour);
       }
-      return new Pricing(new BigDecimal(pricePerHour), PricingSource.PUBLIC_API);
+      return new Pricing(pricePerHour, PricingSource.PUBLIC_API);
     } else {
       log.info("Null response from banzai service");
     }

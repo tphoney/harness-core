@@ -36,7 +36,6 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableResult;
 
-import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
@@ -529,7 +528,7 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
             break;
           case BQConst.cost:
             try {
-              dataBuilder.pricePerHour(BigDecimal.valueOf(getDoubleValue(row, field)));
+              dataBuilder.pricePerHour(getDoubleValue(row, field));
             } catch (NullPointerException e) {
               log.error("NullPointerException while getting price from BigQuery", e);
               errorOccurred = true;
@@ -563,7 +562,7 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
             break;
           case BQConst.cost:
             try {
-              dataBuilder.pricePerHour(BigDecimal.valueOf(getDoubleValue(row, field)));
+              dataBuilder.pricePerHour(getDoubleValue(row, field));
             } catch (NullPointerException e) {
               log.error("NullPointerException while getting price from BigQuery", e);
               errorOccurred = true;
@@ -600,7 +599,7 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
             break;
           case BQConst.cost:
             try {
-              pricingBuilder.pricePerHour(BigDecimal.valueOf(getDoubleValue(row, field)));
+              pricingBuilder.pricePerHour(getDoubleValue(row, field));
             } catch (NullPointerException e) {
               log.error("NullPointerException while getting price from BigQuery", e);
               errorOccurred = true;
@@ -634,7 +633,7 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
             break;
           case BQConst.cost:
             try {
-              dataBuilder.pricePerHour(BigDecimal.valueOf(getDoubleValue(row, field)));
+              dataBuilder.pricePerHour(getDoubleValue(row, field));
             } catch (NullPointerException e) {
               log.error("NullPointerException while getting price from BigQuery", e);
               errorOccurred = true;

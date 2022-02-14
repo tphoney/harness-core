@@ -24,6 +24,7 @@ import io.harness.accesscontrol.clients.Resource;
 import io.harness.accesscontrol.clients.ResourceScope;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
+import io.harness.ng.core.Helper;
 import io.harness.ng.core.service.dto.ServiceRequestDTO;
 import io.harness.ng.core.service.entity.ServiceEntity;
 import io.harness.ng.core.service.resources.ServiceResourceV2;
@@ -46,7 +47,7 @@ import org.springframework.data.domain.PageImpl;
 public class ServiceResourceV2Test extends CategoryTest {
   @Mock ServiceEntityService serviceEntityService;
   @InjectMocks ServiceResourceV2 serviceResourceV2;
-  @Mock ServiceEntityManagementService serviceEntityManagementService;
+  @Mock Helper helper;
   @Mock AccessControlClient accessControlClient;
 
   private final String ACCOUNT_ID = "account_id";
@@ -89,17 +90,14 @@ public class ServiceResourceV2Test extends CategoryTest {
   @Owner(developers = SHIVAM)
   @Category(UnitTests.class)
   public void testCreateService() throws IOException {
-    when(serviceEntityManagementService.checkThatTheOrganizationAndProjectExists(
-             ORG_IDENTIFIER, PROJ_IDENTIFIER, ACCOUNT_ID))
-        .thenReturn(true);
+    when(helper.checkThatTheOrganizationAndProjectExists(ORG_IDENTIFIER, PROJ_IDENTIFIER, ACCOUNT_ID)).thenReturn(true);
     when(serviceEntityService.create(any())).thenReturn(entity);
     serviceResourceV2.create(ACCOUNT_ID, serviceRequestDTO);
     verify(accessControlClient, times(1))
         .checkForAccessOrThrow(ResourceScope.of(ACCOUNT_ID, serviceRequestDTO.getOrgIdentifier(),
                                    serviceRequestDTO.getProjectIdentifier()),
             Resource.of(NGResourceType.SERVICE, null), SERVICE_CREATE_PERMISSION);
-    verify(serviceEntityManagementService, times(1))
-        .checkThatTheOrganizationAndProjectExists(ORG_IDENTIFIER, PROJ_IDENTIFIER, ACCOUNT_ID);
+    verify(helper, times(1)).checkThatTheOrganizationAndProjectExists(ORG_IDENTIFIER, PROJ_IDENTIFIER, ACCOUNT_ID);
   }
 
   @Test
@@ -112,17 +110,14 @@ public class ServiceResourceV2Test extends CategoryTest {
     outputServiceEntitiesList.add(entity);
     serviceEntityList.add(entity);
     serviceRequestDTOList.add(serviceRequestDTO);
-    when(serviceEntityManagementService.checkThatTheOrganizationAndProjectExists(
-             ORG_IDENTIFIER, PROJ_IDENTIFIER, ACCOUNT_ID))
-        .thenReturn(true);
+    when(helper.checkThatTheOrganizationAndProjectExists(ORG_IDENTIFIER, PROJ_IDENTIFIER, ACCOUNT_ID)).thenReturn(true);
     when(serviceEntityService.bulkCreate(eq(ACCOUNT_ID), any())).thenReturn(new PageImpl<>(outputServiceEntitiesList));
     serviceResourceV2.createServices(ACCOUNT_ID, serviceRequestDTOList);
     verify(accessControlClient, times(1))
         .checkForAccessOrThrow(ResourceScope.of(ACCOUNT_ID, serviceRequestDTO.getOrgIdentifier(),
                                    serviceRequestDTO.getProjectIdentifier()),
             Resource.of(NGResourceType.SERVICE, null), SERVICE_CREATE_PERMISSION);
-    verify(serviceEntityManagementService, times(1))
-        .checkThatTheOrganizationAndProjectExists(ORG_IDENTIFIER, PROJ_IDENTIFIER, ACCOUNT_ID);
+    verify(helper, times(1)).checkThatTheOrganizationAndProjectExists(ORG_IDENTIFIER, PROJ_IDENTIFIER, ACCOUNT_ID);
   }
 
   @Test
@@ -137,9 +132,7 @@ public class ServiceResourceV2Test extends CategoryTest {
   @Owner(developers = SHIVAM)
   @Category(UnitTests.class)
   public void testUpdateService() throws IOException {
-    when(serviceEntityManagementService.checkThatTheOrganizationAndProjectExists(
-             ORG_IDENTIFIER, PROJ_IDENTIFIER, ACCOUNT_ID))
-        .thenReturn(true);
+    when(helper.checkThatTheOrganizationAndProjectExists(ORG_IDENTIFIER, PROJ_IDENTIFIER, ACCOUNT_ID)).thenReturn(true);
     when(serviceEntityService.update(any())).thenReturn(entity);
     serviceResourceV2.update("IF_MATCH", ACCOUNT_ID, serviceRequestDTO);
     verify(accessControlClient, times(1))
@@ -152,16 +145,13 @@ public class ServiceResourceV2Test extends CategoryTest {
   @Owner(developers = SHIVAM)
   @Category(UnitTests.class)
   public void testUpsertService() throws IOException {
-    when(serviceEntityManagementService.checkThatTheOrganizationAndProjectExists(
-             ORG_IDENTIFIER, PROJ_IDENTIFIER, ACCOUNT_ID))
-        .thenReturn(true);
+    when(helper.checkThatTheOrganizationAndProjectExists(ORG_IDENTIFIER, PROJ_IDENTIFIER, ACCOUNT_ID)).thenReturn(true);
     when(serviceEntityService.upsert(any())).thenReturn(entity);
     serviceResourceV2.upsert("IF_MATCH", ACCOUNT_ID, serviceRequestDTO);
     verify(accessControlClient, times(1))
         .checkForAccessOrThrow(ResourceScope.of(ACCOUNT_ID, serviceRequestDTO.getOrgIdentifier(),
                                    serviceRequestDTO.getProjectIdentifier()),
             Resource.of(NGResourceType.SERVICE, serviceRequestDTO.getIdentifier()), SERVICE_UPDATE_PERMISSION);
-    verify(serviceEntityManagementService, times(1))
-        .checkThatTheOrganizationAndProjectExists(ORG_IDENTIFIER, PROJ_IDENTIFIER, ACCOUNT_ID);
+    verify(helper, times(1)).checkThatTheOrganizationAndProjectExists(ORG_IDENTIFIER, PROJ_IDENTIFIER, ACCOUNT_ID);
   }
 }

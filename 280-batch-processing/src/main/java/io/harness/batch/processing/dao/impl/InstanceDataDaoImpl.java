@@ -262,9 +262,18 @@ public class InstanceDataDaoImpl implements InstanceDataDao {
   }
 
   @Override
-  public boolean updateInstancePricingData(InstanceData instanceData, Pricing pricing) {
-    instanceData.setPricing(pricing);
-    return hPersistence.save(instanceData) != null;
+  public void updateInstancePricingData(InstanceData instanceData, Pricing pricing) {
+    UpdateOperations<InstanceData> instanceDataUpdateOperations =
+        hPersistence.createUpdateOperations(InstanceData.class)
+            .set(InstanceDataKeys.pricing, pricing);
+    Query<InstanceData> query = hPersistence.createQuery(InstanceData.class)
+        .filter(InstanceDataKeys.uuid, instanceData.getUuid())
+        .filter(InstanceDataKeys.instanceId, instanceData.getInstanceId());
+
+    hPersistence.upsert(query, instanceDataUpdateOperations, upsertReturnOldOptions);
+
+//    instanceData.setPricing(pricing);
+//    return hPersistence.save(instanceData) != null;
   }
 
   private Query<InstanceData> getActiveInstanceQuery(

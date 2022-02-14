@@ -57,5 +57,6 @@ public interface InstanceDataDao {
   List<InstanceData> getInstanceDataListForPricingUpdate(
       String accountId, int batchSize, Instant startTime, Instant endTime);
 
-  boolean updateInstancePricingData(InstanceData instanceData, Pricing pricing);
+  // TODO: Create separate update operations for update by instanceId and instanceFamily, etc
+  void updateInstancePricingData(InstanceData instanceData, Pricing pricing);
 }

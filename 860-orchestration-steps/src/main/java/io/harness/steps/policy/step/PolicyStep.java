@@ -38,6 +38,8 @@ import io.harness.steps.StepSpecTypeConstants;
 import io.harness.steps.policy.PolicyStepConstants;
 import io.harness.steps.policy.PolicyStepSpecParameters;
 import io.harness.steps.policy.custom.CustomPolicyStepSpec;
+import io.harness.steps.policy.step.outcome.PolicyStepOutcome;
+import io.harness.steps.policy.step.outcome.PolicyStepOutcomeMapper;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -130,12 +132,12 @@ public class PolicyStep implements SyncExecutable<StepElementParameters> {
       FailureInfo failureInfo = FailureInfo.newBuilder().addFailureData(failureData).build();
       return StepResponse.builder().status(Status.FAILED).failureInfo(failureInfo).build();
     }
-    StepOutcome stepOutcome =
-        StepOutcome.builder()
-            .group(StepOutcomeGroup.STEP.name())
-            .name(YAMLFieldNameConstants.OUTPUT)
-            .outcome(PolicyStepOutcome.builder().policyEvaluationResponse(opaEvaluationResponseHolder).build())
-            .build();
+    PolicyStepOutcome policyStepOutcome = PolicyStepOutcomeMapper.toOutcome(opaEvaluationResponseHolder);
+    StepOutcome stepOutcome = StepOutcome.builder()
+                                  .group(StepOutcomeGroup.STEP.name())
+                                  .name(YAMLFieldNameConstants.OUTPUT)
+                                  .outcome(policyStepOutcome)
+                                  .build();
     if (opaEvaluationResponseHolder.getStatus().equals(OpaConstants.OPA_STATUS_ERROR)) {
       FailureData failureData = FailureData.newBuilder()
                                     .setCode(ErrorCode.POLICY_EVALUATION_FAILURE.name())

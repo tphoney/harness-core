@@ -32,7 +32,6 @@ import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.FileData;
-import io.harness.connector.service.scm.ScmDelegateClient;
 import io.harness.delegate.k8s.beans.K8sHandlerConfig;
 import io.harness.delegate.k8s.kustomize.KustomizeTaskHelper;
 import io.harness.delegate.k8s.openshift.OpenShiftDelegateService;
@@ -43,7 +42,6 @@ import io.harness.exception.ExceptionUtils;
 import io.harness.exception.WingsException;
 import io.harness.filesystem.FileIo;
 import io.harness.git.model.GitFile;
-import io.harness.k8s.KubernetesContainerService;
 import io.harness.k8s.kubectl.Kubectl;
 import io.harness.k8s.manifest.ManifestHelper;
 import io.harness.k8s.model.K8sDelegateTaskParams;
@@ -52,7 +50,6 @@ import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.manifest.CustomManifestService;
-import io.harness.service.ScmServiceClient;
 
 import software.wings.beans.GitConfig;
 import software.wings.beans.GitFileConfig;
@@ -61,6 +58,7 @@ import software.wings.beans.appmanifest.StoreType;
 import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.beans.yaml.GitFetchFilesResult;
 import software.wings.delegatetasks.DelegateLogService;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.delegatetasks.ScmFetchFilesHelper;
 import software.wings.delegatetasks.helm.HelmTaskHelper;
 import software.wings.exception.ShellScriptException;
@@ -95,7 +93,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 @OwnedBy(CDP)
 public class K8sTaskHelper {
   @Inject protected DelegateLogService delegateLogService;
-  @Inject private transient KubernetesContainerService kubernetesContainerService;
   @Inject private GitService gitService;
   @Inject private EncryptionService encryptionService;
   @Inject private HelmTaskHelper helmTaskHelper;
@@ -105,8 +102,6 @@ public class K8sTaskHelper {
   @Inject private HelmHelper helmHelper;
   @Inject private CustomManifestService customManifestService;
   @Inject private ContainerDeploymentDelegateHelper containerDeploymentDelegateHelper;
-  @Inject private ScmDelegateClient scmDelegateClient;
-  @Inject private ScmServiceClient scmServiceClient;
   @Inject private ScmFetchFilesHelper scmFetchFilesHelper;
 
   public boolean doStatusCheckAllResourcesForHelm(Kubectl client, List<KubernetesResourceId> resourceIds, String ocPath,
@@ -144,7 +139,8 @@ public class K8sTaskHelper {
 
       return true;
     } catch (Exception ex) {
-      executionLogCallback.saveExecutionLog(ExceptionUtils.getMessage(ex), ERROR, CommandExecutionStatus.FAILURE);
+      executionLogCallback.saveExecutionLog(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ex)),
+          ERROR, CommandExecutionStatus.FAILURE);
       return false;
     }
   }
@@ -308,6 +304,8 @@ public class K8sTaskHelper {
       GitConfig gitConfig = delegateManifestConfig.getGitConfig();
       printGitConfigInExecutionLogs(gitConfig, gitFileConfig, executionLogCallback);
       encryptionService.decrypt(gitConfig, delegateManifestConfig.getEncryptedDataDetails(), false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
+          gitConfig, delegateManifestConfig.getEncryptedDataDetails());
 
       if (scmFetchFilesHelper.shouldUseScm(delegateManifestConfig.isOptimizedFilesFetch(), gitConfig)) {
         scmFetchFilesHelper.downloadFilesUsingScm(
@@ -333,10 +331,10 @@ public class K8sTaskHelper {
 
       return true;
     } catch (Exception e) {
-      log.error("Failure in fetching files from git", e);
-      executionLogCallback.saveExecutionLog(
-          "Failed to download manifest files from git. " + ExceptionUtils.getMessage(e), ERROR,
-          CommandExecutionStatus.FAILURE);
+      log.error("Failure in fetching files from git", ExceptionMessageSanitizer.sanitizeException(e));
+      executionLogCallback.saveExecutionLog("Failed to download manifest files from git. "
+              + ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)),
+          ERROR, CommandExecutionStatus.FAILURE);
       return false;
     }
   }
@@ -351,18 +349,18 @@ public class K8sTaskHelper {
       executionLogCallback.saveExecutionLog("Done.", INFO, CommandExecutionStatus.SUCCESS);
       return true;
     } catch (ShellScriptException e) {
-      log.error("Failed to execute shell script", e);
+      log.error("Failed to execute shell script", ExceptionMessageSanitizer.sanitizeException(e));
       executionLogCallback.saveExecutionLog(
           "Failed to execute custom manifest script. " + e.getMessage(), ERROR, CommandExecutionStatus.FAILURE);
       return false;
     } catch (IOException e) {
-      log.error("Failed to get files from manifest directory", e);
+      log.error("Failed to get files from manifest directory", ExceptionMessageSanitizer.sanitizeException(e));
       executionLogCallback.saveExecutionLog(
           "Failed to get manifest files from custom source. " + ExceptionUtils.getMessage(e), ERROR,
           CommandExecutionStatus.FAILURE);
       return false;
     } catch (Exception e) {
-      log.error("Failed to process custom manifest", e);
+      log.error("Failed to process custom manifest", ExceptionMessageSanitizer.sanitizeException(e));
       executionLogCallback.saveExecutionLog(
           "Failed to process custom manifest. " + ExceptionUtils.getMessage(e), ERROR, CommandExecutionStatus.FAILURE);
       return false;
@@ -420,7 +418,7 @@ public class K8sTaskHelper {
         }
       }
     } catch (IOException ex) {
-      log.error("Error while fetching helm chart info", ex);
+      log.error("Error while fetching helm chart info", ExceptionMessageSanitizer.sanitizeException(ex));
     }
 
     return helmChartInfo;
@@ -472,7 +470,8 @@ public class K8sTaskHelper {
 
       return true;
     } catch (Exception e) {
-      executionLogCallback.saveExecutionLog(ExceptionUtils.getMessage(e), ERROR, CommandExecutionStatus.FAILURE);
+      executionLogCallback.saveExecutionLog(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)),
+          ERROR, CommandExecutionStatus.FAILURE);
       return false;
     }
   }
@@ -506,7 +505,7 @@ public class K8sTaskHelper {
       executionLogCallback.saveExecutionLog("Done.. \n", INFO, SUCCESS);
     } catch (Exception e) {
       executionLogCallback.saveExecutionLog("Failed to restore inherited resources: \n", ERROR, FAILURE);
-      log.error("Exception while restoring inherited resources:", e);
+      log.error("Exception while restoring inherited resources:", ExceptionMessageSanitizer.sanitizeException(e));
       return false;
     }
     return true;

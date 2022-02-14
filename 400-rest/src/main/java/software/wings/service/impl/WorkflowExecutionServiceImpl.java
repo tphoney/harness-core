@@ -1951,7 +1951,7 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     stateExecutionInstance.setWorkflowId(workflowExecution.getWorkflowId());
     stateExecutionInstance.setPipelineStageElementId(executionArgs.getPipelinePhaseElementId());
     stateExecutionInstance.setPipelineStageParallelIndex(executionArgs.getPipelinePhaseParallelIndex());
-
+    stateExecutionInstance.setIsOnDemandRollback(workflowExecution.isOnDemandRollback());
     if (workflowExecutionUpdate == null) {
       workflowExecutionUpdate = new WorkflowExecutionUpdate();
     }
@@ -5887,5 +5887,19 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
                 -> execution.setFailureDetails(fetchFailureDetails(execution.getAppId(), execution.getUuid())));
       }
     }
+  }
+
+  @Override
+  public List<WorkflowExecution> getLatestSuccessWorkflowExecutions(String appId, String workflowId,
+      List<String> serviceIds, int executionsToSkip, int executionsToIncludeInResponse) {
+    return wingsPersistence.createQuery(WorkflowExecution.class)
+        .filter("appId", appId)
+        .filter(WorkflowExecutionKeys.workflowId, workflowId)
+        .filter(WorkflowExecutionKeys.status, SUCCESS)
+        .filter(WorkflowExecutionKeys.workflowType, ORCHESTRATION)
+        .field(WorkflowExecutionKeys.serviceIds)
+        .in(serviceIds)
+        .order(Sort.descending(WorkflowExecutionKeys.createdAt))
+        .asList(new FindOptions().skip(executionsToSkip).limit(executionsToIncludeInResponse));
   }
 }

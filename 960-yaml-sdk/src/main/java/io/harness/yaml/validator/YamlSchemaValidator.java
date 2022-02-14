@@ -13,6 +13,7 @@ import io.harness.EntityType;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
 import io.harness.yaml.schema.beans.YamlSchemaRootClass;
+import io.harness.yaml.utils.SchemaValidationUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,8 +24,11 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.ValidatorTypeCode;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,13 +40,20 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(DX)
 public class YamlSchemaValidator {
   public static Map<EntityType, JsonSchema> schemas = new HashMap<>();
+  public static final String ENUM_SCHEMA_ERROR_CODE = ValidatorTypeCode.ENUM.getErrorCode();
+  public static final String REQUIRED_SCHEMA_ERROR_CODE = ValidatorTypeCode.REQUIRED.getErrorCode();
   ObjectMapper mapper;
   List<YamlSchemaRootClass> yamlSchemaRootClasses;
+  EnumCodeSchemaHandler enumCodeSchemaHandler;
+  RequiredCodeSchemaHandler requiredCodeSchemaHandler;
 
   @Inject
-  public YamlSchemaValidator(List<YamlSchemaRootClass> yamlSchemaRootClasses) {
+  public YamlSchemaValidator(List<YamlSchemaRootClass> yamlSchemaRootClasses,
+      EnumCodeSchemaHandler enumCodeSchemaHandler, RequiredCodeSchemaHandler requiredCodeSchemaHandler) {
     mapper = new ObjectMapper(new YAMLFactory());
     this.yamlSchemaRootClasses = yamlSchemaRootClasses;
+    this.enumCodeSchemaHandler = enumCodeSchemaHandler;
+    this.requiredCodeSchemaHandler = requiredCodeSchemaHandler;
   }
 
   /**
@@ -71,7 +82,11 @@ public class YamlSchemaValidator {
         JsonSchemaFactory.builder(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7)).build();
     JsonSchema schema = factory.getSchema(stringSchema);
     Set<ValidationMessage> validateMsg = schema.validate(jsonNode);
-    return validateMsg.stream().map(ValidationMessage::getMessage).collect(Collectors.toSet());
+    if (!validateMsg.isEmpty()) {
+      log.error(validateMsg.stream().map(ValidationMessage::getMessage).collect(Collectors.joining("\n")));
+    }
+    Set<ValidationMessage> processValidationMessages = processValidationMessages(validateMsg, jsonNode);
+    return processValidationMessages.stream().map(ValidationMessage::getMessage).collect(Collectors.toSet());
   }
 
   public void populateSchemaInStaticMap(JsonNode schema, EntityType entityType) {
@@ -91,5 +106,22 @@ public class YamlSchemaValidator {
    */
   public void initializeValidatorWithSchema(Map<EntityType, JsonNode> schemas) {
     schemas.forEach((entityType, jsonNode) -> populateSchemaInStaticMap(jsonNode, entityType));
+  }
+
+  protected Set<ValidationMessage> processValidationMessages(
+      Collection<ValidationMessage> validationMessages, JsonNode jsonNode) {
+    Map<String, List<ValidationMessage>> validationMessageCodeMap =
+        SchemaValidationUtils.getValidationMessageCodeMap(validationMessages);
+    Set<ValidationMessage> validationMessageList = new HashSet<>();
+    for (Map.Entry<String, List<ValidationMessage>> validationEntry : validationMessageCodeMap.entrySet()) {
+      if (validationEntry.getKey().equals(ENUM_SCHEMA_ERROR_CODE)) {
+        validationMessageList.addAll(enumCodeSchemaHandler.handle(validationEntry.getValue()));
+      } else if (validationEntry.getKey().equals(REQUIRED_SCHEMA_ERROR_CODE)) {
+        validationMessageList.addAll(requiredCodeSchemaHandler.handle(validationEntry.getValue(), jsonNode));
+      } else {
+        validationMessageList.addAll(validationEntry.getValue());
+      }
+    }
+    return validationMessageList;
   }
 }

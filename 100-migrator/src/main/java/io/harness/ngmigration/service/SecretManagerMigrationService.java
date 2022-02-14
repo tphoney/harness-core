@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 @OwnedBy(HarnessTeam.CDC)
-public class SecretManagerMigrationService implements NgMigration {
+public class SecretManagerMigrationService implements NgMigrationService {
   @Inject private SecretManager secretManager;
 
   @Override
@@ -74,12 +74,14 @@ public class SecretManagerMigrationService implements NgMigration {
       Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities) {
     SecretManagerConfig secretManagerConfig = (SecretManagerConfig) entities.get(entityId).getEntity();
     List<NGYamlFile> files = new ArrayList<>();
+    String name = secretManagerConfig.getName();
+    String identifier = MigratorUtility.generateIdentifier(name);
     files.add(NGYamlFile.builder()
-                  .filename("connector/" + secretManagerConfig.getName() + ".yaml")
+                  .filename("connector/" + name + ".yaml")
                   .yaml(ConnectorDTO.builder()
                             .connectorInfo(ConnectorInfoDTO.builder()
-                                               .name(secretManagerConfig.getName())
-                                               .identifier(secretManagerConfig.getName())
+                                               .name(name)
+                                               .identifier(identifier)
                                                .description(null)
                                                .tags(null)
                                                .orgIdentifier(inputDTO.getOrgIdentifier())
@@ -88,7 +90,16 @@ public class SecretManagerMigrationService implements NgMigration {
                                                .connectorConfig(SecretFactory.getConfigDTO(secretManagerConfig))
                                                .build())
                             .build())
+                  .type(NGMigrationEntityType.SECRET_MANAGER)
                   .build());
+
+    migratedEntities.putIfAbsent(entityId,
+        NgEntityDetail.builder()
+            .identifier(identifier)
+            .orgIdentifier(inputDTO.getOrgIdentifier())
+            .projectIdentifier(inputDTO.getProjectIdentifier())
+            .build());
+
     return files;
   }
 }

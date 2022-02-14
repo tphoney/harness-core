@@ -43,7 +43,7 @@ import retrofit2.Response;
 
 @Slf4j
 @OwnedBy(HarnessTeam.CDC)
-public class ConnectorMigrationService implements NgMigration {
+public class ConnectorMigrationService implements NgMigrationService {
   @Inject private SettingsService settingsService;
 
   @Override
@@ -81,7 +81,7 @@ public class ConnectorMigrationService implements NgMigration {
       NGYamlFile yamlFile) throws IOException {
     Response<ResponseDTO<ConnectorResponseDTO>> resp =
         ngClient.createConnector(auth, inputDTO.getAccountIdentifier(), JsonUtils.asTree(yamlFile.getYaml())).execute();
-    log.info("Connector creation Response details {}", resp.code());
+    log.info("Connector creation Response details {} {}", resp.code(), resp.message());
   }
 
   @Override
@@ -90,6 +90,7 @@ public class ConnectorMigrationService implements NgMigration {
     SettingAttribute settingAttribute = (SettingAttribute) entities.get(entityId).getEntity();
     List<NGYamlFile> files = new ArrayList<>();
     String identifier = MigratorUtility.generateIdentifier(settingAttribute.getName());
+    Set<CgEntityId> childEntities = graph.get(entityId);
     files.add(NGYamlFile.builder()
                   .type(NGMigrationEntityType.CONNECTOR)
                   .filename("connector/" + settingAttribute.getName() + ".yaml")
@@ -102,7 +103,8 @@ public class ConnectorMigrationService implements NgMigration {
                                                .orgIdentifier(inputDTO.getOrgIdentifier())
                                                .projectIdentifier(inputDTO.getProjectIdentifier())
                                                .connectorType(ConnectorFactory.getConnectorType(settingAttribute))
-                                               .connectorConfig(ConnectorFactory.getConfigDTO(settingAttribute))
+                                               .connectorConfig(ConnectorFactory.getConfigDTO(
+                                                   settingAttribute, childEntities, migratedEntities))
                                                .build())
                             .build())
                   .build());

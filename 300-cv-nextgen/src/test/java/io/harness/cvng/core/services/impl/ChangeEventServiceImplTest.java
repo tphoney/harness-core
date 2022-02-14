@@ -25,6 +25,7 @@ import io.harness.cvng.client.NextGenService;
 import io.harness.cvng.core.beans.change.ChangeSummaryDTO;
 import io.harness.cvng.core.beans.change.ChangeTimeline;
 import io.harness.cvng.core.beans.change.ChangeTimeline.TimeRangeDetail;
+import io.harness.cvng.core.beans.monitoredService.DurationDTO;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.services.api.monitoredService.ChangeSourceService;
 import io.harness.cvng.core.services.impl.ChangeEventServiceImpl.TimelineObject;
@@ -80,7 +81,7 @@ public class ChangeEventServiceImplTest extends CvNextGenTestBase {
   @Owner(developers = ABHIJITH)
   @Category(UnitTests.class)
   public void testRegister_insert() {
-    changeSourceService.create(builderFactory.getContext().getServiceEnvironmentParams(),
+    changeSourceService.create(builderFactory.getContext().getMonitoredServiceParams(),
         new HashSet<>(Arrays.asList(builderFactory.getHarnessCDChangeSourceDTOBuilder().build())));
     ChangeEventDTO changeEventDTO = builderFactory.getHarnessCDChangeEventDTOBuilder().build();
 
@@ -94,7 +95,7 @@ public class ChangeEventServiceImplTest extends CvNextGenTestBase {
   @Owner(developers = ABHIJITH)
   @Category(UnitTests.class)
   public void testRegister_update() {
-    changeSourceService.create(builderFactory.getContext().getServiceEnvironmentParams(),
+    changeSourceService.create(builderFactory.getContext().getMonitoredServiceParams(),
         new HashSet<>(Arrays.asList(builderFactory.getHarnessCDChangeSourceDTOBuilder().build())));
 
     ChangeEventDTO changeEventDTO = builderFactory.getHarnessCDChangeEventDTOBuilder().build();
@@ -112,7 +113,7 @@ public class ChangeEventServiceImplTest extends CvNextGenTestBase {
   @Owner(developers = ABHIJITH)
   @Category(UnitTests.class)
   public void testRegister_noChangeSource() {
-    changeSourceService.create(builderFactory.getContext().getServiceEnvironmentParams(),
+    changeSourceService.create(builderFactory.getContext().getMonitoredServiceParams(),
         new HashSet<>(Arrays.asList(builderFactory.getHarnessCDChangeSourceDTOBuilder().build())));
     ChangeEventDTO changeEventDTO = builderFactory.getHarnessCDChangeEventDTOBuilder().build();
 
@@ -130,7 +131,7 @@ public class ChangeEventServiceImplTest extends CvNextGenTestBase {
     hPersistence.save(harnessCDActivity);
 
     List<ChangeEventDTO> changeEventDTOS =
-        changeEventService.get(builderFactory.getContext().getServiceEnvironmentParams(), changeSourceIdentifiers,
+        changeEventService.get(builderFactory.getContext().getMonitoredServiceParams(), changeSourceIdentifiers,
             builderFactory.getClock().instant().minus(Duration.ofMinutes(10)),
             builderFactory.getClock().instant().plus(Duration.ofMinutes(10)), null);
     Assertions.assertThat(changeEventDTOS.size()).isEqualTo(1);
@@ -435,6 +436,43 @@ public class ChangeEventServiceImplTest extends CvNextGenTestBase {
     assertThat(infrastructureChanges.get(0).getCount()).isEqualTo(1);
     assertThat(infrastructureChanges.get(0).getStartTime()).isEqualTo(300000);
     assertThat(infrastructureChanges.get(0).getEndTime()).isEqualTo(500000);
+  }
+
+  @Test
+  @Owner(developers = ABHIJITH)
+  @Category(UnitTests.class)
+  public void testGetMonitoredServiceChangeTimeline() {
+    hPersistence.save(Arrays.asList(
+        builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
+        builderFactory.getKubernetesClusterActivityForAppServiceBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
+        builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(100)).build(),
+        builderFactory.getDeploymentActivityBuilder()
+            .serviceIdentifier("service2")
+            .environmentIdentifier("env2")
+            .eventTime(Instant.ofEpochSecond(500))
+            .build(),
+        builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(14398)).build(),
+        builderFactory.getKubernetesClusterActivityForAppServiceBuilder()
+            .eventTime(Instant.ofEpochSecond(14399500))
+            .build()));
+    ChangeTimeline changeTimeline =
+        changeEventService.getMonitoredServiceChangeTimeline(builderFactory.getContext().getServiceEnvironmentParams(),
+            null, null, DurationDTO.FOUR_HOURS, Instant.ofEpochSecond(14398));
+
+    List<TimeRangeDetail> deploymentChanges = changeTimeline.getCategoryTimeline().get(ChangeCategory.DEPLOYMENT);
+    assertThat(deploymentChanges.size()).isEqualTo(2);
+    assertThat(deploymentChanges.get(0).getCount()).isEqualTo(2);
+    assertThat(deploymentChanges.get(0).getStartTime()).isEqualTo(0);
+    assertThat(deploymentChanges.get(0).getEndTime()).isEqualTo(300000);
+    assertThat(deploymentChanges.get(1).getCount()).isEqualTo(1);
+    assertThat(deploymentChanges.get(1).getStartTime()).isEqualTo(14100000);
+    assertThat(deploymentChanges.get(1).getEndTime()).isEqualTo(14400000);
+    List<TimeRangeDetail> infrastructureChanges =
+        changeTimeline.getCategoryTimeline().get(ChangeCategory.INFRASTRUCTURE);
+    assertThat(infrastructureChanges.size()).isEqualTo(1);
+    assertThat(infrastructureChanges.get(0).getCount()).isEqualTo(1);
+    assertThat(infrastructureChanges.get(0).getStartTime()).isEqualTo(0);
+    assertThat(infrastructureChanges.get(0).getEndTime()).isEqualTo(300000);
   }
 
   @Test

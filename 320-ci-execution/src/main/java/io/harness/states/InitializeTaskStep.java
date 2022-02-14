@@ -40,6 +40,7 @@ import io.harness.delegate.beans.ci.CITaskExecutionResponse;
 import io.harness.delegate.beans.ci.k8s.CIContainerStatus;
 import io.harness.delegate.beans.ci.k8s.CiK8sTaskResponse;
 import io.harness.delegate.beans.ci.k8s.K8sTaskExecutionResponse;
+import io.harness.delegate.beans.ci.vm.VmServiceStatus;
 import io.harness.delegate.beans.ci.vm.VmTaskExecutionResponse;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.ngexception.CIStageExecutionException;
@@ -172,7 +173,7 @@ public class InitializeTaskStep implements TaskExecutableWithRbac<StepElementPar
     InitializeStepInfo stepParameters = (InitializeStepInfo) stepElementParameters.getSpec();
 
     DependencyOutcome dependencyOutcome =
-        getDependencyOutcome(ambiance, stepParameters, k8sTaskExecutionResponse.getK8sTaskResponse());
+        getK8DependencyOutcome(ambiance, stepParameters, k8sTaskExecutionResponse.getK8sTaskResponse());
     LiteEnginePodDetailsOutcome liteEnginePodDetailsOutcome =
         getPodDetailsOutcome(k8sTaskExecutionResponse.getK8sTaskResponse());
 
@@ -210,9 +211,14 @@ public class InitializeTaskStep implements TaskExecutableWithRbac<StepElementPar
   private StepResponse handleVmTaskResponse(
       Ambiance ambiance, StepElementParameters stepElementParameters, CITaskExecutionResponse ciTaskExecutionResponse) {
     VmTaskExecutionResponse vmTaskExecutionResponse = (VmTaskExecutionResponse) ciTaskExecutionResponse;
+    DependencyOutcome dependencyOutcome = getVmDependencyOutcome(vmTaskExecutionResponse);
+    StepResponse.StepOutcome stepOutcome =
+        StepResponse.StepOutcome.builder().name(DEPENDENCY_OUTCOME).outcome(dependencyOutcome).build();
+
     if (vmTaskExecutionResponse.getCommandExecutionStatus() == CommandExecutionStatus.SUCCESS) {
       return StepResponse.builder()
           .status(Status.SUCCEEDED)
+          .stepOutcome(stepOutcome)
           .stepOutcome(
               StepResponse.StepOutcome.builder()
                   .name(VM_DETAILS_OUTCOME)
@@ -223,7 +229,7 @@ public class InitializeTaskStep implements TaskExecutableWithRbac<StepElementPar
     } else {
       log.error("VM initialize step execution finished with status [{}] and response [{}]",
           vmTaskExecutionResponse.getCommandExecutionStatus(), vmTaskExecutionResponse);
-      StepResponseBuilder stepResponseBuilder = StepResponse.builder().status(Status.FAILED);
+      StepResponseBuilder stepResponseBuilder = StepResponse.builder().status(Status.FAILED).stepOutcome(stepOutcome);
       if (vmTaskExecutionResponse.getErrorMessage() != null) {
         stepResponseBuilder.failureInfo(
             FailureInfo.newBuilder().setErrorMessage(vmTaskExecutionResponse.getErrorMessage()).build());
@@ -241,7 +247,7 @@ public class InitializeTaskStep implements TaskExecutableWithRbac<StepElementPar
     return null;
   }
 
-  private DependencyOutcome getDependencyOutcome(
+  private DependencyOutcome getK8DependencyOutcome(
       Ambiance ambiance, InitializeStepInfo stepParameters, CiK8sTaskResponse ciK8sTaskResponse) {
     List<ContainerDefinitionInfo> serviceContainers = buildSetupUtils.getBuildServiceContainers(stepParameters);
     List<ServiceDependency> serviceDependencyList = new ArrayList<>();
@@ -293,6 +299,31 @@ public class InitializeTaskStep implements TaskExecutableWithRbac<StepElementPar
                                       .logKeys(Collections.singletonList(logKey))
                                       .build());
       }
+    }
+    return DependencyOutcome.builder().serviceDependencyList(serviceDependencyList).build();
+  }
+
+  private DependencyOutcome getVmDependencyOutcome(VmTaskExecutionResponse vmTaskExecutionResponse) {
+    List<ServiceDependency> serviceDependencyList = new ArrayList<>();
+
+    List<VmServiceStatus> serviceStatuses = vmTaskExecutionResponse.getServiceStatuses();
+    if (isEmpty(serviceStatuses)) {
+      return DependencyOutcome.builder().serviceDependencyList(serviceDependencyList).build();
+    }
+
+    for (VmServiceStatus serviceStatus : serviceStatuses) {
+      ServiceDependency.Status status = ServiceDependency.Status.SUCCESS;
+      if (serviceStatus.getStatus() == VmServiceStatus.Status.ERROR) {
+        status = ServiceDependency.Status.ERROR;
+      }
+      serviceDependencyList.add(ServiceDependency.builder()
+                                    .identifier(serviceStatus.getIdentifier())
+                                    .name(serviceStatus.getName())
+                                    .image(serviceStatus.getImage())
+                                    .errorMessage(serviceStatus.getErrorMessage())
+                                    .status(status.getDisplayName())
+                                    .logKeys(Collections.singletonList(serviceStatus.getLogKey()))
+                                    .build());
     }
     return DependencyOutcome.builder().serviceDependencyList(serviceDependencyList).build();
   }

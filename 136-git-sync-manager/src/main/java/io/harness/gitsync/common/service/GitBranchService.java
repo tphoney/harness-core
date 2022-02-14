@@ -37,7 +37,8 @@ public interface GitBranchService {
 
   void checkBranchIsNotAlreadyShortlisted(String repoURL, String accountId, String branch);
 
-  boolean isBranchExists(String accountIdentifier, String repoURL, String branch, BranchSyncStatus branchSyncStatus);
+  boolean isBranchExists(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String yamlGitConfigId, String branch);
 
   DeleteResult delete(String repoUrl, String branchName, String accountIdentifier);
 

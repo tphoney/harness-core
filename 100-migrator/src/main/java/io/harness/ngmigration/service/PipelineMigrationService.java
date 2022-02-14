@@ -48,7 +48,7 @@ import retrofit2.Response;
 
 @Slf4j
 @OwnedBy(HarnessTeam.CDC)
-public class PipelineMigrationService implements NgMigration {
+public class PipelineMigrationService implements NgMigrationService {
   @Inject private PipelineService pipelineService;
   @Inject private WorkflowMigrationService workflowMigrationService;
 
@@ -101,7 +101,7 @@ public class PipelineMigrationService implements NgMigration {
                 inputDTO.getProjectIdentifier(),
                 RequestBody.create(MediaType.parse("application/yaml"), YamlUtils.write(yamlFile.getYaml())))
             .execute();
-    log.info("Pipeline creation Response details {}", resp.code());
+    log.info("Pipeline creation Response details {} {}", resp.code(), resp.message());
   }
 
   @Override

@@ -263,6 +263,8 @@ public class InstanceDataDaoImpl implements InstanceDataDao {
 
   @Override
   public void updateInstancePricingData(InstanceData instanceData, Pricing pricing) {
+    InstanceData i1 = this.fetchInstanceData(instanceData.getInstanceId());
+    log.info("Before Update instanceData: {}", i1);
     UpdateOperations<InstanceData> instanceDataUpdateOperations =
         hPersistence.createUpdateOperations(InstanceData.class)
             .set(InstanceDataKeys.pricing, pricing);
@@ -270,6 +272,10 @@ public class InstanceDataDaoImpl implements InstanceDataDao {
         .filter(InstanceDataKeys.instanceId, instanceData.getInstanceId());
 
     hPersistence.upsert(query, instanceDataUpdateOperations, upsertReturnOldOptions);
+
+    InstanceData i2 = this.fetchInstanceData(instanceData.getInstanceId());
+    log.info("After Update instanceData: {}", i2);
+    log.info("i1 Pricing : {}, i2 Pricing: {}", i1.getPricing(), i2.getPricing());
 
 //    instanceData.setPricing(pricing);
 //    return hPersistence.save(instanceData) != null;

@@ -13,6 +13,7 @@ import static software.wings.beans.Service.ServiceKeys;
 
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -108,7 +109,7 @@ public class ServiceResourceTest extends CategoryTest {
   @Owner(developers = ARCHIT)
   @Category(UnitTests.class)
   public void testCreate() {
-    doReturn(serviceEntity).when(serviceEntityService).create(serviceEntity);
+    doReturn(serviceEntity).when(serviceEntityService).create(any());
     ServiceResponseDTO serviceResponse =
         serviceResource.create(serviceEntity.getAccountId(), serviceRequestDTO).getData();
     assertThat(serviceResponse).isEqualTo(serviceResponseDTO);

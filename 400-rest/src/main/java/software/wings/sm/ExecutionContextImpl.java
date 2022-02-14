@@ -192,6 +192,7 @@ public class ExecutionContextImpl implements DeploymentExecutionContext {
   private static final SecureRandom random = new SecureRandom();
   private static final Pattern wildCharPattern = Pattern.compile("[-+*/\\\\ &$\"'.|]");
   private static final Pattern argsCharPattern = Pattern.compile("[()\"']");
+  private static final String CURRENT_STEP_LITERAL = "currentStep";
 
   @Inject private BuildSourceService buildSourceService;
   @Inject private transient ArtifactService artifactService;
@@ -959,6 +960,10 @@ public class ExecutionContextImpl implements DeploymentExecutionContext {
     }
     contextMap = new LateBindingMap();
 
+    if (stateExecutionInstance != null) {
+      contextMap.put(CURRENT_STEP_LITERAL, buildStateInfo(stateExecutionInstance));
+    }
+
     // add state execution data
     stateExecutionInstance.getStateExecutionMap().forEach(
         (key, value) -> contextMap.put(normalizeStateName(key), value));
@@ -1081,6 +1086,7 @@ public class ExecutionContextImpl implements DeploymentExecutionContext {
 
   private Map<String, Object> prepareContext(StateExecutionContext stateExecutionContext) {
     Map<String, Object> map = prepareCacheContext(stateExecutionContext);
+
     if (stateExecutionContext == null) {
       return map;
     }
@@ -1096,6 +1102,7 @@ public class ExecutionContextImpl implements DeploymentExecutionContext {
     if (stateExecutionData != null) {
       map = copyIfNeeded(map);
       map.put(normalizeStateName(getStateExecutionInstance().getDisplayName()), stateExecutionData);
+
       if (isNotEmpty(stateExecutionData.getTemplateVariable())) {
         map = copyIfNeeded(map);
         map.putAll(stateExecutionData.getTemplateVariable());
@@ -1113,6 +1120,13 @@ public class ExecutionContextImpl implements DeploymentExecutionContext {
       map.put(ExpressionEvaluator.ARTIFACT_FILE_NAME_VARIABLE, stateExecutionContext.getArtifactFileName());
     }
     return map;
+  }
+
+  private StateInfo buildStateInfo(StateExecutionInstance stateExecutionInstance) {
+    return StateInfo.builder()
+        .name(stateExecutionInstance.getStateName())
+        .type(stateExecutionInstance.getStateType())
+        .build();
   }
 
   @Override

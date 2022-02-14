@@ -13,6 +13,7 @@ import io.harness.EntityType;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
 import io.harness.yaml.schema.beans.YamlSchemaRootClass;
+import io.harness.yaml.utils.SchemaValidationUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,8 +26,6 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import com.networknt.schema.ValidatorTypeCode;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,13 +41,19 @@ import lombok.extern.slf4j.Slf4j;
 public class YamlSchemaValidator {
   public static Map<EntityType, JsonSchema> schemas = new HashMap<>();
   public static final String ENUM_SCHEMA_ERROR_CODE = ValidatorTypeCode.ENUM.getErrorCode();
+  public static final String REQUIRED_SCHEMA_ERROR_CODE = ValidatorTypeCode.REQUIRED.getErrorCode();
   ObjectMapper mapper;
   List<YamlSchemaRootClass> yamlSchemaRootClasses;
+  EnumCodeSchemaHandler enumCodeSchemaHandler;
+  RequiredCodeSchemaHandler requiredCodeSchemaHandler;
 
   @Inject
-  public YamlSchemaValidator(List<YamlSchemaRootClass> yamlSchemaRootClasses) {
+  public YamlSchemaValidator(List<YamlSchemaRootClass> yamlSchemaRootClasses,
+      EnumCodeSchemaHandler enumCodeSchemaHandler, RequiredCodeSchemaHandler requiredCodeSchemaHandler) {
     mapper = new ObjectMapper(new YAMLFactory());
     this.yamlSchemaRootClasses = yamlSchemaRootClasses;
+    this.enumCodeSchemaHandler = enumCodeSchemaHandler;
+    this.requiredCodeSchemaHandler = requiredCodeSchemaHandler;
   }
 
   /**
@@ -76,8 +81,12 @@ public class YamlSchemaValidator {
     JsonSchemaFactory factory =
         JsonSchemaFactory.builder(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7)).build();
     JsonSchema schema = factory.getSchema(stringSchema);
-    Set<ValidationMessage> validateMsg = processValidationMessages(schema.validate(jsonNode));
-    return validateMsg.stream().map(ValidationMessage::getMessage).collect(Collectors.toSet());
+    Set<ValidationMessage> validateMsg = schema.validate(jsonNode);
+    if (!validateMsg.isEmpty()) {
+      log.error(validateMsg.stream().map(ValidationMessage::getMessage).collect(Collectors.joining("\n")));
+    }
+    Set<ValidationMessage> processValidationMessages = processValidationMessages(validateMsg, jsonNode);
+    return processValidationMessages.stream().map(ValidationMessage::getMessage).collect(Collectors.toSet());
   }
 
   public void populateSchemaInStaticMap(JsonNode schema, EntityType entityType) {
@@ -99,60 +108,20 @@ public class YamlSchemaValidator {
     schemas.forEach((entityType, jsonNode) -> populateSchemaInStaticMap(jsonNode, entityType));
   }
 
-  protected Set<ValidationMessage> processValidationMessages(Collection<ValidationMessage> validationMessages) {
-    Map<String, List<ValidationMessage>> codes = new HashMap<>();
-    for (ValidationMessage validationMessage : validationMessages) {
-      if (codes.containsKey(validationMessage.getCode())) {
-        codes.get(validationMessage.getCode()).add(validationMessage);
-      } else {
-        List<ValidationMessage> validationMessageList = new ArrayList<>();
-        validationMessageList.add(validationMessage);
-        codes.put(validationMessage.getCode(), validationMessageList);
-      }
-    }
+  protected Set<ValidationMessage> processValidationMessages(
+      Collection<ValidationMessage> validationMessages, JsonNode jsonNode) {
+    Map<String, List<ValidationMessage>> validationMessageCodeMap =
+        SchemaValidationUtils.getValidationMessageCodeMap(validationMessages);
     Set<ValidationMessage> validationMessageList = new HashSet<>();
-    for (Map.Entry<String, List<ValidationMessage>> validationEntry : codes.entrySet()) {
+    for (Map.Entry<String, List<ValidationMessage>> validationEntry : validationMessageCodeMap.entrySet()) {
       if (validationEntry.getKey().equals(ENUM_SCHEMA_ERROR_CODE)) {
-        validationMessageList.addAll(processEnumValidationCode(validationEntry.getValue()));
+        validationMessageList.addAll(enumCodeSchemaHandler.handle(validationEntry.getValue()));
+      } else if (validationEntry.getKey().equals(REQUIRED_SCHEMA_ERROR_CODE)) {
+        validationMessageList.addAll(requiredCodeSchemaHandler.handle(validationEntry.getValue(), jsonNode));
       } else {
         validationMessageList.addAll(validationEntry.getValue());
       }
     }
     return validationMessageList;
-  }
-
-  private List<ValidationMessage> processEnumValidationCode(List<ValidationMessage> validationMessages) {
-    Map<String, List<ValidationMessage>> pathMap = new HashMap<>();
-    for (ValidationMessage validationMessage : validationMessages) {
-      if (pathMap.containsKey(validationMessage.getPath())) {
-        pathMap.get(validationMessage.getPath()).add(validationMessage);
-      } else {
-        List<ValidationMessage> validationMessageList = new ArrayList<>();
-        validationMessageList.add(validationMessage);
-        pathMap.put(validationMessage.getPath(), validationMessageList);
-      }
-    }
-    List<ValidationMessage> processedValidationMsg = new ArrayList<>();
-    for (List<ValidationMessage> validationMessageList : pathMap.values()) {
-      List<String> arguments = new ArrayList<>();
-      for (ValidationMessage validationMessage : validationMessageList) {
-        arguments.addAll(Arrays.asList(removeParenthesisFromArguments(validationMessage.getArguments())));
-      }
-      ValidationMessage validationMessage = validationMessageList.get(0);
-      processedValidationMsg.add(ValidationMessage.of(validationMessage.getType(), ValidatorTypeCode.ENUM,
-          validationMessage.getPath(), Arrays.toString(arguments.toArray())));
-    }
-    return processedValidationMsg;
-  }
-
-  private String[] removeParenthesisFromArguments(String[] arguments) {
-    List<String> cleanArguments = new ArrayList<>();
-    int length = arguments.length;
-    for (int index = 0; index < length; index++) {
-      if (!arguments[index].equals("[]")) {
-        cleanArguments.add(arguments[index].substring(1, arguments[index].length() - 1));
-      }
-    }
-    return cleanArguments.toArray(new String[0]);
   }
 }

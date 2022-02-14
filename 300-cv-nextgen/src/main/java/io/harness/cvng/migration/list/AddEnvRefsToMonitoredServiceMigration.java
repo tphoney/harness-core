@@ -7,6 +7,8 @@
 
 package io.harness.cvng.migration.list;
 
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+
 import io.harness.cvng.core.entities.MonitoredService;
 import io.harness.cvng.core.entities.MonitoredService.MonitoredServiceKeys;
 import io.harness.cvng.migration.CVNGMigration;
@@ -31,12 +33,16 @@ public class AddEnvRefsToMonitoredServiceMigration implements CVNGMigration {
     try (HIterator<MonitoredService> iterator = new HIterator<>(monitoredServiceQuery.fetch())) {
       while (iterator.hasNext()) {
         MonitoredService monitoredService = iterator.next();
-        UpdateResults updateResults = hPersistence.update(monitoredService,
-            hPersistence.createUpdateOperations(MonitoredService.class)
-                .set(MonitoredServiceKeys.environmentIdentifierList,
-                    Collections.singletonList(monitoredService.getEnvironmentIdentifier())));
-        log.info("Updated for monitored service {}, {}, Update Result {}", monitoredService.getProjectIdentifier(),
-            monitoredService.getIdentifier(), updateResults);
+        if (isEmpty(monitoredService.getEnvironmentIdentifierList())) {
+          UpdateResults updateResults = hPersistence.update(monitoredService,
+              hPersistence.createUpdateOperations(MonitoredService.class)
+                  .set(MonitoredServiceKeys.environmentIdentifierList,
+                      Collections.singletonList(monitoredService.getEnvironmentIdentifier())));
+          log.info("Updated for monitored service {}, {}, Update Result {}", monitoredService.getProjectIdentifier(),
+              monitoredService.getIdentifier(), updateResults);
+        } else {
+          log.info("Skipping as the env list is already set.");
+        }
       }
     }
   }

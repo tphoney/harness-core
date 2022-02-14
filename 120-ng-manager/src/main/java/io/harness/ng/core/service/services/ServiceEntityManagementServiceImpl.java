@@ -16,16 +16,10 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.dtos.InstanceDTO;
 import io.harness.exception.InvalidRequestException;
-import io.harness.ng.core.entities.Organization;
-import io.harness.ng.core.entities.Project;
-import io.harness.ng.core.services.OrganizationService;
-import io.harness.ng.core.services.ProjectService;
 import io.harness.service.instance.InstanceService;
 
 import com.google.inject.Inject;
 import java.util.List;
-import java.util.Optional;
-import javax.ws.rs.NotFoundException;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
@@ -33,8 +27,6 @@ import lombok.AllArgsConstructor;
 public class ServiceEntityManagementServiceImpl implements ServiceEntityManagementService {
   private final InstanceService instanceService;
   private final ServiceEntityService serviceEntityService;
-  private final ProjectService projectService;
-  private final OrganizationService organizationService;
 
   @Override
   public boolean deleteService(

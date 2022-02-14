@@ -104,8 +104,8 @@ public class ServiceResourceV2Test extends CategoryTest {
   @Owner(developers = SHIVAM)
   @Category(UnitTests.class)
   public void testCreateServices() throws IOException {
-    List<ServiceRequestDTO> serviceRequestDTOList = new ArrayList<ServiceRequestDTO>();
-    List<ServiceEntity> serviceEntityList = new ArrayList<ServiceEntity>();
+    List<ServiceRequestDTO> serviceRequestDTOList = new ArrayList<>();
+    List<ServiceEntity> serviceEntityList = new ArrayList<>();
     List<ServiceEntity> outputServiceEntitiesList = new ArrayList<>();
     outputServiceEntitiesList.add(entity);
     serviceEntityList.add(entity);

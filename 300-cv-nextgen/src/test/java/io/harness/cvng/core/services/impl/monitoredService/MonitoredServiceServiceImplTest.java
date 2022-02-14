@@ -1119,7 +1119,8 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     monitoredServiceDTO.setIdentifier(identifier3);
     monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
 
-    PageResponse pageResponse = monitoredServiceService.getList(projectParams, environmentIdentifier, 0, 10, null);
+    PageResponse pageResponse =
+        monitoredServiceService.getList(projectParams, Collections.singletonList(environmentIdentifier), 0, 10, null);
     assertThat(pageResponse.getPageSize()).isEqualTo(10);
     assertThat(pageResponse.getPageItemCount()).isEqualTo(3);
     assertThat(pageResponse.getTotalItems()).isEqualTo(3);

@@ -90,7 +90,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
     try {
       validatePresenceOfRequiredFields(serviceEntity.getAccountId(), serviceEntity.getIdentifier());
       setNameIfNotPresent(serviceEntity);
-      validateTheServiceRequest(serviceEntity);
+      modifyServiceRequest(serviceEntity);
       return Failsafe.with(transactionRetryPolicy).get(() -> transactionTemplate.execute(status -> {
         ServiceEntity service = serviceRepository.save(serviceEntity);
         outboxService.save(ServiceCreateEvent.builder()
@@ -121,7 +121,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
   public ServiceEntity update(@Valid ServiceEntity requestService) {
     validatePresenceOfRequiredFields(requestService.getAccountId(), requestService.getIdentifier());
     setNameIfNotPresent(requestService);
-    validateTheServiceRequest(requestService);
+    modifyServiceRequest(requestService);
     Criteria criteria = getServiceEqualityCriteria(requestService, requestService.getDeleted());
     Optional<ServiceEntity> serviceEntityOptional =
         get(requestService.getAccountId(), requestService.getOrgIdentifier(), requestService.getProjectIdentifier(),
@@ -156,7 +156,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
   public ServiceEntity upsert(@Valid ServiceEntity requestService) {
     validatePresenceOfRequiredFields(requestService.getAccountId(), requestService.getIdentifier());
     setNameIfNotPresent(requestService);
-    validateTheServiceRequest(requestService);
+    modifyServiceRequest(requestService);
     Criteria criteria = getServiceEqualityCriteria(requestService, requestService.getDeleted());
     return Failsafe.with(transactionRetryPolicy).get(() -> transactionTemplate.execute(status -> {
       ServiceEntity result = serviceRepository.upsert(criteria, requestService);
@@ -256,7 +256,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
     }
   }
 
-  private void validateTheServiceRequest(ServiceEntity requestService) {
+  private void modifyServiceRequest(ServiceEntity requestService) {
     requestService.setName(requestService.getName().trim());
   }
 
@@ -282,7 +282,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
     try {
       validateTheServicesList(serviceEntities);
       populateDefaultNameIfNotPresent(serviceEntities);
-      validateTheServiceRequestBatch(serviceEntities);
+      modifyServiceRequestBatch(serviceEntities);
       List<ServiceEntity> outputServiceEntitiesList = (List<ServiceEntity>) serviceRepository.saveAll(serviceEntities);
       return new PageImpl<>(outputServiceEntitiesList);
     } catch (DuplicateKeyException ex) {
@@ -402,10 +402,10 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
     serviceEntities.forEach(this::setNameIfNotPresent);
   }
 
-  private void validateTheServiceRequestBatch(List<ServiceEntity> serviceEntities) {
+  private void modifyServiceRequestBatch(List<ServiceEntity> serviceEntities) {
     if (isEmpty(serviceEntities)) {
       return;
     }
-    serviceEntities.forEach(serviceEntity -> validateTheServiceRequest(serviceEntity));
+    serviceEntities.forEach(serviceEntity -> modifyServiceRequest(serviceEntity));
   }
 }

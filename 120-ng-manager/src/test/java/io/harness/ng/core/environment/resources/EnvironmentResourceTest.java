@@ -67,7 +67,6 @@ public class EnvironmentResourceTest extends CategoryTest {
                                 .name("ENV")
                                 .type(EnvironmentType.PreProduction)
                                 .tags(singletonMap("k1", "v1"))
-                                .version(0L)
                                 .build();
 
     environmentResponseDTO = EnvironmentResponseDTO.builder()

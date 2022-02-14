@@ -1,6 +1,7 @@
 package io.harness.iterator;
 
 import static io.harness.beans.DelegateTask.Status.QUEUED;
+import static io.harness.beans.FeatureName.DELEGATE_TASK_REBROADCAST_KILL_SWITCH;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
@@ -14,6 +15,7 @@ import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.DelegateTask;
 import io.harness.beans.DelegateTask.DelegateTaskKeys;
 import io.harness.delegate.task.TaskLogContext;
+import io.harness.ff.FeatureFlagService;
 import io.harness.logging.AccountLogContext;
 import io.harness.logging.AutoLogContext;
 import io.harness.metrics.intfc.DelegateMetricsService;
@@ -24,7 +26,7 @@ import io.harness.persistence.HIterator;
 import io.harness.persistence.HPersistence;
 import io.harness.selection.log.BatchDelegateSelectionLog;
 import io.harness.service.intfc.DelegateTaskService;
-import io.harness.workers.background.iterator.AccountLevelEntityProcessTaskRebroadcastController;
+import io.harness.workers.background.AccountLevelEntityProcessController;
 
 import software.wings.beans.Account;
 import software.wings.beans.Account.AccountKeys;
@@ -68,6 +70,7 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
   @Inject private DelegateTaskBroadcastHelper broadcastHelper;
   @Inject private DelegateSelectionLogsService delegateSelectionLogsService;
   @Inject private Clock clock;
+  @Inject private FeatureFlagService featureFlagService;
 
   private static final long DELEGATE_TASK_REBROADCAST_TIMEOUT = 5;
   private static long BROADCAST_INTERVAL = TimeUnit.MINUTES.toMillis(1);
@@ -87,7 +90,7 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
             .targetInterval(Duration.ofSeconds(DELEGATE_TASK_REBROADCAST_TIMEOUT))
             .acceptableNoAlertDelay(Duration.ofSeconds(45))
             .acceptableExecutionTime(Duration.ofSeconds(30))
-            .entityProcessController(new AccountLevelEntityProcessTaskRebroadcastController(accountService))
+            .entityProcessController(new AccountLevelEntityProcessController(accountService))
             .handler(this)
             .schedulingType(MongoPersistenceIterator.SchedulingType.REGULAR)
             .persistenceProvider(persistenceProvider)
@@ -101,6 +104,9 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
 
   @VisibleForTesting
   protected void rebroadcastUnassignedTasks(Account account) {
+    if (featureFlagService.isEnabled(DELEGATE_TASK_REBROADCAST_KILL_SWITCH, account.getUuid())) {
+      return;
+    }
     // Re-broadcast queued tasks not picked up by any Delegate and not in process of validation
     long now = clock.millis();
     Query<DelegateTask> unassignedTasksQuery = persistence.createQuery(DelegateTask.class, excludeAuthority)

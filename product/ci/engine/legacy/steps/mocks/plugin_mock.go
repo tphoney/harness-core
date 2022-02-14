@@ -12,7 +12,7 @@ package steps
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	"github.com/wings-software/portal/product/ci/engine/output"
+	"github.com/harness/harness-core/product/ci/engine/output"
 	reflect "reflect"
 )
 

@@ -13,6 +13,7 @@ import static io.harness.beans.SecretManagerCapabilities.TRANSITION_SECRET_TO_SM
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.eraro.ErrorCode.RESOURCE_NOT_FOUND;
 import static io.harness.eraro.ErrorCode.SECRET_MANAGEMENT_ERROR;
+import static io.harness.eraro.ErrorCode.SECRET_MANAGER_ID_NOT_FOUND;
 import static io.harness.eraro.ErrorCode.UNSUPPORTED_OPERATION_EXCEPTION;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.persistence.HPersistence.returnNewOptions;
@@ -228,6 +229,10 @@ public class SecretManagerConfigServiceImpl implements SecretManagerConfigServic
   public SecretManagerConfig getSecretManager(
       String accountId, String kmsId, EncryptionType encryptionType, Map<String, String> runtimeParameters) {
     SecretManagerConfig secretManagerConfig = getSecretManager(accountId, kmsId, encryptionType);
+    if (null == secretManagerConfig) {
+      String message = String.format("Secret manager with id %s for account %s can't be found.", kmsId, accountId);
+      throw new SecretManagementException(SECRET_MANAGER_ID_NOT_FOUND, message, USER);
+    }
     if (secretManagerConfig.isTemplatized()) {
       updateRuntimeParameters(secretManagerConfig, runtimeParameters, true);
     }

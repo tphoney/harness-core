@@ -137,6 +137,7 @@ import software.wings.beans.template.Template;
 import software.wings.beans.template.Template.TemplateKeys;
 import software.wings.beans.template.TemplateFolder;
 import software.wings.beans.trigger.Trigger;
+import software.wings.beans.yaml.FullSyncError;
 import software.wings.beans.yaml.GitFileChange;
 import software.wings.beans.yaml.GitFileChange.Builder;
 import software.wings.beans.yaml.YamlConstants;
@@ -205,7 +206,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -276,7 +276,7 @@ public class YamlDirectoryServiceImpl implements YamlDirectoryService {
 
   @Override
   public List<GitFileChange> traverseDirectory(List<GitFileChange> gitFileChanges, String accountId, FolderNode fn,
-      final String path, boolean includeFiles, boolean failFast, Optional<List<String>> listOfYamlErrors) {
+      final String path, boolean includeFiles, boolean failFast, List<FullSyncError> listOfYamlErrors) {
     final String finalPath = path + (isNotBlank(path) ? PATH_DELIMITER : "") + fn.getName();
 
     for (DirectoryNode dn : fn.getChildren()) {
@@ -292,8 +292,7 @@ public class YamlDirectoryServiceImpl implements YamlDirectoryService {
 
   @Override
   public void getGitFileChange(DirectoryNode dn, String path, String accountId, boolean includeFiles,
-      List<GitFileChange> gitFileChanges, boolean failFast, Optional<List<String>> listOfYamlErrors,
-      boolean gitSyncPath) {
+      List<GitFileChange> gitFileChanges, boolean failFast, List<FullSyncError> listOfYamlErrors, boolean gitSyncPath) {
     if (dn == null) {
       log.error("Directory node is null");
       return;
@@ -451,8 +450,8 @@ public class YamlDirectoryServiceImpl implements YamlDirectoryService {
         exceptionThrown = true;
         String fileName = dn.getName() == null ? dn.getName() : path + PATH_DELIMITER + dn.getName();
         String message;
-        if (isNotBlank(e.getMessage())) {
-          message = e.getMessage();
+        if (isNotBlank(ExceptionUtils.getMessage(e))) {
+          message = ExceptionUtils.getMessage(e);
         } else {
           message = "Failed in yaml conversion during Harness to Git full sync for file:" + fileName;
         }
@@ -477,7 +476,7 @@ public class YamlDirectoryServiceImpl implements YamlDirectoryService {
         if (failFast) {
           throw new GeneralException(message, WingsException.USER);
         } else {
-          listOfYamlErrors.ifPresent(strings -> strings.add(message));
+          listOfYamlErrors.add(FullSyncError.builder().error(message).gitFileChange(gitFileChange).build());
         }
       }
 
@@ -2199,6 +2198,7 @@ public class YamlDirectoryServiceImpl implements YamlDirectoryService {
     doCloudProviderType(accountId, cloudProvidersFolder, PHYSICAL_DATA_CENTER, directoryPath.clone());
     doCloudProviderType(accountId, cloudProvidersFolder, SettingVariableTypes.PCF, directoryPath.clone());
     doCloudProviderType(accountId, cloudProvidersFolder, SettingVariableTypes.SPOT_INST, directoryPath.clone());
+    doCloudProviderType(accountId, cloudProvidersFolder, SettingVariableTypes.RANCHER, directoryPath.clone());
     sort(cloudProvidersFolder.getChildren(), new DirectoryComparator());
     return cloudProvidersFolder;
   }
@@ -2810,6 +2810,7 @@ public class YamlDirectoryServiceImpl implements YamlDirectoryService {
       case PHYSICAL_DATA_CENTER:
       case SPOT_INST:
       case PCF:
+      case RANCHER:
         sb.append(CLOUD_PROVIDERS_FOLDER);
         if (featureFlagService.isEnabled(FeatureName.ARTIFACT_STREAM_REFACTOR, settingAttribute.getAccountId())) {
           sb.append(PATH_DELIMITER);

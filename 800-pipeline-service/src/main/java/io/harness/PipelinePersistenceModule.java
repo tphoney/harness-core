@@ -13,13 +13,17 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.gitsync.persistance.GitSyncablePersistenceConfig;
 import io.harness.mongo.MongoConfig;
 import io.harness.notification.NotificationChannelPersistenceConfig;
+import io.harness.springdata.HMongoTemplate;
 import io.harness.springdata.HTransactionTemplate;
 import io.harness.springdata.SpringPersistenceConfig;
 import io.harness.springdata.SpringPersistenceModule;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import com.mongodb.ReadPreference;
 import org.springframework.data.mongodb.MongoTransactionManager;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @OwnedBy(PIPELINE)
@@ -35,5 +39,14 @@ public class PipelinePersistenceModule extends SpringPersistenceModule {
   protected TransactionTemplate getTransactionTemplate(
       MongoTransactionManager mongoTransactionManager, MongoConfig mongoConfig) {
     return new HTransactionTemplate(mongoTransactionManager, mongoConfig.isTransactionsEnabled());
+  }
+
+  @Provides
+  @Singleton
+  @Named("secondary-mongo")
+  protected MongoTemplate getSecondaryMongoTemplate(MongoTemplate mongoTemplate) {
+    HMongoTemplate template = new HMongoTemplate(mongoTemplate.getMongoDbFactory(), mongoTemplate.getConverter());
+    template.setReadPreference(ReadPreference.secondary());
+    return template;
   }
 }

@@ -39,8 +39,8 @@ public class NamespaceFetcher {
         sharedInformerFactory
             .sharedIndexInformerFor((CallGeneratorParams callGeneratorParams)
                                         -> this.coreV1Api.listNamespaceCall(null, null, null, null, null, null,
-                                            callGeneratorParams.resourceVersion, callGeneratorParams.timeoutSeconds,
-                                            callGeneratorParams.watch, null),
+                                            callGeneratorParams.resourceVersion, null,
+                                            callGeneratorParams.timeoutSeconds, callGeneratorParams.watch, null),
                 V1Namespace.class, V1NamespaceList.class)
             .getIndexer();
   }

@@ -7,18 +7,25 @@
 
 package io.harness.delegate.task.serverless;
 
+import static io.harness.utils.FieldWithPlainTextOrSecretValueHelper.getSecretAsStringFromPlainTextOrSecretRef;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsCredentialType;
 import io.harness.delegate.beans.connector.awsconnector.AwsManualConfigSpecDTO;
+import io.harness.exception.InvalidRequestException;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.security.encryption.SecretDecryptionService;
+import io.harness.serverless.model.ServerlessAwsConfig;
+import io.harness.serverless.model.ServerlessAwsConfig.ServerlessAwsConfigBuilder;
+import io.harness.serverless.model.ServerlessConfig;
 
 import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.util.Arrays;
 import java.util.List;
 
 @Singleton
@@ -41,5 +48,35 @@ public class ServerlessInfraConfigHelper {
       secretDecryptionService.decrypt(awsCredentialSpecDTO, encryptedDataDetails);
       ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsCredentialSpecDTO, encryptedDataDetails);
     }
+  }
+
+  public ServerlessConfig createServerlessConfig(ServerlessInfraConfig serverlessInfraConfigDTO) {
+    if (serverlessInfraConfigDTO instanceof AwsServerlessInfraConfig) {
+      return createServerlessAwsConfig((AwsServerlessInfraConfig) serverlessInfraConfigDTO);
+    } else {
+      throw new InvalidRequestException("Unhandled ServerlessInfraConfig " + serverlessInfraConfigDTO.getClass());
+    }
+  }
+
+  public ServerlessConfig createServerlessAwsConfig(AwsServerlessInfraConfig awsServerlessInfraConfig) {
+    AwsCredentialType awsCredentialType =
+        awsServerlessInfraConfig.getAwsConnectorDTO().getCredential().getAwsCredentialType();
+    switch (awsCredentialType) {
+      case MANUAL_CREDENTIALS:
+        return getServerlessAwsConfigFromManualCreds(
+            (AwsManualConfigSpecDTO) awsServerlessInfraConfig.getAwsConnectorDTO().getCredential().getConfig());
+      default:
+        throw new UnsupportedOperationException(
+            String.format("Unsupported Serverless Aws Credential type: [%s]", awsCredentialType));
+    }
+  }
+
+  public ServerlessConfig getServerlessAwsConfigFromManualCreds(AwsManualConfigSpecDTO awsManualConfigSpecDTO) {
+    ServerlessAwsConfigBuilder serverlessAwsConfigBuilder = ServerlessAwsConfig.builder();
+    serverlessAwsConfigBuilder.provider("aws");
+    serverlessAwsConfigBuilder.accessKey(getSecretAsStringFromPlainTextOrSecretRef(
+        awsManualConfigSpecDTO.getAccessKey(), awsManualConfigSpecDTO.getAccessKeyRef()));
+    serverlessAwsConfigBuilder.secretKey(Arrays.toString(awsManualConfigSpecDTO.getSecretKeyRef().getDecryptedValue()));
+    return serverlessAwsConfigBuilder.build();
   }
 }

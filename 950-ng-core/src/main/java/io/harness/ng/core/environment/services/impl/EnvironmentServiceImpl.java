@@ -38,7 +38,6 @@ import io.harness.ng.core.events.EnvironmentCreateEvent;
 import io.harness.ng.core.events.EnvironmentDeleteEvent;
 import io.harness.ng.core.events.EnvironmentUpdatedEvent;
 import io.harness.ng.core.events.EnvironmentUpsertEvent;
-import io.harness.ng.core.service.entity.ServiceEntity;
 import io.harness.outbox.api.OutboxService;
 import io.harness.repositories.environment.spring.EnvironmentRepository;
 

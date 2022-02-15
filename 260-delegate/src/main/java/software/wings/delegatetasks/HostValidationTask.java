@@ -74,30 +74,43 @@ public class HostValidationTask extends AbstractDelegateRunnableTask {
   }
 
   private DelegateResponseData getTaskExecutionResponseData(HostValidationTaskParameters hostValidationTaskParameters) {
-    Object methodReturnValue = null;
-    Throwable exception = null;
+    if (hostValidationTaskParameters.isCheckOnlyReachability()) {
+      try {
+        log.info(
+            "Running HostValidationTask for reachability for hosts: {}", hostValidationTaskParameters.getHostNames());
 
-    try {
-      log.info("Running HostValidationTask for hosts: {}", hostValidationTaskParameters.getHostNames());
-      if (hostValidationTaskParameters.isCheckOnlyReachability()) {
         List<HostReachabilityInfo> infoList = hostValidationService.validateReachability(
             hostValidationTaskParameters.getHostNames(), hostValidationTaskParameters.getConnectionSetting());
         return HostReachabilityResponse.builder()
             .hostReachabilityInfoList(infoList)
             .executionStatus(ExecutionStatus.SUCCESS)
             .build();
-      } else {
+
+      } catch (Exception ex) {
+        String message =
+            "Exception while running HostValidationTask " + hostValidationTaskParameters.getHostNames() + ex;
+        log.error(message);
+        return HostReachabilityResponse.builder().executionStatus(ExecutionStatus.FAILED).build();
+      }
+    } else {
+      Object methodReturnValue = null;
+      Throwable exception = null;
+
+      try {
+        log.info("Running HostValidationTask for hosts: {}", hostValidationTaskParameters.getHostNames());
+
         methodReturnValue = hostValidationService.validateHost(hostValidationTaskParameters.getHostNames(),
             hostValidationTaskParameters.getConnectionSetting(), hostValidationTaskParameters.getEncryptionDetails(),
             hostValidationTaskParameters.getExecutionCredential(), null);
-      }
-    } catch (Exception ex) {
-      exception = ex.getCause();
-      String message =
-          "Exception while running HostValidationTask for hosts " + hostValidationTaskParameters.getHostNames() + ex;
-      log.error(message);
-    }
 
-    return RemoteMethodReturnValueData.builder().returnValue(methodReturnValue).exception(exception).build();
+      } catch (Exception ex) {
+        exception = ex.getCause();
+        String message =
+            "Exception while running HostValidationTask for hosts " + hostValidationTaskParameters.getHostNames() + ex;
+        log.error(message);
+      }
+
+      return RemoteMethodReturnValueData.builder().returnValue(methodReturnValue).exception(exception).build();
+    }
   }
 }

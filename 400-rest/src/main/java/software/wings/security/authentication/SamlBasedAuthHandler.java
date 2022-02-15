@@ -127,7 +127,7 @@ public class SamlBasedAuthHandler implements AuthHandler {
       accountId = StringUtils.isEmpty(accountId) ? (user == null ? null : user.getDefaultAccountId()) : accountId;
       String uuid = user == null ? null : user.getUuid();
       try (AutoLogContext ignore = new UserLogContext(accountId, uuid, OVERRIDE_ERROR)) {
-        log.info("Authenticating via SAML");
+        log.info("Authenticating via SAML in account {}", accountId);
         Account account = authenticationUtils.getDefaultAccount(user);
         if (!domainWhitelistCheckerService.isDomainWhitelisted(user, account)) {
           domainWhitelistCheckerService.throwDomainWhitelistFilterException();
@@ -143,9 +143,18 @@ public class SamlBasedAuthHandler implements AuthHandler {
         }
         if (Objects.nonNull(samlSettings)
             && featureFlagService.isEnabled(FeatureName.EXTERNAL_USERID_BASED_LOGIN, accountId)) {
+          log.info(
+              "SAMLFeature: fetching user id from Saml response string accountId {} and userEmail in SAML assertion {}",
+              accountId, user.getEmail());
           String userIdFromSamlResponse = getUserIdForIdpUrl(idpUrl, samlResponseString, accountId);
           User userFromUserId = userService.getUserByUserId(userIdFromSamlResponse);
+          log.info("SAMLFeature: fetched user with externalUserId for accountId {} and user object {}", accountId,
+              userFromUserId);
+
           if (userFromUserId != null && !user.getEmail().equals(userFromUserId.getEmail())) {
+            log.info(
+                "SAMLFeature: fetched user with externalUserId for accountId {} and difference in userEmail in user object {}",
+                accountId, userFromUserId.getEmail());
             userFromUserId.setEmail(user.getEmail());
             userFromUserId.setAccounts(Stream.concat(user.getAccounts().stream(), userFromUserId.getAccounts().stream())
                                            .distinct()
@@ -153,6 +162,8 @@ public class SamlBasedAuthHandler implements AuthHandler {
             hPersistence.delete(user);
             hPersistence.save(userFromUserId);
             user = userFromUserId;
+            log.info("SAMLFeature: final user with externalUserId for accountId {} saved in db {}", accountId,
+                userFromUserId);
           }
         }
         if (Objects.nonNull(samlSettings) && samlSettings.isAuthorizationEnabled()) {

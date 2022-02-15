@@ -193,6 +193,10 @@ public class NodeExecution implements PersistentEntity, UuidAccess, PmsNodeExecu
     return ambiance.getPlanExecutionId();
   }
 
+  public String getPlanId() {
+    return ambiance.getPlanExecutionId();
+  }
+
   public StepType stepType() {
     if (stepType != null) {
       return stepType;

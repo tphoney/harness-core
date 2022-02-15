@@ -18,6 +18,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.ScmException;
 import io.harness.exception.WingsException;
 import io.harness.exception.ngexception.beans.ScmErrorMetadataDTO;
+import io.harness.exception.ngexception.beans.templateservice.TemplateInputsErrorMetadataDTO;
 import io.harness.git.model.ChangeType;
 import io.harness.gitsync.FileInfo;
 import io.harness.gitsync.HarnessToGitPushInfoServiceGrpc.HarnessToGitPushInfoServiceBlockingStub;
@@ -138,7 +139,8 @@ public class SCMGitSyncHelper {
       ScmResponseStatusUtils.checkScmResponseStatusAndThrowException(
           pushFileResponse.getScmResponseCode(), pushFileResponse.getError());
     } catch (WingsException ex) {
-      //      ex.setMetadata(ScmErrorMetadataDTO.build.);
+      ex.setMetadata(ScmErrorMetadataDTO.builder().conflictCommitId(pushFileResponse.getCommitId()).build());
+      throw ex;
     }
   }
 

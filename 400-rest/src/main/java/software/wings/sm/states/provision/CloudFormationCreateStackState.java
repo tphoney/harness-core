@@ -318,7 +318,7 @@ public class CloudFormationCreateStackState extends CloudFormationState {
         .build();
   }
 
-  protected ExecutionResponse buildAndQueueGitCommandTask(
+  private ExecutionResponse buildAndQueueGitCommandTask(
       ExecutionContextImpl executionContext, CloudFormationInfrastructureProvisioner provisioner, String activityId) {
     GitFileConfig renderedGitFileConfig =
         gitFileConfigHelperService.renderGitFileConfig(executionContext, provisioner.getGitFileConfig());

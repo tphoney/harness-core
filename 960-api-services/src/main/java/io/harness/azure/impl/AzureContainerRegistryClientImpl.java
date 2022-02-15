@@ -22,6 +22,7 @@ import io.harness.azure.context.AzureContainerRegistryClientContext;
 import io.harness.azure.model.AzureConfig;
 import io.harness.exception.InvalidRequestException;
 
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.helpers.ext.azure.AcrGetRepositoryTagsResponse;
 
 import com.google.inject.Singleton;
@@ -110,7 +111,7 @@ public class AzureContainerRegistryClientImpl extends AzureClient implements Azu
     } catch (IOException e) {
       throw new InvalidRequestException(
           format("Unable to list repository tags, registryHost: %s, repositoryName: %s", registryHost, repositoryName),
-          e);
+          ExceptionMessageSanitizer.sanitizeException(e));
     }
   }
 }

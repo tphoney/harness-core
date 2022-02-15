@@ -29,6 +29,8 @@ import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 import io.harness.logging.LogLevel;
 
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -43,14 +45,15 @@ public abstract class AbstractAzureARMTaskHandler {
 
       return handleARMTaskResponse(azureARMTaskResponse);
     } catch (AzureClientException ex) {
-      throw ex;
+      throw(AzureClientException) ExceptionMessageSanitizer.sanitizeException(ex);
     } catch (Exception ex) {
-      String message = AzureResourceUtility.getAzureCloudExceptionMessage(ex);
+      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
+      String message = AzureResourceUtility.getAzureCloudExceptionMessage(sanitizedException);
       if (azureARMTaskParameters.isSyncTask()) {
-        throw new InvalidRequestException(message, ex);
+        throw new InvalidRequestException(message, sanitizedException);
       }
 
-      logErrorMsg(azureARMTaskParameters, ex, message);
+      logErrorMsg(azureARMTaskParameters, sanitizedException, message);
       return handleFailureARMTaskResponse(message);
     }
   }

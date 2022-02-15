@@ -38,6 +38,8 @@ import io.harness.azure.utility.AzureUtils;
 import io.harness.exception.AzureClientException;
 import io.harness.serializer.JsonUtils;
 
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
+
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Singleton;
 import com.microsoft.azure.CloudException;
@@ -120,7 +122,7 @@ public class AzureManagementClientImpl extends AzureClient implements AzureManag
             ServiceResponse<PageImpl<ManagementGroupInfo>> result = listManagementDelegate(response);
             return Observable.just(new ServiceResponse<Page<ManagementGroupInfo>>(result.body(), result.response()));
           } catch (Exception t) {
-            return Observable.error(t);
+            return Observable.error(ExceptionMessageSanitizer.sanitizeException(t));
           }
         });
   }
@@ -139,7 +141,7 @@ public class AzureManagementClientImpl extends AzureClient implements AzureManag
             ServiceResponse<PageImpl<ManagementGroupInfo>> result = listManagementDelegate(response);
             return Observable.just(new ServiceResponse<Page<ManagementGroupInfo>>(result.body(), result.response()));
           } catch (Exception t) {
-            return Observable.error(t);
+            return Observable.error(ExceptionMessageSanitizer.sanitizeException(t));
           }
         });
   }
@@ -269,7 +271,7 @@ public class AzureManagementClientImpl extends AzureClient implements AzureManag
       String errorMessage = format(
           "Error occurred while deploying at resource group scope, deploymentName: %s, subscriptionId: %s,  resourceGroupName: %s, deploymentMode: %s",
           deploymentName, subscriptionId, resourceGroupName, deploymentMode);
-      throw new AzureClientException(errorMessage, e);
+      throw new AzureClientException(errorMessage, ExceptionMessageSanitizer.sanitizeException(e));
     }
   }
 

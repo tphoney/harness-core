@@ -604,12 +604,12 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
     try {
       gitClient.ensureRepoLocallyClonedAndUpdated(gitBaseRequestForConfigFile);
     } catch (RuntimeException ex) {
-      Exception sanitizeException = ExceptionMessageSanitizer.sanitizeException(ex);
-      String msg = isNotEmpty(sanitizeException.getMessage())
-          ? format("Failed performing git operation. Reason: %s", sanitizeException.getMessage())
+      RuntimeException sanitizedException = (RuntimeException) ExceptionMessageSanitizer.sanitizeException(ex);
+      String msg = isNotEmpty(sanitizedException.getMessage())
+          ? format("Failed performing git operation. Reason: %s", sanitizedException.getMessage())
           : "Failed performing git operation.";
       logCallback.saveExecutionLog(msg, ERROR, CommandExecutionStatus.RUNNING);
-      throw new JGitRuntimeException(msg, sanitizeException.getCause(), DEFAULT_ERROR_CODE,
+      throw new JGitRuntimeException(msg, sanitizedException.getCause(), DEFAULT_ERROR_CODE,
           gitBaseRequestForConfigFile.getCommitId(), gitBaseRequestForConfigFile.getBranch());
     }
   }

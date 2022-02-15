@@ -46,6 +46,7 @@ import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
 
 import software.wings.beans.command.ExecutionLogCallback;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 import com.google.inject.Singleton;
 import com.microsoft.azure.management.compute.VirtualMachineScaleSet;
@@ -339,7 +340,8 @@ public class AzureVMSSSwitchRouteTaskHandler extends AzureVMSSTaskHandler {
         return Boolean.TRUE;
       });
     } catch (Exception e) {
-      throw new InvalidRequestException("Error while updating Virtual Machine Scale Set VM instances", e);
+      throw new InvalidRequestException("Error while updating Virtual Machine Scale Set VM instances",
+          ExceptionMessageSanitizer.sanitizeException(e));
     }
   }
 

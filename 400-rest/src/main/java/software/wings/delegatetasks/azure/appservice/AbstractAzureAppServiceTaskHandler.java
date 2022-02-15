@@ -27,6 +27,7 @@ import io.harness.logging.LogCallback;
 import io.harness.logging.LogLevel;
 
 import software.wings.beans.artifact.ArtifactStreamAttributes;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,11 +47,12 @@ public abstract class AbstractAzureAppServiceTaskHandler {
           : executeTaskInternal(azureAppServiceTaskParameters, azureConfig, logStreamingTaskClient);
       return handleAppServiceTaskResponse(azureAppServiceTaskResponse);
     } catch (Exception ex) {
-      String message = AzureResourceUtility.getAzureCloudExceptionMessage(ex);
+      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
+      String message = AzureResourceUtility.getAzureCloudExceptionMessage(sanitizedException);
       if (azureAppServiceTaskParameters.isSyncTask()) {
-        throw new InvalidRequestException(message, ex);
+        throw new InvalidRequestException(message, sanitizedException);
       }
-      logErrorMsg(azureAppServiceTaskParameters, logStreamingTaskClient, ex, message);
+      logErrorMsg(azureAppServiceTaskParameters, logStreamingTaskClient, sanitizedException, message);
       return failureAppServiceTaskResponse(message);
     }
   }

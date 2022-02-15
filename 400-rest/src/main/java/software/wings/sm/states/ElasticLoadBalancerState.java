@@ -11,6 +11,7 @@ import io.harness.beans.ExecutionStatus;
 import io.harness.context.ContextElementType;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidRequestException;
+import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.api.ElbStateExecutionData;
 import software.wings.api.InstanceElement;
@@ -36,6 +37,7 @@ import com.amazonaws.regions.Regions;
 import com.github.reinert.jjschema.Attributes;
 import com.github.reinert.jjschema.SchemaIgnore;
 import com.google.inject.Inject;
+import java.util.List;
 import org.mongodb.morphia.annotations.Transient;
 
 /**
@@ -75,19 +77,19 @@ public class ElasticLoadBalancerState extends State {
       region = ((AwsInfrastructureMapping) infrastructureMapping).getRegion();
       SettingAttribute settingAttribute = settingsService.get(infrastructureMapping.getComputeProviderSettingId());
       AwsConfig awsConfig = (AwsConfig) settingAttribute.getValue();
-      managerDecryptionService.decrypt(awsConfig,
-          secretManager.getEncryptionDetails(awsConfig, context.getAppId(), context.getWorkflowExecutionId()));
-      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig,
-          secretManager.getEncryptionDetails(awsConfig, context.getAppId(), context.getWorkflowExecutionId()));
+      List<EncryptedDataDetail> encryptedDataDetailList =
+          secretManager.getEncryptionDetails(awsConfig, context.getAppId(), context.getWorkflowExecutionId());
+      managerDecryptionService.decrypt(awsConfig, encryptedDataDetailList);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptedDataDetailList);
       return execute(context, loadBalancerName, Regions.fromName(region), awsConfig);
     } else if (infrastructureMapping instanceof PhysicalInfrastructureMappingBase) {
       SettingAttribute elbSetting =
           settingsService.get(((PhysicalInfrastructureMappingBase) infrastructureMapping).getLoadBalancerId());
       ElasticLoadBalancerConfig loadBalancerConfig = (ElasticLoadBalancerConfig) elbSetting.getValue();
-      managerDecryptionService.decrypt(loadBalancerConfig,
-          secretManager.getEncryptionDetails(loadBalancerConfig, context.getAppId(), context.getWorkflowExecutionId()));
-      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(loadBalancerConfig,
-          secretManager.getEncryptionDetails(loadBalancerConfig, context.getAppId(), context.getWorkflowExecutionId()));
+      List<EncryptedDataDetail> encryptedDataDetailList =
+          secretManager.getEncryptionDetails(loadBalancerConfig, context.getAppId(), context.getWorkflowExecutionId());
+      managerDecryptionService.decrypt(loadBalancerConfig, encryptedDataDetailList);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(loadBalancerConfig, encryptedDataDetailList);
       loadBalancerName = loadBalancerConfig.getLoadBalancerName();
       region = loadBalancerConfig.getRegion().name();
       AwsConfig awsConfigDerived = AwsConfig.builder()

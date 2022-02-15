@@ -540,12 +540,12 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
     try {
       gitClient.ensureRepoLocallyClonedAndUpdated(gitBaseRequestForConfigFile);
     } catch (RuntimeException ex) {
-      Exception sanitizeException = ExceptionMessageSanitizer.sanitizeException(ex);
-      String msg = isNotEmpty(sanitizeException.getMessage())
-          ? format("Failed performing git operation. Reason: %s", sanitizeException.getMessage())
+      RuntimeException sanitizedException = (RuntimeException) ExceptionMessageSanitizer.sanitizeException(ex);
+      String msg = isNotEmpty(sanitizedException.getMessage())
+          ? format("Failed performing git operation. Reason: %s", sanitizedException.getMessage())
           : "Failed performing git operation.";
       logCallback.saveExecutionLog(msg, ERROR, CommandExecutionStatus.RUNNING);
-      throw new JGitRuntimeException(msg, sanitizeException.getCause(), DEFAULT_ERROR_CODE,
+      throw new JGitRuntimeException(msg, sanitizedException.getCause(), DEFAULT_ERROR_CODE,
           gitBaseRequestForConfigFile.getCommitId(), gitBaseRequestForConfigFile.getBranch());
     }
   }
@@ -579,10 +579,10 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
       TerraformHelperUtils.copyFilesToWorkingDirectory(
           gitClientHelper.getRepoDirectory(gitBaseRequestForConfigFile), workingDir);
     } catch (Exception ex) {
-      Exception sanitizeException = ExceptionMessageSanitizer.sanitizeException(ex);
-      log.error(
-          String.format("Exception in copying files to provisioner specific directory", sanitizeException.getMessage()),
-          sanitizeException);
+      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
+      log.error(String.format("Exception in copying files to provisioner specific directory. Reason: %s",
+                    sanitizedException.getMessage()),
+          sanitizedException);
       FileUtils.deleteQuietly(new File(baseDir));
       logCallback.saveExecutionLog(
           "Failed copying files to provisioner specific directory", ERROR, CommandExecutionStatus.RUNNING);

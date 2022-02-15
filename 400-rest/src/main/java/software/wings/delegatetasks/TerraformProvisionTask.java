@@ -220,11 +220,11 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
       encryptionService.decrypt(gitConfig, parameters.getSourceRepoEncryptionDetails(), false);
       gitClient.ensureRepoLocallyClonedAndUpdated(gitOperationContext);
     } catch (RuntimeException ex) {
-      Exception sanitizeException = ExceptionMessageSanitizer.sanitizeException(ex);
-      log.error("Exception in processing git operation", sanitizeException);
+      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
+      log.error("Exception in processing git operation", sanitizedException);
       return TerraformExecutionData.builder()
           .executionStatus(ExecutionStatus.FAILED)
-          .errorMessage(TerraformTaskUtils.getGitExceptionMessageIfExists(sanitizeException))
+          .errorMessage(TerraformTaskUtils.getGitExceptionMessageIfExists(sanitizedException))
           .build();
     }
 
@@ -241,12 +241,12 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
     try {
       copyFilesToWorkingDirectory(gitClientHelper.getRepoDirectory(gitOperationContext), workingDir);
     } catch (Exception ex) {
-      Exception sanitizeException = ExceptionMessageSanitizer.sanitizeException(ex);
-      log.error("Exception in copying files to provisioner specific directory", sanitizeException);
+      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
+      log.error("Exception in copying files to provisioner specific directory", sanitizedException);
       FileUtils.deleteQuietly(new File(baseDir));
       return TerraformExecutionData.builder()
           .executionStatus(ExecutionStatus.FAILED)
-          .errorMessage(ExceptionUtils.getMessage(sanitizeException))
+          .errorMessage(ExceptionUtils.getMessage(sanitizedException))
           .build();
     }
     String scriptDirectory = terraformBaseHelper.resolveScriptDirectory(workingDir, parameters.getScriptPath());
@@ -603,14 +603,14 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
             log.info("Terraform Plan has been safely deleted from vault");
           }
         } catch (Exception ex) {
-          Exception sanitizeException = ExceptionMessageSanitizer.sanitizeException(ex);
+          Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
           saveExecutionLog(color(format("Failed to delete secret: [%s] from vault: [%s], please clean it up",
                                      parameters.getEncryptedTfPlan().getEncryptionKey(),
                                      parameters.getSecretManagerConfig().getName()),
                                Yellow, Bold),
               CommandExecutionStatus.RUNNING, WARN, logCallback);
-          saveExecutionLog(sanitizeException.getMessage(), CommandExecutionStatus.RUNNING, WARN, logCallback);
-          log.error("Exception occurred while deleting Terraform Plan from vault", sanitizeException);
+          saveExecutionLog(sanitizedException.getMessage(), CommandExecutionStatus.RUNNING, WARN, logCallback);
+          log.error("Exception occurred while deleting Terraform Plan from vault", sanitizedException);
         }
       }
     }
@@ -799,9 +799,9 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
   }
 
   private TerraformExecutionData logErrorAndGetFailureResponse(Exception ex, String message, LogCallback logCallback) {
-    Exception sanitizeException = ExceptionMessageSanitizer.sanitizeException(ex);
+    Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
     saveExecutionLog(message, CommandExecutionStatus.FAILURE, ERROR, logCallback);
-    log.error("Exception in processing terraform operation", sanitizeException);
+    log.error("Exception in processing terraform operation", sanitizedException);
     return TerraformExecutionData.builder().executionStatus(ExecutionStatus.FAILED).errorMessage(message).build();
   }
 

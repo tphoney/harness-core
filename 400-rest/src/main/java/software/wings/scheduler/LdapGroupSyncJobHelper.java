@@ -188,7 +188,11 @@ public class LdapGroupSyncJobHelper {
       if (isEmpty(userGroup.getMembers())) {
         existingUserIds = Sets.newHashSet();
       } else {
-        existingUserIds = userGroup.getMembers().stream().map(User::getExternalUserId).collect(Collectors.toSet());
+        existingUserIds = userGroup.getMembers()
+                              .stream()
+                              .map(User::getExternalUserId)
+                              .filter(Objects::nonNull)
+                              .collect(Collectors.toSet());
       }
 
       expectedMembers.stream()

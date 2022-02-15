@@ -9,6 +9,7 @@ package software.wings.security.authentication;
 
 import static io.harness.annotations.dev.HarnessModule._950_NG_AUTHENTICATION_SERVICE;
 import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 
@@ -27,6 +28,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.FeatureName;
 import io.harness.eraro.ErrorCode;
+import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 import io.harness.ff.FeatureFlagService;
 import io.harness.logging.AutoLogContext;
@@ -123,7 +125,38 @@ public class SamlBasedAuthHandler implements AuthHandler {
       String relayState = credentials.length >= 4 ? credentials[3] : "";
       Map<String, String> relayStateData = getRelayStateData(relayState);
 
-      User user = decodeResponseAndReturnUser(idpUrl, samlResponseString, accountId);
+      SamlSettings samlSettings;
+      User user = decodeResponseAndReturnUserByEmailId(idpUrl, samlResponseString, accountId);
+
+      if (featureFlagService.isEnabled(FeatureName.EXTERNAL_USERID_BASED_LOGIN, accountId)) {
+        User userByUserId = decodeResponseAndReturnUserByUserId(idpUrl, samlResponseString, accountId);
+        if (user == null && userByUserId != null) {
+          accountId = StringUtils.isEmpty(accountId) ? userByUserId.getDefaultAccountId() : accountId;
+          samlSettings = ssoSettingService.getSamlSettingsByAccountId(accountId);
+          String email = getEmailIdFromSamlResponseString(samlResponseString, samlSettings);
+          if (isEmpty(email)) {
+            throw new InvalidRequestException("Email is not present in SAML assertion");
+          }
+          userByUserId.setEmail(email);
+          hPersistence.save(userByUserId);
+          user = userByUserId;
+        }
+        if (user != null && userByUserId != null && !user.getEmail().equals(userByUserId.getEmail())) {
+          log.info(
+              "SAMLFeature: fetched user with externalUserId for accountId {} and difference in userEmail in user object {}",
+              accountId, userByUserId.getEmail());
+          userByUserId.setEmail(user.getEmail());
+          userByUserId.setAccounts(Stream.concat(user.getAccounts().stream(), userByUserId.getAccounts().stream())
+                                       .distinct()
+                                       .collect(Collectors.toList()));
+          hPersistence.delete(user);
+          hPersistence.save(userByUserId);
+          user = userByUserId;
+          log.info(
+              "SAMLFeature: final user with externalUserId for accountId {} saved in db {}", accountId, userByUserId);
+        }
+      }
+
       accountId = StringUtils.isEmpty(accountId) ? (user == null ? null : user.getDefaultAccountId()) : accountId;
       String uuid = user == null ? null : user.getUuid();
       try (AutoLogContext ignore = new UserLogContext(accountId, uuid, OVERRIDE_ERROR)) {
@@ -133,40 +166,13 @@ public class SamlBasedAuthHandler implements AuthHandler {
           domainWhitelistCheckerService.throwDomainWhitelistFilterException();
         }
         log.info("Authenticating via SAML for user in account {}", account.getUuid());
-        SamlSettings samlSettings = ssoSettingService.getSamlSettingsByAccountId(account.getUuid());
+        samlSettings = ssoSettingService.getSamlSettingsByAccountId(accountId);
 
         // Occurs when SAML settings are being tested before being enabled
         if (!relayStateData.getOrDefault(SAML_TRIGGER_TYPE, "").equals("login")
             && account.getAuthenticationMechanism() != io.harness.ng.core.account.AuthenticationMechanism.SAML) {
           log.info("SAML test login successful for user: [{}]", user.getEmail());
           throw new WingsException(ErrorCode.SAML_TEST_SUCCESS_MECHANISM_NOT_ENABLED);
-        }
-        if (Objects.nonNull(samlSettings)
-            && featureFlagService.isEnabled(FeatureName.EXTERNAL_USERID_BASED_LOGIN, accountId)) {
-          log.info(
-              "SAMLFeature: fetching user id from Saml response string accountId {} and userEmail in SAML assertion {}",
-              accountId, user.getEmail());
-          String userIdFromSamlResponse = getUserIdForIdpUrl(idpUrl, samlResponseString, accountId);
-          log.info("SAMLFeature: fetched userId {} from saml response for accountId {} and user object {}",
-              userIdFromSamlResponse, accountId, user.getEmail());
-          User userFromUserId = userService.getUserByUserId(userIdFromSamlResponse);
-          log.info("SAMLFeature: fetched user with externalUserId for accountId {} and user object {}", accountId,
-              userFromUserId);
-
-          if (userFromUserId != null && !user.getEmail().equals(userFromUserId.getEmail())) {
-            log.info(
-                "SAMLFeature: fetched user with externalUserId for accountId {} and difference in userEmail in user object {}",
-                accountId, userFromUserId.getEmail());
-            userFromUserId.setEmail(user.getEmail());
-            userFromUserId.setAccounts(Stream.concat(user.getAccounts().stream(), userFromUserId.getAccounts().stream())
-                                           .distinct()
-                                           .collect(Collectors.toList()));
-            hPersistence.delete(user);
-            hPersistence.save(userFromUserId);
-            user = userFromUserId;
-            log.info("SAMLFeature: final user with externalUserId for accountId {} saved in db {}", accountId,
-                userFromUserId);
-          }
         }
         if (Objects.nonNull(samlSettings) && samlSettings.isAuthorizationEnabled()) {
           List<String> userGroups = getUserGroupsForIdpUrl(idpUrl, samlResponseString, accountId);
@@ -190,6 +196,8 @@ public class SamlBasedAuthHandler implements AuthHandler {
       throw new WingsException("Saml Authentication Failed", e);
     } catch (UnsupportedEncodingException e) {
       throw new WingsException("Saml Authentication Failed while parsing RelayState", e);
+    } catch (SamlException e) {
+      throw new InvalidRequestException("Couldnt authenticate with User Id for saml", e);
     }
   }
 
@@ -207,7 +215,20 @@ public class SamlBasedAuthHandler implements AuthHandler {
     return relayStateData;
   }
 
-  private User decodeResponseAndReturnUser(String idpUrl, String samlResponseString, String accountId)
+  private User decodeResponseAndReturnUserByUserId(String idpUrl, String samlResponseString, String accountId)
+      throws URISyntaxException {
+    String userIdFromSamlResponse = getUserIdForIdpUrl(idpUrl, samlResponseString, accountId);
+    log.info("SAMLFeature: fetched userId {} from saml response for accountId {}", userIdFromSamlResponse, accountId);
+    if (isNotEmpty(userIdFromSamlResponse)) {
+      userIdFromSamlResponse = userIdFromSamlResponse.toLowerCase();
+    }
+    User userFromUserId = userService.getUserByUserId(userIdFromSamlResponse);
+    log.info("SAMLFeature: fetched user with externalUserId {} for accountId {} and user object {}",
+        userIdFromSamlResponse, accountId, userFromUserId);
+    return userFromUserId;
+  }
+
+  private User decodeResponseAndReturnUserByEmailId(String idpUrl, String samlResponseString, String accountId)
       throws URISyntaxException {
     String host = samlClientService.getHost(idpUrl);
     HostType hostType = samlClientService.getHostType(idpUrl);
@@ -534,6 +555,13 @@ public class SamlBasedAuthHandler implements AuthHandler {
 
   private String getAnyAttributeValue(XSAnyImpl attributeValue) {
     return attributeValue.getTextContent();
+  }
+
+  private String getEmailIdFromSamlResponseString(String samlResponseString, SamlSettings samlSettings)
+      throws SamlException {
+    SamlClient samlClient = samlClientService.getSamlClient(samlSettings);
+    SamlResponse samlResponse = samlClient.decodeAndValidateSamlResponse(samlResponseString);
+    return samlResponse.getNameID();
   }
 
   private User getUser(String samlResponseString, SamlSettings samlSettings) throws SamlException {

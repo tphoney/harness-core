@@ -288,7 +288,7 @@ public class User extends Base implements Principal {
   }
 
   public String getExternalUserId() {
-    return externalUserId;
+    return isNotEmpty(externalUserId) ? externalUserId : null;
   }
 
   public void setExternalUserId(String externalUserId) {

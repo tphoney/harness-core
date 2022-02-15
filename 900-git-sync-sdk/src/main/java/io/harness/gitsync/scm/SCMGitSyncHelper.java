@@ -17,6 +17,7 @@ import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.ScmException;
 import io.harness.exception.WingsException;
+import io.harness.exception.ngexception.beans.ScmErrorMetadataDTO;
 import io.harness.git.model.ChangeType;
 import io.harness.gitsync.FileInfo;
 import io.harness.gitsync.HarnessToGitPushInfoServiceGrpc.HarnessToGitPushInfoServiceBlockingStub;
@@ -133,8 +134,12 @@ public class SCMGitSyncHelper {
           isNotEmpty(pushFileResponse.getError()) ? pushFileResponse.getError() : "Error in doing git push";
       throw new GitSyncException(errorMessage);
     }
-    ScmResponseStatusUtils.checkScmResponseStatusAndThrowException(
-        pushFileResponse.getScmResponseCode(), pushFileResponse.getError());
+    try {
+      ScmResponseStatusUtils.checkScmResponseStatusAndThrowException(
+          pushFileResponse.getScmResponseCode(), pushFileResponse.getError());
+    } catch (WingsException ex) {
+      //      ex.setMetadata(ScmErrorMetadataDTO.build.);
+    }
   }
 
   private Principal getPrincipal() {

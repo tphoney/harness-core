@@ -323,10 +323,11 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
     final ScmConnector connectorConfig = (ScmConnector) connector.get().getConnector().getConnectorConfig();
     connectorConfig.setUrl(yamlGitConfig.getRepo());
 
-    InfoForGitPush.builder responseBuilder = InfoForGitPush.builder();
+    String lastCommitIdForFile = "";
     if (request.getChangeType() != ChangeType.ADD) {
       GitSyncEntityDTO gitSyncEntityDTO =
           gitEntityService.get(entityDetailDTO.getEntityRef(), entityDetailDTO.getType(), request.getBranch());
+      lastCommitIdForFile = gitSyncEntityDTO.getLastCommitId();
     }
 
     return InfoForGitPush.builder()
@@ -342,7 +343,7 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
         .oldFileSha(StringValueUtils.getStringFromStringValue(request.getOldFileSha()))
         .yaml(request.getYaml())
         .scmConnector(connectorConfig)
-        .commitId(gitSyncEntityDTO.getLastCommitId())
+        .commitId(lastCommitIdForFile)
         .build();
   }
 }

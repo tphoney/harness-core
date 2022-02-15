@@ -161,7 +161,7 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
   public Optional<ConnectorResponseDTO> get(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String connectorIdentifier) {
     Optional<Connector> connector =
-        getInternal(accountIdentifier, orgIdentifier, projectIdentifier, connectorIdentifier);
+        getIntenal(accountIdentifier, orgIdentifier, projectIdentifier, connectorIdentifier);
     return connector.map(x -> getResponse(accountIdentifier, orgIdentifier, projectIdentifier, x));
   }
 
@@ -990,7 +990,7 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
   private Optional<Connector> getInternal(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String identifier) {
     String fullyQualifiedIdentifier = FullyQualifiedIdentifierHelper.getFullyQualifiedIdentifier(
-        accountIdentifier, orgIdentifier, projectIdentifier, identifier);
+        accountIrdentifier, orgIdentifier, projectIdentifier, identifier);
     return connectorRepository.findByFullyQualifiedIdentifierAndDeletedNot(
         fullyQualifiedIdentifier, projectIdentifier, orgIdentifier, accountIdentifier, true);
   }

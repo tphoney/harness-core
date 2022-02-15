@@ -23,4 +23,6 @@ public interface Constants {
   String X_HARNESS_WEBHOOK_TOKEN = "X-HARNESS-WEBHOOK-TOKEN";
   String X_HARNESS_TRIGGER_ID = "X-HARNESS-TRIGGER-ID";
   String UNRECOGNIZED_WEBHOOK = "Unrecognized Webhook";
+
+  int SCM_CONFLICT_ERROR_CODE = 409;
 }

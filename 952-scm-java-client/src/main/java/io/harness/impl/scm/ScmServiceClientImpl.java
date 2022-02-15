@@ -22,6 +22,7 @@ import io.harness.beans.gitsync.GitFileDetails;
 import io.harness.beans.gitsync.GitFilePathDetails;
 import io.harness.beans.gitsync.GitPRCreateRequest;
 import io.harness.beans.gitsync.GitWebhookDetails;
+import io.harness.constants.Constants;
 import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 import io.harness.eraro.ErrorCode;
@@ -753,9 +754,11 @@ public class ScmServiceClientImpl implements ScmServiceClient {
       // Check if current file commit is same as latest commit on file on remote
       GetLatestCommitOnFileResponse latestCommitResponse = getLatestCommitOnFile(
           scmConnector, scmBlockingStub, gitFileDetails.getBranch(), gitFileDetails.getFilePath());
-      if (!latestCommitResponse.equals(gitFileDetails.getCommitId())) {
-        return Optional.of(
-            UpdateFileResponse.newBuilder().setError("Cannot update file as it has conflicts with remote").build());
+      if (!latestCommitResponse.getCommitId().equals(gitFileDetails.getCommitId())) {
+        return Optional.of(UpdateFileResponse.newBuilder()
+                               .setStatus(Constants.SCM_CONFLICT_ERROR_CODE)
+                               .setError("Cannot update file as it has conflicts with remote")
+                               .build());
       }
     }
     return Optional.empty();

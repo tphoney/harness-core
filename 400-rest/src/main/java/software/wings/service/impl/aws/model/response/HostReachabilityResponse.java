@@ -5,23 +5,29 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.beans;
+package software.wings.service.impl.aws.model.response;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
-import io.harness.delegate.beans.DelegateResponseData;
+import io.harness.beans.ExecutionStatus;
+import io.harness.delegate.beans.DelegateMetaInfo;
+import io.harness.delegate.beans.DelegateTaskNotifyResponseData;
 
+import software.wings.beans.HostReachabilityInfo;
+
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
+@TargetModule(HarnessModule._950_DELEGATE_TASKS_BEANS)
 @OwnedBy(CDP)
-@TargetModule(HarnessModule._955_DELEGATE_BEANS)
-public class HostReachabilityResponse implements DelegateResponseData {
-  private String hostName;
-  private Boolean reachable;
+public class HostReachabilityResponse implements DelegateTaskNotifyResponseData {
+  private DelegateMetaInfo delegateMetaInfo;
+  private ExecutionStatus executionStatus;
+  private List<HostReachabilityInfo> hostReachabilityInfoList;
 }

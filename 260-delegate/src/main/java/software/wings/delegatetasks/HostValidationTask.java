@@ -11,6 +11,7 @@ import static java.lang.String.format;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
+import io.harness.beans.ExecutionStatus;
 import io.harness.delegate.beans.DelegateResponseData;
 import io.harness.delegate.beans.DelegateTaskPackage;
 import io.harness.delegate.beans.DelegateTaskResponse;
@@ -21,8 +22,10 @@ import io.harness.delegate.task.TaskParameters;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.ExecutionCredential;
+import software.wings.beans.HostReachabilityInfo;
 import software.wings.beans.HostValidationTaskParameters;
 import software.wings.beans.SettingAttribute;
+import software.wings.service.impl.aws.model.response.HostReachabilityResponse;
 import software.wings.utils.HostValidationService;
 
 import com.google.inject.Inject;
@@ -58,7 +61,7 @@ public class HostValidationTask extends AbstractDelegateRunnableTask {
   }
 
   @Override
-  public RemoteMethodReturnValueData run(TaskParameters parameters) {
+  public DelegateResponseData run(TaskParameters parameters) {
     HostValidationTaskParameters hostValidationTaskParameters = null;
     if (!(parameters instanceof HostValidationTaskParameters)) {
       String message = format(
@@ -70,16 +73,19 @@ public class HostValidationTask extends AbstractDelegateRunnableTask {
     return getTaskExecutionResponseData(hostValidationTaskParameters);
   }
 
-  private RemoteMethodReturnValueData getTaskExecutionResponseData(
-      HostValidationTaskParameters hostValidationTaskParameters) {
+  private DelegateResponseData getTaskExecutionResponseData(HostValidationTaskParameters hostValidationTaskParameters) {
     Object methodReturnValue = null;
     Throwable exception = null;
 
     try {
-      log.info("Running HostValidationTask for hosts: ", hostValidationTaskParameters.getHostNames());
+      log.info("Running HostValidationTask for hosts: {}", hostValidationTaskParameters.getHostNames());
       if (hostValidationTaskParameters.isCheckOnlyReachability()) {
-        methodReturnValue = hostValidationService.validateReachability(
+        List<HostReachabilityInfo> infoList = hostValidationService.validateReachability(
             hostValidationTaskParameters.getHostNames(), hostValidationTaskParameters.getConnectionSetting());
+        return HostReachabilityResponse.builder()
+            .hostReachabilityInfoList(infoList)
+            .executionStatus(ExecutionStatus.SUCCESS)
+            .build();
       } else {
         methodReturnValue = hostValidationService.validateHost(hostValidationTaskParameters.getHostNames(),
             hostValidationTaskParameters.getConnectionSetting(), hostValidationTaskParameters.getEncryptionDetails(),
@@ -91,6 +97,7 @@ public class HostValidationTask extends AbstractDelegateRunnableTask {
           "Exception while running HostValidationTask for hosts " + hostValidationTaskParameters.getHostNames() + ex;
       log.error(message);
     }
+
     return RemoteMethodReturnValueData.builder().returnValue(methodReturnValue).exception(exception).build();
   }
 }

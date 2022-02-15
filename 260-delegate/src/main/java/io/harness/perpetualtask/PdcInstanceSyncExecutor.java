@@ -18,7 +18,7 @@ import io.harness.managerclient.DelegateAgentManagerClient;
 import io.harness.perpetualtask.instancesync.PdcInstanceSyncPerpetualTaskParams;
 import io.harness.serializer.KryoSerializer;
 
-import software.wings.beans.HostReachabilityResponse;
+import software.wings.beans.HostReachabilityInfo;
 import software.wings.beans.SettingAttribute;
 import software.wings.service.intfc.aws.delegate.AwsEc2HelperServiceDelegate;
 import software.wings.utils.HostValidationService;
@@ -47,24 +47,24 @@ public class PdcInstanceSyncExecutor implements PerpetualTaskExecutor {
 
     final SettingAttribute settingAttribute =
         (SettingAttribute) kryoSerializer.asObject(instanceSyncParams.getSettingAttribute().toByteArray());
-    List<HostReachabilityResponse> hostReachabilityResponses = hostValidationService.validateReachability(
+    List<HostReachabilityInfo> hostReachabilityInfos = hostValidationService.validateReachability(
         Collections.singletonList(instanceSyncParams.getHostName()), settingAttribute);
-    HostReachabilityResponse hostReachabilityResponse = hostReachabilityResponses.get(0);
+    HostReachabilityInfo hostReachabilityInfo = hostReachabilityInfos.get(0);
     try {
       execute(delegateAgentManagerClient.publishInstanceSyncResult(
-          taskId.getId(), settingAttribute.getAccountId(), hostReachabilityResponse));
+          taskId.getId(), settingAttribute.getAccountId(), hostReachabilityInfo));
     } catch (Exception e) {
       log.error(String.format("Failed to publish the instance collection result to manager for aws ssh for taskId [%s]",
                     taskId.getId()),
           e);
     }
 
-    return getPerpetualTaskResponse(hostReachabilityResponse);
+    return getPerpetualTaskResponse(hostReachabilityInfo);
   }
 
-  private PerpetualTaskResponse getPerpetualTaskResponse(HostReachabilityResponse hostReachabilityResponse) {
+  private PerpetualTaskResponse getPerpetualTaskResponse(HostReachabilityInfo hostReachabilityInfo) {
     String message = "success";
-    if (Boolean.FALSE.equals(hostReachabilityResponse.getReachable())) {
+    if (Boolean.FALSE.equals(hostReachabilityInfo.getReachable())) {
       message = "failure";
     }
 

@@ -12,12 +12,14 @@ import static io.harness.beans.FeatureName.SSH_PERPETUAL_TASK;
 import static io.harness.beans.FeatureName.STOP_INSTANCE_SYNC_VIA_ITERATOR_FOR_SSH_DEPLOYMENTS;
 import static io.harness.exception.WingsException.USER;
 
+import static software.wings.beans.CGConstants.GLOBAL_APP_ID;
+
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.Cd1SetupFields;
 import io.harness.beans.DelegateTask;
 import io.harness.beans.FeatureName;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.DelegateResponseData;
-import io.harness.delegate.beans.RemoteMethodReturnValueData;
 import io.harness.delegate.beans.TaskData;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
@@ -30,7 +32,7 @@ import software.wings.api.PhaseStepExecutionData;
 import software.wings.api.ondemandrollback.OnDemandRollbackInfo;
 import software.wings.beans.Base;
 import software.wings.beans.HostConnectionAttributes;
-import software.wings.beans.HostReachabilityResponse;
+import software.wings.beans.HostReachabilityInfo;
 import software.wings.beans.HostValidationTaskParameters;
 import software.wings.beans.InfrastructureMapping;
 import software.wings.beans.PhysicalInfrastructureMapping;
@@ -42,10 +44,12 @@ import software.wings.beans.WinRmConnectionAttributes;
 import software.wings.beans.WorkflowExecution;
 import software.wings.beans.artifact.Artifact;
 import software.wings.beans.infrastructure.instance.Instance;
+import software.wings.beans.infrastructure.instance.info.PhysicalHostInstanceInfo;
 import software.wings.beans.infrastructure.instance.key.deployment.DeploymentKey;
 import software.wings.delegatetasks.DelegateProxyFactory;
 import software.wings.service.InstanceSyncPerpetualTaskCreator;
 import software.wings.service.PdcInstanceSyncPerpetualTaskCreator;
+import software.wings.service.impl.aws.model.response.HostReachabilityResponse;
 import software.wings.service.intfc.ArtifactService;
 import software.wings.service.intfc.DelegateService;
 import software.wings.service.intfc.aws.manager.AwsLambdaHelperServiceManager;
@@ -57,6 +61,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -103,9 +108,18 @@ public class PdcInstanceHandler extends InstanceHandler implements InstanceSyncB
       throw WingsException.builder().message(msg).build();
     }
 
-    List<String> hosts = ((PhysicalInfrastructureMappingBase) infrastructureMapping).getHostNames();
     boolean canUpdateDb = canUpdateInstancesInDb(instanceSyncFlow, infrastructureMapping.getAccountId());
     List<Instance> instances = getInstances(appId, infraMappingId);
+    if (EmptyPredicate.isEmpty(instances)) {
+      return;
+    }
+
+    List<String> hosts =
+        instances.stream()
+            .filter(i -> null != i.getInstanceInfo() && i.getInstanceInfo() instanceof PhysicalHostInstanceInfo)
+            .map(i -> ((PhysicalHostInstanceInfo) i.getInstanceInfo()).getHostName())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
 
     if (instanceSyncFlow != InstanceSyncFlow.PERPETUAL_TASK) {
       updateInstances(hosts, settingAttribute, encryptedDataDetails, instances, canUpdateDb);
@@ -135,14 +149,14 @@ public class PdcInstanceHandler extends InstanceHandler implements InstanceSyncB
     boolean activeInstanceFound = true;
     List<String> filteredHostNames = new ArrayList<>(hostNames);
 
-    while (activeInstanceFound) {
-      List<HostReachabilityResponse> hostReachabilityResponses =
+    while (activeInstanceFound && !EmptyPredicate.isEmpty(filteredHostNames)) {
+      List<HostReachabilityInfo> hostReachabilityInfos =
           executeTask(settingAttribute.getAccountId(), filteredHostNames, settingAttribute, encryptedDataDetails);
-      activeInstanceFound = !EmptyPredicate.isEmpty(hostReachabilityResponses)
-          && hostReachabilityResponses.stream().anyMatch(r -> Boolean.TRUE.equals(r.getReachable()));
+      activeInstanceFound = !EmptyPredicate.isEmpty(hostReachabilityInfos)
+          && hostReachabilityInfos.stream().anyMatch(r -> Boolean.TRUE.equals(r.getReachable()));
 
       if (activeInstanceFound) {
-        hostReachabilityResponses.stream()
+        hostReachabilityInfos.stream()
             .filter(r -> Boolean.TRUE.equals(r.getReachable()))
             .forEach(r -> result.put(r.getHostName(), true));
         filteredHostNames.removeAll(result.keySet());
@@ -154,7 +168,7 @@ public class PdcInstanceHandler extends InstanceHandler implements InstanceSyncB
     return result;
   }
 
-  private List<HostReachabilityResponse> executeTask(String accountId, List<String> hostNames,
+  private List<HostReachabilityInfo> executeTask(String accountId, List<String> hostNames,
       SettingAttribute settingAttribute, List<EncryptedDataDetail> encryptedDataDetails) {
     HostValidationTaskParameters parameters = HostValidationTaskParameters.builder()
                                                   .hostNames(hostNames)
@@ -166,6 +180,7 @@ public class PdcInstanceHandler extends InstanceHandler implements InstanceSyncB
 
     DelegateTask delegateTask = DelegateTask.builder()
                                     .accountId(accountId)
+                                    .setupAbstraction(Cd1SetupFields.APP_ID_FIELD, GLOBAL_APP_ID)
                                     .data(TaskData.builder()
                                               .async(false)
                                               .taskType(TaskType.HOST_VALIDATION.name())
@@ -176,8 +191,8 @@ public class PdcInstanceHandler extends InstanceHandler implements InstanceSyncB
 
     try {
       DelegateResponseData notifyResponseData = delegateService.executeTask(delegateTask);
-      RemoteMethodReturnValueData value = (RemoteMethodReturnValueData) notifyResponseData;
-      return (List<HostReachabilityResponse>) value.getReturnValue();
+      HostReachabilityResponse value = (HostReachabilityResponse) notifyResponseData;
+      return value.getHostReachabilityInfoList();
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
       throw new InvalidRequestException(ex.getMessage(), USER);

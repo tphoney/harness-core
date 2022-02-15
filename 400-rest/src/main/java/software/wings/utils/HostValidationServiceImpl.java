@@ -32,7 +32,7 @@ import io.harness.shell.SshSessionFactory;
 import software.wings.annotation.EncryptableSetting;
 import software.wings.beans.ExecutionCredential;
 import software.wings.beans.HostConnectionAttributes;
-import software.wings.beans.HostReachabilityResponse;
+import software.wings.beans.HostReachabilityInfo;
 import software.wings.beans.HostValidationResponse;
 import software.wings.beans.SSHVaultConfig;
 import software.wings.beans.SettingAttribute;
@@ -116,8 +116,7 @@ public class HostValidationServiceImpl implements HostValidationService {
   }
 
   @Override
-  public List<HostReachabilityResponse> validateReachability(
-      List<String> hostNames, SettingAttribute connectionSetting) {
+  public List<HostReachabilityInfo> validateReachability(List<String> hostNames, SettingAttribute connectionSetting) {
     SettingValue settingValue = connectionSetting.getValue();
     int port = 22;
     if (settingValue instanceof WinRmConnectionAttributes) {
@@ -127,9 +126,9 @@ public class HostValidationServiceImpl implements HostValidationService {
     }
     final int portf = port;
 
-    List<HostReachabilityResponse> result = new ArrayList<>();
+    List<HostReachabilityInfo> result = new ArrayList<>();
     for (String host : hostNames) {
-      result.add(HostReachabilityResponse.builder()
+      result.add(HostReachabilityInfo.builder()
                      .hostName(host)
                      .reachable(SocketConnectivityCapabilityCheck.connectableHost(host, portf))
                      .build());

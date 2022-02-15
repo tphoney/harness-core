@@ -8,9 +8,7 @@
 package software.wings.service;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-
-import static java.util.Collections.emptyList;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.perpetualtask.PdcPTClientParams;
@@ -41,12 +39,11 @@ public class PdcInstanceSyncPerpetualTaskCreator extends AbstractInstanceSyncPer
   @Override
   public List<String> createPerpetualTasksForNewDeployment(List<DeploymentSummary> deploymentSummaries,
       List<PerpetualTaskRecord> existingPerpetualTasks, InfrastructureMapping infrastructureMapping) {
-    if (isEmpty(existingPerpetualTasks)) {
-      return createPerpetualTaskInternal(infrastructureMapping);
+    if (isNotEmpty(existingPerpetualTasks)) {
+      existingPerpetualTasks.stream().distinct().forEach(
+          task -> perpetualTaskService.deleteTask(task.getAccountId(), task.getUuid()));
     }
-    existingPerpetualTasks.stream().distinct().forEach(
-        task -> perpetualTaskService.resetTask(infrastructureMapping.getAccountId(), task.getUuid(), null));
-    return emptyList();
+    return createPerpetualTaskInternal(infrastructureMapping);
   }
 
   private List<String> create(PdcPTClientParams clientParams, InfrastructureMapping infraMapping) {

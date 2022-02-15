@@ -26,7 +26,7 @@ public final class HelmCommandTemplateFactory {
       case VERSION:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_VERSION_COMMAND_TEMPLATE;
           case V2:
           default:
@@ -35,7 +35,7 @@ public final class HelmCommandTemplateFactory {
       case INIT:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_INIT_COMMAND;
           case V2:
           default:
@@ -44,7 +44,7 @@ public final class HelmCommandTemplateFactory {
       case INSTALL:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_INSTALL_COMMAND_TEMPLATE;
           case V2:
           default:
@@ -53,7 +53,7 @@ public final class HelmCommandTemplateFactory {
       case UPGRADE:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_UPGRADE_COMMAND_TEMPLATE;
           case V2:
           default:
@@ -62,7 +62,7 @@ public final class HelmCommandTemplateFactory {
       case ROLLBACK:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_ROLLBACK_COMMAND_TEMPLATE;
           case V2:
           default:
@@ -71,7 +71,7 @@ public final class HelmCommandTemplateFactory {
       case REPO_ADD:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_ADD_REPO_COMMAND_TEMPLATE;
           case V2:
           default:
@@ -80,7 +80,7 @@ public final class HelmCommandTemplateFactory {
       case REPO_UPDATE:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_REPO_UPDATE_COMMAND_TEMPLATE;
           case V2:
           default:
@@ -89,7 +89,7 @@ public final class HelmCommandTemplateFactory {
       case REPO_LIST:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_REPO_LIST_COMMAND_TEMPLATE;
           case V2:
           default:
@@ -99,7 +99,7 @@ public final class HelmCommandTemplateFactory {
       case RELEASE_HISTORY:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_RELEASE_HIST_COMMAND_TEMPLATE;
           case V2:
           default:
@@ -108,7 +108,7 @@ public final class HelmCommandTemplateFactory {
       case LIST_RELEASE:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_LIST_RELEASE_COMMAND_TEMPLATE;
           case V2:
           default:
@@ -117,7 +117,7 @@ public final class HelmCommandTemplateFactory {
       case DELETE_RELEASE:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_DELETE_RELEASE_TEMPLATE;
           case V2:
           default:
@@ -126,7 +126,7 @@ public final class HelmCommandTemplateFactory {
       case SEARCH_REPO:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_SEARCH_COMMAND_TEMPLATE;
           case V2:
           default:
@@ -135,7 +135,7 @@ public final class HelmCommandTemplateFactory {
       case REPO_REMOVE:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_REPO_REMOVE_COMMAND;
           case V2:
           default:
@@ -144,7 +144,7 @@ public final class HelmCommandTemplateFactory {
       case REPO_ADD_HTTP:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_REPO_ADD_COMMAND_FOR_HTTP;
           case V2:
           default:
@@ -153,7 +153,7 @@ public final class HelmCommandTemplateFactory {
       case REPO_ADD_CHART_MEUSEUM:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_REPO_ADD_COMMAND_FOR_CHART_MUSEUM;
           case V2:
           default:
@@ -162,7 +162,7 @@ public final class HelmCommandTemplateFactory {
       case FETCH:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_FETCH_COMMAND;
           case V2:
           default:
@@ -171,7 +171,7 @@ public final class HelmCommandTemplateFactory {
       case RENDER_CHART:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_TEMPLATE_COMMAND_FOR_KUBERNETES_TEMPLATE;
           case V2:
           default:
@@ -180,7 +180,7 @@ public final class HelmCommandTemplateFactory {
       case RENDER_SPECIFIC_CHART_FILE:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_RENDER_SPECIFIC_TEMPLATE;
           case V2:
           default:
@@ -189,7 +189,7 @@ public final class HelmCommandTemplateFactory {
       case FETCH_ALL_VERSIONS:
         switch (version) {
           case V3:
-          case V3New:
+          case V380:
             return HelmConstants.V3Commands.HELM_FETCH_ALL_VERSIONS_COMMAND_TEMPLATE;
           case V2:
           default:

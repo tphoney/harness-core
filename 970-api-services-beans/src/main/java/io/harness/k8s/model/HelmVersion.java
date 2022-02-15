@@ -10,5 +10,5 @@ package io.harness.k8s.model;
 public enum HelmVersion {
   V2,
   V3,
-  V3New;
+  V380;
 }

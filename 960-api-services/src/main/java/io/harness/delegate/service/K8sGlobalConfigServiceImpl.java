@@ -46,7 +46,7 @@ public class K8sGlobalConfigServiceImpl implements K8sGlobalConfigService {
         return InstallUtils.getHelm2Path();
       case V3:
         return InstallUtils.getHelm3Path();
-      case V3New:
+      case V380:
         return InstallUtils.getNewHelm3Path();
       default:
         throw new InvalidRequestException("Unsupported Helm Version:" + helmVersion);

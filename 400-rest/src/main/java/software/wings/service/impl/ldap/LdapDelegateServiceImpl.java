@@ -28,12 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -149,7 +144,9 @@ public class LdapDelegateServiceImpl implements LdapDelegateService {
     String externalUserId = "";
     if (user.getAttributes() != null && Arrays.asList(user.getAttributeNames()).contains(userConfig.getUidAttr())
         && user.getAttribute(userConfig.getUidAttr()) != null) {
-      externalUserId = user.getAttribute(userConfig.getUidAttr()).getStringValue();
+      log.info("LDAP user with email {} user uid set as {}", email,
+          user.getAttribute(userConfig.getSamAccountNameAttr()).getStringValue());
+      externalUserId = user.getAttribute(userConfig.getUidAttr()).getStringValue().toLowerCase();
     }
 
     if (user.getAttributes() != null
@@ -157,7 +154,7 @@ public class LdapDelegateServiceImpl implements LdapDelegateService {
         && user.getAttribute(userConfig.getSamAccountNameAttr()) != null) {
       log.info("LDAP user with email {} samAccountName set as {}", email,
           user.getAttribute(userConfig.getSamAccountNameAttr()).getStringValue());
-      externalUserId = user.getAttribute(userConfig.getSamAccountNameAttr()).getStringValue();
+      externalUserId = user.getAttribute(userConfig.getSamAccountNameAttr()).getStringValue().toLowerCase(Locale.ROOT);
     }
 
     log.info("LDAP user response with name {} and email {} and userId {}", name, email, externalUserId);

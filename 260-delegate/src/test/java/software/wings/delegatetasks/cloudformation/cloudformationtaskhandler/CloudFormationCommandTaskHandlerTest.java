@@ -23,7 +23,6 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.joor.Reflect.on;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -40,7 +39,6 @@ import io.harness.category.element.UnitTests;
 import io.harness.exception.ExceptionUtils;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.rule.Owner;
-import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.WingsBaseTest;
 import software.wings.beans.AwsConfig;
@@ -236,16 +234,10 @@ public class CloudFormationCommandTaskHandlerTest extends WingsBaseTest {
             .commandName("Create Stack")
             .awsConfig(AwsConfig.builder().accessKey(accessKey).accountId(ACCOUNT_ID).secretKey(secretKey).build())
             .timeoutInMs(10 * 60 * 1000)
-            .gitConfig(GitConfig.builder().repoUrl("").branch("").build())
-            .gitFileConfig(GitFileConfig.builder().filePath("").commitId("").build())
+            .data(data)
             .createType(CloudFormationCreateStackRequest.CLOUD_FORMATION_STACK_CREATE_GIT)
             .stackNameSuffix(stackNameSuffix)
             .build();
-    doReturn(gitOperationContext)
-        .when(gitUtilsDelegate)
-        .cloneRepo(any(GitConfig.class), any(GitFileConfig.class), anyListOf(EncryptedDataDetail.class));
-    doReturn(data).when(gitUtilsDelegate).resolveAbsoluteFilePath(any(GitOperationContext.class), anyString());
-    doReturn(data).when(gitUtilsDelegate).getRequestDataFromFile(anyString());
     String stackId = "Stack Id 00";
     CreateStackResult createStackResult = new CreateStackResult().withStackId(stackId);
     doReturn(createStackResult).when(mockAwsHelperService).createStack(anyString(), any(), any());
@@ -265,7 +257,6 @@ public class CloudFormationCommandTaskHandlerTest extends WingsBaseTest {
     CloudFormationCommandExecutionResponse response = createStackHandler.execute(request, null);
 
     assertThat(response).isNotNull();
-    assertThat(data).isEqualTo(request.getData());
     assertThat(response.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.SUCCESS);
     CloudFormationCommandResponse formationCommandResponse = response.getCommandResponse();
     assertThat(formationCommandResponse).isNotNull();

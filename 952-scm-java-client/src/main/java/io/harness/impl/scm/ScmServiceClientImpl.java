@@ -750,18 +750,18 @@ public class ScmServiceClientImpl implements ScmServiceClient {
 
   private Optional<UpdateFileResponse> runUpdateFileOpsPreChecks(
       ScmConnector scmConnector, SCMGrpc.SCMBlockingStub scmBlockingStub, GitFileDetails gitFileDetails) {
-    if (scmConnector.getConnectorType() == ConnectorType.BITBUCKET) {
-      // Check if current file commit is same as latest commit on file on remote
-      GetLatestCommitOnFileResponse latestCommitResponse = getLatestCommitOnFile(
-          scmConnector, scmBlockingStub, gitFileDetails.getBranch(), gitFileDetails.getFilePath());
-      if (!latestCommitResponse.getCommitId().equals(gitFileDetails.getCommitId())) {
-        return Optional.of(UpdateFileResponse.newBuilder()
-                               .setStatus(Constants.SCM_CONFLICT_ERROR_CODE)
-                               .setError("Cannot update file as it has conflicts with remote")
-                               .setCommitId(latestCommitResponse.getCommitId())
-                               .build());
-      }
+    //    if (scmConnector.getConnectorType() == ConnectorType.BITBUCKET) {
+    // Check if current file commit is same as latest commit on file on remote
+    GetLatestCommitOnFileResponse latestCommitResponse =
+        getLatestCommitOnFile(scmConnector, scmBlockingStub, gitFileDetails.getBranch(), gitFileDetails.getFilePath());
+    if (!latestCommitResponse.getCommitId().equals(gitFileDetails.getCommitId())) {
+      return Optional.of(UpdateFileResponse.newBuilder()
+                             .setStatus(Constants.SCM_CONFLICT_ERROR_CODE)
+                             .setError("Cannot update file as it has conflicts with remote")
+                             .setCommitId(latestCommitResponse.getCommitId())
+                             .build());
     }
+    //    }
     return Optional.empty();
   }
 }

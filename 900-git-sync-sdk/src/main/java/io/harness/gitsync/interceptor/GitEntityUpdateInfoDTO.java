@@ -47,6 +47,9 @@ public class GitEntityUpdateInfoDTO {
   @Parameter(description = "Last Object Id")
   @QueryParam(GitSyncApiConstants.LAST_OBJECT_ID_KEY)
   String lastObjectId; // required in case of update file
+  @Parameter(description = "Conflicting Commit Id")
+  @QueryParam(GitSyncApiConstants.CONFLICTING_COMMIT_ID)
+  String conflictCommitId; // required in case of update file // look for better name
   @Parameter(description = GitSyncApiConstants.DEFAULT_BRANCH_PARAM_MESSAGE)
   @QueryParam(GitSyncApiConstants.BASE_BRANCH)
   String baseBranch;

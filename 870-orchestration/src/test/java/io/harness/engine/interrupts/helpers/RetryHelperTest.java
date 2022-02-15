@@ -107,7 +107,7 @@ public class RetryHelperTest extends OrchestrationTestBase {
                              .setManualIssuer(ManualIssuer.newBuilder().setIdentifier("admin@admin").build())
                              .build())
             .build();
-    retryHelper.retryNodeExecution(nodeExecution.getUuid(), null, generateUuid(), interruptConfig);
+    retryHelper.retryNodeExecution(nodeExecution.getUuid(), generateUuid(), interruptConfig);
     verify(executorService).submit(any(Runnable.class));
   }
   @Test

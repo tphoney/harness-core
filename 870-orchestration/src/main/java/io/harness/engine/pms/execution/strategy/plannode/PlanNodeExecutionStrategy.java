@@ -35,7 +35,6 @@ import io.harness.exception.exceptionmanager.ExceptionManager;
 import io.harness.execution.NodeExecution;
 import io.harness.execution.NodeExecution.NodeExecutionKeys;
 import io.harness.execution.NodeExecutionMetadata;
-import io.harness.graph.stepDetail.service.PmsGraphStepDetailsService;
 import io.harness.logging.AutoLogContext;
 import io.harness.plan.PlanNode;
 import io.harness.pms.contracts.advisers.AdviseType;
@@ -46,7 +45,6 @@ import io.harness.pms.contracts.execution.ExecutableResponse;
 import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.contracts.facilitators.FacilitatorResponseProto;
 import io.harness.pms.contracts.steps.io.StepResponseProto;
-import io.harness.pms.data.OrchestrationMap;
 import io.harness.pms.data.stepparameters.PmsStepParameters;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.execution.utils.EngineExceptionUtils;
@@ -56,7 +54,6 @@ import io.harness.pms.expression.PmsEngineExpressionService;
 import io.harness.pms.sdk.core.steps.io.StepResponseNotifyData;
 import io.harness.pms.utils.OrchestrationMapBackwardCompatibilityUtils;
 import io.harness.serializer.KryoSerializer;
-import io.harness.springdata.TransactionHelper;
 import io.harness.waiter.WaitNotifyEngine;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -94,8 +91,6 @@ public class PlanNodeExecutionStrategy extends AbstractNodeExecutionStrategy<Pla
   @Inject private WaitNotifyEngine waitNotifyEngine;
   @Inject private OrchestrationEngine orchestrationEngine;
   @Inject private PmsOutcomeService outcomeService;
-  @Inject private TransactionHelper transactionHelper;
-  @Inject private PmsGraphStepDetailsService pmsGraphStepDetailsService;
   @Inject private KryoSerializer kryoSerializer;
 
   @Override
@@ -123,31 +118,17 @@ public class PlanNodeExecutionStrategy extends AbstractNodeExecutionStrategy<Pla
     return nodeExecutionService.save(nodeExecution);
   }
 
-  private NodeExecution resolveParameters(Ambiance ambiance, PlanNode node) {
-    return transactionHelper.performTransaction(() -> {
-      String nodeExecutionId = AmbianceUtils.obtainCurrentRuntimeId(ambiance);
-      boolean skipUnresolvedExpressionsCheck = node.isSkipUnresolvedExpressionsCheck();
-      log.info("Starting to Resolve step parameters and Inputs");
-      PmsStepParameters resolvedParameters =
-          resolveOrchestrationMap(ambiance, node.getStepParameters(), skipUnresolvedExpressionsCheck);
-      PmsStepParameters resolvedInputs =
-          resolveOrchestrationMap(ambiance, node.getStepInputs(), skipUnresolvedExpressionsCheck);
-
-      // TODO (prashant) : This is a hack right now to serialize in binary as findAndModify is not honoring converter
-      // for maps Find a better way to do this
-      NodeExecution updatedNodeExecution = nodeExecutionService.update(nodeExecutionId,
-          ops -> ops.set(NodeExecutionKeys.resolvedParams, kryoSerializer.asDeflatedBytes(resolvedParameters)));
-
-      pmsGraphStepDetailsService.addStepInputs(nodeExecutionId, ambiance.getPlanExecutionId(), resolvedInputs);
-      return updatedNodeExecution;
-    });
-  }
-
-  private PmsStepParameters resolveOrchestrationMap(
-      Ambiance ambiance, OrchestrationMap unresolvedParams, boolean skipUnresolvedCheck) {
-    Object resolvedStepParameters = pmsEngineExpressionService.resolve(ambiance, unresolvedParams, skipUnresolvedCheck);
-    return PmsStepParameters.parse(
+  private void resolveParameters(Ambiance ambiance, PmsStepParameters stepParameters, boolean skipUnresolvedCheck) {
+    String nodeExecutionId = Objects.requireNonNull(AmbianceUtils.obtainCurrentRuntimeId(ambiance));
+    log.info("Starting to Resolve step parameters");
+    Object resolvedStepParameters = pmsEngineExpressionService.resolve(ambiance, stepParameters, skipUnresolvedCheck);
+    PmsStepParameters resolvedParameters = PmsStepParameters.parse(
         OrchestrationMapBackwardCompatibilityUtils.extractToOrchestrationMap(resolvedStepParameters));
+    // TODO (prashant) : This is a hack right now to serialize in binary as findAndModify is not honoring converter
+    // for maps Find a better way to do this
+    nodeExecutionService.update(nodeExecutionId,
+        ops -> ops.set(NodeExecutionKeys.resolvedParams, kryoSerializer.asDeflatedBytes(resolvedParameters)));
+    log.info("Resolved to step parameters");
   }
 
   @Override
@@ -163,7 +144,7 @@ public class PlanNodeExecutionStrategy extends AbstractNodeExecutionStrategy<Pla
       }
       log.info("Proceeding with  Execution. Reason : {}", check.getReason());
 
-      resolveParameters(ambiance, planNode);
+      resolveParameters(ambiance, planNode.getStepParameters(), planNode.isSkipUnresolvedExpressionsCheck());
 
       if (facilitationHelper.customFacilitatorPresent(planNode)) {
         facilitateEventPublisher.publishEvent(ambiance, planNode);

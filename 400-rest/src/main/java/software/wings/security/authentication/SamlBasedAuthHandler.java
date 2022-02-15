@@ -31,6 +31,7 @@ import io.harness.exception.WingsException;
 import io.harness.ff.FeatureFlagService;
 import io.harness.logging.AutoLogContext;
 import io.harness.ng.core.account.AuthenticationMechanism;
+import io.harness.persistence.HPersistence;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.annotation.EncryptableSetting;
@@ -42,6 +43,7 @@ import software.wings.security.saml.SamlClientService;
 import software.wings.security.saml.SamlClientService.HostType;
 import software.wings.security.saml.SamlUserGroupSync;
 import software.wings.service.intfc.SSOSettingService;
+import software.wings.service.intfc.UserService;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.service.intfc.security.SecretManager;
 
@@ -64,6 +66,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -92,12 +96,15 @@ public class SamlBasedAuthHandler implements AuthHandler {
   @Inject private AuthenticationUtils authenticationUtils;
   @Inject private SamlUserGroupSync samlUserGroupSync;
   @Inject private SSOSettingService ssoSettingService;
+  @Inject private UserService userService;
   @Inject private DomainWhitelistCheckerService domainWhitelistCheckerService;
   @Inject private NgSamlAuthorizationEventPublisher ngSamlAuthorizationEventPublisher;
   @Inject private SecretManager secretManager;
   @Inject private EncryptionService encryptionService;
   @Inject private FeatureFlagService featureFlagService;
+  @Inject private HPersistence hPersistence;
 
+  private static final String USER_ID_ATTR = "uid";
   static final String AZURE_GET_MEMBER_OBJECTS_URL_FORMAT =
       "https://graph.microsoft.com/v1.0/%s/users/%s/getMemberObjects";
   static final String AZURE_OAUTH_LOGIN_URL_FORMAT = "https://login.microsoftonline.com/%s/oauth2/v2.0/token";
@@ -133,6 +140,20 @@ public class SamlBasedAuthHandler implements AuthHandler {
             && account.getAuthenticationMechanism() != io.harness.ng.core.account.AuthenticationMechanism.SAML) {
           log.info("SAML test login successful for user: [{}]", user.getEmail());
           throw new WingsException(ErrorCode.SAML_TEST_SUCCESS_MECHANISM_NOT_ENABLED);
+        }
+        if (Objects.nonNull(samlSettings)
+            && featureFlagService.isEnabled(FeatureName.EXTERNAL_USERID_BASED_LOGIN, accountId)) {
+          String userIdFromSamlResponse = getUserIdForIdpUrl(idpUrl, samlResponseString, accountId);
+          User userFromUserId = userService.getUserByUserId(userIdFromSamlResponse);
+          if (userFromUserId != null && !user.getEmail().equals(userFromUserId.getEmail())) {
+            userFromUserId.setEmail(user.getEmail());
+            userFromUserId.setAccounts(Stream.concat(user.getAccounts().stream(), userFromUserId.getAccounts().stream())
+                                           .distinct()
+                                           .collect(Collectors.toList()));
+            hPersistence.delete(user);
+            hPersistence.save(userFromUserId);
+            user = userFromUserId;
+          }
         }
         if (Objects.nonNull(samlSettings) && samlSettings.isAuthorizationEnabled()) {
           List<String> userGroups = getUserGroupsForIdpUrl(idpUrl, samlResponseString, accountId);
@@ -291,6 +312,39 @@ public class SamlBasedAuthHandler implements AuthHandler {
     throw new WingsException("Saml Authorization Failed");
   }
 
+  public String getUserIdForIdpUrl(String idpUrl, String samlResponseString, String accountId)
+      throws URISyntaxException {
+    String host = new URI(idpUrl).getHost();
+    final HostType hostType = samlClientService.getHostType(idpUrl);
+    Iterator<SamlSettings> samlSettingsIterator = samlClientService.getSamlSettingsFromOrigin(host, accountId);
+    if (samlSettingsIterator != null) {
+      while (samlSettingsIterator.hasNext()) {
+        SamlSettings samlSettings = samlSettingsIterator.next();
+        try {
+          SamlClient samlClient = samlClientService.getSamlClient(samlSettings);
+          SamlResponse samlResponse = samlClient.decodeAndValidateSamlResponse(samlResponseString);
+          Assertion samlAssertionValue = samlResponse.getAssertion();
+          List<AttributeStatement> attributeStatements = samlAssertionValue.getAttributeStatements();
+          final String userIdAttr = samlSettings.getUserIdAttr() != null ? samlSettings.getUserIdAttr() : USER_ID_ATTR;
+
+          switch (hostType) {
+            case AZURE:
+              return getUserIdForAzure(
+                  attributeStatements, samlSettings, userIdAttr, samlAssertionValue.getIssuer().getValue(), accountId);
+            case GOOGLE:
+            case OTHER:
+            default:
+              return getUserId(attributeStatements, userIdAttr);
+          }
+        } catch (Exception e) {
+          // try decoding again with the next saml settings.
+        }
+      }
+    }
+    log.info("Authorization failed for Saml with idp URL [{}]", idpUrl);
+    throw new WingsException("Saml Authorization Failed");
+  }
+
   private List<String> getUserGroups(List<AttributeStatement> attributeStatements, final String groupMembershipAttr) {
     List<String> userGroups = new ArrayList<>();
     for (AttributeStatement attributeStatement : attributeStatements) {
@@ -307,6 +361,24 @@ public class SamlBasedAuthHandler implements AuthHandler {
     }
 
     return userGroups;
+  }
+
+  private String getUserId(List<AttributeStatement> attributeStatements, final String userIdAttr) {
+    List<String> userIds = new ArrayList<>();
+    for (AttributeStatement attributeStatement : attributeStatements) {
+      for (Attribute attribute : attributeStatement.getAttributes()) {
+        if (attribute.getName().equals(userIdAttr)) {
+          for (XMLObject xmlObject : attribute.getAttributeValues()) {
+            final String userId = getAttributeValue(xmlObject);
+            if (userId != null) {
+              userIds.add(userId);
+            }
+          }
+        }
+      }
+    }
+
+    return isNotEmpty(userIds) ? userIds.get(0).toLowerCase() : "";
   }
 
   @VisibleForTesting
@@ -366,6 +438,65 @@ public class SamlBasedAuthHandler implements AuthHandler {
     }
 
     return userGroups;
+  }
+
+  @VisibleForTesting
+  String getUserIdForAzure(List<AttributeStatement> attributeStatements, SamlSettings samlSettings,
+      final String userIdAttr, final String issuerURIString, final String accountId) {
+    List<String> userIds = new ArrayList<>();
+
+    boolean hasAzureSAMLGroupsLink = false;
+    String azureUserId = null;
+    final String azureMicrosoftString = "microsoft";
+    for (AttributeStatement attributeStatement : attributeStatements) {
+      for (Attribute attribute : attributeStatement.getAttributes()) {
+        if (attribute.getName().equals(userIdAttr)) {
+          for (XMLObject xmlObject : attribute.getAttributeValues()) {
+            final String userId = getAttributeValue(xmlObject);
+            if (userId != null) {
+              userIds.add(userId);
+            }
+          }
+        } else {
+          if (featureFlagService.isEnabled(FeatureName.AZURE_SAML_150_GROUPS_SUPPORT, accountId)) {
+            if (attribute.getName().endsWith("groups.link")
+                && attribute.getName().contains(
+                    azureMicrosoftString)) { // occurs for Azure SAML case when no of groups > 150
+              hasAzureSAMLGroupsLink = true;
+            }
+
+            if (attribute.getName().endsWith("objectidentifier")
+                && attribute.getName().contains(
+                    azureMicrosoftString)) { // occurs for Azure SAML case when no of groups > 150
+              azureUserId = getAttributeValue(attribute.getAttributeValues().get(0));
+            }
+          }
+        }
+      }
+    }
+
+    if (hasAzureSAMLGroupsLink && isNotEmpty(azureUserId)) {
+      URI issuerUri = URI.create(issuerURIString);
+      final String tenantId = isNotEmpty(issuerUri.getPath()) ? issuerUri.getPath().replace("/", "") : "";
+      List<EncryptedDataDetail> encryptionDetails =
+          secretManager.getEncryptionDetails((EncryptableSetting) samlSettings, null, null);
+      encryptionService.decrypt(samlSettings, encryptionDetails, false);
+
+      if (isNotEmpty(samlSettings.getClientId()) && isNotEmpty(samlSettings.getClientSecret())) {
+        final String accessToken = this.getAccessTokenForAzure(
+            tenantId, samlSettings.getClientId(), String.valueOf(samlSettings.getClientSecret()));
+
+        if (isNotEmpty(accessToken)) {
+          try {
+            userIds.addAll(this.getUsersGroupResource(accessToken, tenantId, azureUserId));
+          } catch (IOException ioExc) {
+            log.error("Getting azure user groups failed in case of more than 150 groups", ioExc);
+          }
+        }
+      }
+    }
+
+    return isNotEmpty(userIds) ? userIds.get(0) : "";
   }
 
   private String getAttributeValue(XMLObject attributeValue) {

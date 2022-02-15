@@ -14,16 +14,16 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	statuspb "github.com/wings-software/portal/910-delegate-task-grpc-service/src/main/proto/io/harness/task/service"
-	"github.com/wings-software/portal/commons/go/lib/filesystem"
-	"github.com/wings-software/portal/commons/go/lib/logs"
-	caddon "github.com/wings-software/portal/product/ci/addon/grpc/client"
-	amgrpc "github.com/wings-software/portal/product/ci/addon/grpc/client/mocks"
-	addonpb "github.com/wings-software/portal/product/ci/addon/proto"
-	"github.com/wings-software/portal/product/ci/engine/legacy/steps"
-	msteps "github.com/wings-software/portal/product/ci/engine/legacy/steps/mocks"
-	"github.com/wings-software/portal/product/ci/engine/output"
-	pb "github.com/wings-software/portal/product/ci/engine/proto"
+	statuspb "github.com/harness/harness-core/910-delegate-task-grpc-service/src/main/proto/io/harness/task/service"
+	"github.com/harness/harness-core/commons/go/lib/filesystem"
+	"github.com/harness/harness-core/commons/go/lib/logs"
+	caddon "github.com/harness/harness-core/product/ci/addon/grpc/client"
+	amgrpc "github.com/harness/harness-core/product/ci/addon/grpc/client/mocks"
+	addonpb "github.com/harness/harness-core/product/ci/addon/proto"
+	"github.com/harness/harness-core/product/ci/engine/legacy/steps"
+	msteps "github.com/harness/harness-core/product/ci/engine/legacy/steps/mocks"
+	"github.com/harness/harness-core/product/ci/engine/output"
+	pb "github.com/harness/harness-core/product/ci/engine/proto"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -251,7 +251,7 @@ func TestStepPluginSuccess(t *testing.T) {
 	retries := int32(3)
 	log, _ := logs.GetObservedLogger(zap.InfoLevel)
 	mockStep := msteps.NewMockPluginStep(ctrl)
-	mockStep.EXPECT().Run(ctx).Return(retries, nil)
+	mockStep.EXPECT().Run(ctx).Return(nil, retries, nil)
 
 	oldSendStepStatus := sendStepStatus
 	defer func() { sendStepStatus = oldSendStepStatus }()
@@ -262,7 +262,7 @@ func TestStepPluginSuccess(t *testing.T) {
 
 	oldStep := pluginStep
 	defer func() { pluginStep = oldStep }()
-	pluginStep = func(step *pb.UnitStep, so output.StageOutput, log *zap.SugaredLogger) steps.PluginStep {
+	pluginStep = func(step *pb.UnitStep, tmpFilePath string, so output.StageOutput, log *zap.SugaredLogger) steps.PluginStep {
 		return mockStep
 	}
 

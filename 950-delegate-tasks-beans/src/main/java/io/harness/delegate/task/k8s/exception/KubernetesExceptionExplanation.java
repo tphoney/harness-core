@@ -26,12 +26,8 @@ public class KubernetesExceptionExplanation {
   public final String K8S_API_VALIDATION_ERROR =
       "Some of the provided values in Kubernetes configuration missing or invalid (i.e. namespace, release name)";
 
-  public final String DRY_RUN_MANIFEST_FAILED = "%s failed with exit code: %d";
-  public final String DRY_RUN_MANIFEST_FAILED_OUTPUT = "%s failed with exit code: %d and output: %s";
-  public final String APPLY_MANIFEST_FAILED = "%s failed with exit code: %d";
-  public final String APPLY_MANIFEST_FAILED_OUTPUT = "%s failed with exit code: %d and output: %s";
   public final String APPLY_NO_FILEPATH_SPECIFIED = "No file specified in the state";
-  public final String WAIT_FOR_STEADY_STATE_FAILED = "%s failed with exit code: %d";
+  public final String WAIT_FOR_STEADY_STATE_FAILED = "Resources failed to reach steady state.\n";
   public final String WAIT_FOR_STEADY_STATE_FAILED_OUTPUT = "%s failed with exit code: %d and output: %s";
   public final String WAIT_FOR_STEADY_STATE_JOB_FAILED = "Job execution failed";
   public final String WAIT_FOR_STEADY_STATE_CRD_FAILED = "Steady check condition [%s] never resolved to true";
@@ -51,8 +47,7 @@ public class KubernetesExceptionExplanation {
       "For blue/green deployment, the label [" + HarnessLabels.color + "] is required in service selector";
   public final String BG_SWAP_SERVICES_SERVICE_NOT_FOUND = "Service [%s] not found.";
 
-  public final String SCALE_CLI_FAILED = "%s failed with exit code: %d";
-  public final String SCALE_CLI_FAILED_OUTPUT = "%s failed with exit code: %d and output: %s";
+  public final String SCALE_CLI_FAILED = "Failed to scale resource [%s]\n";
 
   public final String ROLLBACK_CR_APPLY_FAILED =
       "Failed while rolling back custom resource by applying previous release manifests";
@@ -62,4 +57,14 @@ public class KubernetesExceptionExplanation {
   public final String FAILED_TO_READ_FILE = "Could not read file at path [%s].";
   public final String INVALID_RESOURCE_KIND_NAME_FORMAT =
       "Resource name '%s' doesn't match kind/name or namespace/kind/name format";
+
+  public final String K8S_CHARACTER_ERROR = "The resource [%s] is breaching the naming constraints.\n";
+  public final String FAILED_COMMAND_WITH_EXITCODE_AND_OUTPUT =
+      "Command executed: [%s] %nExit Code: [%s] %nOutput: [%s] %nkubectl binary path: [%s]";
+  public final String FAILED_COMMAND_WITH_EXITCODE =
+      "Command executed: [%s] %nExit Code: [%s] %nkubectl binary path: [%s]";
+  public final String VALIDATION_FAILED_UNKNOWN_FIELD = "Unknown field [%s].\n";
+  public final String VALIDATION_FAILED_INVALID_TYPE = "Invalid type value for [%s].\n";
+  public final String K8S_API_FORBIDDEN_ERROR =
+      "The user [%s] does not have adequate permissions in the namespace [%s]. {Resource: [%s], API Group: [%s]}";
 }

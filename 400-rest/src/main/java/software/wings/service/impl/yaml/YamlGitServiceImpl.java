@@ -54,6 +54,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 import static org.apache.commons.lang3.StringUtils.endsWith;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -104,6 +105,8 @@ import software.wings.beans.alert.AlertType;
 import software.wings.beans.alert.GitConnectionErrorAlert;
 import software.wings.beans.alert.GitSyncErrorAlert;
 import software.wings.beans.trigger.WebhookSource;
+import software.wings.beans.yaml.FullSyncChangeset;
+import software.wings.beans.yaml.FullSyncError;
 import software.wings.beans.yaml.GitCommand.GitCommandType;
 import software.wings.beans.yaml.GitCommitRequest;
 import software.wings.beans.yaml.GitDiffRequest;
@@ -320,12 +323,12 @@ public class YamlGitServiceImpl implements YamlGitService {
 
     if (yamlGitConfig != null) {
       try {
-        List<GitFileChange> gitFileChanges = new ArrayList<>();
+        FullSyncChangeset fullSyncChangeset = null;
         List<GitFileChange> deletedGitFileChanges = new ArrayList<>();
 
         if (EntityType.ACCOUNT == entityType) {
           // Handle everything except for application
-          gitFileChanges = obtainAccountOnlyGitFileChanges(accountId, true);
+          fullSyncChangeset = obtainAccountOnlyGitFileChanges(accountId, true);
           deletedGitFileChanges = obtainAccountOnlyGitFileChangeForDelete(accountId);
 
         } else if (APPLICATION == entityType) {
@@ -333,11 +336,12 @@ public class YamlGitServiceImpl implements YamlGitService {
           // each app can refer to different yamlGitConfig
           Application app = appService.get(appId);
           if (app != null) {
-            gitFileChanges = obtainApplicationYamlGitFileChanges(accountId, app);
+            fullSyncChangeset = obtainApplicationYamlGitFileChanges(accountId, app);
             deletedGitFileChanges = asList(generateGitFileChangeForApplicationDelete(accountId, app.getName()));
           }
         }
 
+        final List<GitFileChange> gitFileChanges = fullSyncChangeset.getGitFileChanges();
         if (gitFileChanges.size() > 0 && forcePush) {
           for (GitFileChange gitFileChange : deletedGitFileChanges) {
             gitFileChanges.add(0, gitFileChange);
@@ -346,6 +350,7 @@ public class YamlGitServiceImpl implements YamlGitService {
         YamlChangeSet yamlChangeSet = obtainYamlChangeSet(accountId, appId, gitFileChanges, forcePush);
 
         discardGitSyncErrorForFullSync(accountId, appId);
+        insertErrorDuringYamlCollection(accountId, appId, fullSyncChangeset.getYamlErrors());
 
         yamlChangeSetService.save(yamlChangeSet);
         final long processingTimeMs = stopwatch.elapsed(MILLISECONDS);
@@ -358,6 +363,12 @@ public class YamlGitServiceImpl implements YamlGitService {
             yamlGitConfig.getAccountId(), entityId, ex);
       }
     }
+  }
+
+  private void insertErrorDuringYamlCollection(String accountId, String appId, List<FullSyncError> yamlErrors) {
+    emptyIfNull(yamlErrors).forEach(yamlError -> {
+      gitSyncErrorService.upsertGitSyncErrors(yamlError.getGitFileChange(), yamlError.getError(), true, false);
+    });
   }
 
   @Override
@@ -447,7 +458,7 @@ public class YamlGitServiceImpl implements YamlGitService {
   }
 
   @Override
-  public List<GitFileChange> obtainApplicationYamlGitFileChanges(String accountId, Application app) {
+  public FullSyncChangeset obtainApplicationYamlGitFileChanges(String accountId, Application app) {
     DirectoryPath directoryPath = new DirectoryPath(SETUP_FOLDER);
 
     FolderNode applicationsFolder =
@@ -456,10 +467,11 @@ public class YamlGitServiceImpl implements YamlGitService {
     yamlDirectoryService.doApplication(app.getUuid(), false, null, applicationsFolder, directoryPath);
 
     List<GitFileChange> gitFileChanges = new ArrayList<>();
+    List<FullSyncError> fulllSyncError = new ArrayList<>();
     gitFileChanges = yamlDirectoryService.traverseDirectory(
-        gitFileChanges, accountId, applicationsFolder, SETUP_FOLDER, true, false, Optional.empty());
+        gitFileChanges, accountId, applicationsFolder, SETUP_FOLDER, true, false, fulllSyncError);
 
-    return gitFileChanges;
+    return FullSyncChangeset.builder().gitFileChanges(gitFileChanges).yamlErrors(fulllSyncError).build();
   }
 
   private List<GitFileChange> obtainGlobalTemplates(String accountId, boolean includeFiles) {
@@ -468,7 +480,7 @@ public class YamlGitServiceImpl implements YamlGitService {
     FolderNode templateFolder = yamlDirectoryService.doTemplateLibrary(accountId, directoryPath.clone(), GLOBAL_APP_ID,
         GLOBAL_TEMPLATE_LIBRARY_FOLDER, YamlVersion.Type.GLOBAL_TEMPLATE_LIBRARY, false, Collections.EMPTY_SET);
     gitFileChanges = yamlDirectoryService.traverseDirectory(
-        gitFileChanges, accountId, templateFolder, SETUP_FOLDER, includeFiles, true, Optional.empty());
+        gitFileChanges, accountId, templateFolder, SETUP_FOLDER, includeFiles, true, new ArrayList<>());
 
     return gitFileChanges;
   }
@@ -483,7 +495,7 @@ public class YamlGitServiceImpl implements YamlGitService {
 
     List<GitFileChange> gitFileChanges = new ArrayList<>();
     return yamlDirectoryService.traverseDirectory(
-        gitFileChanges, accountId, appTemplates, appPath.getPath(), true, false, Optional.empty());
+        gitFileChanges, accountId, appTemplates, appPath.getPath(), true, false, new ArrayList<>());
   }
 
   private List<YamlChangeSet> obtainAllApplicationYamlChangeSet(
@@ -496,7 +508,7 @@ public class YamlGitServiceImpl implements YamlGitService {
     }
     for (Application app : apps) {
       if (!onlyGitSyncConfiguredApps || gitSyncConfiguredForApp(app.getAppId(), accountId)) {
-        List<GitFileChange> gitFileChanges = obtainApplicationYamlGitFileChanges(accountId, app);
+        List<GitFileChange> gitFileChanges = obtainApplicationYamlGitFileChanges(accountId, app).getGitFileChanges();
         yamlChangeSets.add(obtainYamlChangeSet(accountId, app.getUuid(), gitFileChanges, forcePush));
       } else {
         log.info("Git Sync not configured for appId =[{}]. Skip generating changeset.", app.getAppId());
@@ -529,7 +541,7 @@ public class YamlGitServiceImpl implements YamlGitService {
       List<YamlChangeSet> yamlChangeSets = new ArrayList<>();
 
       if (!onlyGitSyncConfiguredEntities || isGitSyncConfiguredForAccount(accountId)) {
-        List<GitFileChange> gitFileChanges = obtainAccountOnlyGitFileChanges(accountId, false);
+        List<GitFileChange> gitFileChanges = obtainAccountOnlyGitFileChanges(accountId, false).getGitFileChanges();
         yamlChangeSets.add(obtainYamlChangeSet(accountId, GLOBAL_APP_ID, gitFileChanges, false));
       } else {
         log.info("Git Sync not configured for accountId =[{}]. Skip generating changeset.", accountId);
@@ -549,14 +561,14 @@ public class YamlGitServiceImpl implements YamlGitService {
     return yamlDirectoryService.weNeedToPushChanges(accountId, GLOBAL_APP_ID) != null;
   }
 
-  private List<GitFileChange> obtainAccountOnlyGitFileChanges(String accountId, boolean includeFiles) {
+  private FullSyncChangeset obtainAccountOnlyGitFileChanges(String accountId, boolean includeFiles) {
     List<GitFileChange> gitFileChanges = new ArrayList<>();
-
+    List<FullSyncError> errorYamls = new ArrayList<>();
     FolderNode top = yamlDirectoryService.getDirectory(accountId, SETUP_ENTITY_ID, false, null);
-    gitFileChanges = yamlDirectoryService.traverseDirectory(
-        gitFileChanges, accountId, top, "", includeFiles, true, Optional.empty());
+    gitFileChanges =
+        yamlDirectoryService.traverseDirectory(gitFileChanges, accountId, top, "", includeFiles, false, errorYamls);
 
-    return gitFileChanges;
+    return FullSyncChangeset.builder().gitFileChanges(gitFileChanges).yamlErrors(errorYamls).build();
   }
 
   @Override
@@ -565,10 +577,10 @@ public class YamlGitServiceImpl implements YamlGitService {
       log.info("Getting all Yaml errors for account {}", accountId);
       FolderNode top = yamlDirectoryService.getDirectory(accountId, SETUP_ENTITY_ID, false, null);
       List<GitFileChange> gitFileChanges = new ArrayList<>();
-      List<String> errorLog = new ArrayList<>();
-      yamlDirectoryService.traverseDirectory(gitFileChanges, accountId, top, "", false, false, Optional.of(errorLog));
+      List<FullSyncError> errorLog = new ArrayList<>();
+      yamlDirectoryService.traverseDirectory(gitFileChanges, accountId, top, "", false, false, errorLog);
       log.info("Got all Yaml errors for account {}", accountId);
-      return errorLog;
+      return errorLog.stream().map(error -> error.getError()).collect(Collectors.toList());
     } catch (Exception ex) {
       log.error(format("Failed to get all Yaml errors for account %s", accountId), ex);
     }

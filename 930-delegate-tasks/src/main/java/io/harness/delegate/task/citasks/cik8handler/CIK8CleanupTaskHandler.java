@@ -23,6 +23,7 @@ import io.harness.delegate.beans.ci.k8s.CIK8CleanupTaskParams;
 import io.harness.delegate.beans.ci.k8s.K8sTaskExecutionResponse;
 import io.harness.delegate.task.citasks.CICleanupTaskHandler;
 import io.harness.delegate.task.citasks.cik8handler.k8java.CIK8JavaClientHandler;
+import io.harness.exception.PodNotFoundException;
 import io.harness.k8s.apiclient.ApiClientFactory;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.logging.AutoLogContext;
@@ -109,6 +110,9 @@ public class CIK8CleanupTaskHandler implements CICleanupTaskHandler {
       } catch (ApiException ex) {
         isSuccess = false;
         log.info("CreateOrReplace Pod: Pod delete failed with err: %s", ex);
+      } catch (PodNotFoundException ex) {
+        isSuccess = false;
+        log.error("Failed to delete pod as pod doesn’t exist", podName);
       }
     }
 

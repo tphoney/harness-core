@@ -233,6 +233,16 @@ def ingest_data_to_awscur(jsonData):
     date_end = "%s-%s-%s" % (year, month, monthrange(int(year), int(month))[1])
     print_("Loading into %s table..." % tableName)
 
+    tags_query = """( SELECT ARRAY_AGG(STRUCT( regexp_replace(REGEXP_EXTRACT(unpivotedData, '[^"]*'), 'TAG_' , '') AS key ,
+        regexp_replace(REGEXP_EXTRACT(unpivotedData, r':\"[^"]*'), ':"', '') AS value ))
+        FROM UNNEST(( SELECT REGEXP_EXTRACT_ALL(json, 'TAG_' || r'[^:]+:\"[^"]+\"') FROM (SELECT TO_JSON_STRING(table) json))) unpivotedData)
+        AS tags """
+
+    # This is temp fix for colourtokens. refer CCM-5462 for more information
+    if (jsonData["connectorId"] in ["QA096742272934"]) and (jsonData["accountId"] in ["MN8FCTn_Q9-DDHGIJWm-Xg"]):
+        print_("Skipping ingesting tags")
+        tags_query = "null AS tags "
+
     query = """
     DELETE FROM `%s` WHERE DATE(usagestartdate) >= '%s' AND DATE(usagestartdate) <= '%s' and usageaccountid IN (%s);
     INSERT INTO `%s` (resourceid, usagestartdate, productname, productfamily, servicecode, blendedrate, blendedcost, 
@@ -240,13 +250,11 @@ def ingest_data_to_awscur(jsonData):
                     lineitemtype, effectivecost, billingentity, instanceFamily, marketOption, tags) 
     SELECT resourceid, usagestartdate, productname, productfamily, servicecode, blendedrate, blendedcost, 
                     unblendedrate, unblendedcost, region, availabilityzone, usageaccountid, instancetype, usagetype, 
-                    lineitemtype, effectivecost, billingentity, instanceFamily, marketOption, 
-                    ( SELECT ARRAY_AGG(STRUCT( regexp_replace(REGEXP_EXTRACT(unpivotedData, '[^"]*'), 'TAG_' , '') AS key , 
-                         regexp_replace(REGEXP_EXTRACT(unpivotedData, r':\"[^"]*'), ':"', '') AS value )) 
-                         FROM UNNEST(( SELECT REGEXP_EXTRACT_ALL(json, 'TAG_' || r'[^:]+:\"[^"]+\"') FROM (SELECT TO_JSON_STRING(table) json))) unpivotedData) 
-               AS tags FROM `%s` table WHERE DATE(usagestartdate) >= '%s' AND DATE(usagestartdate) <= '%s';
-     """ % (tableName, date_start, date_end, jsonData["usageaccountid"], tableName, jsonData["tableId"], date_start, date_end)
+                    lineitemtype, effectivecost, billingentity, instanceFamily, marketOption, %s
+                     FROM `%s` table WHERE DATE(usagestartdate) >= '%s' AND DATE(usagestartdate) <= '%s';
+     """ % (tableName, date_start, date_end, jsonData["usageaccountid"], tableName, tags_query, jsonData["tableId"], date_start, date_end)
     # Configure the query job.
+    print_(query)
     job_config = bigquery.QueryJobConfig(
         query_parameters=[
             bigquery.ScalarQueryParameter(

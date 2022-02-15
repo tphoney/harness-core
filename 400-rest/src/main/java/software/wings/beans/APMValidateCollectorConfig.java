@@ -41,6 +41,7 @@ public class APMValidateCollectorConfig implements ExecutionCapabilityDemander {
   private Map<String, String> headers;
   private Map<String, String> options;
   List<EncryptedDataDetail> encryptedDataDetails;
+  private boolean base64EncodingRequired;
 
   /**
    * Override the getter to make sure we encode backticks always.

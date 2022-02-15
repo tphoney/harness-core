@@ -70,4 +70,13 @@ public interface AwsConstants {
   int DEFAULT_STATE_TIMEOUT_BUFFER_MIN = 5;
 
   int DEFAULT_BACKOFF_MAX_ERROR_RETRIES = 5;
+
+  // SDK Default Backoff Strategy params
+  String BASE_DELAY_ACCOUNT_VARIABLE = "${account.defaults.AmazonSDKDefaultBackoffStrategy_baseDelay}";
+  String THROTTLED_BASE_DELAY_ACCOUNT_VARIABLE =
+      "${account.defaults.AmazonSDKDefaultBackoffStrategy_throttledBaseDelay}";
+  String MAX_BACKOFF_ACCOUNT_VARIABLE = "${account.defaults.AmazonSDKDefaultBackoffStrategy_maxBackoff}";
+  String MAX_ERROR_RETRY_ACCOUNT_VARIABLE = "${account.defaults.AmazonSDKDefaultBackoffStrategy_maxErrorRetry}";
+
+  String NULL_STR = "null";
 }

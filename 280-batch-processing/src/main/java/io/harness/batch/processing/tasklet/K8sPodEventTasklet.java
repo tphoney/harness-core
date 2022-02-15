@@ -59,7 +59,7 @@ public class K8sPodEventTasklet implements Tasklet {
                                                   .map(this::processPodEventMessage)
                                                   .filter(instanceEvent -> null != instanceEvent.getAccountId())
                                                   .collect(Collectors.toList());
-      instanceDataBulkWriteService.updateList(instanceEventList);
+      instanceDataBulkWriteService.updateInstanceEvent(instanceEventList);
 
       if (featureFlagService.isEnabled(FeatureName.NODE_RECOMMENDATION_1, jobConstants.getAccountId())) {
         instanceInfoTimescaleDAO.updatePodStopEvent(

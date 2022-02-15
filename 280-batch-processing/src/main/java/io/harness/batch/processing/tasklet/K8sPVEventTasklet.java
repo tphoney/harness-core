@@ -55,7 +55,7 @@ public class K8sPVEventTasklet implements Tasklet {
                                                   .filter(instanceEvent -> null != instanceEvent.getAccountId())
                                                   .collect(Collectors.toList());
 
-      instanceDataBulkWriteService.updateList(instanceEventList);
+      instanceDataBulkWriteService.updateInstanceEvent(instanceEventList);
 
     } while (publishedMessageList.size() == batchSize);
     return null;

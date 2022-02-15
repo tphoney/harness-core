@@ -204,6 +204,7 @@ public class LogAnalysisServiceImplTest extends CvNextGenTestBase {
 
     assertThat(patterns).isNotNull();
     assertThat(patterns.size()).isEqualTo(1);
+    assertThat(patterns.get(0).getText()).isEqualTo("exception message");
   }
 
   @Test

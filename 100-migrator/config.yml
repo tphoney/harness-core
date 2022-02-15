@@ -79,7 +79,7 @@ cg:
     enabled: true
     #mongoUri: mongodb://localhost:27017/service_scheduler
 
-  enableIterators: true
+  enableIterators: false
   trialRegistrationAllowed: true
   eventsFrameworkAvailableInOnPrem: false
   trialRegistrationAllowedForBugathon: false
@@ -676,3 +676,9 @@ cg:
     poolSize: 3
     syncInterval: 15
     defaultCronExpression: "0 0/15 * 1/1 * ? *"
+
+ngClientConfig:
+  baseUrl: https://127.0.0.1:7090
+
+pipelineServiceClientConfig:
+  baseUrl: http://127.0.0.1:12001

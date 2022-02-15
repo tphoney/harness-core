@@ -202,6 +202,8 @@ public interface WorkflowExecutionService extends StateStatusUpdate {
   List<ApprovalStateExecutionData> fetchApprovalStateExecutionsDataFromWorkflowExecution(
       String appId, String workflowExecutionId);
 
+  List<HelmChart> getManifestsCollected(String appId, String executionUuid);
+
   List<Artifact> getArtifactsCollected(String appId, String executionUuid);
 
   List<StateExecutionInstance> getStateExecutionInstances(String appId, String executionUuid);
@@ -326,4 +328,7 @@ public interface WorkflowExecutionService extends StateStatusUpdate {
   String fetchFailureDetails(String appId, String workflowExecutionId);
 
   void populateFailureDetails(WorkflowExecution workflowExecution);
+
+  List<WorkflowExecution> getLatestSuccessWorkflowExecutions(String appId, String workflowId, List<String> serviceIds,
+      int executionsToSkip, int executionsToIncludeInResponse);
 }

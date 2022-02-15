@@ -11,9 +11,14 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.connector.ConnectorDTO;
 import io.harness.connector.ConnectorInfoDTO;
+import io.harness.connector.ConnectorResponseDTO;
+import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.NgEntityDetail;
+import io.harness.ngmigration.client.NGClient;
+import io.harness.ngmigration.client.PmsClient;
 import io.harness.ngmigration.connector.ConnectorFactory;
+import io.harness.serializer.JsonUtils;
 
 import software.wings.beans.SettingAttribute;
 import software.wings.ngmigration.CgEntityId;
@@ -26,15 +31,19 @@ import software.wings.ngmigration.NGYamlFile;
 import software.wings.service.intfc.SettingsService;
 
 import com.google.inject.Inject;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import retrofit2.Response;
 
+@Slf4j
 @OwnedBy(HarnessTeam.CDC)
-public class ConnectorMigrationService implements NgMigration {
+public class ConnectorMigrationService implements NgMigrationService {
   @Inject private SettingsService settingsService;
 
   @Override
@@ -68,8 +77,12 @@ public class ConnectorMigrationService implements NgMigration {
   }
 
   @Override
-  public void migrate(
-      Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId) {}
+  public void migrate(String auth, NGClient ngClient, PmsClient pmsClient, MigrationInputDTO inputDTO,
+      NGYamlFile yamlFile) throws IOException {
+    Response<ResponseDTO<ConnectorResponseDTO>> resp =
+        ngClient.createConnector(auth, inputDTO.getAccountIdentifier(), JsonUtils.asTree(yamlFile.getYaml())).execute();
+    log.info("Connector creation Response details {} {}", resp.code(), resp.message());
+  }
 
   @Override
   public List<NGYamlFile> getYamls(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
@@ -77,7 +90,9 @@ public class ConnectorMigrationService implements NgMigration {
     SettingAttribute settingAttribute = (SettingAttribute) entities.get(entityId).getEntity();
     List<NGYamlFile> files = new ArrayList<>();
     String identifier = MigratorUtility.generateIdentifier(settingAttribute.getName());
+    Set<CgEntityId> childEntities = graph.get(entityId);
     files.add(NGYamlFile.builder()
+                  .type(NGMigrationEntityType.CONNECTOR)
                   .filename("connector/" + settingAttribute.getName() + ".yaml")
                   .yaml(ConnectorDTO.builder()
                             .connectorInfo(ConnectorInfoDTO.builder()
@@ -88,7 +103,8 @@ public class ConnectorMigrationService implements NgMigration {
                                                .orgIdentifier(inputDTO.getOrgIdentifier())
                                                .projectIdentifier(inputDTO.getProjectIdentifier())
                                                .connectorType(ConnectorFactory.getConnectorType(settingAttribute))
-                                               .connectorConfig(ConnectorFactory.getConfigDTO(settingAttribute))
+                                               .connectorConfig(ConnectorFactory.getConfigDTO(
+                                                   settingAttribute, childEntities, migratedEntities))
                                                .build())
                             .build())
                   .build());

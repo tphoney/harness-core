@@ -12,12 +12,12 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"github.com/wings-software/portal/commons/go/lib/logs"
-	caddon "github.com/wings-software/portal/product/ci/addon/grpc/client"
-	amgrpc "github.com/wings-software/portal/product/ci/addon/grpc/client/mocks"
-	addonpb "github.com/wings-software/portal/product/ci/addon/proto"
-	"github.com/wings-software/portal/product/ci/engine/output"
-	pb "github.com/wings-software/portal/product/ci/engine/proto"
+	"github.com/harness/harness-core/commons/go/lib/logs"
+	caddon "github.com/harness/harness-core/product/ci/addon/grpc/client"
+	amgrpc "github.com/harness/harness-core/product/ci/addon/grpc/client/mocks"
+	addonpb "github.com/harness/harness-core/product/ci/addon/proto"
+	"github.com/harness/harness-core/product/ci/engine/output"
+	pb "github.com/harness/harness-core/product/ci/engine/proto"
 	"go.uber.org/zap"
 )
 
@@ -29,14 +29,14 @@ func TestPluginStepValidate(t *testing.T) {
 	e := pluginStep{
 		log: log.Sugar(),
 	}
-	_, err := e.Run(ctx)
+	_, _, err := e.Run(ctx)
 	assert.NotNil(t, err)
 
 	e = pluginStep{
 		image: "plugin/drone-git",
 		log:   log.Sugar(),
 	}
-	_, err = e.Run(ctx)
+	_, _, err = e.Run(ctx)
 	assert.NotNil(t, err)
 
 	e = pluginStep{
@@ -52,6 +52,7 @@ func TestPluginStepValidate(t *testing.T) {
 func TestPluginExecuteClientErr(t *testing.T) {
 	ctrl, ctx := gomock.WithContext(context.Background(), t)
 	defer ctrl.Finish()
+	tmpPath := "/tmp/"
 
 	port := uint32(8000)
 	log, _ := logs.GetObservedLogger(zap.InfoLevel)
@@ -71,8 +72,8 @@ func TestPluginExecuteClientErr(t *testing.T) {
 		return nil, errors.New("client create error")
 	}
 
-	executor := NewPluginStep(step, nil, log.Sugar())
-	numRetries, err := executor.Run(ctx)
+	executor := NewPluginStep(step, tmpPath, nil, log.Sugar())
+	_, numRetries, err := executor.Run(ctx)
 	assert.NotNil(t, err)
 	assert.Equal(t, numRetries, int32(1))
 }
@@ -81,6 +82,7 @@ func TestPluginExecuteClientErr(t *testing.T) {
 func TestPluginExecuteServerErr(t *testing.T) {
 	ctrl, ctx := gomock.WithContext(context.Background(), t)
 	defer ctrl.Finish()
+	tmpPath := "/tmp/"
 
 	port := uint32(8000)
 	log, _ := logs.GetObservedLogger(zap.InfoLevel)
@@ -108,8 +110,8 @@ func TestPluginExecuteServerErr(t *testing.T) {
 		return mClient, nil
 	}
 
-	executor := NewPluginStep(step, nil, log.Sugar())
-	numRetries, err := executor.Run(ctx)
+	executor := NewPluginStep(step, tmpPath,nil, log.Sugar())
+	_, numRetries, err := executor.Run(ctx)
 	assert.NotNil(t, err)
 	assert.Equal(t, numRetries, int32(1))
 }
@@ -118,6 +120,7 @@ func TestPluginExecuteServerErr(t *testing.T) {
 func TestPluginExecuteSuccess(t *testing.T) {
 	ctrl, ctx := gomock.WithContext(context.Background(), t)
 	defer ctrl.Finish()
+	tmpPath := "/tmp/"
 
 	port := uint32(8000)
 	so := make(map[string]*output.StepOutput)
@@ -150,8 +153,8 @@ func TestPluginExecuteSuccess(t *testing.T) {
 		return mClient, nil
 	}
 
-	executor := NewPluginStep(step, so, log.Sugar())
-	n, err := executor.Run(ctx)
+	executor := NewPluginStep(step, tmpPath, so, log.Sugar())
+	_, n, err := executor.Run(ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, n, numRetries)
 }

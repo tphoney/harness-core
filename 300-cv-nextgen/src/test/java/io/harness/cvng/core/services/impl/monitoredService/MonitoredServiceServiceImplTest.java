@@ -1119,7 +1119,8 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     monitoredServiceDTO.setIdentifier(identifier3);
     monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
 
-    PageResponse pageResponse = monitoredServiceService.getList(projectParams, environmentIdentifier, 0, 10, null);
+    PageResponse pageResponse =
+        monitoredServiceService.getList(projectParams, Collections.singletonList(environmentIdentifier), 0, 10, null);
     assertThat(pageResponse.getPageSize()).isEqualTo(10);
     assertThat(pageResponse.getPageItemCount()).isEqualTo(3);
     assertThat(pageResponse.getTotalItems()).isEqualTo(3);
@@ -1200,6 +1201,17 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     List<MonitoredServiceWithHealthSources> monitoredServiceWithHealthSourcesList =
         monitoredServiceService.getAllWithTimeSeriesHealthSources(projectParams);
     assertThat(monitoredServiceWithHealthSourcesList.get(0).getHealthSources()).isEmpty();
+  }
+
+  @Test
+  @Owner(developers = DEEPAK_CHHIKARA)
+  @Category(UnitTests.class)
+  public void testGetAll_noMonitoredService() {
+    String serviceRef1 = "service1";
+    String identifier1 = "monitoredService1";
+    List<MonitoredServiceWithHealthSources> monitoredServiceWithHealthSourcesList =
+        monitoredServiceService.getAllWithTimeSeriesHealthSources(projectParams);
+    assertThat(monitoredServiceWithHealthSourcesList).isEmpty();
   }
 
   @Test

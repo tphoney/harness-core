@@ -342,7 +342,7 @@ public class DataCollectionTaskServiceImpl implements DataCollectionTaskService 
     if (dataCollectionTasks.size() > 0) {
       dataCollectionTasks.get(0).setStatus(DataCollectionExecutionStatus.QUEUED);
     }
-    return hPersistence.save(dataCollectionTasks);
+    return hPersistence.saveBatch(dataCollectionTasks);
   }
 
   @Override

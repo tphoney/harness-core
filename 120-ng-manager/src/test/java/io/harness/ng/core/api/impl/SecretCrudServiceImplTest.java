@@ -8,12 +8,15 @@
 package io.harness.ng.core.api.impl;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.rule.OwnerRule.MEENAKSHI;
 import static io.harness.rule.OwnerRule.NISHANT;
 import static io.harness.rule.OwnerRule.PHOENIKX;
+import static io.harness.rule.OwnerRule.VIKAS_M;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -30,12 +33,15 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
+import io.harness.connector.services.NGConnectorSecretManagerService;
 import io.harness.delegate.beans.FileUploadLimit;
 import io.harness.eventsframework.api.EventsFrameworkDownException;
 import io.harness.eventsframework.api.Producer;
 import io.harness.eventsframework.producer.Message;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageResponse;
+import io.harness.ng.core.accountsetting.AccountSettingsHelper;
+import io.harness.ng.core.accountsetting.dto.AccountSettingType;
 import io.harness.ng.core.api.NGEncryptedDataService;
 import io.harness.ng.core.api.NGSecretServiceV2;
 import io.harness.ng.core.dto.secrets.SecretDTOV2;
@@ -57,6 +63,7 @@ import software.wings.settings.SettingVariableTypes;
 import com.amazonaws.util.StringInputStream;
 import com.google.common.collect.Lists;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.Before;
@@ -78,12 +85,14 @@ public class SecretCrudServiceImplTest extends CategoryTest {
   @Mock private SecretCrudServiceImpl secretCrudService;
   @Mock private Producer eventProducer;
   @Mock private NGEncryptedDataService encryptedDataService;
+  @Mock private AccountSettingsHelper accountSettingsHelper;
+  @Mock private NGConnectorSecretManagerService connectorService;
 
   @Before
   public void setup() {
     initMocks(this);
-    secretCrudServiceSpy = new SecretCrudServiceImpl(
-        secretEntityReferenceHelper, fileUploadLimit, ngSecretServiceV2, eventProducer, encryptedDataService);
+    secretCrudServiceSpy = new SecretCrudServiceImpl(secretEntityReferenceHelper, fileUploadLimit, ngSecretServiceV2,
+        eventProducer, encryptedDataService, accountSettingsHelper, connectorService);
     secretCrudService = spy(secretCrudServiceSpy);
   }
 
@@ -101,6 +110,79 @@ public class SecretCrudServiceImplTest extends CategoryTest {
                                   .spec(SecretTextSpecDTO.builder().valueType(ValueType.Inline).value("value").build())
                                   .build();
     SecretResponseWrapper responseWrapper = secretCrudService.create("account", secretDTOV2);
+    assertThat(responseWrapper).isNotNull();
+
+    verify(encryptedDataService).createSecretText(any(), any());
+    verify(ngSecretServiceV2).create(any(), any(), eq(false));
+  }
+
+  @Test
+  @Owner(developers = MEENAKSHI)
+  @Category(UnitTests.class)
+  public void testCreateSecretWhenDefaultSMIsDisabled() {
+    SecretDTOV2 secretDTOV2 = SecretDTOV2.builder()
+                                  .type(SecretType.SecretText)
+                                  .spec(SecretTextSpecDTO.builder()
+                                            .secretManagerIdentifier("harnessSecretManager")
+                                            .valueType(ValueType.Inline)
+                                            .value("value")
+                                            .build())
+                                  .build();
+    doReturn(true)
+        .when(accountSettingsHelper)
+        .getIsBuiltInSMDisabled("accountId", null, null, AccountSettingType.CONNECTOR);
+    doReturn(true).when(secretCrudService).checkIfSecretManagerUsedIsHarnessManaged("accountId", secretDTOV2);
+    assertThatThrownBy(() -> secretCrudService.create("accountId", secretDTOV2))
+        .isInstanceOf(InvalidRequestException.class);
+  }
+  @Test
+  @Owner(developers = MEENAKSHI)
+  @Category(UnitTests.class)
+  public void testCreateSecretWithSMOtherThanHarnessManagedSMWhichIsDisabled() {
+    NGEncryptedData encryptedDataDTO = NGEncryptedData.builder().type(SettingVariableTypes.SECRET_TEXT).build();
+    Secret secret = Secret.builder().build();
+    when(encryptedDataService.createSecretText(any(), any())).thenReturn(encryptedDataDTO);
+    when(ngSecretServiceV2.create(any(), any(), eq(false))).thenReturn(secret);
+    SecretDTOV2 secretDTOV2 = SecretDTOV2.builder()
+                                  .type(SecretType.SecretText)
+                                  .spec(SecretTextSpecDTO.builder()
+                                            .secretManagerIdentifier("harnessSecretManager")
+                                            .valueType(ValueType.Inline)
+                                            .value("value")
+                                            .build())
+                                  .build();
+    doReturn(true)
+        .when(accountSettingsHelper)
+        .getIsBuiltInSMDisabled("accountId", null, null, AccountSettingType.CONNECTOR);
+    doReturn(false).when(secretCrudService).checkIfSecretManagerUsedIsHarnessManaged("accountId", secretDTOV2);
+    SecretResponseWrapper responseWrapper = secretCrudService.create("accountId", secretDTOV2);
+    assertThat(responseWrapper).isNotNull();
+
+    verify(encryptedDataService).createSecretText(any(), any());
+    verify(ngSecretServiceV2).create(any(), any(), eq(false));
+  }
+
+  @Test
+  @Owner(developers = MEENAKSHI)
+  @Category(UnitTests.class)
+  public void testCreateSecretWithHarnessManagedSMWhichIsEnabled() {
+    NGEncryptedData encryptedDataDTO = NGEncryptedData.builder().type(SettingVariableTypes.SECRET_TEXT).build();
+    Secret secret = Secret.builder().build();
+    when(encryptedDataService.createSecretText(any(), any())).thenReturn(encryptedDataDTO);
+    when(ngSecretServiceV2.create(any(), any(), eq(false))).thenReturn(secret);
+    SecretDTOV2 secretDTOV2 = SecretDTOV2.builder()
+                                  .type(SecretType.SecretText)
+                                  .spec(SecretTextSpecDTO.builder()
+                                            .secretManagerIdentifier("harnessSecretManager")
+                                            .valueType(ValueType.Inline)
+                                            .value("value")
+                                            .build())
+                                  .build();
+    doReturn(false)
+        .when(accountSettingsHelper)
+        .getIsBuiltInSMDisabled("accountId", null, null, AccountSettingType.CONNECTOR);
+    doReturn(true).when(secretCrudService).checkIfSecretManagerUsedIsHarnessManaged("accountId", secretDTOV2);
+    SecretResponseWrapper responseWrapper = secretCrudService.create("accountId", secretDTOV2);
     assertThat(responseWrapper).isNotNull();
 
     verify(encryptedDataService).createSecretText(any(), any());
@@ -255,6 +337,66 @@ public class SecretCrudServiceImplTest extends CategoryTest {
     assertThat(updatedFile).isNotNull();
     verify(encryptedDataService, atLeastOnce()).updateSecretFile(any(), any(), any());
     verify(ngSecretServiceV2).update(any(), any(), eq(false));
+  }
+
+  @Test
+  @Owner(developers = VIKAS_M)
+  @Category(UnitTests.class)
+  public void testUpdateFile_WithoutInputFile() {
+    NGEncryptedData encryptedDataDTO = NGEncryptedData.builder()
+                                           .type(SettingVariableTypes.CONFIG_FILE)
+                                           .name("fileName")
+                                           .secretManagerIdentifier("secretManager1")
+                                           .build();
+    SecretDTOV2 secretDTOV2 = SecretDTOV2.builder()
+                                  .type(SecretType.SecretFile)
+                                  .name("updatedFileName")
+                                  .spec(SecretFileSpecDTO.builder().secretManagerIdentifier("secretManager1").build())
+                                  .build();
+    when(encryptedDataService.updateSecretFile(any(), any(), any())).thenReturn(encryptedDataDTO);
+    when(ngSecretServiceV2.update(any(), any(), eq(false)))
+        .thenReturn(Secret.builder().identifier("secret").accountIdentifier("account").name("updatedFileName").build());
+    doReturn(Optional.ofNullable(SecretResponseWrapper.builder().secret(secretDTOV2).build()))
+        .when(secretCrudService)
+        .get(any(), any(), any(), any());
+
+    SecretResponseWrapper updatedFile =
+        secretCrudService.updateFile("account", null, null, "identifier", secretDTOV2, null);
+    ArgumentCaptor<InputStream> inputStreamArgumentCaptor = ArgumentCaptor.forClass(InputStream.class);
+    assertThat(updatedFile).isNotNull();
+    assertThat(updatedFile.getSecret().getName()).isEqualTo("updatedFileName");
+    verify(encryptedDataService, times(1)).updateSecretFile(any(), any(), inputStreamArgumentCaptor.capture());
+    assertThat(inputStreamArgumentCaptor.getValue()).isEqualTo(null);
+  }
+
+  @Test
+  @Owner(developers = VIKAS_M)
+  @Category(UnitTests.class)
+  public void testUpdateFile_WithInputFile() throws IOException {
+    NGEncryptedData encryptedDataDTO = NGEncryptedData.builder()
+                                           .type(SettingVariableTypes.CONFIG_FILE)
+                                           .name("fileName")
+                                           .secretManagerIdentifier("secretManager1")
+                                           .build();
+    SecretDTOV2 secretDTOV2 = SecretDTOV2.builder()
+                                  .type(SecretType.SecretFile)
+                                  .name("updatedFileName")
+                                  .spec(SecretFileSpecDTO.builder().secretManagerIdentifier("secretManager1").build())
+                                  .build();
+    when(encryptedDataService.updateSecretFile(any(), any(), any())).thenReturn(encryptedDataDTO);
+    when(ngSecretServiceV2.update(any(), any(), eq(false)))
+        .thenReturn(Secret.builder().identifier("secret").accountIdentifier("account").name("updatedFileName").build());
+    doReturn(Optional.ofNullable(SecretResponseWrapper.builder().secret(secretDTOV2).build()))
+        .when(secretCrudService)
+        .get(any(), any(), any(), any());
+
+    SecretResponseWrapper updatedFile = secretCrudService.updateFile(
+        "account", null, null, "identifier", secretDTOV2, new StringInputStream("input Stream is present"));
+    ArgumentCaptor<InputStream> inputStreamArgumentCaptor = ArgumentCaptor.forClass(InputStream.class);
+    assertThat(updatedFile).isNotNull();
+    assertThat(updatedFile.getSecret().getName()).isEqualTo("updatedFileName");
+    verify(encryptedDataService, times(1)).updateSecretFile(any(), any(), inputStreamArgumentCaptor.capture());
+    assertThat(inputStreamArgumentCaptor.getValue()).isNotNull();
   }
 
   @Test

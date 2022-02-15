@@ -13,17 +13,17 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	statuspb "github.com/wings-software/portal/910-delegate-task-grpc-service/src/main/proto/io/harness/task/service"
-	"github.com/wings-software/portal/commons/go/lib/filesystem"
-	"github.com/wings-software/portal/commons/go/lib/logs"
-	caddon "github.com/wings-software/portal/product/ci/addon/grpc/client"
-	addonpb "github.com/wings-software/portal/product/ci/addon/proto"
-	"github.com/wings-software/portal/product/ci/engine/legacy/jexl"
-	"github.com/wings-software/portal/product/ci/engine/legacy/steps"
-	"github.com/wings-software/portal/product/ci/engine/logutil"
-	"github.com/wings-software/portal/product/ci/engine/output"
-	pb "github.com/wings-software/portal/product/ci/engine/proto"
-	"github.com/wings-software/portal/product/ci/engine/status"
+	statuspb "github.com/harness/harness-core/910-delegate-task-grpc-service/src/main/proto/io/harness/task/service"
+	"github.com/harness/harness-core/commons/go/lib/filesystem"
+	"github.com/harness/harness-core/commons/go/lib/logs"
+	caddon "github.com/harness/harness-core/product/ci/addon/grpc/client"
+	addonpb "github.com/harness/harness-core/product/ci/addon/proto"
+	"github.com/harness/harness-core/product/ci/engine/legacy/jexl"
+	"github.com/harness/harness-core/product/ci/engine/legacy/steps"
+	"github.com/harness/harness-core/product/ci/engine/logutil"
+	"github.com/harness/harness-core/product/ci/engine/output"
+	pb "github.com/harness/harness-core/product/ci/engine/proto"
+	"github.com/harness/harness-core/product/ci/engine/status"
 	"go.uber.org/zap"
 	grpcstatus "google.golang.org/grpc/status"
 )
@@ -186,7 +186,7 @@ func (e *unitExecutor) execute(ctx context.Context, step *pb.UnitStep,
 		}
 	case *pb.UnitStep_Plugin:
 		e.log.Infow("Plugin step info", "step", x.Plugin.String(), "step_id", step.GetId())
-		numRetries, err = pluginStep(step, so, e.log).Run(ctx)
+		stepOutput, numRetries, err = pluginStep(step, e.tmpFilePath, so, e.log).Run(ctx)
 		if err != nil {
 			return nil, numRetries, err
 		}

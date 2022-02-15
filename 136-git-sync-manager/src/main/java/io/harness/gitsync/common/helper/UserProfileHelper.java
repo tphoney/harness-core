@@ -31,7 +31,6 @@ import io.harness.security.dto.PrincipalType;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.protobuf.StringValue;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserProfileHelper {
   private final SourceCodeManagerService sourceCodeManagerService;
+  private final String ERROR_MSG_USER_PRINCIPAL_NOT_SET = "User not set for push event.";
 
   @Inject
   public UserProfileHelper(SourceCodeManagerService sourceCodeManagerService) {
@@ -54,14 +54,8 @@ public class UserProfileHelper {
     }
     final GithubConnectorDTO githubConnectorDTO = (GithubConnectorDTO) connector.getConnector().getConnectorConfig();
     githubConnectorDTO.setUrl(yamlGitConfig.getRepo());
-    final List<SourceCodeManagerDTO> sourceCodeManager =
-        sourceCodeManagerService.get(userPrincipal.getUserId().getValue(), yamlGitConfig.getAccountIdentifier());
-    final Optional<SourceCodeManagerDTO> sourceCodeManagerDTO =
-        sourceCodeManager.stream().filter(scm -> scm.getType().equals(SCMType.GITHUB)).findFirst();
-    if (!sourceCodeManagerDTO.isPresent()) {
-      throw new InvalidRequestException("User profile doesn't contain github scm details");
-    }
-    final GithubSCMDTO githubUserProfile = (GithubSCMDTO) sourceCodeManagerDTO.get();
+    final GithubSCMDTO githubUserProfile =
+        (GithubSCMDTO) getScmUserProfile(yamlGitConfig.getAccountIdentifier(), userPrincipal, SCMType.GITHUB);
     final SecretRefData tokenRef;
     try {
       tokenRef =
@@ -83,12 +77,48 @@ public class UserProfileHelper {
         && SourcePrincipalContextBuilder.getSourcePrincipal().getType() == PrincipalType.USER) {
       io.harness.security.dto.UserPrincipal userPrincipal =
           (io.harness.security.dto.UserPrincipal) SourcePrincipalContextBuilder.getSourcePrincipal();
-      return UserPrincipal.newBuilder()
-          .setEmail(StringValue.of(userPrincipal.getEmail()))
-          .setUserId(StringValue.of(userPrincipal.getName()))
-          .setUserName(StringValue.of(userPrincipal.getUsername()))
-          .build();
+      return UserPrincipalMapper.toProto(userPrincipal);
     }
-    throw new InvalidRequestException("User not set for push event.");
+    log.error(ERROR_MSG_USER_PRINCIPAL_NOT_SET);
+    throw new InvalidRequestException(ERROR_MSG_USER_PRINCIPAL_NOT_SET);
+  }
+
+  public String getScmUserName(String accountIdentifier) {
+    final GithubSCMDTO githubUserProfile =
+        (GithubSCMDTO) getScmUserProfile(accountIdentifier, getUserPrincipal(), SCMType.GITHUB);
+    try {
+      return (
+          (GithubUsernameTokenDTO) ((GithubHttpCredentialsDTO) githubUserProfile.getAuthentication().getCredentials())
+              .getHttpCredentialsSpec())
+          .getUsername();
+    } catch (Exception e) {
+      log.error("User Profile should contain github username name for git sync", e);
+      throw new InvalidRequestException("User Profile should contain github username name for git sync", e);
+    }
+  }
+
+  private SourceCodeManagerDTO getScmUserProfile(String accountId, UserPrincipal userPrincipal, SCMType scmType) {
+    if (userPrincipal == null) {
+      log.error(ERROR_MSG_USER_PRINCIPAL_NOT_SET);
+      throw new InvalidRequestException(ERROR_MSG_USER_PRINCIPAL_NOT_SET);
+    }
+    final List<SourceCodeManagerDTO> sourceCodeManager =
+        sourceCodeManagerService.get(userPrincipal.getUserId().getValue(), accountId);
+    final Optional<SourceCodeManagerDTO> sourceCodeManagerDTO =
+        sourceCodeManager.stream().filter(scm -> scm.getType().equals(scmType)).findFirst();
+    if (!sourceCodeManagerDTO.isPresent()) {
+      log.error("User profile doesn't contain github scm details");
+      throw new InvalidRequestException("User profile doesn't contain github scm details");
+    }
+    return sourceCodeManagerDTO.get();
+  }
+
+  public boolean validateIfScmUserProfileIsSet(String accountIdentifier) {
+    List<SourceCodeManagerDTO> sourceCodeManagerDTOS = sourceCodeManagerService.get(accountIdentifier);
+    if (sourceCodeManagerDTOS.isEmpty()) {
+      throw new InvalidRequestException("We don’t have your git credentials for the selected folder."
+          + " Please update the credentials in user profile.");
+    }
+    return true;
   }
 }

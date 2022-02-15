@@ -7,7 +7,6 @@
 
 package io.harness.iterator;
 
-import static io.harness.beans.FeatureName.FAIL_TASKS_IF_DELEGATE_DIES;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 import static io.harness.mongo.iterator.MongoPersistenceIterator.SchedulingType.REGULAR;
 
@@ -76,8 +75,7 @@ public class DelegateTaskExpiryCheckIterator implements MongoPersistenceIterator
 
   @Override
   public void handle(Delegate delegate) {
-    if (!featureFlagService.isEnabled(FAIL_TASKS_IF_DELEGATE_DIES, delegate.getAccountId())
-        || isDelegateExpiryCheckDoneAlready(delegate)) {
+    if (isDelegateExpiryCheckDoneAlready(delegate)) {
       return;
     }
 

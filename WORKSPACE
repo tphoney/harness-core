@@ -1008,8 +1008,8 @@ go_repository(
 go_repository(
     name = "com_github_drone_go_scm",
     importpath = "github.com/drone/go-scm",
-    sum = "h1:VU6C6r2Hxf5FZUjTazCH2xlXBe21JDg7gBcJvsL7twk=",
-    version = "v1.18.0",
+    sum = "h1:JB/Rln0fBH1y2ENYj4Rr8T+CLfaFOa32KCb7brx/sHY=",
+    version = "v1.19.0",
 )
 
 go_repository(
@@ -1465,13 +1465,6 @@ go_repository(
     importpath = "github.com/devigned/tab",
     sum = "h1:3mD6Kb1mUOYeLpJvTVSDwSg5ZsfSxfvxGRTxRsJsITA=",
     version = "v0.1.1",
-)
-
-go_repository(
-    name = "com_github_dgrijalva_jwt_go",
-    importpath = "github.com/dgrijalva/jwt-go",
-    sum = "h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=",
-    version = "v3.2.0+incompatible",
 )
 
 go_repository(
@@ -4646,10 +4639,10 @@ plain_artifacts = [
     "io.harness.cv:data-collection-dsl:0.33-RELEASE",
     "io.harness:ff-java-server-sdk:1.0.5.1",
     "io.jsonwebtoken:jjwt:0.9.1",
-    "io.kubernetes:client-java-api:9.0.2",
-    "io.kubernetes:client-java-extended:9.0.2",
-    "io.kubernetes:client-java-proto:9.0.2",
-    "io.kubernetes:client-java:9.0.2",
+    "io.kubernetes:client-java-api:11.0.2",
+    "io.kubernetes:client-java-extended:11.0.2",
+    "io.kubernetes:client-java-proto:11.0.2",
+    "io.kubernetes:client-java:11.0.2",
     "io.leangen.graphql:spqr:0.11.2",
     "io.netty:netty-all:4.1.51.Final",
     "io.netty:netty-buffer:4.1.52.Final",

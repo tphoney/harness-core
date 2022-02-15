@@ -344,49 +344,6 @@ public class CloudFormationCreateStackStateTest extends WingsBaseTest {
   @Test
   @Owner(developers = NAVNEET)
   @Category(UnitTests.class)
-  public void buildDelegateTaskProvisionByGitAccount() {
-    CloudFormationInfrastructureProvisioner provisioner = CloudFormationInfrastructureProvisioner.builder()
-                                                              .sourceType(GIT.name())
-                                                              .gitFileConfig(GitFileConfig.builder()
-                                                                                 .connectorId("sourceRepoSettingId")
-                                                                                 .branch("gitBranch")
-                                                                                 .commitId("commitId")
-                                                                                 .repoName("z.git")
-                                                                                 .filePath("template.json")
-                                                                                 .build())
-                                                              .build();
-
-    GitConfig gitConfig = GitConfig.builder().urlType(GitConfig.UrlType.ACCOUNT).repoUrl("http://xyz.com").build();
-    when(gitUtilsManager.getGitConfig("sourceRepoSettingId")).thenReturn(gitConfig);
-    when(mockInfrastructureProvisionerService.get(anyString(), anyString())).thenReturn(provisioner);
-    state.setFileFetched(false);
-    state.executeInternal(mockContext, ACTIVITY_ID);
-    ArgumentCaptor<DelegateTask> captor = ArgumentCaptor.forClass(DelegateTask.class);
-    verify(delegateService).queueTask(captor.capture());
-    DelegateTask delegateTask = captor.getValue();
-
-    assertThat(delegateTask.getAccountId()).isEqualTo(ACCOUNT_ID);
-
-    GitFetchFilesTaskParams request = (GitFetchFilesTaskParams) delegateTask.getData().getParameters()[0];
-    assertThat(request.getAccountId()).isEqualTo(ACCOUNT_ID);
-    assertThat(request.getAppId()).isEqualTo(APP_ID);
-    assertThat(request.getActivityId()).isEqualTo(ACTIVITY_ID);
-
-    GitFetchFilesConfig gitFetchFilesConfig = request.getGitFetchFilesConfigMap().get("Cloud Formation parameters");
-    GitConfig fileMapGitConfig = gitFetchFilesConfig.getGitConfig();
-    assertThat(fileMapGitConfig.getBranch()).isEqualTo("gitBranch");
-    assertThat(fileMapGitConfig.getReference()).isEqualTo("commitId");
-    assertThat(fileMapGitConfig.getRepoName()).isEqualTo("z.git");
-    assertThat(fileMapGitConfig.getRepoUrl()).isEqualTo(repoUrl);
-
-    GitFileConfig gitFileConfig = gitFetchFilesConfig.getGitFileConfig();
-    assertThat(gitFileConfig).isEqualTo(provisioner.getGitFileConfig());
-    assertThat(gitFileConfig.getFilePathList().get(0)).isEqualTo("template.json");
-  }
-
-  @Test
-  @Owner(developers = NAVNEET)
-  @Category(UnitTests.class)
   public void buildDelegateTaskProvisionByGitRepo() {
     CloudFormationInfrastructureProvisioner provisioner = CloudFormationInfrastructureProvisioner.builder()
                                                               .sourceType(GIT.name())
@@ -426,6 +383,49 @@ public class CloudFormationCreateStackStateTest extends WingsBaseTest {
     assertThat(gitFileConfig.getFilePathList().get(0)).isEqualTo("template.json");
   }
 
+  @Test
+  @Owner(developers = NAVNEET)
+  @Category(UnitTests.class)
+  public void buildDelegateTaskProvisionByGitAccount() {
+    CloudFormationInfrastructureProvisioner provisioner = CloudFormationInfrastructureProvisioner.builder()
+                                                              .sourceType(GIT.name())
+                                                              .gitFileConfig(GitFileConfig.builder()
+                                                                                 .connectorId("sourceRepoSettingId")
+                                                                                 .branch("gitBranch")
+                                                                                 .commitId("commitId")
+                                                                                 .repoName("z.git")
+                                                                                 .filePath("template.json")
+                                                                                 .build())
+                                                              .build();
+
+    GitConfig gitConfig = GitConfig.builder().urlType(GitConfig.UrlType.ACCOUNT).repoUrl("http://xyz.com").build();
+    when(gitUtilsManager.getGitConfig("sourceRepoSettingId")).thenReturn(gitConfig);
+    when(mockInfrastructureProvisionerService.get(anyString(), anyString())).thenReturn(provisioner);
+    state.setFileFetched(false);
+    state.executeInternal(mockContext, ACTIVITY_ID);
+    ArgumentCaptor<DelegateTask> captor = ArgumentCaptor.forClass(DelegateTask.class);
+    verify(delegateService).queueTask(captor.capture());
+    DelegateTask delegateTask = captor.getValue();
+
+    assertThat(delegateTask.getAccountId()).isEqualTo(ACCOUNT_ID);
+
+    GitFetchFilesTaskParams request = (GitFetchFilesTaskParams) delegateTask.getData().getParameters()[0];
+    assertThat(request.getAccountId()).isEqualTo(ACCOUNT_ID);
+    assertThat(request.getAppId()).isEqualTo(APP_ID);
+    assertThat(request.getActivityId()).isEqualTo(ACTIVITY_ID);
+
+    GitFetchFilesConfig gitFetchFilesConfig = request.getGitFetchFilesConfigMap().get("Cloud Formation parameters");
+    GitConfig fileMapGitConfig = gitFetchFilesConfig.getGitConfig();
+    assertThat(fileMapGitConfig.getBranch()).isEqualTo("gitBranch");
+    assertThat(fileMapGitConfig.getReference()).isEqualTo("commitId");
+    assertThat(fileMapGitConfig.getRepoName()).isEqualTo("z.git");
+    assertThat(fileMapGitConfig.getRepoUrl()).isEqualTo(repoUrl);
+
+    GitFileConfig gitFileConfig = gitFetchFilesConfig.getGitFileConfig();
+    assertThat(gitFileConfig).isEqualTo(provisioner.getGitFileConfig());
+    assertThat(gitFileConfig.getFilePathList().get(0)).isEqualTo("template.json");
+  }
+  
   @Test
   @Owner(developers = BOJANA)
   @Category(UnitTests.class)

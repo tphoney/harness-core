@@ -5,19 +5,10 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.serverless;
+package io.harness.delegate.task.serverless;
 
-public enum ServerlessCommandUnitConstants {
-  init {
-    @Override
-    public String toString() {
-      return "Initialize";
-    }
-  },
-  deploy {
-    @Override
-    public String toString() {
-      return "Deploy";
-    }
-  }
-}
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
+
+@OwnedBy(HarnessTeam.CDP)
+public interface ServerlessDeployConfig {}

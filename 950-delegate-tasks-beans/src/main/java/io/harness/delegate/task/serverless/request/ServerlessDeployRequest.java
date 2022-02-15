@@ -26,14 +26,9 @@ public class ServerlessDeployRequest implements ServerlessCommandRequest {
   String commandName;
   ServerlessCliVersion serverlessCliVersion;
   String workingDirectory;
-  String region;
-  String stage;
   ServerlessArtifactConfig serverlessArtifactConfig;
   CommandUnitsProgress commandUnitsProgress;
   ServerlessManifest serverlessManifest;
   ServerlessInfraConfig serverlessInfraConfig;
-  Boolean forceDeploymentFlag;
-  Boolean awsS3AccelerateFlag;
-  String configFileName;
-  Boolean configFileFlag;
+  ServerlessDeployConfig serverlessDeployConfig;
 }

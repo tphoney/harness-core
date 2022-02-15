@@ -34,10 +34,10 @@ public class ServerlessInfraConfigHelper {
   @Inject private SecretDecryptionService secretDecryptionService;
 
   public void decryptServerlessInfraConfig(ServerlessInfraConfig serverlessInfraConfig) {
-    if (serverlessInfraConfig instanceof AwsServerlessInfraConfig) {
-      AwsServerlessInfraConfig awsServerlessInfraConfig = (AwsServerlessInfraConfig) serverlessInfraConfig;
+    if (serverlessInfraConfig instanceof ServerlessAwsInfraConfig) {
+      ServerlessAwsInfraConfig serverlessAwsInfraConfig = (ServerlessAwsInfraConfig) serverlessInfraConfig;
       decryptAwsInfraConfig(
-          awsServerlessInfraConfig.getAwsConnectorDTO(), awsServerlessInfraConfig.getEncryptionDataDetails());
+          serverlessAwsInfraConfig.getAwsConnectorDTO(), serverlessAwsInfraConfig.getEncryptionDataDetails());
     }
   }
 
@@ -51,20 +51,20 @@ public class ServerlessInfraConfigHelper {
   }
 
   public ServerlessConfig createServerlessConfig(ServerlessInfraConfig serverlessInfraConfigDTO) {
-    if (serverlessInfraConfigDTO instanceof AwsServerlessInfraConfig) {
-      return createServerlessAwsConfig((AwsServerlessInfraConfig) serverlessInfraConfigDTO);
+    if (serverlessInfraConfigDTO instanceof ServerlessAwsInfraConfig) {
+      return createServerlessAwsConfig((ServerlessAwsInfraConfig) serverlessInfraConfigDTO);
     } else {
       throw new InvalidRequestException("Unhandled ServerlessInfraConfig " + serverlessInfraConfigDTO.getClass());
     }
   }
 
-  public ServerlessConfig createServerlessAwsConfig(AwsServerlessInfraConfig awsServerlessInfraConfig) {
+  public ServerlessConfig createServerlessAwsConfig(ServerlessAwsInfraConfig serverlessAwsInfraConfig) {
     AwsCredentialType awsCredentialType =
-        awsServerlessInfraConfig.getAwsConnectorDTO().getCredential().getAwsCredentialType();
+        serverlessAwsInfraConfig.getAwsConnectorDTO().getCredential().getAwsCredentialType();
     switch (awsCredentialType) {
       case MANUAL_CREDENTIALS:
         return getServerlessAwsConfigFromManualCreds(
-            (AwsManualConfigSpecDTO) awsServerlessInfraConfig.getAwsConnectorDTO().getCredential().getConfig());
+            (AwsManualConfigSpecDTO) serverlessAwsInfraConfig.getAwsConnectorDTO().getCredential().getConfig());
       default:
         throw new UnsupportedOperationException(
             String.format("Unsupported Serverless Aws Credential type: [%s]", awsCredentialType));

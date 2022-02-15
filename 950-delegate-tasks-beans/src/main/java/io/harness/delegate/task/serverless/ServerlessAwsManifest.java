@@ -7,13 +7,17 @@
 
 package io.harness.delegate.task.serverless;
 
+import static io.harness.expression.Expression.ALLOW_SECRETS;
+
+import io.harness.expression.Expression;
+
 import lombok.Builder;
 import lombok.Value;
 
 @Value
 @Builder
-public class AwsServerlessManifest implements ServerlessManifest {
-  String yamlContent;
+public class ServerlessAwsManifest implements ServerlessManifest {
+  @Expression(ALLOW_SECRETS) String yamlContent;
   String artifactPathVariable;
 
   @Override

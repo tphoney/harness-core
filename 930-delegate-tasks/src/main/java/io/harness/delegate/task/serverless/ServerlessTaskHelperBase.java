@@ -8,14 +8,18 @@
 package io.harness.delegate.task.serverless;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
+import static io.harness.filesystem.FileIo.*;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
 import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
 import io.harness.delegate.beans.logstreaming.NGDelegateLogCallback;
 import io.harness.logging.LogCallback;
+import io.harness.serverless.model.ServerlessDelegateTaskParams;
 
 import com.google.inject.Singleton;
+import java.io.IOException;
+import java.nio.file.Paths;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
@@ -25,5 +29,14 @@ public class ServerlessTaskHelperBase {
   public LogCallback getLogCallback(ILogStreamingTaskClient logStreamingTaskClient, String commandUnitName,
       boolean shouldOpenStream, CommandUnitsProgress commandUnitsProgress) {
     return new NGDelegateLogCallback(logStreamingTaskClient, commandUnitName, shouldOpenStream, commandUnitsProgress);
+  }
+  public void createHomeDirectory(String directoryPath) throws IOException {
+    createDirectoryIfDoesNotExist(directoryPath);
+    waitForDirectoryToBeAccessibleOutOfProcess(directoryPath, 10);
+  }
+
+  public void putManifestFileToWorkingDirectory(
+      String content, ServerlessDelegateTaskParams serverlessDelegateTaskParams) throws IOException {
+    writeUtf8StringToFile(Paths.get(serverlessDelegateTaskParams.getWorkingDirectory(), "").toString(), content);
   }
 }

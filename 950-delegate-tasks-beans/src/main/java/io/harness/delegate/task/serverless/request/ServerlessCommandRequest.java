@@ -18,7 +18,7 @@ import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
 import io.harness.delegate.capability.EncryptedDataDetailsCapabilityHelper;
 import io.harness.delegate.task.TaskParameters;
-import io.harness.delegate.task.serverless.AwsServerlessInfraConfig;
+import io.harness.delegate.task.serverless.ServerlessAwsInfraConfig;
 import io.harness.delegate.task.serverless.ServerlessCliVersion;
 import io.harness.delegate.task.serverless.ServerlessCommandType;
 import io.harness.delegate.task.serverless.ServerlessInfraConfig;
@@ -40,6 +40,7 @@ public interface ServerlessCommandRequest extends TaskParameters, ExecutionCapab
   CommandUnitsProgress getCommandUnitsProgress();
   ServerlessCliVersion getServerlessCliVersion();
   ServerlessInfraConfig getServerlessInfraConfig();
+  // todo: add timeout
 
   @Override
   default List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
@@ -49,8 +50,8 @@ public interface ServerlessCommandRequest extends TaskParameters, ExecutionCapab
     List<ExecutionCapability> capabilities =
         new ArrayList<>(EncryptedDataDetailsCapabilityHelper.fetchExecutionCapabilitiesForEncryptedDataDetails(
             cloudProviderEncryptionDetails, maskingEvaluator));
-    if (serverlessInfraConfig instanceof AwsServerlessInfraConfig) {
-      AwsConnectorDTO awsConnectorDTO = ((AwsServerlessInfraConfig) serverlessInfraConfig).getAwsConnectorDTO();
+    if (serverlessInfraConfig instanceof ServerlessAwsInfraConfig) {
+      AwsConnectorDTO awsConnectorDTO = ((ServerlessAwsInfraConfig) serverlessInfraConfig).getAwsConnectorDTO();
       if (awsConnectorDTO.getCredential().getAwsCredentialType() != MANUAL_CREDENTIALS) {
         throw new UnknownEnumTypeException(
             "AWS Credential Type", String.valueOf(awsConnectorDTO.getCredential().getAwsCredentialType()));

@@ -12,14 +12,20 @@ import static io.harness.beans.FeatureName.CLOUDFORMATION_SKIP_WAIT_FOR_RESOURCE
 import static io.harness.beans.FeatureName.SKIP_BASED_ON_STACK_STATUSES;
 import static io.harness.logging.CommandExecutionStatus.FAILURE;
 import static io.harness.logging.CommandExecutionStatus.SUCCESS;
-import static io.harness.rule.OwnerRule.*;
+import static io.harness.rule.OwnerRule.BOJANA;
+import static io.harness.rule.OwnerRule.JELENA;
+import static io.harness.rule.OwnerRule.NAVNEET;
+import static io.harness.rule.OwnerRule.PRAKHAR;
+import static io.harness.rule.OwnerRule.RAGHVENDRA;
+import static io.harness.rule.OwnerRule.TMACARI;
 
 import static software.wings.beans.CloudFormationSourceType.GIT;
 import static software.wings.beans.CloudFormationSourceType.TEMPLATE_BODY;
 import static software.wings.beans.CloudFormationSourceType.TEMPLATE_URL;
 import static software.wings.beans.Environment.Builder.anEnvironment;
 import static software.wings.beans.SettingAttribute.Builder.aSettingAttribute;
-import static software.wings.beans.TaskType.*;
+import static software.wings.beans.TaskType.CLOUD_FORMATION_TASK;
+import static software.wings.beans.TaskType.FETCH_S3_FILE_TASK;
 import static software.wings.utils.WingsTestConstants.ACCOUNT_ID;
 import static software.wings.utils.WingsTestConstants.ACTIVITY_ID;
 import static software.wings.utils.WingsTestConstants.APP_ID;

@@ -1026,7 +1026,7 @@ public class UsageRestrictionsServiceImpl implements UsageRestrictionsService {
       // Read only user should not be able to create with null restrictions
       if (hasNoRestrictions(restrictionsFromUserPermissions)) {
         throw new UnauthorizedUsageRestrictionsException(
-            "Cannot create/edit entity to have no usage scopes. User should be admin or have edit permission on atleast one application.",
+            "Cannot create/edit entity with no usage scopes. User should be admin or have edit permission on atleast one application.",
             USER);
       }
       return;

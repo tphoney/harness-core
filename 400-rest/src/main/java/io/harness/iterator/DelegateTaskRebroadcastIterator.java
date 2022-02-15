@@ -1,8 +1,7 @@
 package io.harness.iterator;
 
 import static io.harness.beans.DelegateTask.Status.QUEUED;
-import static io.harness.beans.FeatureName.DELEGATE_TASK_REBROADCAST_KILL_SWITCH;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.beans.FeatureName.DELEGATE_TASK_REBROADCAST_ITERATOR;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 import static io.harness.metrics.impl.DelegateMetricsServiceImpl.DELEGATE_TASK_REBROADCAST;
@@ -104,7 +103,7 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
 
   @VisibleForTesting
   protected void rebroadcastUnassignedTasks(Account account) {
-    if (featureFlagService.isEnabled(DELEGATE_TASK_REBROADCAST_KILL_SWITCH, account.getUuid())) {
+    if (!featureFlagService.isEnabled(DELEGATE_TASK_REBROADCAST_ITERATOR, account.getUuid())) {
       return;
     }
     // Re-broadcast queued tasks not picked up by any Delegate and not in process of validation
@@ -125,33 +124,22 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
       int count = 0;
       while (iterator.hasNext()) {
         DelegateTask delegateTask = iterator.next();
-        Query<DelegateTask> query = persistence.createQuery(DelegateTask.class, excludeAuthority)
-                                        .filter(DelegateTaskKeys.uuid, delegateTask.getUuid())
-                                        .filter(DelegateTaskKeys.broadcastCount, delegateTask.getBroadcastCount());
-
-        LinkedList<String> eligibleDelegatesList = delegateTask.getEligibleToExecuteDelegateIds();
-
-        if (isEmpty(eligibleDelegatesList)) {
-          log.info("No eligible delegates for task {}", delegateTask.getUuid());
-          continue;
-        }
-
         // add connected eligible delegates to broadcast list. Also rotate the eligibleDelegatesList list
+        LinkedList<String> eligibleDelegatesList = delegateTask.getEligibleToExecuteDelegateIds();
         List<String> broadcastToDelegates = Lists.newArrayList();
         int broadcastLimit = Math.min(eligibleDelegatesList.size(), 10);
-
         Iterator<String> delegateIdIterator = eligibleDelegatesList.iterator();
-
         while (delegateIdIterator.hasNext() && broadcastLimit > broadcastToDelegates.size()) {
           String delegateId = eligibleDelegatesList.removeFirst();
           broadcastToDelegates.add(delegateId);
           eligibleDelegatesList.addLast(delegateId);
         }
+        // broadcast time between eligible delegates is 5 secs in same broadcast round(10 max per batch)
+        // After 1st round --> delay 1 min -> After 2nd round --> delay 2 mins (3 is max broadcast round)
         long nextInterval = TimeUnit.SECONDS.toMillis(5);
         int broadcastRoundCount = delegateTask.getBroadcastRound();
         Set<String> alreadyTriedDelegates =
             Optional.ofNullable(delegateTask.getAlreadyTriedDelegates()).orElse(Sets.newHashSet());
-
         // if all delegates got one round of rebroadcast, then increase broadcast interval & broadcastRound
         if (alreadyTriedDelegates.containsAll(delegateTask.getEligibleToExecuteDelegateIds())) {
           alreadyTriedDelegates.clear();
@@ -160,6 +148,9 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
         }
         alreadyTriedDelegates.addAll(broadcastToDelegates);
 
+        Query<DelegateTask> query = persistence.createQuery(DelegateTask.class, excludeAuthority)
+                                        .filter(DelegateTaskKeys.uuid, delegateTask.getUuid())
+                                        .filter(DelegateTaskKeys.broadcastCount, delegateTask.getBroadcastCount());
         UpdateOperations<DelegateTask> updateOperations =
             persistence.createUpdateOperations(DelegateTask.class)
                 .set(DelegateTaskKeys.lastBroadcastAt, now)
@@ -168,34 +159,27 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
                 .set(DelegateTaskKeys.nextBroadcast, now + nextInterval)
                 .set(DelegateTaskKeys.alreadyTriedDelegates, alreadyTriedDelegates)
                 .set(DelegateTaskKeys.broadcastRound, broadcastRoundCount);
-        delegateTask = persistence.findAndModify(query, updateOperations, HPersistence.returnNewOptions);
-        // update failed, means this was broadcast by some other manager
-        if (delegateTask == null) {
-          log.info("Cannot find delegate task, update failed on broadcast");
-          continue;
-        }
-        delegateTask.setBroadcastToDelegateIds(broadcastToDelegates);
+        persistence.update(query, updateOperations);
 
+        delegateTask.setBroadcastToDelegateIds(broadcastToDelegates);
         BatchDelegateSelectionLog batch = delegateSelectionLogsService.createBatch(delegateTask);
         if (isNotEmpty(broadcastToDelegates)) {
           delegateSelectionLogsService.logBroadcastToDelegate(
               batch, Sets.newHashSet(broadcastToDelegates), delegateTask.getAccountId());
         }
-
         delegateSelectionLogsService.save(batch);
-
         try (AutoLogContext ignore1 = new TaskLogContext(delegateTask.getUuid(), delegateTask.getData().getTaskType(),
                  TaskType.valueOf(delegateTask.getData().getTaskType()).getTaskGroup().name(), OVERRIDE_ERROR);
              AutoLogContext ignore2 = new AccountLogContext(delegateTask.getAccountId(), OVERRIDE_ERROR)) {
-          log.info("Rebroadcast queued task id {} on broadcast attempt: {} on round {} to {} ", delegateTask.getUuid(),
-              delegateTask.getBroadcastCount(), delegateTask.getBroadcastRound(),
+          log.info("IT: Rebroadcast queued task id {} on broadcast attempt: {} on round {} to {} ",
+              delegateTask.getUuid(), delegateTask.getBroadcastCount(), delegateTask.getBroadcastRound(),
               delegateTask.getBroadcastToDelegateIds());
           delegateMetricsService.recordDelegateTaskMetrics(delegateTask, DELEGATE_TASK_REBROADCAST);
           broadcastHelper.rebroadcastDelegateTask(delegateTask);
           count++;
         }
       }
-      log.info("{} tasks were rebroadcast", count);
+      log.info("IT: {} tasks were rebroadcast for account id: {}", count, account.getUuid());
     }
   }
 }

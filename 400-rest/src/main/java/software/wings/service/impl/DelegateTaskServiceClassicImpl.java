@@ -769,16 +769,26 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
   @Override
   public DelegateTaskPackage reportConnectionResults(String accountId, String delegateId, String taskId,
       String delegateInstanceId, List<DelegateConnectionResult> results) {
-    DelegateTaskPackage delegateTaskPackage = null;
     assignDelegateService.saveConnectionResults(results);
     DelegateTask delegateTask = getUnassignedDelegateTask(accountId, taskId, delegateId);
     if (delegateTask == null) {
-      return delegateTaskPackage;
+      return null;
     }
 
     try (AutoLogContext ignore = new TaskLogContext(taskId, delegateTask.getData().getTaskType(),
              TaskType.valueOf(delegateTask.getData().getTaskType()).getTaskGroup().name(), OVERRIDE_ERROR)) {
       log.info("Delegate completed validating {} task", delegateTask.getData().isAsync() ? ASYNC : SYNC);
+
+      UpdateOperations<DelegateTask> updateOperations =
+          persistence.createUpdateOperations(DelegateTask.class)
+              .addToSet(DelegateTaskKeys.validationCompleteDelegateIds, delegateId);
+      Query<DelegateTask> updateQuery = persistence.createQuery(DelegateTask.class)
+                                            .filter(DelegateTaskKeys.accountId, delegateTask.getAccountId())
+                                            .filter(DelegateTaskKeys.uuid, delegateTask.getUuid())
+                                            .filter(DelegateTaskKeys.status, QUEUED)
+                                            .field(DelegateTaskKeys.delegateId)
+                                            .doesNotExist();
+      persistence.update(updateQuery, updateOperations);
 
       long requiredDelegateCapabilities = 0;
       if (delegateTask.getExecutionCapabilities() != null) {
@@ -791,23 +801,11 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
       // If all delegate task capabilities were evaluated and they were ok, we can assign the task
       if (requiredDelegateCapabilities == size(results)
           && results.stream().allMatch(DelegateConnectionResult::isValidated)) {
-        // set task to assigned status and add delegateId to validationCompleteDelegateIds
-        delegateTaskPackage = assignTask(delegateId, taskId, delegateTask, delegateInstanceId);
-      } else {
-        UpdateOperations<DelegateTask> updateOperations =
-            persistence.createUpdateOperations(DelegateTask.class)
-                .addToSet(DelegateTaskKeys.validationCompleteDelegateIds, delegateId);
-        Query<DelegateTask> updateQuery = persistence.createQuery(DelegateTask.class)
-                                              .filter(DelegateTaskKeys.accountId, delegateTask.getAccountId())
-                                              .filter(DelegateTaskKeys.uuid, delegateTask.getUuid())
-                                              .filter(DelegateTaskKeys.status, QUEUED)
-                                              .field(DelegateTaskKeys.delegateId)
-                                              .doesNotExist();
-        persistence.update(updateQuery, updateOperations);
+        return assignTask(delegateId, taskId, delegateTask, delegateInstanceId);
       }
     }
 
-    return delegateTaskPackage;
+    return null;
   }
 
   @Override
@@ -1101,7 +1099,6 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
         persistence.createUpdateOperations(DelegateTask.class)
             .set(DelegateTaskKeys.delegateId, delegateId)
             .set(DelegateTaskKeys.status, STARTED)
-            .addToSet(DelegateTaskKeys.validationCompleteDelegateIds, delegateId)
             .set(DelegateTaskKeys.expiry, currentTimeMillis() + delegateTask.getData().getTimeout());
     // TODO: remove if check once this new field becomes operational
     if (isNotEmpty(delegateInstanceId)) {

@@ -1258,9 +1258,8 @@ public class WingsApplication extends Application<MainConfiguration> {
       Injector injector, MainConfiguration configuration, ScheduledExecutorService delegateExecutor) {
     log.info("Initializing delegate service scheduled jobs ...");
     // delegate task broadcasting schedule job
-    /*injector.getInstance(Key.get(ScheduledExecutorService.class, Names.named("delegateTaskNotifier")))
+    injector.getInstance(Key.get(ScheduledExecutorService.class, Names.named("delegateTaskNotifier")))
         .scheduleWithFixedDelay(injector.getInstance(DelegateQueueTask.class), random.nextInt(5), 5L, TimeUnit.SECONDS);
-*/
     delegateExecutor.scheduleWithFixedDelay(new Schedulable("Failed while monitoring task progress updates",
                                                 injector.getInstance(ProgressUpdateService.class)),
         0L, 5L, TimeUnit.SECONDS);
@@ -1409,8 +1408,10 @@ public class WingsApplication extends Application<MainConfiguration> {
             iteratorsConfig.getPerpetualTaskRebalanceIteratorConfig().getThreadPoolSize());
     injector.getInstance(DelegateTaskExpiryCheckIterator.class)
         .registerIterators(iteratorsConfig.getDelegateTaskExpiryCheckIteratorConfig().getThreadPoolSize());
-    injector.getInstance(DelegateTaskRebroadcastIterator.class).registerIterators(5);
-    injector.getInstance(FailDelegateTaskIterator.class).registerIterators(5);
+    injector.getInstance(DelegateTaskRebroadcastIterator.class)
+        .registerIterators(iteratorsConfig.getDelegateTaskRebroadcastIteratorConfig().getThreadPoolSize());
+    injector.getInstance(FailDelegateTaskIterator.class)
+        .registerIterators(iteratorsConfig.getFailDelegateTaskIteratorConfig().getThreadPoolSize());
     injector.getInstance(DelegateTelemetryPublisher.class).registerIterators();
   }
 

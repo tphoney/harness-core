@@ -12,7 +12,6 @@ import static io.harness.metrics.impl.DelegateMetricsServiceImpl.DELEGATE_TASK_E
 import static io.harness.persistence.HQuery.excludeAuthority;
 
 import static java.lang.String.format;
-import static java.lang.String.join;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
 import static java.util.function.Function.identity;
@@ -26,7 +25,6 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.DelegateTask;
 import io.harness.beans.DelegateTask.DelegateTaskKeys;
-import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.DelegateResponseData;
 import io.harness.delegate.beans.DelegateTaskResponse;
 import io.harness.delegate.beans.ErrorNotifyResponseData;
@@ -64,7 +62,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
@@ -255,11 +252,12 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
 
   @VisibleForTesting
   public void failValidationCompletedQueuedTask(Account account) {
+    long validationTime = clock.millis() - VALIDATION_TIMEOUT;
     Query<DelegateTask> validationStartedTaskQuery = persistence.createQuery(DelegateTask.class, excludeAuthority)
                                                          .filter(DelegateTaskKeys.accountId, account.getUuid())
                                                          .filter(DelegateTaskKeys.status, QUEUED)
                                                          .field(DelegateTaskKeys.validationStartedAt)
-                                                         .lessThan(clock.millis() - VALIDATION_TIMEOUT);
+                                                         .lessThan(validationTime);
     try (HIterator<DelegateTask> iterator = new HIterator<>(validationStartedTaskQuery.fetch())) {
       while (iterator.hasNext()) {
         DelegateTask delegateTask = iterator.next();
@@ -276,9 +274,9 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
                   whitelistedDelegates);
               return;
             }
-            log.info("Failing task {} due to validation failure ", delegateTask.getUuid());
-            String errorMessage = generateCapabilitiesMessage(delegateTask);
-            log.info(errorMessage);
+            String errorMessage = generateValidationError(delegateTask);
+            log.info("Failing task {} due to validation error, {}", delegateTask.getUuid(), errorMessage);
+
             DelegateResponseData response;
             if (delegateTask.getData().isAsync()) {
               response = ErrorNotifyResponseData.builder()
@@ -306,21 +304,10 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
     }
   }
 
-  private String generateValidationError(final DelegateTask delegateTask, final boolean areClientToolsInstalled) {
+  private String generateValidationError(DelegateTask delegateTask) {
     final String capabilities = generateCapabilitiesMessage(delegateTask);
-    final String delegates = generateValidatedDelegatesMessage(delegateTask);
-    final String timedoutDelegates = generateTimedoutDelegatesMessage(delegateTask);
-
-    final String clientToolsWarning = !areClientToolsInstalled
-        ? "  -  This could be due to some client tools still being installed on the delegates. If this is the reason please retry in a few minutes."
-        : "";
     return format(
-               "No connected whitelisted delegates found for task and no eligible delegates could perform the required capabilities for this task: [ %s ]%n"
-                   + "  -  The capabilities were tested by the following delegates: [ %s ]%n"
-                   + "  -  Following delegates were validating but never returned: [ %s ]%n"
-                   + "  -  Other delegates (if any) may have been offline or were not eligible due to tag or scope restrictions.",
-               capabilities, delegates, timedoutDelegates)
-        + clientToolsWarning;
+        "No eligible delegate was able to confirm that it has the capability to perform [ %s ]", capabilities);
   }
 
   private String generateCapabilitiesMessage(final DelegateTask delegateTask) {
@@ -338,36 +325,5 @@ public class FailDelegateTaskIterator implements MongoPersistenceIterator.Handle
       }
     }
     return stringBuilder.toString();
-  }
-
-  private String generateValidatedDelegatesMessage(final DelegateTask delegateTask) {
-    final Set<String> validationCompleteDelegateIds = delegateTask.getValidationCompleteDelegateIds();
-
-    if (isNotEmpty(validationCompleteDelegateIds)) {
-      return validationCompleteDelegateIds.stream()
-          .map(delegateId -> {
-            Delegate delegate = delegateCache.get(delegateTask.getAccountId(), delegateId, false);
-            return delegate == null ? delegateId : delegate.getHostName();
-          })
-          .collect(joining(", "));
-    }
-    return "no delegates";
-  }
-
-  private String generateTimedoutDelegatesMessage(final DelegateTask delegateTask) {
-    final Set<String> validationCompleteDelegateIds = delegateTask.getValidationCompleteDelegateIds();
-    final Set<String> validatingDelegateIds = delegateTask.getValidatingDelegateIds();
-
-    if (isNotEmpty(validatingDelegateIds)) {
-      return join(", ",
-          validatingDelegateIds.stream()
-              .filter(p -> !validationCompleteDelegateIds.contains(p))
-              .map(delegateId -> {
-                Delegate delegate = delegateCache.get(delegateTask.getAccountId(), delegateId, false);
-                return delegate == null ? delegateId : delegate.getHostName();
-              })
-              .collect(joining()));
-    }
-    return "no delegates timedout";
   }
 }

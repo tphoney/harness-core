@@ -364,7 +364,7 @@ public class MigrationBackgroundList {
         .add(Pair.of(207, DeleteDelegateAlertsExceptDelegateDown.class))
         .add(Pair.of(208, MigrationSMCredentialsFromLocalToGlobalKMS.class))
         .add(Pair.of(209, NullAppFilterPermissionMigration.class))
-        .add(Pair.of(210, DefaultDelegateNgTokenMigration.class))
+        .add(Pair.of(210, BaseMigration.class))
         .add(Pair.of(211, AddRingsToAccountMigration.class))
         .add(Pair.of(212, AddRingDetailsToDelegateRing.class))
         .add(Pair.of(213, RemoveUsageRestrictionForApplicationDefaultsMigration.class))

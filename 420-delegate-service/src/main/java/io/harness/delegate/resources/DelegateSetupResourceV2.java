@@ -12,6 +12,8 @@ import static io.harness.delegate.utils.RbacConstants.DELEGATE_RESOURCE_TYPE;
 import static io.harness.delegate.utils.RbacConstants.DELEGATE_VIEW_PERMISSION;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 
+import static software.wings.security.PermissionAttribute.PermissionType.LOGGED_IN;
+
 import io.harness.NGResourceFilterConstants;
 import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.accesscontrol.clients.Resource;
@@ -19,6 +21,7 @@ import io.harness.accesscontrol.clients.ResourceScope;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.PageRequest;
+import io.harness.delegate.beans.DelegateGroup;
 import io.harness.delegate.beans.DelegateGroupDetails;
 import io.harness.delegate.beans.DelegateGroupListing;
 import io.harness.delegate.filter.DelegateFilterPropertiesDTO;
@@ -28,6 +31,8 @@ import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.rest.RestResponse;
 import io.harness.service.intfc.DelegateSetupService;
+
+import software.wings.security.annotations.AuthRule;
 
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.Timed;
@@ -39,6 +44,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -207,6 +213,36 @@ public class DelegateSetupResourceV2 {
     try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
       return new RestResponse<>(
           delegateSetupService.updateDelegateGroup(accountId, orgId, projectId, identifier, delegateGroupDetails));
+    }
+  }
+
+  protected static class DelegateTags {
+    private List<String> tags;
+    public List<String> getTags() {
+      return tags;
+    }
+    public void setTags(List<String> tags) {
+      this.tags = tags;
+    }
+  }
+
+  @PUT
+  @Path("tags/{identifier}")
+  @Timed
+  @ExceptionMetered
+  @AuthRule(permissionType = LOGGED_IN)
+  @Operation(operationId = "updateTagsForDelegateGroup", summary = "Updates tags for the Delegate Group.",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.
+        ApiResponse(responseCode = "default", description = "Delegate Group details for updated group.")
+      })
+  public RestResponse<DelegateGroup>
+  updateTagsForDelegateGroup(@Parameter(description = "Delegate Group Name") @PathParam("identifier")
+                             @NotEmpty String identifier, @QueryParam("accountId") @NotEmpty String accountId,
+      @RequestBody(required = true, description = "List of tags") DelegateTags tags) {
+    try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
+      return new RestResponse<>(delegateSetupService.updateDelegateGroupTags(accountId, identifier, tags.getTags()));
     }
   }
 }

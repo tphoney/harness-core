@@ -13,6 +13,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.jooq.impl.DSL.sum;
 
 import io.harness.annotations.retry.RetryOnException;
+import io.harness.ccm.commons.entities.anomaly.AnomalyFeedbackDTO;
 import io.harness.ccm.commons.entities.anomaly.AnomalySummary;
 import io.harness.timescaledb.tables.pojos.Anomalies;
 import io.harness.timescaledb.tables.records.AnomaliesRecord;
@@ -27,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.OrderField;
-import org.jooq.Record2;
 import org.jooq.Record3;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectFinalStep;
@@ -65,5 +65,11 @@ public class AnomalyDao {
             .where(ANOMALIES.ACCOUNTID.eq(accountId).and(firstNonNull(condition, DSL.noCondition())));
     log.info("Anomaly Query: {}", finalStep.getQuery().toString());
     return finalStep.fetchInto(AnomalySummary.class);
+  }
+
+  @Nullable
+  @RetryOnException(retryCount = RETRY_COUNT, sleepDurationInMilliseconds = SLEEP_DURATION)
+  public void updateAnomalyFeedback(@NonNull String accountId, AnomalyFeedbackDTO feedback) {
+    return;
   }
 }

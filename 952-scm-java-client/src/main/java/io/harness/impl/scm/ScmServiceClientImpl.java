@@ -22,6 +22,7 @@ import io.harness.beans.gitsync.GitFileDetails;
 import io.harness.beans.gitsync.GitFilePathDetails;
 import io.harness.beans.gitsync.GitPRCreateRequest;
 import io.harness.beans.gitsync.GitWebhookDetails;
+import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 import io.harness.eraro.ErrorCode;
 import io.harness.exception.ExceptionUtils;
@@ -62,6 +63,8 @@ import io.harness.product.ci.scm.proto.GetAuthenticatedUserRequest;
 import io.harness.product.ci.scm.proto.GetAuthenticatedUserResponse;
 import io.harness.product.ci.scm.proto.GetBatchFileRequest;
 import io.harness.product.ci.scm.proto.GetFileRequest;
+import io.harness.product.ci.scm.proto.GetLatestCommitOnFileRequest;
+import io.harness.product.ci.scm.proto.GetLatestCommitOnFileResponse;
 import io.harness.product.ci.scm.proto.GetLatestCommitRequest;
 import io.harness.product.ci.scm.proto.GetLatestCommitResponse;
 import io.harness.product.ci.scm.proto.GetLatestFileRequest;
@@ -91,6 +94,7 @@ import com.google.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -130,6 +134,12 @@ public class ScmServiceClientImpl implements ScmServiceClient {
   @Override
   public UpdateFileResponse updateFile(
       ScmConnector scmConnector, GitFileDetails gitFileDetails, SCMGrpc.SCMBlockingStub scmBlockingStub) {
+    Optional<UpdateFileResponse> preChecksStatus =
+        runUpdateFileOpsPreChecks(scmConnector, scmBlockingStub, gitFileDetails);
+    if (preChecksStatus.isPresent()) {
+      return preChecksStatus.get();
+    }
+
     final FileModifyRequest.Builder fileModifyRequestBuilder = getFileModifyRequest(scmConnector, gitFileDetails);
     final FileModifyRequest fileModifyRequest =
         fileModifyRequestBuilder.setBlobId(gitFileDetails.getOldFileSha()).build();
@@ -723,5 +733,31 @@ public class ScmServiceClientImpl implements ScmServiceClient {
       WebhookResponse webhookResponse, GitWebhookDetails gitWebhookDetails, ScmConnector scmConnector) {
     return isIdenticalTarget(webhookResponse, gitWebhookDetails)
         && ScmGitWebhookHelper.isIdenticalEvents(webhookResponse, gitWebhookDetails.getHookEventType(), scmConnector);
+  }
+
+  private GetLatestCommitOnFileResponse getLatestCommitOnFile(
+      ScmConnector scmConnector, SCMGrpc.SCMBlockingStub scmBlockingStub, String branch, String filepath) {
+    Provider gitProvider = scmGitProviderMapper.mapToSCMGitProvider(scmConnector, true);
+    String slug = scmGitProviderHelper.getSlug(scmConnector);
+    return scmBlockingStub.getLatestCommitOnFile(GetLatestCommitOnFileRequest.newBuilder()
+                                                     .setProvider(gitProvider)
+                                                     .setSlug(slug)
+                                                     .setBranch(branch)
+                                                     .setFilePath(filepath)
+                                                     .build());
+  }
+
+  private Optional<UpdateFileResponse> runUpdateFileOpsPreChecks(
+      ScmConnector scmConnector, SCMGrpc.SCMBlockingStub scmBlockingStub, GitFileDetails gitFileDetails) {
+    if (scmConnector.getConnectorType() == ConnectorType.BITBUCKET) {
+      // Check if current file commit is same as latest commit on file on remote
+      GetLatestCommitOnFileResponse latestCommitResponse = getLatestCommitOnFile(
+          scmConnector, scmBlockingStub, gitFileDetails.getBranch(), gitFileDetails.getFilePath());
+      if (!latestCommitResponse.equals(gitFileDetails.getCommitId())) {
+        return Optional.of(
+            UpdateFileResponse.newBuilder().setError("Cannot update file as it has conflicts with remote").build());
+      }
+    }
+    return Optional.empty();
   }
 }

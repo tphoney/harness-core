@@ -425,7 +425,7 @@ public class CloudFormationCreateStackStateTest extends WingsBaseTest {
     assertThat(gitFileConfig).isEqualTo(provisioner.getGitFileConfig());
     assertThat(gitFileConfig.getFilePathList().get(0)).isEqualTo("template.json");
   }
-  
+
   @Test
   @Owner(developers = BOJANA)
   @Category(UnitTests.class)

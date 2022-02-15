@@ -139,11 +139,6 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                                                      .environmentIdentifier(monitoredServiceDTO.getEnvironmentRef())
                                                      .build();
 
-    // TODO: Temporary until UI moves to using environmentRefList completely
-    if (isEmpty(monitoredServiceDTO.getEnvironmentRefList())) {
-      monitoredServiceDTO.setEnvironmentRefList(Arrays.asList(monitoredServiceDTO.getEnvironmentRef()));
-    }
-
     validate(monitoredServiceDTO);
     checkIfAlreadyPresent(
         accountId, environmentParams, monitoredServiceDTO.getIdentifier(), monitoredServiceDTO.getSources());
@@ -242,10 +237,6 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     monitoredServiceHandlers.forEach(baseMonitoredServiceHandler
         -> baseMonitoredServiceHandler.beforeUpdate(
             environmentParams, existingMonitoredServiceDTO, monitoredServiceDTO));
-    // TODO: Temporary until UI moves to using environmentRefList completely
-    if (isEmpty(monitoredServiceDTO.getEnvironmentRefList())) {
-      monitoredServiceDTO.setEnvironmentRefList(Arrays.asList(monitoredServiceDTO.getEnvironmentRef()));
-    }
     validate(monitoredServiceDTO);
 
     updateHealthSources(monitoredService, monitoredServiceDTO);
@@ -440,12 +431,12 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   }
 
   @Override
-  public PageResponse<MonitoredServiceResponse> getList(
-      ProjectParams projectParams, String environmentIdentifier, Integer offset, Integer pageSize, String filter) {
-    List<MonitoredService> monitoredServiceEntities = getMonitoredServices(projectParams, environmentIdentifier);
+  public PageResponse<MonitoredServiceResponse> getList(ProjectParams projectParams,
+      List<String> environmentIdentifiers, Integer offset, Integer pageSize, String filter) {
+    List<MonitoredService> monitoredServiceEntities = getMonitoredServices(projectParams, environmentIdentifiers);
     if (isEmpty(monitoredServiceEntities)) {
       throw new InvalidRequestException(
-          String.format("There are no Monitored Services for the environment: %s", environmentIdentifier));
+          String.format("There are no Monitored Services for the environments: %s", environmentIdentifiers));
     }
 
     PageResponse<MonitoredService> monitoredServiceEntitiesPageResponse =
@@ -559,12 +550,14 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         .get();
   }
 
-  private List<MonitoredService> getMonitoredServices(ProjectParams projectParams, String environmentIdentifier) {
+  private List<MonitoredService> getMonitoredServices(
+      ProjectParams projectParams, List<String> environmentIdentifiers) {
     return hPersistence.createQuery(MonitoredService.class)
         .filter(MonitoredServiceKeys.accountId, projectParams.getAccountIdentifier())
         .filter(MonitoredServiceKeys.orgIdentifier, projectParams.getOrgIdentifier())
         .filter(MonitoredServiceKeys.projectIdentifier, projectParams.getProjectIdentifier())
-        .filter(MonitoredServiceKeys.environmentIdentifier, environmentIdentifier)
+        .field(MonitoredServiceKeys.environmentIdentifierList)
+        .hasAnyOf(environmentIdentifiers)
         .asList();
   }
 
@@ -576,7 +569,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         .asList();
   }
 
-  private List<MonitoredService> getMonitoredServicesFilteredByEnvIDAndTextAndSortedByLastUpdatedTime(
+  private List<MonitoredService> getMonitoredServices(
       ProjectParams projectParams, String environmentIdentifier, String filter) {
     Query<MonitoredService> monitoredServicesQuery =
         hPersistence.createQuery(MonitoredService.class)
@@ -584,10 +577,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
             .filter(MonitoredServiceKeys.orgIdentifier, projectParams.getOrgIdentifier())
             .filter(MonitoredServiceKeys.projectIdentifier, projectParams.getProjectIdentifier())
             .order(Sort.descending(MonitoredServiceKeys.lastUpdatedAt));
-    if (environmentIdentifier != null) {
-      monitoredServicesQuery.filter(MonitoredServiceKeys.environmentIdentifier, environmentIdentifier);
-      // TODO: or query
-      // monitoredServicesQuery.field(MonitoredServiceKeys.environmentIdentifierList).hasThisOne(environmentIdentifier);
+    if (isNotEmpty(environmentIdentifier)) {
+      monitoredServicesQuery.field(MonitoredServiceKeys.environmentIdentifierList).hasThisOne(environmentIdentifier);
     }
     List<MonitoredService> monitoredServices = monitoredServicesQuery.asList();
     if (filter != null) {
@@ -749,8 +740,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   @Override
   public PageResponse<MonitoredServiceListItemDTO> list(ProjectParams projectParams, String environmentIdentifier,
       Integer offset, Integer pageSize, String filter, boolean servicesAtRiskFilter) {
-    List<MonitoredService> monitoredServices = getMonitoredServicesFilteredByEnvIDAndTextAndSortedByLastUpdatedTime(
-        projectParams, environmentIdentifier, filter);
+    List<MonitoredService> monitoredServices = getMonitoredServices(projectParams, environmentIdentifier, filter);
     Map<String, MonitoredService> idToMonitoredServiceMap =
         monitoredServices.stream().collect(Collectors.toMap(MonitoredService::getIdentifier, Function.identity()));
     Map<ServiceEnvKey, RiskData> latestRiskScoreByServiceMap =
@@ -766,21 +756,21 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
 
     List<Pair<String, String>> serviceEnvironmentIdentifiers = new ArrayList<>();
     List<String> serviceIdentifiers = new ArrayList<>();
-    List<String> environmentIdentifiers = new ArrayList<>();
+    List<String> environmentIdentifierList = new ArrayList<>();
     List<String> monitoredServiceIdentifiers = new ArrayList<>();
     for (MonitoredServiceListItemDTOBuilder monitoredServiceListDTOBuilder :
         monitoredServiceListDTOBuilderPageResponse.getContent()) {
       serviceEnvironmentIdentifiers.add(
           Pair.of(monitoredServiceListDTOBuilder.getServiceRef(), monitoredServiceListDTOBuilder.getEnvironmentRef()));
       serviceIdentifiers.add(monitoredServiceListDTOBuilder.getServiceRef());
-      environmentIdentifiers.add(monitoredServiceListDTOBuilder.getEnvironmentRef());
+      environmentIdentifierList.add(monitoredServiceListDTOBuilder.getEnvironmentRef());
       monitoredServiceIdentifiers.add(monitoredServiceListDTOBuilder.getIdentifier());
     }
 
     Map<String, String> serviceIdNameMap =
         nextGenService.getServiceIdNameMap(projectParams, new ArrayList<>(serviceIdentifiers));
     Map<String, String> environmentIdNameMap =
-        nextGenService.getEnvironmentIdNameMap(projectParams, new ArrayList<>(environmentIdentifiers));
+        nextGenService.getEnvironmentIdNameMap(projectParams, new ArrayList<>(environmentIdentifierList));
     List<HistoricalTrend> historicalTrendList = heatMapService.getHistoricalTrend(projectParams.getAccountIdentifier(),
         projectParams.getOrgIdentifier(), projectParams.getProjectIdentifier(), serviceEnvironmentIdentifiers, 24);
     Map<String, List<String>> monitoredServiceToDependentServicesMap =
@@ -1119,8 +1109,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
 
   @Override
   public CountServiceDTO getCountOfServices(ProjectParams projectParams, String environmentIdentifier, String filter) {
-    List<MonitoredService> allMonitoredServices = getMonitoredServicesFilteredByEnvIDAndTextAndSortedByLastUpdatedTime(
-        projectParams, environmentIdentifier, filter);
+    List<MonitoredService> allMonitoredServices = getMonitoredServices(projectParams, environmentIdentifier, filter);
     Map<ServiceEnvKey, RiskData> latestRiskScoreByServiceMap =
         getLatestRiskScoreByServiceMap(projectParams, allMonitoredServices);
     List<MonitoredService> monitoredServicesAtRisk =

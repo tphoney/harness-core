@@ -20,11 +20,13 @@ import io.harness.ng.core.service.dto.ServiceResponse;
 import io.harness.ng.core.service.dto.ServiceResponseDTO;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-public class MockedNextGenService implements NextGenService {
+public class FakeNextGenService implements NextGenService {
   @Override
   public ConnectorResponseDTO create(ConnectorDTO connectorRequestDTO, String accountIdentifier) {
     throw new UnsupportedOperationException("mocked method - TODO"); // TODO
@@ -63,23 +65,37 @@ public class MockedNextGenService implements NextGenService {
   @Override
   public List<ServiceResponse> listService(
       String accountId, String orgIdentifier, String projectIdentifier, List<String> serviceIdentifiers) {
-    throw new UnsupportedOperationException("mocked method - TODO"); // TODO
+    return serviceIdentifiers.stream()
+        .map(serviceIdentifier
+            -> ServiceResponse.builder()
+                   .service(getService(accountId, projectIdentifier, projectIdentifier, serviceIdentifier))
+                   .createdAt(System.currentTimeMillis())
+                   .lastModifiedAt(System.currentTimeMillis())
+                   .build())
+        .collect(Collectors.toList());
   }
 
   @Override
   public List<EnvironmentResponse> listEnvironment(
-      String accountId, String orgIdentifier, String projectIdentifier, List<String> environmentIdentifier) {
-    throw new UnsupportedOperationException("mocked method - TODO"); // TODO
+      String accountId, String orgIdentifier, String projectIdentifier, List<String> environmentIdentifiers) {
+    return environmentIdentifiers.stream()
+        .map(environmentIdentifier
+            -> EnvironmentResponse.builder()
+                   .environment(getEnvironment(accountId, projectIdentifier, projectIdentifier, environmentIdentifier))
+                   .createdAt(System.currentTimeMillis())
+                   .lastModifiedAt(System.currentTimeMillis())
+                   .build())
+        .collect(Collectors.toList());
   }
 
   @Override
   public int getServicesCount(String accountId, String orgIdentifier, String projectIdentifier) {
-    throw new UnsupportedOperationException("mocked method - TODO"); // TODO
+    return 1;
   }
 
   @Override
   public int getEnvironmentCount(String accountId, String orgIdentifier, String projectIdentifier) {
-    throw new UnsupportedOperationException("mocked method - TODO"); // TODO
+    return 1;
   }
 
   @Override
@@ -104,11 +120,23 @@ public class MockedNextGenService implements NextGenService {
 
   @Override
   public Map<String, String> getServiceIdNameMap(ProjectParams projectParams, List<String> serviceIdentifiers) {
-    throw new UnsupportedOperationException("mocked method - TODO"); // TODO
+    Map<String, String> serviceIdNameMap = new HashMap<>();
+    serviceIdentifiers.forEach(serviceIdentifier
+        -> serviceIdNameMap.put(serviceIdentifier,
+            getService(projectParams.getAccountIdentifier(), projectParams.getOrgIdentifier(),
+                projectParams.getProjectIdentifier(), serviceIdentifier)
+                .getName()));
+    return serviceIdNameMap;
   }
 
   @Override
   public Map<String, String> getEnvironmentIdNameMap(ProjectParams projectParams, List<String> environmentIdentifiers) {
-    throw new UnsupportedOperationException("mocked method - TODO"); // TODO
+    Map<String, String> envIdNameMap = new HashMap<>();
+    environmentIdentifiers.forEach(envIdentifier
+        -> envIdNameMap.put(envIdentifier,
+            getEnvironment(projectParams.getAccountIdentifier(), projectParams.getOrgIdentifier(),
+                projectParams.getProjectIdentifier(), envIdentifier)
+                .getName()));
+    return envIdNameMap;
   }
 }

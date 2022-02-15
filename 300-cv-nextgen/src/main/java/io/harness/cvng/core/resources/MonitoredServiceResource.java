@@ -7,6 +7,8 @@
 
 package io.harness.cvng.core.resources;
 
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.NGAccessControlCheck;
 import io.harness.accesscontrol.OrgIdentifier;
@@ -53,6 +55,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import javax.validation.Valid;
 import javax.ws.rs.BeanParam;
@@ -246,7 +249,8 @@ public class MonitoredServiceResource {
   public ResponseDTO<PageResponse<MonitoredServiceResponse>> getList(@NotNull @QueryParam("accountId") String accountId,
       @NotNull @QueryParam("orgIdentifier") String orgIdentifier,
       @NotNull @QueryParam("projectIdentifier") String projectIdentifier,
-      @NotNull @QueryParam("environmentIdentifier") String environmentIdentifier,
+      @QueryParam("environmentIdentifier") String environmentIdentifier,
+      @QueryParam("environmentIdentifiers") List<String> environmentIdentifiers,
       @QueryParam("offset") @NotNull Integer offset, @QueryParam("pageSize") @NotNull Integer pageSize,
       @QueryParam("filter") String filter) {
     ProjectParams projectParams = ProjectParams.builder()
@@ -254,8 +258,12 @@ public class MonitoredServiceResource {
                                       .orgIdentifier(orgIdentifier)
                                       .projectIdentifier(projectIdentifier)
                                       .build();
+    // for backward comparability. Need to remove this.
+    if (isNotEmpty(environmentIdentifier)) {
+      environmentIdentifiers = Collections.singletonList(environmentIdentifier);
+    }
     return ResponseDTO.newResponse(
-        monitoredServiceService.getList(projectParams, environmentIdentifier, offset, pageSize, filter));
+        monitoredServiceService.getList(projectParams, environmentIdentifiers, offset, pageSize, filter));
   }
 
   @GET

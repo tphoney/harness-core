@@ -119,6 +119,7 @@ public class SamlBasedAuthHandler implements AuthHandler {
             "Wrong number of arguments to saml authentication - " + (credentials == null ? 0 : credentials.length));
         throw new WingsException("Invalid arguments while authenticating using SAML");
       }
+
       String idpUrl = credentials[0];
       String samlResponseString = credentials[1];
       String accountId = credentials.length >= 3 ? credentials[2] : null;

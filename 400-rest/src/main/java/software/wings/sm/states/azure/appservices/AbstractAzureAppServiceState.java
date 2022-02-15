@@ -164,8 +164,12 @@ public abstract class AbstractAzureAppServiceState extends State {
   }
 
   protected ExecutionResponse submitTask(ExecutionContext context, String activityId, Artifact artifact) {
-    AzureAppServiceStateData azureAppServiceStateData =
-        azureVMSSStateHelper.populateAzureAppServiceData(context, artifact);
+    AzureAppServiceStateData azureAppServiceStateData;
+    if (azureVMSSStateHelper.isWebAppDockerDeployment(context)) {
+      azureAppServiceStateData = azureVMSSStateHelper.populateAzureAppServiceData(context);
+    } else {
+      azureAppServiceStateData = azureVMSSStateHelper.populateAzureAppServiceData(context, artifact);
+    }
     AzureTaskExecutionRequest executionRequest =
         buildTaskExecutionRequest(context, azureAppServiceStateData, activityId);
     StateExecutionData stateExecutionData =

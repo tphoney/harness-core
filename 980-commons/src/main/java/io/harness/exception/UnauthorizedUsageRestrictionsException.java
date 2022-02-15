@@ -17,4 +17,8 @@ public class UnauthorizedUsageRestrictionsException extends WingsException {
   public UnauthorizedUsageRestrictionsException(EnumSet<ReportTarget> reportTarget) {
     super(null, null, USER_NOT_AUTHORIZED_DUE_TO_USAGE_RESTRICTIONS, Level.ERROR, reportTarget, null);
   }
+
+  public UnauthorizedUsageRestrictionsException(String message, EnumSet<ReportTarget> reportTargets) {
+    super(message, null, USER_NOT_AUTHORIZED_DUE_TO_USAGE_RESTRICTIONS, Level.ERROR, reportTargets, null);
+  }
 }

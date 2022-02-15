@@ -31,6 +31,7 @@ import io.harness.beans.SecretManagerConfig.SecretManagerConfigKeys;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.eraro.ErrorCode;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.UnauthorizedUsageRestrictionsException;
 import io.harness.exception.UsageRestrictionException;
 import io.harness.exception.WingsException;
 import io.harness.persistence.HIterator;
@@ -953,7 +954,9 @@ public class UsageRestrictionsServiceImpl implements UsageRestrictionsService {
     if (!scopedToAccount && hasNoRestrictions(usageRestrictions)) {
       // Read only user should not be able to create with null restrictions
       if (hasNoRestrictions(restrictionsFromUserPermissions)) {
-        throw new WingsException(ErrorCode.USER_NOT_AUTHORIZED_DUE_TO_USAGE_RESTRICTIONS, USER);
+        throw new UnauthorizedUsageRestrictionsException(
+            "Cannot create/edit entity with no usage scopes. User should be admin or have edit permission on atleast one application.",
+            USER);
       }
       return;
     }
@@ -966,7 +969,9 @@ public class UsageRestrictionsServiceImpl implements UsageRestrictionsService {
         accountId, permissionType, usageRestrictions, restrictionsFromUserPermissions, appIdEnvMap, scopedToAccount);
 
     if (!canUpdateEntity) {
-      throw new WingsException(ErrorCode.USER_NOT_AUTHORIZED_DUE_TO_USAGE_RESTRICTIONS, USER);
+      throw new UnauthorizedUsageRestrictionsException(
+          "Cannot create/edit entity with the given usage scopes. The user should have edit permissions on all the applications and environments in the usage scopes.",
+          USER);
     }
   }
 
@@ -981,7 +986,9 @@ public class UsageRestrictionsServiceImpl implements UsageRestrictionsService {
     if (scopedToAccount) {
       boolean allowed = isAdminOrHasAllEnvAccess(accountId, permissionType, restrictionsFromUserPermissions);
       if (!allowed) {
-        throw new WingsException(ErrorCode.NOT_ACCOUNT_MGR_NOR_HAS_ALL_APP_ACCESS, USER);
+        throw new UnauthorizedUsageRestrictionsException(
+            "Cannot create/edit entity which is scoped to account. The user should be an admin or have edit access on all applications.",
+            USER);
       }
     }
   }
@@ -1018,7 +1025,9 @@ public class UsageRestrictionsServiceImpl implements UsageRestrictionsService {
     if (!scopedToAccount && hasNoRestrictions(newUsageRestrictions)) {
       // Read only user should not be able to create with null restrictions
       if (hasNoRestrictions(restrictionsFromUserPermissions)) {
-        throw new WingsException(ErrorCode.USER_NOT_AUTHORIZED_DUE_TO_USAGE_RESTRICTIONS, USER);
+        throw new UnauthorizedUsageRestrictionsException(
+            "Cannot create/edit entity to have no usage scopes. User should be admin or have edit permission on atleast one application.",
+            USER);
       }
       return;
     }
@@ -1029,7 +1038,9 @@ public class UsageRestrictionsServiceImpl implements UsageRestrictionsService {
         accountId, permissionType, oldUsageRestrictions, restrictionsFromUserPermissions, scopedToAccount);
 
     if (!canUpdateOldRestrictions) {
-      throw new WingsException(ErrorCode.USER_NOT_AUTHORIZED_DUE_TO_USAGE_RESTRICTIONS, USER);
+      throw new UnauthorizedUsageRestrictionsException(
+          "Cannot create/edit entity. The user should have edit permissions on all the applications and environments in the current usage scopes.",
+          USER);
     }
 
     Set<String> appIdsByAccountId = appService.getAppIdsAsSetByAccountId(accountId);
@@ -1038,7 +1049,9 @@ public class UsageRestrictionsServiceImpl implements UsageRestrictionsService {
         accountId, permissionType, newUsageRestrictions, restrictionsFromUserPermissions, appIdEnvMap, scopedToAccount);
 
     if (!canAddNewRestrictions) {
-      throw new WingsException(ErrorCode.USER_NOT_AUTHORIZED_DUE_TO_USAGE_RESTRICTIONS, USER);
+      throw new UnauthorizedUsageRestrictionsException(
+          "Cannot create/edit entity. The user should have edit permissions on all the applications and environments in the new usage scopes.",
+          USER);
     }
   }
 

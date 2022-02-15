@@ -125,14 +125,13 @@ public class SamlBasedAuthHandler implements AuthHandler {
       String relayState = credentials.length >= 4 ? credentials[3] : "";
       Map<String, String> relayStateData = getRelayStateData(relayState);
 
-      SamlSettings samlSettings;
       User user = decodeResponseAndReturnUserByEmailId(idpUrl, samlResponseString, accountId);
 
       if (featureFlagService.isEnabled(FeatureName.EXTERNAL_USERID_BASED_LOGIN, accountId)) {
         User userByUserId = decodeResponseAndReturnUserByUserId(idpUrl, samlResponseString, accountId);
         if (user == null && userByUserId != null) {
           accountId = StringUtils.isEmpty(accountId) ? userByUserId.getDefaultAccountId() : accountId;
-          samlSettings = ssoSettingService.getSamlSettingsByAccountId(accountId);
+          SamlSettings samlSettings = ssoSettingService.getSamlSettingsByAccountId(accountId);
           String email = getEmailIdFromSamlResponseString(samlResponseString, samlSettings);
           if (isEmpty(email)) {
             throw new InvalidRequestException("Email is not present in SAML assertion");
@@ -166,7 +165,7 @@ public class SamlBasedAuthHandler implements AuthHandler {
           domainWhitelistCheckerService.throwDomainWhitelistFilterException();
         }
         log.info("Authenticating via SAML");
-        samlSettings = ssoSettingService.getSamlSettingsByAccountId(accountId);
+        SamlSettings samlSettings = ssoSettingService.getSamlSettingsByAccountId(account.getUuid());
 
         // Occurs when SAML settings are being tested before being enabled
         if (!relayStateData.getOrDefault(SAML_TRIGGER_TYPE, "").equals("login")

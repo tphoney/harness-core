@@ -758,6 +758,7 @@ public class ScmServiceClientImpl implements ScmServiceClient {
         return Optional.of(UpdateFileResponse.newBuilder()
                                .setStatus(Constants.SCM_CONFLICT_ERROR_CODE)
                                .setError("Cannot update file as it has conflicts with remote")
+                               .setCommitId(latestCommitResponse.getCommitId())
                                .build());
       }
     }

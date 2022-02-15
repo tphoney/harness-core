@@ -80,10 +80,10 @@ public class UserProfileHelper {
         BitbucketConnectorDTO bitbucketConnectorDTO = (BitbucketConnectorDTO) scmConnector;
 
         BitbucketUsernamePasswordDTO bitbucketUsernamePasswordDTO =
-            ((BitbucketUsernamePasswordDTO) ((BitbucketHttpCredentialsDTO) ((BitbucketSCMDTO) userScmProfile)
-                                                 .getAuthentication()
-                                                 .getCredentials())
-                    .getHttpCredentialsSpec());
+            (BitbucketUsernamePasswordDTO) ((BitbucketHttpCredentialsDTO) ((BitbucketSCMDTO) userScmProfile)
+                                                .getAuthentication()
+                                                .getCredentials())
+                .getHttpCredentialsSpec();
         bitbucketConnectorDTO.setApiAccess(BitbucketApiAccessDTO.builder()
                                                .type(BitbucketApiAccessType.USERNAME_AND_TOKEN)
                                                .spec(BitbucketUsernameTokenApiAccessDTO.builder()

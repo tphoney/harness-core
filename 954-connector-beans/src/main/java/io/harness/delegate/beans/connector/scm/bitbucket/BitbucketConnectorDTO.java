@@ -17,6 +17,7 @@ import io.harness.delegate.beans.connector.scm.GitAuthType;
 import io.harness.delegate.beans.connector.scm.GitConnectionType;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
@@ -83,6 +84,7 @@ public class BitbucketConnectorDTO extends ConnectorConfigDTO implements ScmConn
   }
 
   @Override
+  @JsonIgnore
   public ConnectorType getConnectorType() {
     return ConnectorType.BITBUCKET;
   }

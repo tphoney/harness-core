@@ -18,6 +18,7 @@ import io.harness.delegate.beans.connector.scm.GitAuthType;
 import io.harness.delegate.beans.connector.scm.GitConnectionType;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -78,6 +79,7 @@ public class GitConfigDTO extends ConnectorConfigDTO implements ScmConnector, De
   }
 
   @Override
+  @JsonIgnore
   public ConnectorType getConnectorType() {
     return ConnectorType.GIT;
   }

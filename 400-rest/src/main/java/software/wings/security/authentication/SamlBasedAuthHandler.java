@@ -147,6 +147,8 @@ public class SamlBasedAuthHandler implements AuthHandler {
               "SAMLFeature: fetching user id from Saml response string accountId {} and userEmail in SAML assertion {}",
               accountId, user.getEmail());
           String userIdFromSamlResponse = getUserIdForIdpUrl(idpUrl, samlResponseString, accountId);
+          log.info("SAMLFeature: fetched userId {} from saml response for accountId {} and user object {}",
+              userIdFromSamlResponse, accountId, user.getEmail());
           User userFromUserId = userService.getUserByUserId(userIdFromSamlResponse);
           log.info("SAMLFeature: fetched user with externalUserId for accountId {} and user object {}", accountId,
               userFromUserId);
@@ -269,7 +271,7 @@ public class SamlBasedAuthHandler implements AuthHandler {
       }
     }
 
-    log.info("No IDP metadata could be found for URL [{}]", idpUrl);
+    log.info("No IDP metadata could be found for URL [{}] for account {}", idpUrl, accountId);
     throw new WingsException("Saml Authentication Failed");
   }
 
@@ -282,8 +284,8 @@ public class SamlBasedAuthHandler implements AuthHandler {
         try {
           return getUser(samlResponseString, samlSettings);
         } catch (SamlException e) {
-          log.warn(
-              "Could not validate SAML Response idpUrl:[{}], samlSettings url:[{}]", idpUrl, samlSettings.getUrl(), e);
+          log.warn("Could not validate SAML Response idpUrl:[{}], samlSettings url:[{}] for account {}", idpUrl,
+              samlSettings.getUrl(), accountId, e);
         }
       }
     }
@@ -337,6 +339,7 @@ public class SamlBasedAuthHandler implements AuthHandler {
           Assertion samlAssertionValue = samlResponse.getAssertion();
           List<AttributeStatement> attributeStatements = samlAssertionValue.getAttributeStatements();
           final String userIdAttr = samlSettings.getUserIdAttr() != null ? samlSettings.getUserIdAttr() : USER_ID_ATTR;
+          log.info("SAMLFeature: userIdAttr {} for accountId {} ", userIdAttr, accountId);
 
           switch (hostType) {
             case AZURE:
@@ -388,7 +391,7 @@ public class SamlBasedAuthHandler implements AuthHandler {
         }
       }
     }
-
+    log.info("SAMLFeature: userIdAttr {} and fetched {}", userIdAttr, userIds);
     return isNotEmpty(userIds) ? userIds.get(0).toLowerCase() : "";
   }
 
@@ -506,8 +509,9 @@ public class SamlBasedAuthHandler implements AuthHandler {
         }
       }
     }
+    log.info("SAMLFeature: userIdAttr {} for accountId {} fetched {}", userIdAttr, accountId, userIds);
 
-    return isNotEmpty(userIds) ? userIds.get(0) : "";
+    return isNotEmpty(userIds) ? userIds.get(0).toLowerCase() : "";
   }
 
   private String getAttributeValue(XMLObject attributeValue) {

@@ -198,8 +198,8 @@ public class ServiceNowCreateUpdateState extends State implements SweepingOutput
             .workflowExecutionId(context.getWorkflowExecutionId())
             .selectionLogsTrackingEnabled(isSelectionLogsTrackingForTasksEnabled())
             .build();
-    String delegateTaskId = delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(context, delegateTask);
+    String delegateTaskId = delegateService.queueTask(delegateTask);
 
     return ExecutionResponse.builder()
         .async(true)

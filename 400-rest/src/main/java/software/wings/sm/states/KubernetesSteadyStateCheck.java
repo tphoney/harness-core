@@ -154,9 +154,9 @@ public class KubernetesSteadyStateCheck extends State {
               .selectionLogsTrackingEnabled(isSelectionLogsTrackingForTasksEnabled())
               .description("Kubernetes steady state check")
               .build();
+      appendDelegateTaskDetails(context, delegateTask);
       String delegateTaskId = delegateService.queueTask(delegateTask);
 
-      appendDelegateTaskDetails(context, delegateTask);
       return ExecutionResponse.builder()
           .async(true)
           .correlationIds(singletonList(activity.getUuid()))

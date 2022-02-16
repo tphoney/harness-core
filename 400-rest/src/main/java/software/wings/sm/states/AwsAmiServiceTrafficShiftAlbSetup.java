@@ -158,8 +158,8 @@ public class AwsAmiServiceTrafficShiftAlbSetup extends State {
             .selectionLogsTrackingEnabled(isSelectionLogsTrackingForTasksEnabled())
             .description("AWS AMI service traffic shift ALB setup task execution")
             .build();
-    delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(context, delegateTask);
+    delegateService.queueTask(delegateTask);
   }
 
   private Activity createActivity(ExecutionContext context, AwsAmiTrafficShiftAlbData awsAmiTrafficShiftAlbData) {

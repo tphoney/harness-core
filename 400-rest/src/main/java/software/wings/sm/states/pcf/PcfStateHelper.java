@@ -367,8 +367,8 @@ public class PcfStateHelper {
                             .tagList(renderedTags)
                             .build());
 
-    delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(delegateTask, stateExecutionInstanceId);
+    delegateService.queueTask(delegateTask);
 
     return ExecutionResponse.builder()
         .correlationIds(Arrays.asList(queueRequestData.getActivityId()))

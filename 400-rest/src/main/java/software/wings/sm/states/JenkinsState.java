@@ -324,6 +324,7 @@ public class JenkinsState extends State implements SweepingOutputStateMixin {
       jenkinsTaskParams.setTimeout(getTimeoutMillis());
       jenkinsTaskParams.setStartTs(System.currentTimeMillis());
     }
+    appendDelegateTaskDetails(context, delegateTask);
     String delegateTaskId = delegateService.queueTask(delegateTask);
 
     JenkinsExecutionData jenkinsExecutionData = JenkinsExecutionData.builder()
@@ -331,7 +332,7 @@ public class JenkinsState extends State implements SweepingOutputStateMixin {
                                                     .jobParameters(displayedParams)
                                                     .activityId(activityId)
                                                     .build();
-    appendDelegateTaskDetails(context, delegateTask);
+
     return ExecutionResponse.builder()
         .async(true)
         .stateExecutionData(jenkinsExecutionData)

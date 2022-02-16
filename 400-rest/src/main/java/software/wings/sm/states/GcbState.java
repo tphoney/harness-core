@@ -227,11 +227,11 @@ public class GcbState extends State implements SweepingOutputStateMixin {
       gcbTaskParams.setStartTs(System.currentTimeMillis());
     }
     DelegateTask delegateTask = delegateTaskOf(activityId, context, infrastructureMappingService, gcbTaskParams);
+    appendDelegateTaskDetails(context, delegateTask);
     delegateService.queueTask(delegateTask);
 
     GcbExecutionData gcbExecutionData = GcbExecutionData.builder().activityId(activityId).build();
     gcbExecutionData.setTemplateVariable(templateUtils.processTemplateVariables(context, getTemplateVariables()));
-    appendDelegateTaskDetails(context, delegateTask);
     return ExecutionResponse.builder()
         .async(true)
         .stateExecutionData(gcbExecutionData)

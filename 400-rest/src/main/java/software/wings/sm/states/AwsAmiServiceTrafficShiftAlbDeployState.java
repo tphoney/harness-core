@@ -295,8 +295,8 @@ public class AwsAmiServiceTrafficShiftAlbDeployState extends State {
             .selectionLogsTrackingEnabled(isSelectionLogsTrackingForTasksEnabled())
             .description("AWS AMI service traffic shift ALB deploy task execution")
             .build();
-    delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(context, delegateTask);
+    delegateService.queueTask(delegateTask);
   }
 
   protected AwsAmiDeployStateExecutionData prepareStateExecutionData(

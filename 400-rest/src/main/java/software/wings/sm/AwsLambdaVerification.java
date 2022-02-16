@@ -163,8 +163,8 @@ public class AwsLambdaVerification extends State {
             .waitId(activityId)
             .build();
 
-    String delegateTaskId = delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(context, delegateTask);
+    String delegateTaskId = delegateService.queueTask(delegateTask);
     return ExecutionResponse.builder()
         .async(true)
         .correlationIds(singletonList(activityId))

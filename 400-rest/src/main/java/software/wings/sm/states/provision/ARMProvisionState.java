@@ -210,8 +210,8 @@ public class ARMProvisionState extends State {
                       .timeout(TimeUnit.MINUTES.toMillis(GIT_FETCH_FILES_TASK_ASYNC_TIMEOUT))
                       .build())
             .build();
-    delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(context, delegateTask);
+    delegateService.queueTask(delegateTask);
     return ExecutionResponse.builder()
         .async(true)
         .correlationIds(singletonList(delegateTask.getUuid()))
@@ -356,8 +356,8 @@ public class ARMProvisionState extends State {
                                                       .build();
     renderDelegateTask(context, delegateTask, stateExecutionContext);
 
-    delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(context, delegateTask);
+    delegateService.queueTask(delegateTask);
     return ExecutionResponse.builder()
         .async(true)
         .correlationIds(singletonList(delegateTask.getUuid()))

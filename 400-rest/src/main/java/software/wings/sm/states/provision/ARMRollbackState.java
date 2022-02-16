@@ -111,8 +111,8 @@ public class ARMRollbackState extends ARMProvisionState {
                       .timeout(TimeUnit.MINUTES.toMillis(helper.renderTimeout(timeoutExpression, context)))
                       .build())
             .build();
-    delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(context, delegateTask);
+    delegateService.queueTask(delegateTask);
     return ExecutionResponse.builder()
         .async(true)
         .correlationIds(singletonList(delegateTask.getUuid()))

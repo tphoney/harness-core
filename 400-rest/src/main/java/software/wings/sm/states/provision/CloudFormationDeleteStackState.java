@@ -97,8 +97,8 @@ public class CloudFormationDeleteStackState extends CloudFormationState {
                       .timeout(defaultIfNullTimeout(DEFAULT_ASYNC_CALL_TIMEOUT))
                       .build())
             .build();
-    String delegateTaskId = delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(executionContext, delegateTask);
+    String delegateTaskId = delegateService.queueTask(delegateTask);
     return ExecutionResponse.builder()
         .async(true)
         .correlationIds(Collections.singletonList(activityId))

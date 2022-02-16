@@ -382,8 +382,8 @@ public class EcsStateHelper {
     delegateTask.setDescription("ECS Listener Update task execution");
     delegateTask.setTags(isNotEmpty(awsConfig.getTag()) ? singletonList(awsConfig.getTag()) : null);
 
-    delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(delegateTask, stateExecutionInstanceId);
+    delegateService.queueTask(delegateTask);
 
     return ExecutionResponse.builder()
         .correlationIds(Arrays.asList(activityId))

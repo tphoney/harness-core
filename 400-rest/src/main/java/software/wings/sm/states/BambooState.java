@@ -225,8 +225,9 @@ public class BambooState extends State {
             .selectionLogsTrackingEnabled(isSelectionLogsTrackingForTasksEnabled())
             .build();
 
-    String delegateTaskId = delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(context, delegateTask);
+    String delegateTaskId = delegateService.queueTask(delegateTask);
+
     return ExecutionResponse.builder()
         .async(true)
         .stateExecutionData(BambooExecutionData.builder()

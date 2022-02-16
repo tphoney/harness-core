@@ -165,11 +165,11 @@ public class EcsRunTaskDeploy extends State {
     gitFileConfig.setBranch(context.renderExpression(gitFileConfig.getBranch()));
     gitFileConfig.setRepoName(context.renderExpression(gitFileConfig.getRepoName()));
     DelegateTask gitFetchFilesAsyncTask = createGitFetchFileAsyncTask(context, activity.getUuid());
+    appendDelegateTaskDetails(context, gitFetchFilesAsyncTask);
     delegateService.queueTask(gitFetchFilesAsyncTask);
 
     EcsRunTaskStateExecutionData stateExecutionData =
         createRunTaskStateExecutionData(activity.getUuid(), context, ecsRunTaskDataBag, gitFetchFilesAsyncTask);
-    appendDelegateTaskDetails(context, gitFetchFilesAsyncTask);
 
     return ExecutionResponse.builder()
         .async(true)

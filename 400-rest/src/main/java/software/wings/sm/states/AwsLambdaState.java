@@ -403,8 +403,8 @@ public class AwsLambdaState extends State {
                         .timeout(DEFAULT_ASYNC_CALL_TIMEOUT)
                         .build())
               .build();
-      String delegateTaskId = delegateService.queueTask(delegateTask);
       appendDelegateTaskDetails(context, delegateTask);
+      String delegateTaskId = delegateService.queueTask(delegateTask);
       return ExecutionResponse.builder()
           .async(true)
           .correlationIds(singletonList(activity.getUuid()))

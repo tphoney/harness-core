@@ -361,8 +361,8 @@ public class AwsAmiServiceSetup extends State {
               .selectionLogsTrackingEnabled(isSelectionLogsTrackingForTasksEnabled())
               .description("Aws Ami service setup task execution")
               .build();
-      delegateService.queueTask(delegateTask);
       appendDelegateTaskDetails(context, delegateTask);
+      delegateService.queueTask(delegateTask);
     } catch (Exception exception) {
       log.error("Ami setup step failed with error ", exception);
       executionStatus = ExecutionStatus.FAILED;

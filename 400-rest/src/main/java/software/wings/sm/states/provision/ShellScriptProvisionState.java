@@ -159,8 +159,8 @@ public class ShellScriptProvisionState extends State implements SweepingOutputSt
                                               .build())
                                     .build();
 
-    String delegateTaskId = delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(context, delegateTask);
+    String delegateTaskId = delegateService.queueTask(delegateTask);
     return ExecutionResponse.builder()
         .async(true)
         .correlationIds(Collections.singletonList(activityId))

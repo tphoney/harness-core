@@ -245,8 +245,8 @@ public class PcfDeployState extends State {
                                            .tagList(renderedTags)
                                            .build());
 
-    delegateService.queueTask(task);
     appendDelegateTaskDetails(context, task);
+    delegateService.queueTask(task);
 
     return ExecutionResponse.builder()
         .correlationIds(Arrays.asList(activity.getUuid()))

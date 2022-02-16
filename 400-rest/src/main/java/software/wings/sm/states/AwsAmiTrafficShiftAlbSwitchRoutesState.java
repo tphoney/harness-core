@@ -192,8 +192,8 @@ public class AwsAmiTrafficShiftAlbSwitchRoutesState extends State {
             .selectionLogsTrackingEnabled(isSelectionLogsTrackingForTasksEnabled())
             .description("AWS AMI Traffic shift ALB switch routes task execution")
             .build();
-    delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(context, delegateTask);
+    delegateService.queueTask(delegateTask);
 
     return executionData;
   }

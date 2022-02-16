@@ -250,8 +250,8 @@ public class AwsCodeDeployState extends State {
             .description("Aws code deploy task execution")
             .build();
 
-    String delegateTaskId = delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(context, delegateTask);
+    String delegateTaskId = delegateService.queueTask(delegateTask);
 
     return ExecutionResponse.builder()
         .async(true)

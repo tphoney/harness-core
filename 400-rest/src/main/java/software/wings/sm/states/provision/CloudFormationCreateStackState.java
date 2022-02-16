@@ -304,8 +304,8 @@ public class CloudFormationCreateStackState extends CloudFormationState {
     setTimeOutOnRequest(request);
     DelegateTask delegateTask = getCreateStackDelegateTask(executionContext, awsConfig, activityId, request);
 
-    String delegateTaskId = delegateService.queueTask(delegateTask);
     appendDelegateTaskDetails(executionContext, delegateTask);
+    String delegateTaskId = delegateService.queueTask(delegateTask);
 
     return ExecutionResponse.builder()
         .async(true)

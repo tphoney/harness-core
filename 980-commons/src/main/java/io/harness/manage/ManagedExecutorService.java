@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import lombok.NonNull;
 
 public class ManagedExecutorService implements ExecutorService, Managed {
   private ExecutorService executorService;
@@ -27,7 +28,7 @@ public class ManagedExecutorService implements ExecutorService, Managed {
    *
    * @param executorService the executor service
    */
-  public ManagedExecutorService(ExecutorService executorService) {
+  public ManagedExecutorService(@NonNull ExecutorService executorService) {
     this.executorService = executorService;
   }
 

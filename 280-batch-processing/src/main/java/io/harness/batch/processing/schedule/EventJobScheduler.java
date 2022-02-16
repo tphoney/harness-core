@@ -51,12 +51,13 @@ import software.wings.service.intfc.instance.CloudToHarnessMappingService;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -94,7 +95,7 @@ public class EventJobScheduler {
   @Autowired private ConnectorsHealthUpdateService connectorsHealthUpdateService;
   @Autowired private K8SWorkloadService k8SWorkloadService;
   @Autowired private AwsAccountTagsCollectionService awsAccountTagsCollectionService;
-  @Autowired private ExecutorService executorService;
+  @Autowired @Qualifier("accountExecutor") private Executor accountExecutor;
 
   @PostConstruct
   public void orderJobs() {
@@ -141,8 +142,11 @@ public class EventJobScheduler {
 
   private void runCloudEfficiencyEventJobs(BatchJobBucket batchJobBucket, boolean runningMode) {
     for (Account account : accountShardService.getCeEnabledAccounts()) {
-      executorService.execute(() -> {
+      accountExecutor.execute(() -> {
         Thread.currentThread().setName("account-executor-" + account.getUuid());
+        // TODO(CCM): Remove log after 1-3 releases
+        log.info("Processing account {}", account.getUuid());
+
         jobs.stream()
             .filter(job -> BatchJobType.fromJob(job).getBatchJobBucket() == batchJobBucket)
             .forEach(job -> runJob(account.getUuid(), job, runningMode));

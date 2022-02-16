@@ -31,6 +31,7 @@ podInfo:
   name: batch-processing-0
   replica: 1
   isolatedReplica: 0
+  accountParallelism: 10
 
 awsS3SyncConfig:
   awsS3BucketName: awsS3BucketNamePlaceHolder

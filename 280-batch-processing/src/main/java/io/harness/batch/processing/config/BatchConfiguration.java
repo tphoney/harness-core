@@ -9,12 +9,17 @@ package io.harness.batch.processing.config;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import io.harness.manage.ManagedExecutorService;
 import io.harness.serializer.YamlUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -37,5 +42,16 @@ public class BatchConfiguration {
     ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
     threadPoolTaskScheduler.setPoolSize(5);
     return threadPoolTaskScheduler;
+  }
+
+  @Bean("accountExecutor")
+  @Autowired
+  public static Executor accountExecutor(BatchMainConfig batchMainConfig) {
+    // for starter, process 2 account in parallel in the beginning, then slowly scale to more
+    int parallelism = batchMainConfig.getPodInfoConfig().getAccountParallelism();
+
+    ExecutorService executorService = Executors.newWorkStealingPool(parallelism);
+
+    return new ManagedExecutorService(executorService);
   }
 }

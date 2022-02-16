@@ -36,6 +36,8 @@ import io.harness.ccm.commons.utils.AnomalyQueryBuilder;
 import io.harness.ccm.commons.utils.TimeUtils;
 import io.harness.ccm.graphql.dto.perspectives.PerspectiveQueryDTO;
 import io.harness.ccm.service.intf.AnomalyService;
+import io.harness.ccm.views.entities.CEView;
+import io.harness.ccm.views.service.CEViewService;
 import io.harness.timescaledb.tables.pojos.Anomalies;
 
 import com.google.inject.Inject;
@@ -51,6 +53,7 @@ import org.jooq.impl.DSL;
 public class AnomalyServiceImpl implements AnomalyService {
   @Inject AnomalyDao anomalyDao;
   @Inject AnomalyQueryBuilder anomalyQueryBuilder;
+  @Inject CEViewService viewService;
 
   private static final Integer DEFAULT_LIMIT = 100;
   private static final Integer DEFAULT_OFFSET = 0;
@@ -80,7 +83,8 @@ public class AnomalyServiceImpl implements AnomalyService {
 
   @Override
   public List<PerspectiveAnomalyData> listPerspectiveAnomalies(
-      @NonNull String accountIdentifier, PerspectiveQueryDTO perspectiveQuery) {
+      @NonNull String accountIdentifier, @NonNull String perspectiveId, PerspectiveQueryDTO perspectiveQuery) {
+    CEView perspective = viewService.get(perspectiveId);
     // Todo: Add perspective query to anomaly query mapping
     return Collections.singletonList(buildDummyPerspectiveAnomalyData());
   }
@@ -88,8 +92,13 @@ public class AnomalyServiceImpl implements AnomalyService {
   @Override
   public Boolean updateAnomalyFeedback(
       @NonNull String accountIdentifier, String anomalyId, AnomalyFeedbackDTO feedback) {
-    // Todo: Add Update Query
-    return true;
+    try {
+      anomalyDao.updateAnomalyFeedback(accountIdentifier, anomalyId, feedback);
+      return true;
+    } catch (Exception e) {
+      log.info("Exception while updating anomaly feedback: ", e);
+    }
+    return false;
   }
 
   @Override

@@ -69,7 +69,10 @@ public class AnomalyDao {
 
   @Nullable
   @RetryOnException(retryCount = RETRY_COUNT, sleepDurationInMilliseconds = SLEEP_DURATION)
-  public void updateAnomalyFeedback(@NonNull String accountId, AnomalyFeedbackDTO feedback) {
-    return;
+  public void updateAnomalyFeedback(@NonNull String accountId, String anomalyId, AnomalyFeedbackDTO feedback) {
+    dslContext.update(ANOMALIES)
+        .set(ANOMALIES.FEEDBACK, feedback.getFeedback().toString())
+        .where(ANOMALIES.ACCOUNTID.eq(accountId).and(ANOMALIES.ID.eq(anomalyId)))
+        .execute();
   }
 }

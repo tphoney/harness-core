@@ -979,7 +979,8 @@ public class ViewsQueryBuilder {
     return getSqlAndCondition(conditionList);
   }
 
-  private QLCEViewFilter mapConditionToFilter(ViewIdCondition condition) {
+  // Used in PerspectiveToAnomalyQueryHelper
+  public QLCEViewFilter mapConditionToFilter(ViewIdCondition condition) {
     return QLCEViewFilter.builder()
         .field(getViewFieldInput(condition.getViewField()))
         .operator(mapViewIdOperatorToQLCEViewFilterOperator(condition.getViewOperator()))

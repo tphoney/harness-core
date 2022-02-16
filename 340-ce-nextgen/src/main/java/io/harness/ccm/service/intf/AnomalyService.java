@@ -21,7 +21,7 @@ import lombok.NonNull;
 public interface AnomalyService {
   List<AnomalyData> listAnomalies(@NonNull String accountIdentifier, AnomalyQueryDTO anomalyQuery);
   List<PerspectiveAnomalyData> listPerspectiveAnomalies(
-      @NonNull String accountIdentifier, PerspectiveQueryDTO perspectiveQuery);
+      @NonNull String accountIdentifier, String perspectiveId, PerspectiveQueryDTO perspectiveQuery);
   Boolean updateAnomalyFeedback(@NonNull String accountIdentifier, String anomalyId, AnomalyFeedbackDTO feedback);
   List<AnomalySummary> getAnomalySummary(@NonNull String accountIdentifier, AnomalyQueryDTO anomalyQuery);
   List<AnomalyWidgetData> getAnomalyWidgetData(@NonNull String accountIdentifier, AnomalyQueryDTO anomalyQuery);

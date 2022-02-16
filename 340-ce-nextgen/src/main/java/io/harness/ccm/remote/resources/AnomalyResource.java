@@ -108,7 +108,8 @@ public class AnomalyResource {
       @Parameter(required = true, description = "Unique identifier for perspective") @PathParam(
           "perspectiveId") String perspectiveId,
       @RequestBody(required = true, description = "Perspective Query") PerspectiveQueryDTO perspectiveQueryDTO) {
-    return ResponseDTO.newResponse(anomalyService.listPerspectiveAnomalies(accountId, perspectiveQueryDTO));
+    return ResponseDTO.newResponse(
+        anomalyService.listPerspectiveAnomalies(accountId, perspectiveId, perspectiveQueryDTO));
   }
 
   @PUT
@@ -159,8 +160,8 @@ public class AnomalyResource {
   @LogAccountIdentifier
   @ExceptionMetered
   @ApiOperation(value = "Get Anomaly Widgets", nickname = "getAnomalyWidgetsData")
-  @Operation(operationId = "getAnomalyWidgetsData", description = "Fetch the data corresponding to anomaly list page widgets",
-      summary = "Get Anomaly Widgets",
+  @Operation(operationId = "getAnomalyWidgetsData",
+      description = "Fetch the data corresponding to anomaly list page widgets", summary = "Get Anomaly Widgets",
       responses =
       {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "default",

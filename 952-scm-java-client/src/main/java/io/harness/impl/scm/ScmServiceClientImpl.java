@@ -23,7 +23,6 @@ import io.harness.beans.gitsync.GitFilePathDetails;
 import io.harness.beans.gitsync.GitPRCreateRequest;
 import io.harness.beans.gitsync.GitWebhookDetails;
 import io.harness.constants.Constants;
-import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 import io.harness.eraro.ErrorCode;
 import io.harness.exception.ExceptionUtils;
@@ -112,7 +111,15 @@ public class ScmServiceClientImpl implements ScmServiceClient {
   public CreateFileResponse createFile(
       ScmConnector scmConnector, GitFileDetails gitFileDetails, SCMGrpc.SCMBlockingStub scmBlockingStub) {
     FileModifyRequest fileModifyRequest = getFileModifyRequest(scmConnector, gitFileDetails).build();
-    return scmBlockingStub.createFile(fileModifyRequest);
+    CreateFileResponse createFileResponse = scmBlockingStub.createFile(fileModifyRequest);
+    if (isEmpty(createFileResponse.getCommitId())) {
+      // In case commit id is empty for any reason, we treat this as an error case even if file got created on git
+      return CreateFileResponse.newBuilder()
+          .setStatus(Constants.SCM_INTERNAL_SERVER_ERROR_CODE)
+          .setError(Constants.SCM_INTERNAL_SERVER_ERROR_MESSAGE)
+          .build();
+    }
+    return createFileResponse;
   }
 
   private FileModifyRequest.Builder getFileModifyRequest(ScmConnector scmConnector, GitFileDetails gitFileDetails) {
@@ -756,7 +763,7 @@ public class ScmServiceClientImpl implements ScmServiceClient {
     if (!latestCommitResponse.getCommitId().equals(gitFileDetails.getCommitId())) {
       return Optional.of(UpdateFileResponse.newBuilder()
                              .setStatus(Constants.SCM_CONFLICT_ERROR_CODE)
-                             .setError("Cannot update file as it has conflicts with remote")
+                             .setError(Constants.SCM_CONFLICT_ERROR_MESSAGE)
                              .setCommitId(latestCommitResponse.getCommitId())
                              .build());
     }

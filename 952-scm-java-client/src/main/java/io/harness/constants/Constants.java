@@ -25,4 +25,7 @@ public interface Constants {
   String UNRECOGNIZED_WEBHOOK = "Unrecognized Webhook";
 
   int SCM_CONFLICT_ERROR_CODE = 409;
+  String SCM_CONFLICT_ERROR_MESSAGE = "Cannot update file as it has conflicts with remote";
+  int SCM_INTERNAL_SERVER_ERROR_CODE = 500;
+  String SCM_INTERNAL_SERVER_ERROR_MESSAGE = "Faced internal server error on SCM, couldn't complete operation";
 }

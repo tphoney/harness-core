@@ -58,6 +58,8 @@ public class ScmResponseStatusUtils {
       case 401:
       case 403:
         return ErrorCode.SCM_UNAUTHORIZED;
+      case 500:
+        return ErrorCode.SCM_INTERNAL_SERVER_ERROR;
       default:
         return ErrorCode.UNEXPECTED;
     }

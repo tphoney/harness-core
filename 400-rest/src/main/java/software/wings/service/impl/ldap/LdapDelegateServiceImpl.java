@@ -158,7 +158,8 @@ public class LdapDelegateServiceImpl implements LdapDelegateService {
 
     if (user.getAttributes() != null
         && Arrays.asList(user.getAttributeNames()).contains(userConfig.getSamAccountNameAttr())
-        && user.getAttribute(userConfig.getSamAccountNameAttr()) != null) {
+        && user.getAttribute(userConfig.getSamAccountNameAttr()) != null
+        && user.getAttribute(userConfig.getSamAccountNameAttr()).getStringValue() != null) {
       log.info("LDAP user with email {} samAccountName set as {}", email,
           user.getAttribute(userConfig.getSamAccountNameAttr()).getStringValue());
       if (StringUtils.isNotEmpty(user.getAttribute(userConfig.getSamAccountNameAttr()).getStringValue())) {

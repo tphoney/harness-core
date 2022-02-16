@@ -134,20 +134,6 @@ public class SamlBasedAuthHandler implements AuthHandler {
 
       if (featureFlagService.isEnabled(FeatureName.EXTERNAL_USERID_BASED_LOGIN, accountId)) {
         User userByUserId = decodeResponseAndReturnUserByUserId(idpUrl, samlResponseString, accountId);
-        if (user == null && userByUserId != null) {
-          accountId = StringUtils.isEmpty(accountId) ? userByUserId.getDefaultAccountId() : accountId;
-          SamlSettings samlSettings = ssoSettingService.getSamlSettingsByAccountId(accountId);
-          String email = getEmailIdFromSamlResponseString(samlResponseString, samlSettings);
-          if (isEmpty(email)) {
-            throw new InvalidRequestException("Email is not present in SAML assertion");
-          }
-          log.info("SAMLFeature: email fetched from response string is {} in accountId {}", email, accountId);
-          userByUserId.setEmail(email);
-          hPersistence.save(userByUserId);
-          user = userByUserId;
-          log.info(
-              "SAMLFeature: final user with externalUserId for accountId {} saved in db {}", accountId, userByUserId);
-        }
         if (user != null && userByUserId != null && !user.getEmail().equals(userByUserId.getEmail())) {
           log.info(
               "SAMLFeature: fetched user with externalUserId for accountId {} and difference in userEmail in user object {}",
@@ -162,7 +148,22 @@ public class SamlBasedAuthHandler implements AuthHandler {
           log.info(
               "SAMLFeature: final user with externalUserId for accountId {} saved in db {}", accountId, userByUserId);
         }
+        if (user == null && userByUserId != null) {
+          accountId = StringUtils.isEmpty(accountId) ? userByUserId.getDefaultAccountId() : accountId;
+          SamlSettings samlSettings = ssoSettingService.getSamlSettingsByAccountId(accountId);
+          String email = getEmailIdFromSamlResponseString(samlResponseString, samlSettings);
+          if (isEmpty(email)) {
+            throw new InvalidRequestException("Email is not present in SAML assertion");
+          }
+          log.info("SAMLFeature: email fetched from response string is {} in accountId {}", email, accountId);
+          userByUserId.setEmail(email);
+          hPersistence.save(userByUserId);
+          user = userByUserId;
+          log.info(
+              "SAMLFeature: final user with externalUserId for accountId {} saved in db {}", accountId, userByUserId);
+        }
       }
+
       if (user == null) {
         throw new InvalidRequestException("User does not exist");
       }

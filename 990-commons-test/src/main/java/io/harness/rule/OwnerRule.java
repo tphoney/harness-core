@@ -236,6 +236,7 @@ public class OwnerRule implements TestRule {
   public static final String SHIVAM = "shivam.negi";
   public static final String VITALIE = "vitalie.safronovici";
   public static final String SHUBHAM_MAHESHWARI = "shubham.maheshwari";
+  public static final String TRUNAPUSHPA = "trunapushpa.surkar";
 
   @Deprecated public static final String UNKNOWN = "unknown";
 
@@ -404,6 +405,7 @@ public class OwnerRule implements TestRule {
           .put(SHIVAM, defaultUserInfo(SHIVAM).slack("U01CPMYC37T").team(CDC).build())
           .put(VITALIE, defaultUserInfo(VITALIE).slack("U02U09LU91R").team(CDP).build())
           .put(SHUBHAM_MAHESHWARI, defaultUserInfo(SHUBHAM_MAHESHWARI).slack("U02H12GCMGQ").team(CDP).build())
+          .put(TRUNAPUSHPA, defaultUserInfo(TRUNAPUSHPA).slack("U02P4P735FZ").team(CE).build())
           .build();
 
   private static String prDeveloperId = findDeveloperId(System.getenv(GHPRB_PULL_AUTHOR_EMAIL));

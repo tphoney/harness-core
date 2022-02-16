@@ -142,6 +142,8 @@ public enum EntityType {
   @JsonProperty(EntityTypeConstants.SAVE_CACHE_S3)
   SAVE_CACHE_S3(
       ModuleType.CI, EntityTypeConstants.SAVE_CACHE_S3, IdentifierRef.class, EntityYamlRootNames.SAVE_CACHE_S3),
+  @JsonProperty(EntityTypeConstants.SECURITY)
+  SECURITY(ModuleType.CI, EntityTypeConstants.SECURITY, IdentifierRef.class, EntityYamlRootNames.SECURITY),
   @JsonProperty(EntityTypeConstants.ARTIFACTORY_UPLOAD)
   ARTIFACTORY_UPLOAD(ModuleType.CI, EntityTypeConstants.ARTIFACTORY_UPLOAD, IdentifierRef.class,
       EntityYamlRootNames.ARTIFACTORY_UPLOAD),

@@ -62,6 +62,7 @@ public class EntityYamlRootNames {
   public static String RUN_STEP = "Run";
   public static String RUN_TEST = "RunTests";
   public static String PLUGIN = "Plugin";
+  public static String SECURITY = "Security";
   public static String RESTORE_CACHE_GCS = "RestoreCacheGCS";
   public static String RESTORE_CACHE_S3 = "RestoreCacheS3";
   public static String SAVE_CACHE_GCS = "SaveCacheGCS";

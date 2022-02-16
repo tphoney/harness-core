@@ -150,7 +150,7 @@ public class LdapDelegateServiceImpl implements LdapDelegateService {
     if (user.getAttributes() != null && Arrays.asList(user.getAttributeNames()).contains(userConfig.getUidAttr())
         && user.getAttribute(userConfig.getUidAttr()) != null) {
       log.info("LDAP user with email {} user uid set as {}", email,
-          user.getAttribute(userConfig.getSamAccountNameAttr()).getStringValue());
+          user.getAttribute(userConfig.getUidAttr()).getStringValue());
       if (StringUtils.isNotEmpty(user.getAttribute(userConfig.getSamAccountNameAttr()).getStringValue())) {
         externalUserId = user.getAttribute(userConfig.getUidAttr()).getStringValue().toLowerCase();
       }
@@ -158,8 +158,7 @@ public class LdapDelegateServiceImpl implements LdapDelegateService {
 
     if (user.getAttributes() != null
         && Arrays.asList(user.getAttributeNames()).contains(userConfig.getSamAccountNameAttr())
-        && user.getAttribute(userConfig.getSamAccountNameAttr()) != null
-        && user.getAttribute(userConfig.getSamAccountNameAttr()).getStringValue() != null) {
+        && user.getAttribute(userConfig.getSamAccountNameAttr()) != null) {
       log.info("LDAP user with email {} samAccountName set as {}", email,
           user.getAttribute(userConfig.getSamAccountNameAttr()).getStringValue());
       if (StringUtils.isNotEmpty(user.getAttribute(userConfig.getSamAccountNameAttr()).getStringValue())) {

@@ -125,7 +125,12 @@ public class SamlBasedAuthHandler implements AuthHandler {
       String relayState = credentials.length >= 4 ? credentials[3] : "";
       Map<String, String> relayStateData = getRelayStateData(relayState);
 
-      User user = decodeResponseAndReturnUserByEmailId(idpUrl, samlResponseString, accountId);
+      User user = null;
+      try {
+        user = decodeResponseAndReturnUserByEmailId(idpUrl, samlResponseString, accountId);
+      } catch (Exception e) {
+        log.info("The user was not found with email Id for account {}", accountId);
+      }
 
       if (featureFlagService.isEnabled(FeatureName.EXTERNAL_USERID_BASED_LOGIN, accountId)) {
         User userByUserId = decodeResponseAndReturnUserByUserId(idpUrl, samlResponseString, accountId);
@@ -158,9 +163,12 @@ public class SamlBasedAuthHandler implements AuthHandler {
               "SAMLFeature: final user with externalUserId for accountId {} saved in db {}", accountId, userByUserId);
         }
       }
+      if (user == null) {
+        throw new InvalidRequestException("User does not exist");
+      }
 
-      accountId = StringUtils.isEmpty(accountId) ? (user == null ? null : user.getDefaultAccountId()) : accountId;
-      String uuid = user == null ? null : user.getUuid();
+      accountId = StringUtils.isEmpty(accountId) ? user.getDefaultAccountId() : accountId;
+      String uuid = user.getUuid();
       try (AutoLogContext ignore = new UserLogContext(accountId, uuid, OVERRIDE_ERROR)) {
         log.info("Authenticating via SAML");
         Account account = authenticationUtils.getDefaultAccount(user);
@@ -630,7 +638,7 @@ public class SamlBasedAuthHandler implements AuthHandler {
 
   // TODO : revisit this method when we are doing SAML authorization
   protected void validateUser(User user, String accountId) {
-    if (user.getAccounts().parallelStream().filter(account -> account.getUuid().equals(accountId)).count() == 0) {
+    if (user.getAccounts().parallelStream().noneMatch(account -> account.getUuid().equals(accountId))) {
       log.warn("User : [{}] not part of accountId : [{}]", user.getEmail(), accountId);
       throw new WingsException(ErrorCode.ACCESS_DENIED);
     }

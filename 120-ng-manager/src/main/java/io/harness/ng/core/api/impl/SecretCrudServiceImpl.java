@@ -239,10 +239,7 @@ public class SecretCrudServiceImpl implements SecretCrudService {
     if (isNotEmpty(secretTypes)) {
       criteria = criteria.and(SecretKeys.type).in(secretTypes);
     }
-    if (SECRET_MANAGER == sourceCategory && StringUtils.isEmpty(searchTerm)) {
-      criteria = criteria.orOperator(where(SecretKeys.secretSpec + ".secretManagerIdentifier").exists(false),
-          where(SecretKeys.secretSpec + ".secretManagerIdentifier").is(HARNESS_SECRET_MANAGER_IDENTIFIER));
-    }
+
     criteria.and(SecretKeys.owner).is(null);
     if (!StringUtils.isEmpty(searchTerm)) {
       criteria = criteria.orOperator(

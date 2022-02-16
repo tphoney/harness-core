@@ -52,6 +52,7 @@ import io.harness.migrations.all.AddEnableIteratorsToGovernanceConfig;
 import io.harness.migrations.all.AddHarnessOwnedToResourceConstraint;
 import io.harness.migrations.all.AddInfraMappingNameToInstanceData;
 import io.harness.migrations.all.AddIsDefaultFlagToUserGroup;
+import io.harness.migrations.all.AddLowerCaseNameForApplicationMigration;
 import io.harness.migrations.all.AddOrchestrationToWorkflows;
 import io.harness.migrations.all.AddRingDetailsToDelegateRing;
 import io.harness.migrations.all.AddRingsToAccountMigration;
@@ -369,6 +370,7 @@ public class MigrationBackgroundList {
         .add(Pair.of(212, AddRingDetailsToDelegateRing.class))
         .add(Pair.of(213, RemoveUsageRestrictionForApplicationDefaultsMigration.class))
         .add(Pair.of(214, CreateDefaultNgDelegateTokenMigration.class))
+        .add(Pair.of(215, AddLowerCaseNameForApplicationMigration.class))
         .build();
   }
 }

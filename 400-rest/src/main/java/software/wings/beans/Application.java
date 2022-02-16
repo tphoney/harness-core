@@ -78,6 +78,7 @@ public class Application extends Base implements KeywordsAware, NameAccess, TagA
   @NotEmpty private String name;
   private String description;
 
+  @Getter @Setter @NotEmpty private String lowerCaseName;
   @NotEmpty private String accountId;
 
   @Transient private List<Service> services = new ArrayList<>();
@@ -131,6 +132,7 @@ public class Application extends Base implements KeywordsAware, NameAccess, TagA
    */
   public void setName(String name) {
     this.name = name;
+    this.lowerCaseName = name.toLowerCase();
   }
 
   /**
@@ -334,6 +336,7 @@ public class Application extends Base implements KeywordsAware, NameAccess, TagA
    */
   public static final class Builder {
     private String name;
+    private String lowerCaseName;
     private String description;
     private String accountId;
     private List<Service> services = new ArrayList<>();
@@ -361,6 +364,7 @@ public class Application extends Base implements KeywordsAware, NameAccess, TagA
 
     public Builder name(String name) {
       this.name = name;
+      this.lowerCaseName = name.toLowerCase();
       return this;
     }
 

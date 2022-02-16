@@ -196,7 +196,7 @@ public class AppServiceImpl implements AppService {
     return LimitEnforcementUtils.withLimitCheck(checker, () -> {
       validateAppName(app);
       app.setKeywords(trimmedLowercaseSet(app.generateKeywords()));
-
+      app.setLowerCaseName(app.getName().toLowerCase());
       Application application =
           duplicateCheck(() -> wingsPersistence.saveAndGet(Application.class, app), "name", app.getName());
       createDefaultRoles(app);
@@ -380,9 +380,10 @@ public class AppServiceImpl implements AppService {
     Application savedApp = get(app.getUuid());
     Query<Application> query = wingsPersistence.createQuery(Application.class).filter(ID_KEY, app.getUuid());
     Set<String> keywords = trimmedLowercaseSet(app.generateKeywords());
-
-    UpdateOperations<Application> operations =
-        wingsPersistence.createUpdateOperations(Application.class).set("name", app.getName()).set("keywords", keywords);
+    UpdateOperations<Application> operations = wingsPersistence.createUpdateOperations(Application.class)
+                                                   .set("name", app.getName())
+                                                   .set("keywords", keywords)
+                                                   .set("lowerCaseName", app.getName().toLowerCase());
 
     if (featureFlagService.isEnabled(WEBHOOK_TRIGGER_AUTHORIZATION, savedApp.getAccountId())
         && app.getIsManualTriggerAuthorized() != null) {

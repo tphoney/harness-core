@@ -94,7 +94,7 @@ public class InstanceDataBulkWriteServiceImpl implements InstanceDataBulkWriteSe
         if (lifecycle.getType() == Lifecycle.EventType.EVENT_TYPE_STOP) {
           BasicDBObject filter = new BasicDBObject(ImmutableMap.of(InstanceDataKeys.instanceId,
               lifecycle.getInstanceId(), InstanceDataKeys.instanceState, InstanceState.RUNNING.name(),
-              InstanceDataKeys.usageStartTime, new BasicDBObject("$lte", instanceTime)));
+              InstanceDataKeys.usageStartTime, new BasicDBObject("$lte", instanceTime.minus(5, ChronoUnit.MINUTES))));
 
           BasicDBObject updateOperations = new BasicDBObject(
               ImmutableMap.of(InstanceDataKeys.usageStopTime, instanceTime, InstanceDataKeys.activeInstanceIterator,

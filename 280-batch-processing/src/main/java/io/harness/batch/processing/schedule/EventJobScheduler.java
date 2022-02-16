@@ -46,10 +46,12 @@ import io.harness.ff.FeatureFlagService;
 import io.harness.logging.AccountLogContext;
 import io.harness.logging.AutoLogContext;
 
+import software.wings.beans.Account;
 import software.wings.service.intfc.instance.CloudToHarnessMappingService;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -92,6 +94,7 @@ public class EventJobScheduler {
   @Autowired private ConnectorsHealthUpdateService connectorsHealthUpdateService;
   @Autowired private K8SWorkloadService k8SWorkloadService;
   @Autowired private AwsAccountTagsCollectionService awsAccountTagsCollectionService;
+  @Autowired private ExecutorService executorService;
 
   @PostConstruct
   public void orderJobs() {
@@ -137,10 +140,14 @@ public class EventJobScheduler {
   }
 
   private void runCloudEfficiencyEventJobs(BatchJobBucket batchJobBucket, boolean runningMode) {
-    accountShardService.getCeEnabledAccounts().forEach(account
-        -> jobs.stream()
-               .filter(job -> BatchJobType.fromJob(job).getBatchJobBucket() == batchJobBucket)
-               .forEach(job -> runJob(account.getUuid(), job, runningMode)));
+    for (Account account : accountShardService.getCeEnabledAccounts()) {
+      executorService.execute(() -> {
+        Thread.currentThread().setName("account-executor-" + account.getUuid());
+        jobs.stream()
+            .filter(job -> BatchJobType.fromJob(job).getBatchJobBucket() == batchJobBucket)
+            .forEach(job -> runJob(account.getUuid(), job, runningMode));
+      });
+    }
   }
 
   @Scheduled(cron = "0 0 */6 ? * *")

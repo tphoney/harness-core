@@ -535,6 +535,7 @@ public class ShellScriptState extends State implements SweepingOutputStateMixin 
             .selectionLogsTrackingEnabled(isSelectionLogsTrackingForTasksEnabled())
             .build();
 
+    appendDelegateTaskDetails(context, delegateTask);
     String delegateTaskId = renderAndScheduleDelegateTask(context, delegateTask,
         StateExecutionContext.builder()
             .stateExecutionData(scriptStateExecutionData)
@@ -542,8 +543,6 @@ public class ShellScriptState extends State implements SweepingOutputStateMixin 
             .adoptDelegateDecryption(true)
             .expressionFunctorToken(expressionFunctorToken)
             .build());
-
-    appendDelegateTaskDetails(context, delegateTask);
 
     return ExecutionResponse.builder()
         .async(true)

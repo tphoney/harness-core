@@ -105,7 +105,9 @@ public class ApiKeyResource {
         ApiResponse(responseCode = "default", description = "Returns the created API key")
       })
   public ResponseDTO<ApiKeyDTO>
-  createApiKey(@Valid ApiKeyDTO apiKeyDTO) {
+  createApiKey(
+      @Valid ApiKeyDTO apiKeyDTO, @NotNull @QueryParam(ACCOUNT_KEY) @AccountIdentifier String accountIdentifier) {
+    apiKeyDTO.setAccountIdentifier(accountIdentifier);
     apiKeyService.validateParentIdentifier(apiKeyDTO.getAccountIdentifier(), apiKeyDTO.getOrgIdentifier(),
         apiKeyDTO.getProjectIdentifier(), apiKeyDTO.getApiKeyType(), apiKeyDTO.getParentIdentifier());
     ApiKeyDTO apiKey = apiKeyService.createApiKey(apiKeyDTO);
@@ -123,7 +125,9 @@ public class ApiKeyResource {
       })
   public ResponseDTO<ApiKeyDTO>
   updateApiKey(@Valid ApiKeyDTO apiKeyDTO,
-      @Parameter(description = "This is the API key ID") @NotNull @PathParam("identifier") String identifier) {
+      @Parameter(description = "This is the API key ID") @NotNull @PathParam("identifier") String identifier,
+      @NotNull @QueryParam(ACCOUNT_KEY) @AccountIdentifier String accountIdentifier) {
+    apiKeyDTO.setAccountIdentifier(accountIdentifier);
     apiKeyService.validateParentIdentifier(apiKeyDTO.getAccountIdentifier(), apiKeyDTO.getOrgIdentifier(),
         apiKeyDTO.getProjectIdentifier(), apiKeyDTO.getApiKeyType(), apiKeyDTO.getParentIdentifier());
     ApiKeyDTO apiKey = apiKeyService.updateApiKey(apiKeyDTO);

@@ -20,6 +20,7 @@ import static io.harness.secrets.SecretPermissions.SECRET_VIEW_PERMISSION;
 
 import io.harness.NGCommonEntityConstants;
 import io.harness.NGResourceFilterConstants;
+import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.clients.Resource;
 import io.harness.accesscontrol.clients.ResourceScope;
 import io.harness.annotations.dev.OwnedBy;
@@ -554,7 +555,8 @@ public class NGSecretResourceV2 {
       })
   @InternalApi
   public ResponseDTO<List<EncryptedDataDetail>>
-  getEncryptionDetails(@NotNull NGAccessWithEncryptionConsumer ngAccessWithEncryptionConsumer) {
+  getEncryptionDetails(@NotNull NGAccessWithEncryptionConsumer ngAccessWithEncryptionConsumer,
+      @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier) {
     NGAccess ngAccess = ngAccessWithEncryptionConsumer.getNgAccess();
     DecryptableEntity decryptableEntity = ngAccessWithEncryptionConsumer.getDecryptableEntity();
     if (ngAccess == null || decryptableEntity == null) {
@@ -570,12 +572,11 @@ public class NGSecretResourceV2 {
         Scope secretScope = secretRefData.getScope();
         SecretResponseWrapper secret =
             ngSecretService
-                .get(ngAccess.getAccountIdentifier(), getOrgIdentifier(ngAccess.getOrgIdentifier(), secretScope),
+                .get(accountIdentifier, getOrgIdentifier(ngAccess.getOrgIdentifier(), secretScope),
                     getProjectIdentifier(ngAccess.getProjectIdentifier(), secretScope), secretRefData.getIdentifier())
                 .orElse(null);
         secretPermissionValidator.checkForAccessOrThrow(
-            ResourceScope.of(ngAccess.getAccountIdentifier(),
-                getOrgIdentifier(ngAccess.getOrgIdentifier(), secretScope),
+            ResourceScope.of(accountIdentifier, getOrgIdentifier(ngAccess.getOrgIdentifier(), secretScope),
                 getProjectIdentifier(ngAccess.getProjectIdentifier(), secretScope)),
             Resource.of(SECRET_RESOURCE_TYPE, secretRefData.getIdentifier()), SECRET_ACCESS_PERMISSION,
             secret != null ? secret.getSecret().getOwner() : null);

@@ -18,6 +18,7 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.utils.PageUtils.getPageRequest;
 
+import io.harness.NGCommonEntityConstants;
 import io.harness.NGResourceFilterConstants;
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.annotations.dev.OwnedBy;
@@ -107,7 +108,9 @@ public class TokenResource {
         ApiResponse(responseCode = "default", description = "Returns created Token details")
       })
   public ResponseDTO<String>
-  createToken(@Valid TokenDTO tokenDTO) {
+  createToken(@Valid TokenDTO tokenDTO,
+      @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier) {
+    tokenDTO.setAccountIdentifier(accountIdentifier);
     apiKeyService.validateParentIdentifier(tokenDTO.getAccountIdentifier(), tokenDTO.getOrgIdentifier(),
         tokenDTO.getProjectIdentifier(), tokenDTO.getApiKeyType(), tokenDTO.getParentIdentifier());
     return ResponseDTO.newResponse(tokenService.createToken(tokenDTO));
@@ -124,7 +127,9 @@ public class TokenResource {
       })
   public ResponseDTO<TokenDTO>
   updateToken(@Parameter(description = "Token ID") @NotNull @PathParam("identifier") String identifier,
-      @Valid TokenDTO tokenDTO) {
+      @Valid TokenDTO tokenDTO,
+      @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier) {
+    tokenDTO.setAccountIdentifier(accountIdentifier);
     apiKeyService.validateParentIdentifier(tokenDTO.getAccountIdentifier(), tokenDTO.getOrgIdentifier(),
         tokenDTO.getProjectIdentifier(), tokenDTO.getApiKeyType(), tokenDTO.getParentIdentifier());
     return ResponseDTO.newResponse(tokenService.updateToken(tokenDTO));

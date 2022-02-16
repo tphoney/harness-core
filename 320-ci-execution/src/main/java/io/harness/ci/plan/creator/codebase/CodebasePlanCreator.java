@@ -44,7 +44,7 @@ public class CodebasePlanCreator {
       KryoSerializer kryoSerializer, String codeBaseNodeUUID, ExecutionSource executionSource) {
     CodeBase ciCodeBase = IntegrationStageUtils.getCiCodeBase(ciCodeBaseField.getNode());
 
-    return buildCodebasePlanNodes(codeBaseNodeUUID, childNodeId, kryoSerializer, ciCodeBase, executionSource);
+    return buildCodebasePlanNodes(codeBaseNo  deUUID, childNodeId, kryoSerializer, ciCodeBase, executionSource);
   }
 
   @NotNull

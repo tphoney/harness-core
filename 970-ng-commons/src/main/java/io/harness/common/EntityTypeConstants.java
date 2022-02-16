@@ -63,5 +63,5 @@ public interface EntityTypeConstants {
   String BARRIER = "Barrier";
   String Verify = "Verify";
   String OPAPOLICIES = "GovernancePolicies";
-  String POLICY_STEP = "PolicyStep";
+  String POLICY_STEP = "Policy";
 }

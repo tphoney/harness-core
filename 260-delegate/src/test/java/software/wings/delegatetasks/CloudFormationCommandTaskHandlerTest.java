@@ -189,16 +189,10 @@ public class CloudFormationCommandTaskHandlerTest extends WingsBaseTest {
             .commandName("Create Stack")
             .awsConfig(AwsConfig.builder().accessKey(accessKey).accountId(ACCOUNT_ID).secretKey(secretKey).build())
             .timeoutInMs(10 * 60 * 1000)
-            .gitConfig(GitConfig.builder().repoUrl("").branch("").build())
-            .gitFileConfig(GitFileConfig.builder().filePath("").commitId("").repoName("repo-name").build())
+            .data(data)
             .createType(CloudFormationCreateStackRequest.CLOUD_FORMATION_STACK_CREATE_GIT)
             .stackNameSuffix(stackNameSuffix)
             .build();
-    doReturn(gitOperationContext)
-        .when(gitUtilsDelegate)
-        .cloneRepo(any(GitConfig.class), any(GitFileConfig.class), anyListOf(EncryptedDataDetail.class));
-    doReturn(data).when(gitUtilsDelegate).resolveAbsoluteFilePath(any(GitOperationContext.class), anyString());
-    doReturn(data).when(gitUtilsDelegate).getRequestDataFromFile(anyString());
     String stackId = "Stack Id 00";
     CreateStackResult createStackResult = new CreateStackResult().withStackId(stackId);
     doReturn(createStackResult).when(mockAwsHelperService).createStack(anyString(), any(), any());

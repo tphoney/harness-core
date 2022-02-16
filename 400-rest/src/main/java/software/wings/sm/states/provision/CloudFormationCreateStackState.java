@@ -546,9 +546,9 @@ public class CloudFormationCreateStackState extends CloudFormationState {
         (GitFetchFilesFromMultipleRepoResult) executionResponse.getGitCommandResult();
 
     List<GitFile> files = gitCommandResult.getFilesFromMultipleRepo().get(CF_PARAMETERS).getFiles();
-    for (int i = 0; i < files.stream().count(); i++) {
-      if (files.get(i).getFilePath() == gitTemplateFilePath) {
-        gitTemplateBody = files.get(i).getFileContent();
+    for (GitFile file : files) {
+      if (file.getFilePath().equals(gitTemplateFilePath)) {
+        gitTemplateBody = file.getFileContent();
         break;
       }
     }

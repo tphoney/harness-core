@@ -17,13 +17,17 @@ import static io.harness.gitsync.common.YamlConstants.HARNESS_FOLDER_EXTENSION;
 import static io.harness.gitsync.common.YamlConstants.PATH_DELIMITER;
 import static io.harness.gitsync.common.beans.BranchSyncStatus.SYNCED;
 import static io.harness.gitsync.common.remote.YamlGitConfigMapper.toYamlGitConfig;
+import static io.harness.ng.core.utils.URLDecoderUtility.getDecodedString;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.HookEventType;
 import io.harness.beans.IdentifierRef;
+import io.harness.connector.ConnectivityStatus;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
+import io.harness.connector.ConnectorValidationResult;
 import io.harness.connector.services.ConnectorService;
+import io.harness.connector.services.GitRepoConnectorService;
 import io.harness.delegate.beans.connector.ConnectorConfigDTO;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 import io.harness.delegate.beans.git.YamlGitConfigDTO;
@@ -195,6 +199,10 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
   @Override
   public YamlGitConfigDTO save(YamlGitConfigDTO ygs) {
     userProfileHelper.validateIfScmUserProfileIsSet(ygs.getAccountIdentifier());
+
+    // before saving the git config, test the connection
+    // otherwise we end-up saving invalid git configs
+    checkGitRepoConnection(ygs);
     return saveInternal(ygs, ygs.getAccountIdentifier());
   }
 
@@ -617,6 +625,24 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
       if (yamlGitConfigDTOList.size() == 0) {
         gitBranchService.deleteAll(gitSyncConfigDTO.getAccountIdentifier(), gitSyncConfigDTO.getRepo());
       }
+    }
+  }
+
+  private void checkGitRepoConnection(YamlGitConfigDTO ygs) {
+    IdentifierRef identifierRef = IdentifierRefHelper.getIdentifierRef(ygs.getGitConnectorRef(), ygs.getAccountIdentifier(),
+            ygs.getOrganizationIdentifier(), ygs.getProjectIdentifier());
+    ConnectorValidationResult result = connectorService.testGitRepoConnection(
+            identifierRef.getAccountIdentifier(), identifierRef.getOrgIdentifier(), identifierRef.getProjectIdentifier(),
+            identifierRef.getIdentifier(), getDecodedString(ygs.getRepo()));
+
+    if (result.getStatus() != ConnectivityStatus.SUCCESS) {
+      if (result.getErrors() != null && result.getErrors().size() == 0) {
+        // generic error for empty error list
+        throw new InvalidRequestException("internal server error while checking connection with git repo");
+      }
+      throw new InvalidRequestException(
+              String.format("error while checking the connection to git repo %s", result.getErrorSummary())
+      );
     }
   }
 }

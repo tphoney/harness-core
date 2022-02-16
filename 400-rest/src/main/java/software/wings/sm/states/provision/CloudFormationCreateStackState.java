@@ -120,6 +120,7 @@ public class CloudFormationCreateStackState extends CloudFormationState {
   @Attributes(title = "Parameters file path") @Getter @Setter protected List<String> parametersFilePaths;
   @Attributes(title = "Use parameters file") @Getter @Setter protected boolean useParametersFile;
   @Attributes(title = "Git Template Body") @Getter @Setter protected String gitTemplateBody;
+  @Attributes(title = "Git Template File Path") @Getter @Setter protected String gitTemplateFilePath;
   @Attributes(title = "Should skip on reaching given stack statuses")
   @Getter
   @Setter
@@ -329,7 +330,9 @@ public class CloudFormationCreateStackState extends CloudFormationState {
       getParametersFilePaths().forEach(parametersFilePath
           -> renderedGitFileConfig.getFilePathList().add(executionContext.renderExpression(parametersFilePath)));
     }
-    renderedGitFileConfig.getFilePathList().add(executionContext.renderExpression(renderedGitFileConfig.getFilePath()));
+
+    gitTemplateFilePath = executionContext.renderExpression(renderedGitFileConfig.getFilePath());
+    renderedGitFileConfig.getFilePathList().add(gitTemplateFilePath);
 
     String sourceRepoSettingId = renderedGitFileConfig.getConnectorId();
     GitConfig gitConfig = gitUtilsManager.getGitConfig(sourceRepoSettingId);
@@ -543,16 +546,13 @@ public class CloudFormationCreateStackState extends CloudFormationState {
         (GitFetchFilesFromMultipleRepoResult) executionResponse.getGitCommandResult();
 
     List<GitFile> files = gitCommandResult.getFilesFromMultipleRepo().get(CF_PARAMETERS).getFiles();
-    if (!useParametersFile) {
-      gitTemplateBody = files.get(0).getFileContent();
-    } else {
-      for (int i = 0; i < files.stream().count(); i++) {
-        if (!getParametersFilePaths().contains(files.get(i).getFilePath())) {
-          gitTemplateBody = files.get(i).getFileContent();
-          break;
-        }
+    for (int i = 0; i < files.stream().count(); i++) {
+      if (files.get(i).getFilePath() == gitTemplateFilePath) {
+        gitTemplateBody = files.get(i).getFileContent();
+        break;
       }
     }
+
     if (useParametersFile) {
       setParametersFilePaths(
           getParametersFilePaths().stream().map(context::renderExpression).collect(Collectors.toList()));

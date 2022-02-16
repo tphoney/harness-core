@@ -119,28 +119,21 @@ public class SamlBasedAuthHandler implements AuthHandler {
             "Wrong number of arguments to saml authentication - " + (credentials == null ? 0 : credentials.length));
         throw new WingsException("Invalid arguments while authenticating using SAML");
       }
-
       String idpUrl = credentials[0];
       String samlResponseString = credentials[1];
       String accountId = credentials.length >= 3 ? credentials[2] : null;
       String relayState = credentials.length >= 4 ? credentials[3] : "";
       Map<String, String> relayStateData = getRelayStateData(relayState);
 
-      User user = decodeResponseAndReturnUserByEmailId(idpUrl, samlResponseString, accountId);
+      User user = null;
+      try {
+        user = decodeResponseAndReturnUserByEmailId(idpUrl, samlResponseString, accountId);
+      } catch (Exception e) {
+        log.info("The user was not found with email Id for account {}", accountId);
+      }
 
       if (featureFlagService.isEnabled(FeatureName.EXTERNAL_USERID_BASED_LOGIN, accountId)) {
         User userByUserId = decodeResponseAndReturnUserByUserId(idpUrl, samlResponseString, accountId);
-        if (user == null && userByUserId != null) {
-          accountId = StringUtils.isEmpty(accountId) ? userByUserId.getDefaultAccountId() : accountId;
-          SamlSettings samlSettings = ssoSettingService.getSamlSettingsByAccountId(accountId);
-          String email = getEmailIdFromSamlResponseString(samlResponseString, samlSettings);
-          if (isEmpty(email)) {
-            throw new InvalidRequestException("Email is not present in SAML assertion");
-          }
-          userByUserId.setEmail(email);
-          hPersistence.save(userByUserId);
-          user = userByUserId;
-        }
         if (user != null && userByUserId != null && !user.getEmail().equals(userByUserId.getEmail())) {
           log.info(
               "SAMLFeature: fetched user with externalUserId for accountId {} and difference in userEmail in user object {}",
@@ -155,17 +148,35 @@ public class SamlBasedAuthHandler implements AuthHandler {
           log.info(
               "SAMLFeature: final user with externalUserId for accountId {} saved in db {}", accountId, userByUserId);
         }
+        if (user == null && userByUserId != null) {
+          accountId = StringUtils.isEmpty(accountId) ? userByUserId.getDefaultAccountId() : accountId;
+          SamlSettings samlSettings = ssoSettingService.getSamlSettingsByAccountId(accountId);
+          String email = getEmailIdFromSamlResponseString(samlResponseString, samlSettings);
+          if (isEmpty(email)) {
+            throw new InvalidRequestException("Email is not present in SAML assertion");
+          }
+          log.info("SAMLFeature: email fetched from response string is {} in accountId {}", email, accountId);
+          userByUserId.setEmail(email);
+          hPersistence.save(userByUserId);
+          user = userByUserId;
+          log.info(
+              "SAMLFeature: final user with externalUserId for accountId {} saved in db {}", accountId, userByUserId);
+        }
       }
 
-      accountId = StringUtils.isEmpty(accountId) ? (user == null ? null : user.getDefaultAccountId()) : accountId;
-      String uuid = user == null ? null : user.getUuid();
+      if (user == null) {
+        throw new InvalidRequestException("User does not exist");
+      }
+
+      accountId = StringUtils.isEmpty(accountId) ? user.getDefaultAccountId() : accountId;
+      String uuid = user.getUuid();
       try (AutoLogContext ignore = new UserLogContext(accountId, uuid, OVERRIDE_ERROR)) {
         log.info("Authenticating via SAML in account {}", accountId);
         Account account = authenticationUtils.getDefaultAccount(user);
         if (!domainWhitelistCheckerService.isDomainWhitelisted(user, account)) {
           domainWhitelistCheckerService.throwDomainWhitelistFilterException();
         }
-        log.info("Authenticating via SAML");
+        log.info("Authenticating via SAML for user in account {}", account.getUuid());
         SamlSettings samlSettings = ssoSettingService.getSamlSettingsByAccountId(account.getUuid());
 
         // Occurs when SAML settings are being tested before being enabled
@@ -294,6 +305,13 @@ public class SamlBasedAuthHandler implements AuthHandler {
 
     log.info("No IDP metadata could be found for URL [{}] for account {}", idpUrl, accountId);
     throw new WingsException("Saml Authentication Failed");
+  }
+
+  private String getEmailIdFromSamlResponseString(String samlResponseString, SamlSettings samlSettings)
+      throws SamlException {
+    SamlClient samlClient = samlClientService.getSamlClient(samlSettings);
+    SamlResponse samlResponse = samlClient.decodeAndValidateSamlResponse(samlResponseString);
+    return samlResponse.getNameID();
   }
 
   private User getUserForIdpUrl(String idpUrl, String samlResponseString, String accountId) throws URISyntaxException {
@@ -530,8 +548,7 @@ public class SamlBasedAuthHandler implements AuthHandler {
         }
       }
     }
-    log.info("SAMLFeature: userIdAttr {} for accountId {} fetched {}", userIdAttr, accountId, userIds);
-
+    log.info("SAMLFeature: userIdAttr {} and fetched {}", userIdAttr, userIds);
     return isNotEmpty(userIds) ? userIds.get(0).toLowerCase() : "";
   }
 
@@ -555,13 +572,6 @@ public class SamlBasedAuthHandler implements AuthHandler {
 
   private String getAnyAttributeValue(XSAnyImpl attributeValue) {
     return attributeValue.getTextContent();
-  }
-
-  private String getEmailIdFromSamlResponseString(String samlResponseString, SamlSettings samlSettings)
-      throws SamlException {
-    SamlClient samlClient = samlClientService.getSamlClient(samlSettings);
-    SamlResponse samlResponse = samlClient.decodeAndValidateSamlResponse(samlResponseString);
-    return samlResponse.getNameID();
   }
 
   private User getUser(String samlResponseString, SamlSettings samlSettings) throws SamlException {
@@ -630,7 +640,7 @@ public class SamlBasedAuthHandler implements AuthHandler {
 
   // TODO : revisit this method when we are doing SAML authorization
   protected void validateUser(User user, String accountId) {
-    if (user.getAccounts().parallelStream().filter(account -> account.getUuid().equals(accountId)).count() == 0) {
+    if (user.getAccounts().parallelStream().noneMatch(account -> account.getUuid().equals(accountId))) {
       log.warn("User : [{}] not part of accountId : [{}]", user.getEmail(), accountId);
       throw new WingsException(ErrorCode.ACCESS_DENIED);
     }

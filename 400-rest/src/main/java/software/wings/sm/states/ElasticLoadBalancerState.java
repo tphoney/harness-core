@@ -77,19 +77,15 @@ public class ElasticLoadBalancerState extends State {
       region = ((AwsInfrastructureMapping) infrastructureMapping).getRegion();
       SettingAttribute settingAttribute = settingsService.get(infrastructureMapping.getComputeProviderSettingId());
       AwsConfig awsConfig = (AwsConfig) settingAttribute.getValue();
-      List<EncryptedDataDetail> encryptedDataDetailList =
-          secretManager.getEncryptionDetails(awsConfig, context.getAppId(), context.getWorkflowExecutionId());
-      managerDecryptionService.decrypt(awsConfig, encryptedDataDetailList);
-      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptedDataDetailList);
+      managerDecryptionService.decrypt(awsConfig,
+          secretManager.getEncryptionDetails(awsConfig, context.getAppId(), context.getWorkflowExecutionId()));
       return execute(context, loadBalancerName, Regions.fromName(region), awsConfig);
     } else if (infrastructureMapping instanceof PhysicalInfrastructureMappingBase) {
       SettingAttribute elbSetting =
           settingsService.get(((PhysicalInfrastructureMappingBase) infrastructureMapping).getLoadBalancerId());
       ElasticLoadBalancerConfig loadBalancerConfig = (ElasticLoadBalancerConfig) elbSetting.getValue();
-      List<EncryptedDataDetail> encryptedDataDetailList =
-          secretManager.getEncryptionDetails(loadBalancerConfig, context.getAppId(), context.getWorkflowExecutionId());
-      managerDecryptionService.decrypt(loadBalancerConfig, encryptedDataDetailList);
-      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(loadBalancerConfig, encryptedDataDetailList);
+      managerDecryptionService.decrypt(loadBalancerConfig,
+          secretManager.getEncryptionDetails(loadBalancerConfig, context.getAppId(), context.getWorkflowExecutionId()));
       loadBalancerName = loadBalancerConfig.getLoadBalancerName();
       region = loadBalancerConfig.getRegion().name();
       AwsConfig awsConfigDerived = AwsConfig.builder()

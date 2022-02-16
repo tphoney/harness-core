@@ -151,7 +151,15 @@ public class ScmServiceClientImpl implements ScmServiceClient {
     final FileModifyRequest.Builder fileModifyRequestBuilder = getFileModifyRequest(scmConnector, gitFileDetails);
     final FileModifyRequest fileModifyRequest =
         fileModifyRequestBuilder.setBlobId(gitFileDetails.getOldFileSha()).build();
-    return scmBlockingStub.updateFile(fileModifyRequest);
+    UpdateFileResponse updateFileResponse = scmBlockingStub.updateFile(fileModifyRequest);
+    if (isEmpty(updateFileResponse.getCommitId())) {
+      // In case commit id is empty for any reason, we treat this as an error case even if file got updated on git
+      return UpdateFileResponse.newBuilder()
+          .setStatus(Constants.SCM_INTERNAL_SERVER_ERROR_CODE)
+          .setError(Constants.SCM_INTERNAL_SERVER_ERROR_MESSAGE)
+          .build();
+    }
+    return updateFileResponse;
   }
 
   @Override

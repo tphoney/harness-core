@@ -257,6 +257,7 @@ public class CloudFormationCommandTaskHandlerTest extends WingsBaseTest {
     CloudFormationCommandExecutionResponse response = createStackHandler.execute(request, null);
 
     assertThat(response).isNotNull();
+    assertThat(data).isEqualTo(request.getData());
     assertThat(response.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.SUCCESS);
     CloudFormationCommandResponse formationCommandResponse = response.getCommandResponse();
     assertThat(formationCommandResponse).isNotNull();

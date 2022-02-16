@@ -112,6 +112,11 @@ public class SCMGitSyncHelper {
     if (gitBranchInfo.getLastObjectId() != null) {
       builder.setOldFileSha(StringValue.of(gitBranchInfo.getLastObjectId()));
     }
+
+    if (gitBranchInfo.getResolvedConflictCommitId() != null) {
+      builder.setCommitId(gitBranchInfo.getResolvedConflictCommitId());
+    }
+
     return builder.build();
   }
 

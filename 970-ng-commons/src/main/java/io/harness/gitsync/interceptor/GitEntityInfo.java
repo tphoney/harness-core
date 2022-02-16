@@ -15,9 +15,9 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.gitsync.sdk.EntityGitDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jdk.nashorn.internal.objects.annotations.Getter;
+import jdk.nashorn.internal.objects.annotations.Setter;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.Wither;
 
@@ -29,7 +29,7 @@ import lombok.experimental.Wither;
 public class GitEntityInfo {
   String branch;
   String yamlGitConfigId;
-  @Wither @Setter String folderPath;
+  @Wither @jdk.nashorn.internal.objects.annotations.Setter String folderPath;
   @Wither @Setter String filePath;
   @Wither String commitMsg;
   @Wither String lastObjectId; // required in case of update file
@@ -39,6 +39,7 @@ public class GitEntityInfo {
   String baseBranch;
   String commitId; // used for passing commitId in case of g2h.
   Boolean isFullSyncFlow;
+  String resolvedConflictCommitId;
 
   public boolean isNull() {
     // todo @Abhinav Maybe we should use null in place of default

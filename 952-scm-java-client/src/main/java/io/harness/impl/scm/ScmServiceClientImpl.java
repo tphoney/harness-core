@@ -750,7 +750,6 @@ public class ScmServiceClientImpl implements ScmServiceClient {
 
   private Optional<UpdateFileResponse> runUpdateFileOpsPreChecks(
       ScmConnector scmConnector, SCMGrpc.SCMBlockingStub scmBlockingStub, GitFileDetails gitFileDetails) {
-    //    if (scmConnector.getConnectorType() == ConnectorType.BITBUCKET) {
     // Check if current file commit is same as latest commit on file on remote
     GetLatestCommitOnFileResponse latestCommitResponse =
         getLatestCommitOnFile(scmConnector, scmBlockingStub, gitFileDetails.getBranch(), gitFileDetails.getFilePath());
@@ -761,7 +760,6 @@ public class ScmServiceClientImpl implements ScmServiceClient {
                              .setCommitId(latestCommitResponse.getCommitId())
                              .build());
     }
-    //    }
     return Optional.empty();
   }
 }

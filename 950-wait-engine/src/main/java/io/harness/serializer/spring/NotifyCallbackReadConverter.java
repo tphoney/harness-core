@@ -27,9 +27,9 @@ public class NotifyCallbackReadConverter implements Converter<Binary, NotifyCall
 
   @Override
   public NotifyCallback convert(Binary data) {
-    if (data == null) {
+    if (data.getData() == null) {
       return null;
     }
-    return (NotifyCallback) kryoSerializer.asInflatedObject(data.getData());
+    return (NotifyCallback) kryoSerializer.asObjectOrInflated(data.getData());
   }
 }

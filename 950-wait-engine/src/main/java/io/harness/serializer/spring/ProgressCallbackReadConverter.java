@@ -27,9 +27,9 @@ public class ProgressCallbackReadConverter implements Converter<Binary, Progress
 
   @Override
   public ProgressCallback convert(Binary data) {
-    if (data == null) {
+    if (data.getData() == null) {
       return null;
     }
-    return (ProgressCallback) kryoSerializer.asInflatedObject(data.getData());
+    return (ProgressCallback) kryoSerializer.asObjectOrInflated(data.getData());
   }
 }

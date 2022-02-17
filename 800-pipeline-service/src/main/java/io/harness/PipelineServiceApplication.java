@@ -450,8 +450,8 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
     // NodeStatusUpdateObserver
     nodeExecutionService.getStepStatusUpdateSubject().register(
         injector.getInstance(Key.get(PlanExecutionService.class)));
-    nodeExecutionService.getStepStatusUpdateSubject().register(
-        injector.getInstance(Key.get(StageStatusUpdateNotificationEventHandler.class)));
+    //    nodeExecutionService.getStepStatusUpdateSubject().register(
+    //        injector.getInstance(Key.get(StageStatusUpdateNotificationEventHandler.class)));
     nodeExecutionService.getStepStatusUpdateSubject().register(
         injector.getInstance(Key.get(BarrierPositionHelperEventHandler.class)));
     nodeExecutionService.getStepStatusUpdateSubject().register(injector.getInstance(Key.get(BarrierDropper.class)));
@@ -468,8 +468,8 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
         injector.getInstance(Key.get(OrchestrationLogPublisher.class)));
 
     // NodeExecutionStartObserver
-    nodeExecutionService.getNodeExecutionStartSubject().register(
-        injector.getInstance(Key.get(StageStartNotificationHandler.class)));
+    //    nodeExecutionService.getNodeExecutionStartSubject().register(
+    //        injector.getInstance(Key.get(StageStartNotificationHandler.class)));
     nodeExecutionService.getNodeExecutionStartSubject().register(
         injector.getInstance(Key.get(OrchestrationLogPublisher.class)));
 

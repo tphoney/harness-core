@@ -30,6 +30,6 @@ public class ProgressCallbackWriteConverter implements Converter<ProgressCallbac
     if (callback == null) {
       return null;
     }
-    return new Binary(kryoSerializer.asDeflatedBytes(callback));
+    return new Binary(kryoSerializer.asBytes(callback));
   }
 }

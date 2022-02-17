@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -178,8 +179,39 @@ public class PmsOutcomeServiceImpl implements PmsOutcomeService {
   }
 
   @Override
+  public Map<String, List<StepOutcomeRef>> fetchOutcomeRefs(List<String> nodeExecutionIds) {
+    Map<String, List<StepOutcomeRef>> refMap = new HashMap<>();
+    Query query = query(where(OutcomeInstanceKeys.producedByRuntimeId).in(nodeExecutionIds));
+    query.fields()
+        .include(OutcomeInstanceKeys.uuid)
+        .include(OutcomeInstanceKeys.planExecutionId)
+        .include(OutcomeInstanceKeys.name)
+        .include(OutcomeInstanceKeys.producedBy);
+
+    List<OutcomeInstance> instances = mongoTemplate.find(query, OutcomeInstance.class);
+    for (OutcomeInstance oi : instances) {
+      StepOutcomeRef stepOutcomeRef =
+          StepOutcomeRef.newBuilder().setName(oi.getName()).setInstanceId(oi.getUuid()).build();
+      refMap.compute(oi.getProducedBy().getRuntimeId(), (k, v) -> {
+        if (v == null) {
+          return new ArrayList<>(Collections.singletonList(stepOutcomeRef));
+        } else {
+          v.add(stepOutcomeRef);
+          return v;
+        }
+      });
+    }
+    return refMap;
+  }
+
+  @Override
   public List<StepOutcomeRef> fetchOutcomeRefs(String nodeExecutionId) {
     List<OutcomeInstance> instances = fetchOutcomeInstanceByRuntimeId(nodeExecutionId);
+    return buildStepOutcomeRefs(instances);
+  }
+
+  @NonNull
+  private List<StepOutcomeRef> buildStepOutcomeRefs(List<OutcomeInstance> instances) {
     if (isEmpty(instances)) {
       return new ArrayList<>();
     }

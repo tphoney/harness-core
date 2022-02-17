@@ -424,6 +424,14 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
   public List<NodeExecution> fetchNodeExecutionsByParentId(String nodeExecutionId, boolean oldRetry) {
     Query query = query(where(NodeExecutionKeys.parentId).is(nodeExecutionId))
                       .addCriteria(where(NodeExecutionKeys.oldRetry).is(false));
+    query.fields()
+        .include(NodeExecutionKeys.uuid)
+        .include(NodeExecutionKeys.nodeId)
+        .include(NodeExecutionKeys.identifier)
+        .include(NodeExecutionKeys.status)
+        .include(NodeExecutionKeys.failureInfo)
+        .include(NodeExecutionKeys.adviserResponse)
+        .include(NodeExecutionKeys.oldRetry);
     return mongoTemplate.find(query, NodeExecution.class);
   }
 

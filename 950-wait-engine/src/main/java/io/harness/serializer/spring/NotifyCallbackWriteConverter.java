@@ -30,6 +30,6 @@ public class NotifyCallbackWriteConverter implements Converter<NotifyCallback, B
     if (callback == null) {
       return null;
     }
-    return new Binary(kryoSerializer.asDeflatedBytes(callback));
+    return new Binary(kryoSerializer.asBytes(callback));
   }
 }

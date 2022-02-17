@@ -1,5 +1,5 @@
 # to be used when building in Jenkins
-FROM us.gcr.io/platform-205701/harness/serverjre_8:191
+FROM us.gcr.io/platform-205701/alpine:safe-alpine3.12-jdk11
 RUN yum install -y hostname tar gzip net-tools traceroute nmap procps
 
 # install yq - a YAML query command line tool

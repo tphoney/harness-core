@@ -55,6 +55,8 @@ if [ "${RUN_PMDS}" == "true" ]; then
 fi
 
 BAZEL_MODULES="\
+  //360-cg-manager:module \
+  //360-cg-manager:module_deploy.jar \
   //800-pipeline-service:module \
   //820-platform-service:module \
   //820-platform-service:module_deploy.jar \

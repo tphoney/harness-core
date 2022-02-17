@@ -7,9 +7,7 @@
 
 package io.harness.gitsync.common.impl;
 
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.exception.WingsException.USER;
-
+import com.google.inject.Inject;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.EmbeddedUser;
@@ -36,13 +34,15 @@ import io.harness.impl.ScmResponseStatusUtils;
 import io.harness.ng.userprofile.commons.SCMType;
 import io.harness.product.ci.scm.proto.FileContent;
 import io.harness.utils.IdentifierRefHelper;
-
-import com.google.inject.Inject;
-import java.util.List;
-import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
+import java.util.Optional;
+
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.exception.WingsException.USER;
 
 @Slf4j
 @FieldDefaults(level = AccessLevel.PROTECTED)
@@ -103,15 +103,14 @@ public abstract class AbstractScmClientFacilitatorServiceImpl implements ScmClie
   }
 
   void validateFileContentParams(String branch, String commitId) {
-    if (commitId != null && branch != null) {
-      throw new InvalidRequestException("Only one of branch or commit id can be present.", USER);
-    }
     if (commitId == null && branch == null) {
       throw new InvalidRequestException("One of branch or commit id should be present.", USER);
     }
   }
 
   GitFilePathDetails getGitFilePathDetails(String filePath, String branch, String commitId) {
+    // If commit id is present, branch is ignored
+    branch = isEmpty(commitId) ? branch : "";
     return GitFilePathDetails.builder().filePath(filePath).branch(branch).ref(commitId).build();
   }
 

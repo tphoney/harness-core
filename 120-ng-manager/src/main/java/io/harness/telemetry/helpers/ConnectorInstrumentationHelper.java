@@ -34,8 +34,7 @@ public class ConnectorInstrumentationHelper {
   String CONNECTOR_NAME = "connector_name";
   String CONNECTOR_TYPE = "connector_type";
 
-  public void sendConnectorCreationFinishedEvent(ConnectorInfoDTO connector, String accountId) {
-    log.info("Platform SendConnectorCreationFinishedEvent execution started.");
+  public void sendConnectorCreateEvent(ConnectorInfoDTO connector, String accountId) {
     try {
       if (EmptyPredicate.isNotEmpty(accountId) || !accountId.equals(GLOBAL_ACCOUNT_ID)) {
         HashMap<String, Object> map = new HashMap<>();
@@ -45,46 +44,41 @@ public class ConnectorInstrumentationHelper {
         map.put(CONNECTOR_NAME, connector.getName());
         map.put(CONNECTOR_ORG, connector.getOrgIdentifier());
         map.put(CONNECTOR_PROJECT, connector.getProjectIdentifier());
-        telemetryReporter.sendTrackEvent("Connector Creation Finished", map,
+        telemetryReporter.sendTrackEvent("connector_creation_finished", map,
             ImmutableMap.<Destination, Boolean>builder()
                 .put(Destination.AMPLITUDE, true)
                 .put(Destination.ALL, false)
                 .build(),
             Category.COMMUNITY);
-        log.info("Connector Creation Finished event sent!");
       } else {
-        log.info("There is no Account found!. Can not send Connector Creation Finished event.");
+        log.info("There is no account found for account ID = " + accountId
+            + "!. Cannot send Connector Creation Finished event.");
       }
     } catch (Exception e) {
-      log.error("Platform SendConnectorCreationFinishedEvent execution failed.", e);
-    } finally {
-      log.info("Platform SendConnectorCreationFinishedEvent execution finished.");
+      log.error("Connector creation event failed for accountID= " + accountId, e);
     }
   }
 
-  public void sendConnectorDeletionEvent(
+  public void sendConnectorDeleteEvent(
       String orgIdentifier, String projectIdentifier, String connectorIdentifier, String accountId) {
-    log.info("Platform SendConnectorDeletionEvent execution started.");
     try {
       if (EmptyPredicate.isNotEmpty(accountId) || !accountId.equals(GLOBAL_ACCOUNT_ID)) {
         HashMap<String, Object> map = new HashMap<>();
         map.put(CONNECTOR_PROJECT, projectIdentifier);
         map.put(CONNECTOR_ID, connectorIdentifier);
         map.put(CONNECTOR_ORG, orgIdentifier);
-        telemetryReporter.sendTrackEvent("Connector Deletion", map,
+        telemetryReporter.sendTrackEvent("connector_deletion", map,
             ImmutableMap.<Destination, Boolean>builder()
                 .put(Destination.AMPLITUDE, true)
                 .put(Destination.ALL, false)
                 .build(),
             Category.COMMUNITY);
-        log.info("Connector deletion event sent!");
       } else {
-        log.info("There is no Account found!. Can not send Connector Deletion event.");
+        log.info(
+            "There is no account found for account ID = " + accountId + "!. Cannot send Connector Deletion event.");
       }
     } catch (Exception e) {
-      log.error("Platform SendConnectorDeletionEvent execution failed.", e);
-    } finally {
-      log.info("Platform SendConnectorDeletionEvent execution finished.");
+      log.error("Connector deletion event failed for accountID= " + accountId, e);
     }
   }
 }

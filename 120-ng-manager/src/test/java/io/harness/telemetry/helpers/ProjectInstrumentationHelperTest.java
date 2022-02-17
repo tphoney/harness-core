@@ -57,7 +57,7 @@ public class ProjectInstrumentationHelperTest {
     String orgIdentifier = randomAlphabetic(10);
     ProjectDTO projectDTO = createProjectDTO(orgIdentifier, randomAlphabetic(10));
     Project project = toProject(projectDTO);
-    instrumentationHelper.sendProjectCreationFinishedEvent(project, accountIdentifier);
+    instrumentationHelper.sendProjectCreateEvent(project, accountIdentifier);
     try {
       verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
     } catch (Exception e) {
@@ -73,7 +73,7 @@ public class ProjectInstrumentationHelperTest {
     String orgIdentifier = randomAlphabetic(10);
     ProjectDTO projectDTO = createProjectDTO(orgIdentifier, randomAlphabetic(10));
     Project project = toProject(projectDTO);
-    instrumentationHelper.sendProjectDeletionEvent(project, accountIdentifier);
+    instrumentationHelper.sendProjectDeleteEvent(project, accountIdentifier);
     try {
       verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
     } catch (Exception e) {

@@ -35,8 +35,7 @@ public class ProjectInstrumentationHelper {
   String ACCOUNT_ID = "account_id";
   String PROJECT_COLOR = "project_color";
 
-  public void sendProjectCreationFinishedEvent(Project project, String accountId) {
-    log.info("Platform SendProjectCreationFinishedEvent execution started.");
+  public void sendProjectCreateEvent(Project project, String accountId) {
     try {
       if (EmptyPredicate.isNotEmpty(accountId) || !accountId.equals(GLOBAL_ACCOUNT_ID)) {
         HashMap<String, Object> map = new HashMap<>();
@@ -47,24 +46,21 @@ public class ProjectInstrumentationHelper {
         map.put(PROJECT_NAME, project.getName());
         map.put(PROJECT_VERSION, project.getVersion());
         map.put(PROJECT_COLOR, project.getColor());
-        telemetryReporter.sendTrackEvent("Project Creation Finished", map,
+        telemetryReporter.sendTrackEvent("project_creation_finished", map,
             ImmutableMap.<Destination, Boolean>builder()
                 .put(Destination.AMPLITUDE, true)
                 .put(Destination.ALL, false)
                 .build(),
             Category.COMMUNITY);
-        log.info("Project Creation Finished event sent!");
       } else {
-        log.info("There is no Account found!. Can not send Project Creation Finished event.");
+        log.info("There is no account found for account ID = " + accountId
+            + "!. Cannot send Project Creation Finished event.");
       }
     } catch (Exception e) {
-      log.error("Platform SendProjectCreationFinishedEvent execution failed.", e);
-    } finally {
-      log.info("Platform SendProjectCreationFinishedEvent execution finished.");
+      log.error("Project creation event failed for accountID= " + accountId, e);
     }
   }
-  public void sendProjectDeletionEvent(Project project, String accountId) {
-    log.info("Platform SendProjectDeletionEvent execution started.");
+  public void sendProjectDeleteEvent(Project project, String accountId) {
     try {
       if (EmptyPredicate.isNotEmpty(accountId) || !accountId.equals(GLOBAL_ACCOUNT_ID)) {
         HashMap<String, Object> map = new HashMap<>();
@@ -75,20 +71,17 @@ public class ProjectInstrumentationHelper {
         map.put(PROJECT_NAME, project.getName());
         map.put(PROJECT_VERSION, project.getVersion());
         map.put(PROJECT_COLOR, project.getColor());
-        telemetryReporter.sendTrackEvent("Project Deletion", map,
+        telemetryReporter.sendTrackEvent("project_deletion", map,
             ImmutableMap.<Destination, Boolean>builder()
                 .put(Destination.AMPLITUDE, true)
                 .put(Destination.ALL, false)
                 .build(),
             Category.COMMUNITY);
-        log.info("Project deletion event sent!");
       } else {
-        log.info("There is no Account found!. Can not send Project Deletion event.");
+        log.info("There is no account found for account ID = " + accountId + "!. Cannot send Project Deletion event.");
       }
     } catch (Exception e) {
-      log.error("Platform SendProjectDeletionEvent execution failed.", e);
-    } finally {
-      log.info("Platform SendProjectDeletionEvent execution finished.");
+      log.error("Project deletion event failed for accountId= " + accountId, e);
     }
   }
 }

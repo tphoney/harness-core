@@ -126,7 +126,7 @@ public class OrganizationServiceImpl implements OrganizationService {
       setupOrganization(Scope.of(accountIdentifier, organizationDTO.getIdentifier(), null));
       log.info(String.format("Organization with identifier %s was successfully created", organization.getIdentifier()));
       CompletableFuture.runAsync(
-          () -> instrumentationHelper.sendOrganizationCreationFinishedEvent(organization, accountIdentifier));
+          () -> instrumentationHelper.sendOrganizationCreateEvent(organization, accountIdentifier));
       return savedOrganization;
     } catch (DuplicateKeyException ex) {
       throw new DuplicateFieldException(
@@ -355,7 +355,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         log.info(String.format("Organization with identifier %s was successfully deleted", organizationIdentifier));
         outboxService.save(new OrganizationDeleteEvent(accountIdentifier, OrganizationMapper.writeDto(organization)));
         CompletableFuture.runAsync(
-            () -> instrumentationHelper.sendOrganizationDeletionEvent(organization, accountIdentifier));
+            () -> instrumentationHelper.sendOrganizationDeleteEvent(organization, accountIdentifier));
       } else {
         log.error(String.format("Organization with identifier %s could not be deleted", organizationIdentifier));
       }

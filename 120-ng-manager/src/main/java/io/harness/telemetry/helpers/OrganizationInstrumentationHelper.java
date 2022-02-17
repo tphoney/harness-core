@@ -34,8 +34,7 @@ public class OrganizationInstrumentationHelper {
   String ORGANIZATION_VERSION = "organization_version";
   String HARNESS_MANAGED = "harness_managed";
 
-  public void sendOrganizationCreationFinishedEvent(Organization organization, String accountId) {
-    log.info("Platform SendOrganizationCreationFinishedEvent execution started.");
+  public void sendOrganizationCreateEvent(Organization organization, String accountId) {
     try {
       if (EmptyPredicate.isNotEmpty(accountId) || !accountId.equals(GLOBAL_ACCOUNT_ID)) {
         HashMap<String, Object> map = new HashMap<>();
@@ -45,24 +44,21 @@ public class OrganizationInstrumentationHelper {
         map.put(ORGANIZATION_NAME, organization.getName());
         map.put(ORGANIZATION_VERSION, organization.getVersion());
         map.put(HARNESS_MANAGED, organization.getHarnessManaged());
-        telemetryReporter.sendTrackEvent("Organization Creation Finished", map,
+        telemetryReporter.sendTrackEvent("organization_creation_finished", map,
             ImmutableMap.<Destination, Boolean>builder()
                 .put(Destination.AMPLITUDE, true)
                 .put(Destination.ALL, false)
                 .build(),
             Category.COMMUNITY);
-        log.info("Organization Creation Finished event sent!");
       } else {
-        log.info("There is no Account found!. Can not send Organization Creation Finished event.");
+        log.info("There is no account found for account ID = " + accountId
+            + "!. Cannot send Organization Creation Finished event.");
       }
     } catch (Exception e) {
-      log.error("Platform SendOrganizationCreationFinishedEvent execution failed.", e);
-    } finally {
-      log.info("Platform SendOrganizationCreationFinishedEvent execution finished.");
+      log.error("Organization creation event failed for accountID= " + accountId, e);
     }
   }
-  public void sendOrganizationDeletionEvent(Organization organization, String accountId) {
-    log.info("Platform SendOrganizationDeletionEvent execution started.");
+  public void sendOrganizationDeleteEvent(Organization organization, String accountId) {
     try {
       if (EmptyPredicate.isNotEmpty(accountId) || !accountId.equals(GLOBAL_ACCOUNT_ID)) {
         HashMap<String, Object> map = new HashMap<>();
@@ -72,20 +68,18 @@ public class OrganizationInstrumentationHelper {
         map.put(ORGANIZATION_NAME, organization.getName());
         map.put(ORGANIZATION_VERSION, organization.getVersion());
         map.put(HARNESS_MANAGED, organization.getHarnessManaged());
-        telemetryReporter.sendTrackEvent("Organization Deletion", map,
+        telemetryReporter.sendTrackEvent("organization_deletion", map,
             ImmutableMap.<Destination, Boolean>builder()
                 .put(Destination.AMPLITUDE, true)
                 .put(Destination.ALL, false)
                 .build(),
             Category.COMMUNITY);
-        log.info("Organization deletion event sent!");
       } else {
-        log.info("There is no Account found!. Can not send Organization Deletion event.");
+        log.info(
+            "There is no account found for account ID = " + accountId + "!. Cannot send Organization Deletion event.");
       }
     } catch (Exception e) {
-      log.error("Platform SendOrganizationDeletionEvent execution failed.", e);
-    } finally {
-      log.info("Platform SendOrganizationDeletionEvent execution finished.");
+      log.error("Organization deletion event failed for accountID= " + accountId, e);
     }
   }
 }

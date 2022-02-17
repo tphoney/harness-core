@@ -51,7 +51,7 @@ public class OrganizationInstrumentationHelperTest {
     String accountIdentifier = randomAlphabetic(10);
     OrganizationDTO organizationDTO = createOrganizationDTO(randomAlphabetic(10));
     Organization organization = toOrganization(organizationDTO);
-    instrumentationHelper.sendOrganizationCreationFinishedEvent(organization, accountIdentifier);
+    instrumentationHelper.sendOrganizationCreateEvent(organization, accountIdentifier);
     try {
       verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
     } catch (Exception e) {
@@ -66,7 +66,7 @@ public class OrganizationInstrumentationHelperTest {
     String accountIdentifier = randomAlphabetic(10);
     OrganizationDTO organizationDTO = createOrganizationDTO(randomAlphabetic(10));
     Organization organization = toOrganization(organizationDTO);
-    instrumentationHelper.sendOrganizationDeletionEvent(organization, accountIdentifier);
+    instrumentationHelper.sendOrganizationDeleteEvent(organization, accountIdentifier);
     try {
       verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
     } catch (Exception e) {

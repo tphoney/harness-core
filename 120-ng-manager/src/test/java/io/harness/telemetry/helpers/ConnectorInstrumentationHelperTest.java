@@ -92,7 +92,7 @@ public class ConnectorInstrumentationHelperTest {
   @Category(UnitTests.class)
   public void testCreateConnectorTrackSend() {
     ConnectorResponseDTO connectorDTOOutput = createConnector(identifier, name);
-    instrumentationHelper.sendConnectorCreationFinishedEvent(connectorDTOOutput.getConnector(), accountIdentifier);
+    instrumentationHelper.sendConnectorCreateEvent(connectorDTOOutput.getConnector(), accountIdentifier);
     try {
       verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
     } catch (Exception e) {
@@ -104,7 +104,7 @@ public class ConnectorInstrumentationHelperTest {
   @Owner(developers = TEJAS)
   @Category(UnitTests.class)
   public void testDeleteConnectorTrackSend() {
-    instrumentationHelper.sendConnectorDeletionEvent(
+    instrumentationHelper.sendConnectorDeleteEvent(
         orgIdentifier, projectIdentifier, connectorIdentifier, accountIdentifier);
     try {
       verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());

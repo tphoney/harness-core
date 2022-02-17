@@ -15,7 +15,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.function.Supplier;
 
 public enum AccountSettingType implements EntitySubtype {
-  @JsonProperty("Connector") CONNECTOR("Connector", () -> ConnectorSettings.builder().build());
+  @JsonProperty("Connector") CONNECTOR("Connector", () -> ConnectorSettings.builder().build()),
+  @JsonProperty("GitSync") GIT_SYNC("GitSync", () -> GitSyncSettings.builder().build());
 
   private final String displayName;
 

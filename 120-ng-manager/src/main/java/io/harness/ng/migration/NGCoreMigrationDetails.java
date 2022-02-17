@@ -7,8 +7,7 @@
 
 package io.harness.ng.migration;
 
-import static io.harness.annotations.dev.HarnessTeam.DX;
-
+import com.google.common.collect.ImmutableList;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.migration.MigrationDetails;
 import io.harness.migration.NGMigration;
@@ -17,10 +16,11 @@ import io.harness.ng.core.migration.DeleteCVSetupUsageEventsMigration;
 import io.harness.ng.core.migration.NGAccountSettingsMigration;
 import io.harness.ng.core.migration.NGDefaultOrgNameMigration;
 import io.harness.ng.core.migration.NGDefaultSMNameMigration;
-
-import com.google.common.collect.ImmutableList;
-import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.List;
+
+import static io.harness.annotations.dev.HarnessTeam.DX;
 
 @OwnedBy(DX)
 public class NGCoreMigrationDetails implements MigrationDetails {
@@ -43,7 +43,7 @@ public class NGCoreMigrationDetails implements MigrationDetails {
         .add(Pair.of(4, DeleteCVSetupUsageEventsMigration.class))
         .add(Pair.of(5, NGDefaultSMNameMigration.class))
         .add(Pair.of(6, NGDefaultOrgNameMigration.class))
-        .add(Pair.of(7, NGAccountSettingsMigration.class))
+        .add(Pair.of(8, NGAccountSettingsMigration.class))
         .build();
   }
 }

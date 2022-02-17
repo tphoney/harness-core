@@ -10,7 +10,6 @@ package io.harness.ng.core.accountsetting.dto;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ng.userprofile.commons.SCMType;
-
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,13 +17,17 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
 
 @OwnedBy(HarnessTeam.PL)
-@Builder
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @TypeAlias("GitSyncSettings")
 public class GitSyncSettings extends AccountSettingConfig {
   private SCMType scmType;
+
+  @Builder
+  public GitSyncSettings(SCMType scmType) {
+    this.scmType = scmType;
+  }
 
   @Override
   public AccountSettingConfig getDefaultConfig() {

@@ -7,10 +7,9 @@
 
 package io.harness.gitsync.scm;
 
-import static io.harness.annotations.dev.HarnessTeam.DX;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.data.structure.HarnessStringUtils.emptyIfNull;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.protobuf.StringValue;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.eraro.ErrorCode;
 import io.harness.exception.ExceptionUtils;
@@ -36,12 +35,12 @@ import io.harness.ng.core.entitydetail.EntityDetailRestToProtoMapper;
 import io.harness.security.SourcePrincipalContextBuilder;
 import io.harness.security.dto.ServicePrincipal;
 import io.harness.security.dto.UserPrincipal;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.protobuf.StringValue;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+
+import static io.harness.annotations.dev.HarnessTeam.DX;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.data.structure.HarnessStringUtils.emptyIfNull;
 
 @Singleton
 @Slf4j

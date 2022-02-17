@@ -55,6 +55,7 @@ public class YamlSchemaTransientHelper {
       add(EntityType.RESTORE_CACHE_S3);
       add(EntityType.SAVE_CACHE_GCS);
       add(EntityType.SAVE_CACHE_S3);
+      add(EntityType.SECURITY);
       add(EntityType.ARTIFACTORY_UPLOAD);
       add(EntityType.GCS_UPLOAD);
       add(EntityType.S3_UPLOAD);
@@ -64,6 +65,7 @@ public class YamlSchemaTransientHelper {
       add(EntityType.HARNESS_APPROVAL_STEP);
       add(EntityType.BARRIER_STEP);
       add(EntityType.VERIFY_STEP);
+      add(EntityType.FLAG_CONFIGURATION);
       add(EntityType.POLICY_STEP);
     }
   };

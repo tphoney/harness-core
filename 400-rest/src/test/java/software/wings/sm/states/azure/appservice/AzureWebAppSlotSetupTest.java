@@ -308,6 +308,7 @@ public class AzureWebAppSlotSetupTest extends WingsBaseTest {
         .when(azureVMSSStateHelper)
         .populateAzureAppServiceData(eq(context), any(Artifact.class));
     doReturn(service).when(azureVMSSStateHelper).getServiceByAppId(context, appId);
+    doReturn(appServiceStateData).when(azureVMSSStateHelper).populateAzureAppServiceData(context);
     doReturn(serviceId).when(azureVMSSStateHelper).getServiceId(context);
   }
 

@@ -20,11 +20,10 @@ import static org.mockito.Mockito.when;
 
 import io.harness.OrchestrationTestBase;
 import io.harness.category.element.UnitTests;
-import io.harness.engine.NodeDispatcher;
+import io.harness.engine.OrchestrationEngine;
 import io.harness.engine.executions.node.NodeExecutionService;
 import io.harness.engine.executions.plan.PlanService;
 import io.harness.engine.pms.resume.EngineResumeCallback;
-import io.harness.plan.Node;
 import io.harness.plan.PlanNode;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.ambiance.Level;
@@ -38,10 +37,7 @@ import io.harness.rule.Owner;
 import io.harness.waiter.WaitNotifyEngine;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
@@ -52,7 +48,7 @@ public class SpawnChildrenRequestProcessorTest extends OrchestrationTestBase {
   @Mock NodeExecutionService nodeExecutionService;
   @Mock PlanService planService;
   @Mock WaitNotifyEngine waitNotifyEngine;
-  @Mock @Named("EngineExecutorService") ExecutorService executorService;
+  @Mock OrchestrationEngine orchestrationEngine;
 
   @Inject @InjectMocks SpawnChildrenRequestProcessor processor;
 
@@ -114,14 +110,12 @@ public class SpawnChildrenRequestProcessorTest extends OrchestrationTestBase {
 
     processor.handleEvent(event);
 
-    ArgumentCaptor<io.harness.engine.NodeDispatcher> dispatcher =
-        ArgumentCaptor.forClass(io.harness.engine.NodeDispatcher.class);
-    verify(executorService, times(2)).submit(dispatcher.capture());
+    ArgumentCaptor<Ambiance> ambianceCaptor = ArgumentCaptor.forClass(Ambiance.class);
+    ArgumentCaptor<PlanNode> nodeCaptor = ArgumentCaptor.forClass(PlanNode.class);
 
-    List<Ambiance> childAmbianceList = dispatcher.getAllValues()
-                                           .stream()
-                                           .map(io.harness.engine.NodeDispatcher::getAmbiance)
-                                           .collect(Collectors.toList());
+    verify(orchestrationEngine, times(2)).triggerNode(ambianceCaptor.capture(), nodeCaptor.capture(), any());
+
+    List<Ambiance> childAmbianceList = ambianceCaptor.getAllValues();
     assertThat(childAmbianceList).hasSize(2);
 
     assertThat(childAmbianceList.get(0).getLevelsCount()).isEqualTo(2);
@@ -130,7 +124,7 @@ public class SpawnChildrenRequestProcessorTest extends OrchestrationTestBase {
     assertThat(childAmbianceList.get(1).getLevelsCount()).isEqualTo(2);
     assertThat(childAmbianceList.get(1).getLevels(1).getSetupId()).isEqualTo(child2Id);
 
-    List<Node> planNodes = dispatcher.getAllValues().stream().map(NodeDispatcher::getNode).collect(Collectors.toList());
+    List<PlanNode> planNodes = nodeCaptor.getAllValues();
     assertThat(planNodes).hasSize(2);
 
     assertThat(planNodes.get(0)).isEqualTo(node1);

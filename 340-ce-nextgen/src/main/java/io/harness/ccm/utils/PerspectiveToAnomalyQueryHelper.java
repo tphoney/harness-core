@@ -22,8 +22,11 @@ import static io.harness.ccm.commons.constants.ViewFieldConstants.WORKLOAD_NAME_
 import io.harness.ccm.commons.entities.CCMField;
 import io.harness.ccm.commons.entities.CCMFilter;
 import io.harness.ccm.commons.entities.CCMGroupBy;
+import io.harness.ccm.commons.entities.CCMNumberFilter;
 import io.harness.ccm.commons.entities.CCMOperator;
 import io.harness.ccm.commons.entities.CCMStringFilter;
+import io.harness.ccm.commons.entities.CCMTimeFilter;
+import io.harness.ccm.graphql.dto.perspectives.PerspectiveQueryDTO;
 import io.harness.ccm.views.entities.CEView;
 import io.harness.ccm.views.entities.ViewField;
 import io.harness.ccm.views.entities.ViewIdCondition;
@@ -33,12 +36,14 @@ import io.harness.ccm.views.graphql.QLCEViewFieldInput;
 import io.harness.ccm.views.graphql.QLCEViewFilterOperator;
 import io.harness.ccm.views.graphql.QLCEViewFilterWrapper;
 import io.harness.ccm.views.graphql.QLCEViewGroupBy;
+import io.harness.ccm.views.graphql.QLCEViewTimeFilterOperator;
 import io.harness.ccm.views.graphql.ViewsQueryBuilder;
 import io.harness.exception.InvalidAccessRequestException;
 
 import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class PerspectiveToAnomalyQueryHelper {
@@ -91,6 +96,7 @@ public class PerspectiveToAnomalyQueryHelper {
 
   public CCMFilter convertFilters(List<QLCEViewFilterWrapper> filters) {
     List<CCMStringFilter> stringFilters = new ArrayList<>();
+    List<CCMTimeFilter> timeFilters = new ArrayList<>();
 
     filters.forEach(filter -> {
       if (filter.getIdFilter() != null) {
@@ -141,10 +147,68 @@ public class PerspectiveToAnomalyQueryHelper {
             break;
           default:
         }
+      } else if (filter.getTimeFilter() != null) {
+        timeFilters.add(CCMTimeFilter.builder()
+                            .operator(convertFilterOperator(filter.getTimeFilter().getOperator()))
+                            .timestamp(filter.getTimeFilter().getValue().longValue())
+                            .build());
       }
     });
 
-    return CCMFilter.builder().stringFilters(stringFilters).build();
+    return CCMFilter.builder()
+        .stringFilters(stringFilters)
+        .numericFilters(Collections.emptyList())
+        .timeFilters(timeFilters)
+        .build();
+  }
+
+  public CCMFilter covertGroupByToFilter(List<CCMGroupBy> groupBys) {
+    List<CCMStringFilter> stringFilters = new ArrayList<>();
+    groupBys.forEach(groupBy
+        -> stringFilters.add(CCMStringFilter.builder()
+                                 .operator(CCMOperator.NOT_NULL)
+                                 .values(Collections.emptyList())
+                                 .field(groupBy.getGroupByField())
+                                 .build()));
+    return CCMFilter.builder()
+        .stringFilters(stringFilters)
+        .timeFilters(Collections.emptyList())
+        .numericFilters(Collections.emptyList())
+        .build();
+  }
+
+  public CCMFilter getConvertedFiltersForPerspective(CEView view, PerspectiveQueryDTO perspectiveQuery) {
+    List<CCMGroupBy> convertedGroupBy = convertGroupBy(perspectiveQuery.getGroupBy());
+    if (convertedGroupBy.isEmpty()) {
+      convertedGroupBy = convertGroupBy(getPerspectiveDefaultGroupBy(view));
+    }
+    List<CCMFilter> allFilters = new ArrayList<>();
+    // Filters from group by
+    allFilters.add(covertGroupByToFilter(convertedGroupBy));
+    // Filters from perspective query
+    allFilters.add(convertFilters(perspectiveQuery.getFilters()));
+    // Default perspective filters
+    allFilters.add(convertFilters(getPerspectiveDefaultFilters(view)));
+
+    return combineFilters(allFilters);
+  }
+
+  private CCMFilter combineFilters(List<CCMFilter> filters) {
+    List<CCMStringFilter> stringFilters = new ArrayList<>();
+    List<CCMNumberFilter> numberFilters = new ArrayList<>();
+    List<CCMTimeFilter> timeFilters = new ArrayList<>();
+
+    filters.forEach(filter -> {
+      stringFilters.addAll(filter.getStringFilters());
+      numberFilters.addAll(filter.getNumericFilters());
+      timeFilters.addAll(filter.getTimeFilters());
+    });
+
+    return CCMFilter.builder()
+        .stringFilters(stringFilters)
+        .numericFilters(numberFilters)
+        .timeFilters(timeFilters)
+        .build();
   }
 
   public List<QLCEViewGroupBy> getPerspectiveDefaultGroupBy(CEView view) {
@@ -199,6 +263,17 @@ public class PerspectiveToAnomalyQueryHelper {
         return CCMOperator.NULL;
       case NOT_NULL:
         return CCMOperator.NOT_NULL;
+      default:
+        throw new InvalidAccessRequestException("Filter operator not supported");
+    }
+  }
+
+  private CCMOperator convertFilterOperator(QLCEViewTimeFilterOperator operator) {
+    switch (operator) {
+      case AFTER:
+        return CCMOperator.AFTER;
+      case BEFORE:
+        return CCMOperator.BEFORE;
       default:
         throw new InvalidAccessRequestException("Filter operator not supported");
     }

@@ -24,6 +24,7 @@ import io.harness.ccm.commons.constants.AnomalyFieldConstants;
 import io.harness.ccm.commons.dao.anomaly.AnomalyDao;
 import io.harness.ccm.commons.entities.CCMAggregation;
 import io.harness.ccm.commons.entities.CCMField;
+import io.harness.ccm.commons.entities.CCMFilter;
 import io.harness.ccm.commons.entities.CCMGroupBy;
 import io.harness.ccm.commons.entities.anomaly.AnomalyData;
 import io.harness.ccm.commons.entities.anomaly.AnomalyFeedbackDTO;
@@ -36,6 +37,7 @@ import io.harness.ccm.commons.utils.AnomalyQueryBuilder;
 import io.harness.ccm.commons.utils.TimeUtils;
 import io.harness.ccm.graphql.dto.perspectives.PerspectiveQueryDTO;
 import io.harness.ccm.service.intf.AnomalyService;
+import io.harness.ccm.utils.PerspectiveToAnomalyQueryHelper;
 import io.harness.ccm.views.entities.CEView;
 import io.harness.ccm.views.service.CEViewService;
 import io.harness.timescaledb.tables.pojos.Anomalies;
@@ -54,6 +56,7 @@ public class AnomalyServiceImpl implements AnomalyService {
   @Inject AnomalyDao anomalyDao;
   @Inject AnomalyQueryBuilder anomalyQueryBuilder;
   @Inject CEViewService viewService;
+  @Inject PerspectiveToAnomalyQueryHelper perspectiveToAnomalyQueryHelper;
 
   private static final Integer DEFAULT_LIMIT = 100;
   private static final Integer DEFAULT_OFFSET = 0;
@@ -85,6 +88,10 @@ public class AnomalyServiceImpl implements AnomalyService {
   public List<PerspectiveAnomalyData> listPerspectiveAnomalies(
       @NonNull String accountIdentifier, @NonNull String perspectiveId, PerspectiveQueryDTO perspectiveQuery) {
     CEView perspective = viewService.get(perspectiveId);
+    CCMFilter filters =
+        perspectiveToAnomalyQueryHelper.getConvertedFiltersForPerspective(perspective, perspectiveQuery);
+    List<AnomalyData> anomalyData = listAnomalies(accountIdentifier, AnomalyQueryDTO.builder().filter(filters).build());
+    log.info("Anomalies for perspective: {}", anomalyData);
     // Todo: Add perspective query to anomaly query mapping
     return Collections.singletonList(buildDummyPerspectiveAnomalyData());
   }

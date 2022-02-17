@@ -256,6 +256,7 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -630,7 +631,7 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   private String getCgK8SDelegateTemplate(final String accountId, final boolean isCeEnabled) {
-    if (featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, accountId)) {
+    if (isImmutableDelegate(accountId, KUBERNETES)) {
       return IMMUTABLE_CG_DELEGATE_YAML;
     }
 
@@ -641,7 +642,7 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   private String obtainK8sTemplateNameFromConfig(final K8sConfigDetails k8sConfigDetails, final String accountId) {
-    if (featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, accountId)) {
+    if (isImmutableDelegate(accountId, KUBERNETES)) {
       return IMMUTABLE_DELEGATE_YAML;
     }
 
@@ -1222,12 +1223,17 @@ public class DelegateServiceImpl implements DelegateService {
                                 .replaceFirst("^0+(?!$)", "");
 
       final boolean isCiEnabled = isCiEnabled(templateParameters);
+      final String accountSecret = getAccountSecret(templateParameters, isNgDelegate);
+      final String base64Secret = Base64.getEncoder().encodeToString(accountSecret.getBytes());
       ImmutableMap.Builder<String, String> params =
           ImmutableMap.<String, String>builder()
-              .put("delegateDockerImage", getDelegateDockerImage(templateParameters.getAccountId()))
-              .put("upgraderDockerImage", getUpgraderDockerImage(templateParameters.getAccountId()))
+              .put("delegateDockerImage",
+                  getDelegateDockerImage(templateParameters.getAccountId(), templateParameters.getDelegateType()))
+              .put("upgraderDockerImage",
+                  getUpgraderDockerImage(templateParameters.getAccountId(), templateParameters.getDelegateType()))
               .put("accountId", templateParameters.getAccountId())
-              .put("accountSecret", getAccountSecret(templateParameters, isNgDelegate))
+              .put("accountSecret", accountSecret)
+              .put("base64Secret", base64Secret)
               .put("hexkey", hexkey)
               .put(UPGRADE_VERSION, latestVersion)
               .put("managerHostAndPort", templateParameters.getManagerHost())
@@ -1360,7 +1366,7 @@ public class DelegateServiceImpl implements DelegateService {
       }
 
       params.put("isImmutable",
-          String.valueOf(featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, templateParameters.getAccountId())));
+          String.valueOf(isImmutableDelegate(templateParameters.getAccountId(), templateParameters.getDelegateType())));
 
       return params.build();
     }
@@ -1408,9 +1414,9 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   @VisibleForTesting
-  protected String getDelegateDockerImage(String accountId) {
+  protected String getDelegateDockerImage(final String accountId, final String delegateType) {
     final String ringImage = delegateRingService.getDelegateImageTag(accountId);
-    if (featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, accountId) && isNotBlank(ringImage)) {
+    if (isImmutableDelegate(accountId, delegateType) && isNotBlank(ringImage)) {
       return ringImage;
     }
     if (isNotBlank(mainConfiguration.getPortal().getDelegateDockerImage())) {
@@ -1420,9 +1426,9 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   @VisibleForTesting
-  protected String getUpgraderDockerImage(String accountId) {
+  protected String getUpgraderDockerImage(final String accountId, final String delegateType) {
     final String ringImage = delegateRingService.getUpgraderImageTag(accountId);
-    if (featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, accountId) && isNotBlank(ringImage)) {
+    if (isImmutableDelegate(accountId, delegateType) && isNotBlank(ringImage)) {
       return ringImage;
     }
     if (isNotBlank(mainConfiguration.getPortal().getUpgraderDockerImage())) {
@@ -2984,9 +2990,9 @@ public class DelegateServiceImpl implements DelegateService {
         .count();
   }
 
-  private boolean hasVersionCheckDisabled(String accountId) {
-    return accountService.getAccountPrimaryDelegateVersion(accountId) != null
-        || featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, accountId);
+  private boolean isImmutableDelegate(final String accountId, final String delegateType) {
+    return featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, accountId)
+        && (KUBERNETES.equals(delegateType) || CE_KUBERNETES.equals(delegateType));
   }
 
   @Override
@@ -3801,7 +3807,7 @@ public class DelegateServiceImpl implements DelegateService {
     File composeYaml = File.createTempFile(HARNESS_NG_DELEGATE + "-docker-compose", YAML);
 
     ImmutableMap<String, String> scriptParams = getScriptParametersForTemplate(
-        managerHost, verificationServiceUrl, accountId, delegateSetupDetails.getName(), delegateSetupDetails, true);
+        managerHost, verificationServiceUrl, accountId, delegateSetupDetails.getName(), delegateSetupDetails);
 
     saveProcessedTemplate(scriptParams, composeYaml, HARNESS_NG_DELEGATE + "-docker-compose.yaml.ftl");
     sendTelemetryTrackEvents(accountId, DOCKER, true, DELEGATE_CREATED_EVENT);
@@ -3904,7 +3910,7 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   private ImmutableMap<String, String> getScriptParametersForTemplate(String managerHost, String verificationServiceUrl,
-      String accountId, String delegateName, DelegateSetupDetails delegateSetupDetails, boolean useNgToken) {
+      String accountId, String delegateName, DelegateSetupDetails delegateSetupDetails) {
     String version;
     if (mainConfiguration.getDeployMode() == DeployMode.KUBERNETES) {
       List<String> delegateVersions = accountService.getDelegateConfiguration(accountId).getDelegateVersions();

@@ -267,7 +267,8 @@ public enum FeatureName {
   EXTERNAL_USERID_BASED_LOGIN,
   LDAP_SYNC_WITH_USERID,
   DISABLE_HARNESS_SM,
-  SECURITY;
+  SECURITY,
+  GIT_SYNC_WITH_BITBUCKET;
 
   FeatureName() {
     scope = Scope.PER_ACCOUNT;

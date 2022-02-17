@@ -7,6 +7,7 @@
 
 package software.wings.service.impl;
 
+import static io.harness.beans.FeatureName.USE_IMMUTABLE_DELEGATE;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.delegate.beans.TaskData.DEFAULT_ASYNC_CALL_TIMEOUT;
@@ -81,6 +82,7 @@ import io.harness.delegate.events.DelegateGroupUpsertEvent;
 import io.harness.delegate.service.intfc.DelegateRingService;
 import io.harness.delegate.task.http.HttpTaskParameters;
 import io.harness.exception.InvalidRequestException;
+import io.harness.ff.FeatureFlagService;
 import io.harness.k8s.model.response.CEK8sDelegatePrerequisite;
 import io.harness.ng.core.ProjectScope;
 import io.harness.ng.core.Resource;
@@ -183,6 +185,7 @@ public class DelegateServiceImplTest extends WingsBaseTest {
   @Mock private Account account;
   @Mock private DelegateProfileService delegateProfileService;
   @Mock private DelegateCache delegateCache;
+  @Mock private FeatureFlagService featureFlagService;
   @Inject @Spy private MainConfiguration mainConfiguration;
   @InjectMocks @Inject private DelegateServiceImpl delegateService;
   @InjectMocks @Inject private DelegateTaskServiceClassicImpl delegateTaskServiceClassic;
@@ -223,12 +226,24 @@ public class DelegateServiceImplTest extends WingsBaseTest {
   public void whenDelegateImageProvidedByRingAndConfigThenUseRing() {
     final String delegateRingImage = "harness/delegate:ringImage";
     final PortalConfig portal = mock(PortalConfig.class);
+    when(featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, ACCOUNT_ID)).thenReturn(true);
     when(mainConfiguration.getPortal()).thenReturn(portal);
-    when(portal.getDelegateDockerImage()).thenReturn("harness/delegate:ringImage");
-
+    when(portal.getDelegateDockerImage()).thenReturn("harness/delegate:configImage");
     when(delegateRingService.getDelegateImageTag(ACCOUNT_ID)).thenReturn(delegateRingImage);
 
-    final String actual = delegateService.getDelegateDockerImage(ACCOUNT_ID);
+    final String actual = delegateService.getDelegateDockerImage(ACCOUNT_ID, DelegateType.KUBERNETES);
+    assertThat(actual).isEqualTo(delegateRingImage);
+  }
+
+  @Test
+  @Owner(developers = MARKOM)
+  @Category(UnitTests.class)
+  public void whenDelegateImageProvidedByRingThenUseRing() {
+    final String delegateRingImage = "harness/delegate:ringImage";
+    when(featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, ACCOUNT_ID)).thenReturn(true);
+    when(delegateRingService.getDelegateImageTag(ACCOUNT_ID)).thenReturn(delegateRingImage);
+
+    final String actual = delegateService.getDelegateDockerImage(ACCOUNT_ID, DelegateType.KUBERNETES);
     assertThat(actual).isEqualTo(delegateRingImage);
   }
 
@@ -240,7 +255,19 @@ public class DelegateServiceImplTest extends WingsBaseTest {
     when(mainConfiguration.getPortal()).thenReturn(portal);
     when(portal.getDelegateDockerImage()).thenReturn(null);
 
-    final String actual = delegateService.getDelegateDockerImage("accountId");
+    final String actual = delegateService.getDelegateDockerImage(ACCOUNT_ID, DelegateType.KUBERNETES);
+    assertThat(actual).isEqualTo("harness/delegate:latest");
+  }
+
+  @Test
+  @Owner(developers = MARKOM)
+  @Category(UnitTests.class)
+  public void whenImmutableButNotK8SDelegateThanDefault() {
+    final String delegateRingImage = "harness/delegate:ringImage";
+    when(featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, ACCOUNT_ID)).thenReturn(true);
+    when(delegateRingService.getDelegateImageTag(ACCOUNT_ID)).thenReturn(delegateRingImage);
+
+    final String actual = delegateService.getDelegateDockerImage(ACCOUNT_ID, DelegateType.DOCKER);
     assertThat(actual).isEqualTo("harness/delegate:latest");
   }
 
@@ -252,7 +279,7 @@ public class DelegateServiceImplTest extends WingsBaseTest {
     when(mainConfiguration.getPortal()).thenReturn(portal);
     when(portal.getUpgraderDockerImage()).thenReturn(null);
 
-    final String actual = delegateService.getUpgraderDockerImage("accountId");
+    final String actual = delegateService.getUpgraderDockerImage(ACCOUNT_ID, DelegateType.KUBERNETES);
     assertThat(actual).isEqualTo("harness/upgrader:latest");
   }
 
@@ -265,7 +292,7 @@ public class DelegateServiceImplTest extends WingsBaseTest {
     when(mainConfiguration.getPortal()).thenReturn(portal);
     when(portal.getDelegateDockerImage()).thenReturn(delegateImage);
 
-    final String actual = delegateService.getDelegateDockerImage("accountId");
+    final String actual = delegateService.getDelegateDockerImage(ACCOUNT_ID, DelegateType.KUBERNETES);
     assertThat(actual).isEqualTo(delegateImage);
   }
 
@@ -278,7 +305,7 @@ public class DelegateServiceImplTest extends WingsBaseTest {
     when(mainConfiguration.getPortal()).thenReturn(portal);
     when(portal.getUpgraderDockerImage()).thenReturn(upgraderImage);
 
-    final String actual = delegateService.getUpgraderDockerImage("accountId");
+    final String actual = delegateService.getUpgraderDockerImage(ACCOUNT_ID, DelegateType.KUBERNETES);
     assertThat(actual).isEqualTo(upgraderImage);
   }
 

@@ -409,7 +409,7 @@ net.jcip:jcip-annotations:jar:1.0
 net.jodah:expiringmap:jar:0.5.7
 net.jodah:failsafe:jar:2.2.0
 net.minidev:accessors-smart:jar:1.2
-net.minidev:json-smart:jar:2.3
+net.minidev:json-smart:jar:2.4.1
 net.openhft:affinity:jar:3.2.2
 net.openhft:chronicle-bytes:jar:2.19.0
 net.openhft:chronicle-core:jar:2.19.0

@@ -38,7 +38,7 @@ public class NodeResumeHelper {
 
   public void resume(NodeExecution nodeExecution, Map<String, ByteString> responseMap, boolean isError) {
     ResumeMetadata resumeMetadata = ResumeMetadata.fromNodeExecution(nodeExecution);
-    nodeResumeEventPublisher.publishEvent(resumeMetadata, buildResponseMap(resumeMetadata, responseMap), isError);
+    nodeResumeEventPublisher.publishEvent(resumeMetadata, responseMap, isError);
   }
 
   private Map<String, ByteString> buildResponseMap(ResumeMetadata resumeMetadata, Map<String, ByteString> response) {

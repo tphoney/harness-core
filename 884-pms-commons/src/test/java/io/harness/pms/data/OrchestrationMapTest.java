@@ -57,7 +57,7 @@ public class OrchestrationMapTest extends PmsCommonsTestBase {
         + "ZTbvK6K4zzLLFTlsmpXGdqnT+Tahnc";
 
     byte[] bytes = obtainDbObject(binaryWithoutEqualsSignAtTheEnd);
-    Object deserializedObject = kryoSerializer.asInflatedObject(bytes);
+    Object deserializedObject = kryoSerializer.asObject(bytes);
 
     assertThat(deserializedObject).isInstanceOf(OrchestrationMap.class);
     OrchestrationMap orchestrationMap = (OrchestrationMap) deserializedObject;

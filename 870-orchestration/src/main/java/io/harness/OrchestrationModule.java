@@ -66,6 +66,7 @@ import io.harness.pms.sdk.core.waiter.AsyncWaitEngine;
 import io.harness.queue.TimerScheduledExecutorService;
 import io.harness.serializer.KryoSerializer;
 import io.harness.testing.TestExecution;
+import io.harness.threading.NamedForceQueuePolicy;
 import io.harness.threading.ThreadPool;
 import io.harness.waiter.AbstractWaiterModule;
 import io.harness.waiter.AsyncWaitEngineImpl;
@@ -175,8 +176,10 @@ public class OrchestrationModule extends AbstractModule implements ServersModule
   @Singleton
   @Named("EngineExecutorService")
   public ExecutorService engineExecutionServiceThreadPool() {
+    String poolIdentifier = "EngineExecutorService";
     return ThreadPool.create(config.getCorePoolSize(), config.getMaxPoolSize(), config.getIdleTimeInSecs(),
-        TimeUnit.SECONDS, new ThreadFactoryBuilder().setNameFormat("EngineExecutorService-%d").build());
+        TimeUnit.SECONDS, new ThreadFactoryBuilder().setNameFormat(poolIdentifier + "-%d").build(), 1000,
+        new NamedForceQueuePolicy(poolIdentifier));
   }
 
   @Provides

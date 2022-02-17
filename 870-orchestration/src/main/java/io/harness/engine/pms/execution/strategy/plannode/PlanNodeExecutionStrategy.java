@@ -126,8 +126,8 @@ public class PlanNodeExecutionStrategy extends AbstractNodeExecutionStrategy<Pla
         OrchestrationMapBackwardCompatibilityUtils.extractToOrchestrationMap(resolvedStepParameters));
     // TODO (prashant) : This is a hack right now to serialize in binary as findAndModify is not honoring converter
     // for maps Find a better way to do this
-    nodeExecutionService.update(nodeExecutionId,
-        ops -> ops.set(NodeExecutionKeys.resolvedParams, kryoSerializer.asDeflatedBytes(resolvedParameters)));
+    nodeExecutionService.update(
+        nodeExecutionId, ops -> ops.set(NodeExecutionKeys.resolvedParams, kryoSerializer.asBytes(resolvedParameters)));
     log.info("Resolved to step parameters");
   }
 

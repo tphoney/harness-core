@@ -76,13 +76,13 @@ public class PmsGitSyncHelper {
       return null;
     }
     byte[] bytes = byteString.toByteArray();
-    return isEmpty(bytes) ? null : (GitSyncBranchContext) kryoSerializer.asInflatedObject(bytes);
+    return isEmpty(bytes) ? null : (GitSyncBranchContext) kryoSerializer.asObjectOrInflated(bytes);
   }
 
   public ByteString serializeGitSyncBranchContext(GitSyncBranchContext gitSyncBranchContext) {
     if (gitSyncBranchContext == null) {
       return null;
     }
-    return ByteString.copyFrom(kryoSerializer.asDeflatedBytes(gitSyncBranchContext));
+    return ByteString.copyFrom(kryoSerializer.asBytes(gitSyncBranchContext));
   }
 }

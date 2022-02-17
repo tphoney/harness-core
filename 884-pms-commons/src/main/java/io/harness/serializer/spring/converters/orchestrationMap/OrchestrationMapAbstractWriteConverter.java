@@ -30,6 +30,6 @@ public abstract class OrchestrationMapAbstractWriteConverter<T extends Orchestra
     if (object == null) {
       return null;
     }
-    return new Binary(kryoSerializer.asDeflatedBytes(object));
+    return new Binary(kryoSerializer.asBytes(object));
   }
 }

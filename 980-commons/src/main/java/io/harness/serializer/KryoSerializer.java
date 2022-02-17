@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
@@ -83,10 +84,12 @@ public class KryoSerializer {
     return Base64.encodeBase64String(asBytes(obj));
   }
 
+  @SneakyThrows
   public byte[] asBytes(Object obj) {
-    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    writeToStream(obj, outputStream);
-    return outputStream.toByteArray();
+    try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+      writeToStream(obj, outputStream);
+      return outputStream.toByteArray();
+    }
   }
 
   public byte[] asDeflatedBytes(Object obj) {
@@ -138,5 +141,17 @@ public class KryoSerializer {
 
   public boolean isRegistered(Class cls) {
     return pool.run(kryo -> kryo.getClassResolver().getRegistration(cls) != null);
+  }
+
+  // TODO (prashant) : this is here just for backward compatibility will be removed in coming releases.
+  // Please do not use it any place else
+  @Deprecated
+  public Object asObjectOrInflated(byte[] bytes) {
+    try {
+      return asObject(bytes);
+    } catch (Exception ex) {
+      log.error("Exception occurred while deserializing as bytes. Trying as inflated bytes", ex);
+      return asInflatedObject(bytes);
+    }
   }
 }

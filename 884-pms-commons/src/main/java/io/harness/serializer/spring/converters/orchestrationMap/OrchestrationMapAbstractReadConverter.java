@@ -31,7 +31,6 @@ public abstract class OrchestrationMapAbstractReadConverter<T extends Orchestrat
     if (binary.getData() == null) {
       return null;
     }
-
-    return (T) kryoSerializer.asInflatedObject(binary.getData());
+    return (T) kryoSerializer.asObjectOrInflated(binary.getData());
   }
 }

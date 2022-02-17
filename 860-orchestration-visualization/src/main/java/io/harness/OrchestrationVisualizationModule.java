@@ -23,6 +23,7 @@ import io.harness.service.GraphGenerationService;
 import io.harness.service.impl.GraphGenerationServiceImpl;
 import io.harness.skip.service.VertexSkipperService;
 import io.harness.skip.service.impl.VertexSkipperServiceImpl;
+import io.harness.threading.NamedForceQueuePolicy;
 import io.harness.threading.ThreadPool;
 import io.harness.threading.ThreadPoolConfig;
 
@@ -79,9 +80,11 @@ public class OrchestrationVisualizationModule extends AbstractModule {
   @Singleton
   @Named("OrchestrationVisualizationExecutorService")
   public ExecutorService orchestrationVisualizationExecutorService() {
+    String poolIdentifier = "OrchestrationVisualizationExecutorService";
     return ThreadPool.create(visualizationThreadPoolConfig.getCorePoolSize(),
         visualizationThreadPoolConfig.getMaxPoolSize(), visualizationThreadPoolConfig.getIdleTime(),
         visualizationThreadPoolConfig.getTimeUnit(),
-        new ThreadFactoryBuilder().setNameFormat("OrchestrationVisualizationExecutorService-%d").build());
+        new ThreadFactoryBuilder().setNameFormat(poolIdentifier + "-%d").build(), 1000,
+        new NamedForceQueuePolicy(poolIdentifier));
   }
 }

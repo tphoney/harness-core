@@ -11,7 +11,9 @@ import static io.harness.annotations.dev.HarnessTeam.CDC;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.engine.OrchestrationEngine;
+import io.harness.logging.AutoLogContext;
 import io.harness.pms.contracts.ambiance.Ambiance;
+import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.sdk.core.steps.io.ResponseDataMapper;
 import io.harness.tasks.ResponseData;
 import io.harness.waiter.OldNotifyCallback;
@@ -42,7 +44,11 @@ public class EngineResumeCallback implements OldNotifyCallback {
   }
 
   private void notifyWithError(Map<String, ResponseData> response, boolean asyncError) {
-    Map<String, ByteString> byteStringMap = responseDataMapper.toResponseDataProto(response);
-    orchestrationEngine.resumeNodeExecution(ambiance, byteStringMap, asyncError);
+    try (AutoLogContext ignore = AmbianceUtils.autoLogContext(ambiance)) {
+      Map<String, ByteString> byteStringMap = responseDataMapper.toResponseDataProto(response);
+      orchestrationEngine.resumeNodeExecution(ambiance, byteStringMap, asyncError);
+    } catch (Exception ex) {
+      orchestrationEngine.handleError(ambiance, ex);
+    }
   }
 }

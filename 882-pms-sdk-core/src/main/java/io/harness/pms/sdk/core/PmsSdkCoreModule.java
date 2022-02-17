@@ -24,7 +24,9 @@ import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingGrpcOutputServi
 import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
 import io.harness.pms.sdk.core.response.publishers.RedisSdkResponseEventPublisher;
 import io.harness.pms.sdk.core.response.publishers.SdkResponseEventPublisher;
+import io.harness.threading.NamedForceQueuePolicy;
 import io.harness.threading.ThreadPool;
+import io.harness.threading.ThreadPoolConfig;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
@@ -86,23 +88,32 @@ public class PmsSdkCoreModule extends AbstractModule {
   @Singleton
   @Named(PmsSdkModuleUtils.CORE_EXECUTOR_NAME)
   public ExecutorService coreExecutorService() {
-    return ThreadPool.create(config.getExecutionPoolConfig(),
-        new ThreadFactoryBuilder().setNameFormat("PmsSdkCoreEventListener-%d").build());
+    ThreadPoolConfig poolConfig = config.getExecutionPoolConfig();
+    String poolIdentifier = "PmsSdkCoreEventListener";
+    return ThreadPool.create(poolConfig.getCorePoolSize(), poolConfig.getMaxPoolSize(), poolConfig.getIdleTime(),
+        poolConfig.getTimeUnit(), new ThreadFactoryBuilder().setNameFormat(poolIdentifier + "-%d").build(), 1000,
+        new NamedForceQueuePolicy(poolIdentifier));
   }
 
   @Provides
   @Singleton
   @Named(PmsSdkModuleUtils.PLAN_CREATOR_SERVICE_EXECUTOR)
   public Executor planCreatorInternalExecutorService() {
-    return ThreadPool.create(config.getPlanCreatorServicePoolConfig(),
-        new ThreadFactoryBuilder().setNameFormat("PlanCreatorInternalExecutorService-%d").build());
+    ThreadPoolConfig poolConfig = config.getPlanCreatorServicePoolConfig();
+    String poolIdentifier = "PlanCreatorInternalExecutorService";
+    return ThreadPool.create(poolConfig.getCorePoolSize(), poolConfig.getMaxPoolSize(), poolConfig.getIdleTime(),
+        poolConfig.getTimeUnit(), new ThreadFactoryBuilder().setNameFormat(poolIdentifier + "-%d").build(), 1000,
+        new NamedForceQueuePolicy(poolIdentifier));
   }
 
   @Provides
   @Singleton
   @Named(PmsSdkModuleUtils.ORCHESTRATION_EVENT_EXECUTOR_NAME)
   public ExecutorService orchestrationEventExecutorService() {
-    return ThreadPool.create(config.getOrchestrationEventPoolConfig(),
-        new ThreadFactoryBuilder().setNameFormat("PmsSdkOrchestrationEventListener-%d").build());
+    ThreadPoolConfig poolConfig = config.getOrchestrationEventPoolConfig();
+    String poolIdentifier = "PmsSdkOrchestrationEventListener";
+    return ThreadPool.create(poolConfig.getCorePoolSize(), poolConfig.getMaxPoolSize(), poolConfig.getIdleTime(),
+        poolConfig.getTimeUnit(), new ThreadFactoryBuilder().setNameFormat(poolIdentifier + "-%d").build(), 1000,
+        new NamedForceQueuePolicy(poolIdentifier));
   }
 }

@@ -49,6 +49,7 @@ public interface EntityTypeConstants {
   String RESTORE_CACHE_S3 = "RestoreCacheS3";
   String SAVE_CACHE_GCS = "SaveCacheGCS";
   String SAVE_CACHE_S3 = "SaveCacheS3";
+  String SECURITY = "Security";
   String ARTIFACTORY_UPLOAD = "ArtifactoryUpload";
   String GCS_UPLOAD = "GCSUpload";
   String S3_UPLOAD = "S3Upload";
@@ -61,6 +62,7 @@ public interface EntityTypeConstants {
   String HARNESS_APPROVAL = "HarnessApproval";
   String BARRIER = "Barrier";
   String Verify = "Verify";
+  String FlagConfiguration = "FlagConfiguration";
   String OPAPOLICIES = "GovernancePolicies";
-  String POLICY_STEP = "PolicyStep";
+  String POLICY_STEP = "Policy";
 }

@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ccm.remote.resources;
+package io.harness.ccm.remote.resources.perspectives;
 
 import static io.harness.NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE;
 import static io.harness.annotations.dev.HarnessTeam.CE;
@@ -22,6 +22,7 @@ import io.harness.ccm.graphql.core.budget.BudgetService;
 import io.harness.ccm.utils.LogAccountIdentifier;
 import io.harness.ccm.views.entities.CEView;
 import io.harness.ccm.views.entities.ViewType;
+import io.harness.ccm.views.graphql.QLCEView;
 import io.harness.ccm.views.service.CEReportScheduleService;
 import io.harness.ccm.views.service.CEViewService;
 import io.harness.ccm.views.service.ViewCustomFieldService;
@@ -45,6 +46,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -100,6 +102,7 @@ public class PerspectiveResource {
   @GET
   @Path("lastMonthCost")
   @Timed
+  @Hidden
   @LogAccountIdentifier
   @ExceptionMetered
   @ApiOperation(value = "Get last month cost for perspective", nickname = "getLastMonthCostV2")
@@ -123,6 +126,7 @@ public class PerspectiveResource {
   @GET
   @Path("lastPeriodCost")
   @Timed
+  @Hidden
   @LogAccountIdentifier
   @ExceptionMetered
   @ApiOperation(value = "Get last period cost for perspective", nickname = "getLastPeriodCost")
@@ -150,6 +154,7 @@ public class PerspectiveResource {
   @GET
   @Path("forecastCost")
   @Timed
+  @Hidden
   @ExceptionMetered
   @ApiOperation(value = "Get forecast cost for perspective", nickname = "getForecastCostV2")
   @Operation(operationId = "getForecastCostV2",
@@ -172,6 +177,7 @@ public class PerspectiveResource {
   @GET
   @Path("forecastCostForPeriod")
   @Timed
+  @Hidden
   @ExceptionMetered
   @ApiOperation(value = "Get forecast cost for perspective for given period", nickname = "getForecastCostForPeriod")
   @Operation(operationId = "getForecastCostForPeriod",
@@ -258,6 +264,27 @@ public class PerspectiveResource {
       @QueryParam("perspectiveId") @Parameter(required = true,
           description = "Unique identifier for the Perspective") @NotBlank @Valid String perspectiveId) {
     return ResponseDTO.newResponse(ceViewService.get(perspectiveId));
+  }
+
+  @GET
+  @Path("getAllPerspectives")
+  @Timed
+  @ExceptionMetered
+  @ApiOperation(value = "Get All perspectives", nickname = "getAllPerspectives")
+  @LogAccountIdentifier
+  @Produces(MediaType.APPLICATION_JSON)
+  @Operation(operationId = "getAllPerspectives",
+      description = "Return details of all the Perspectives for the given account ID.",
+      summary = "Return details of all the Perspectives",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Returns a List of Perspectives",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON) })
+      })
+  public ResponseDTO<List<QLCEView>>
+  getAll(@Parameter(required = true, description = ACCOUNT_PARAM_MESSAGE) @QueryParam(
+      NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier @NotNull @Valid String accountId) {
+    return ResponseDTO.newResponse(ceViewService.getAllViews(accountId, true));
   }
 
   @PUT

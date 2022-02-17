@@ -11,6 +11,7 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.filter.FilterType.DELEGATEPROFILE;
 import static io.harness.mongo.MongoUtils.setUnset;
+import static io.harness.persistence.HQuery.excludeAuthority;
 import static io.harness.service.impl.DelegateConnectivityStatus.GROUP_STATUS_CONNECTED;
 import static io.harness.service.impl.DelegateConnectivityStatus.GROUP_STATUS_DISCONNECTED;
 import static io.harness.service.impl.DelegateConnectivityStatus.GROUP_STATUS_PARTIALLY_CONNECTED;
@@ -51,6 +52,7 @@ import software.wings.service.impl.DelegateConnectionDao;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -524,5 +526,34 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
         .stream()
         .map(key -> (String) key.getId())
         .collect(toList());
+  }
+
+  @Override
+  public DelegateGroup updateDelegateGroupTags(String accountId, String delegateName, List<String> tags) {
+    Query<DelegateGroup> updateQuery = persistence.createQuery(DelegateGroup.class)
+                                           .filter(DelegateGroupKeys.accountId, accountId)
+                                           .filter(DelegateGroupKeys.name, delegateName);
+
+    UpdateOperations<DelegateGroup> updateOperations = persistence.createUpdateOperations(DelegateGroup.class);
+    setUnset(updateOperations, DelegateGroupKeys.tags, tags);
+
+    DelegateGroup updatedDelegateGroup =
+        persistence.findAndModify(updateQuery, updateOperations, HPersistence.returnNewOptions);
+    delegateCache.invalidateDelegateGroupCache(accountId, updatedDelegateGroup.getUuid());
+
+    Query<Delegate> delegatesToBeUpdated = persistence.createQuery(Delegate.class)
+                                               .filter(DelegateKeys.accountId, accountId)
+                                               .filter(DelegateKeys.delegateName, delegateName);
+    UpdateOperations<Delegate> updateOperationsForDelegates = persistence.createUpdateOperations(Delegate.class);
+    setUnset(updateOperationsForDelegates, DelegateKeys.tags, tags);
+    persistence.update(delegatesToBeUpdated, updateOperationsForDelegates);
+    List<String> updatedUuid = new ArrayList<String>();
+    for (Delegate delegate : delegatesToBeUpdated.asList()) {
+      updatedUuid.add(delegate.getUuid());
+      delegateCache.get(accountId, delegate.getUuid(), true);
+    }
+    log.info("Updating tags for delegate group: {} Delegate:{} tags:{}", delegateName, updatedUuid.toString(),
+        tags.toString());
+    return updatedDelegateGroup;
   }
 }

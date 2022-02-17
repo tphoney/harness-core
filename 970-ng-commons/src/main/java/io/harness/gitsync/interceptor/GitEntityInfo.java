@@ -29,7 +29,7 @@ import lombok.experimental.Wither;
 public class GitEntityInfo {
   String branch;
   String yamlGitConfigId;
-  @Wither @jdk.nashorn.internal.objects.annotations.Setter String folderPath;
+  @Wither @Setter String folderPath;
   @Wither @Setter String filePath;
   @Wither String commitMsg;
   @Wither String lastObjectId; // required in case of update file

@@ -24,6 +24,7 @@ import io.harness.beans.PageRequest;
 import io.harness.delegate.beans.DelegateGroup;
 import io.harness.delegate.beans.DelegateGroupDetails;
 import io.harness.delegate.beans.DelegateGroupListing;
+import io.harness.delegate.beans.DelegateGroupTags;
 import io.harness.delegate.filter.DelegateFilterPropertiesDTO;
 import io.harness.logging.AccountLogContext;
 import io.harness.logging.AutoLogContext;
@@ -216,18 +217,8 @@ public class DelegateSetupResourceV2 {
     }
   }
 
-  protected static class DelegateTags {
-    private List<String> tags;
-    public List<String> getTags() {
-      return tags;
-    }
-    public void setTags(List<String> tags) {
-      this.tags = tags;
-    }
-  }
-
   @PUT
-  @Path("tags/{identifier}")
+  @Path("{identifier}/tags")
   @Timed
   @ExceptionMetered
   @AuthRule(permissionType = LOGGED_IN)
@@ -240,7 +231,7 @@ public class DelegateSetupResourceV2 {
   public RestResponse<DelegateGroup>
   updateTagsForDelegateGroup(@Parameter(description = "Delegate Group Name") @PathParam("identifier")
                              @NotEmpty String identifier, @QueryParam("accountId") @NotEmpty String accountId,
-      @RequestBody(required = true, description = "List of tags") DelegateTags tags) {
+      @RequestBody(required = true, description = "List of tags") DelegateGroupTags tags) {
     try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
       return new RestResponse<>(delegateSetupService.updateDelegateGroupTags(accountId, identifier, tags.getTags()));
     }

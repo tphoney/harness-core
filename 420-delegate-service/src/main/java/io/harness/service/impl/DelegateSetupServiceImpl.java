@@ -529,12 +529,13 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
   }
 
   @Override
-  public DelegateGroup updateDelegateGroupTags(String accountId, String delegateName, List<String> tags) {
+  public DelegateGroup updateDelegateGroupTags(String accountId, String delegateGroupName, List<String> tags) {
     Query<DelegateGroup> updateQuery = persistence.createQuery(DelegateGroup.class)
                                            .filter(DelegateGroupKeys.accountId, accountId)
-                                           .filter(DelegateGroupKeys.name, delegateName);
+                                           .filter(DelegateGroupKeys.name, delegateGroupName)
+                                           .filter(DelegateGroupKeys.ng, true);
 
-    UpdateOperations<DelegateGroup> updateOperations = persistence.createUpdateOperations(DelegateGroup.class);
+    final UpdateOperations<DelegateGroup> updateOperations = persistence.createUpdateOperations(DelegateGroup.class);
     setUnset(updateOperations, DelegateGroupKeys.tags, tags);
 
     DelegateGroup updatedDelegateGroup =
@@ -543,8 +544,9 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
 
     Query<Delegate> delegatesToBeUpdated = persistence.createQuery(Delegate.class)
                                                .filter(DelegateKeys.accountId, accountId)
-                                               .filter(DelegateKeys.delegateName, delegateName);
-    UpdateOperations<Delegate> updateOperationsForDelegates = persistence.createUpdateOperations(Delegate.class);
+                                               .filter(DelegateKeys.delegateName, delegateGroupName)
+                                               .filter(DelegateKeys.ng, true);
+    final UpdateOperations<Delegate> updateOperationsForDelegates = persistence.createUpdateOperations(Delegate.class);
     setUnset(updateOperationsForDelegates, DelegateKeys.tags, tags);
     persistence.update(delegatesToBeUpdated, updateOperationsForDelegates);
     List<String> updatedUuid = new ArrayList<String>();
@@ -552,7 +554,7 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
       updatedUuid.add(delegate.getUuid());
       delegateCache.get(accountId, delegate.getUuid(), true);
     }
-    log.info("Updating tags for delegate group: {} Delegate:{} tags:{}", delegateName, updatedUuid.toString(),
+    log.info("Updating tags for delegate group: {} Delegate:{} tags:{}", delegateGroupName, updatedUuid.toString(),
         tags.toString());
     return updatedDelegateGroup;
   }

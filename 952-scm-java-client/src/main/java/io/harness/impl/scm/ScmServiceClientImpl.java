@@ -112,7 +112,8 @@ public class ScmServiceClientImpl implements ScmServiceClient {
       ScmConnector scmConnector, GitFileDetails gitFileDetails, SCMGrpc.SCMBlockingStub scmBlockingStub) {
     FileModifyRequest fileModifyRequest = getFileModifyRequest(scmConnector, gitFileDetails).build();
     CreateFileResponse createFileResponse = scmBlockingStub.createFile(fileModifyRequest);
-    if (isEmpty(createFileResponse.getCommitId())) {
+    if (ScmResponseStatusUtils.isSuccessResponse(createFileResponse.getStatus())
+        && isEmpty(createFileResponse.getCommitId())) {
       // In case commit id is empty for any reason, we treat this as an error case even if file got created on git
       return CreateFileResponse.newBuilder()
           .setStatus(Constants.SCM_INTERNAL_SERVER_ERROR_CODE)
@@ -152,7 +153,9 @@ public class ScmServiceClientImpl implements ScmServiceClient {
     final FileModifyRequest fileModifyRequest =
         fileModifyRequestBuilder.setBlobId(gitFileDetails.getOldFileSha()).build();
     UpdateFileResponse updateFileResponse = scmBlockingStub.updateFile(fileModifyRequest);
-    if (isEmpty(updateFileResponse.getCommitId())) {
+
+    if (ScmResponseStatusUtils.isSuccessResponse(updateFileResponse.getStatus())
+        && isEmpty(updateFileResponse.getCommitId())) {
       // In case commit id is empty for any reason, we treat this as an error case even if file got updated on git
       return UpdateFileResponse.newBuilder()
           .setStatus(Constants.SCM_INTERNAL_SERVER_ERROR_CODE)
@@ -189,11 +192,8 @@ public class ScmServiceClientImpl implements ScmServiceClient {
       ScmConnector scmConnector, GitFilePathDetails gitFilePathDetails, SCMGrpc.SCMBlockingStub scmBlockingStub) {
     Provider gitProvider = scmGitProviderMapper.mapToSCMGitProvider(scmConnector);
     String slug = scmGitProviderHelper.getSlug(scmConnector);
-    final GetFileRequest.Builder gitFileRequestBuilder = GetFileRequest.newBuilder()
-                                                             .setBranch(gitFilePathDetails.getBranch())
-                                                             .setPath(gitFilePathDetails.getFilePath())
-                                                             .setProvider(gitProvider)
-                                                             .setSlug(slug);
+    final GetFileRequest.Builder gitFileRequestBuilder =
+        GetFileRequest.newBuilder().setPath(gitFilePathDetails.getFilePath()).setProvider(gitProvider).setSlug(slug);
     if (gitFilePathDetails.getBranch() != null) {
       gitFileRequestBuilder.setBranch(gitFilePathDetails.getBranch());
     } else if (gitFilePathDetails.getRef() != null) {

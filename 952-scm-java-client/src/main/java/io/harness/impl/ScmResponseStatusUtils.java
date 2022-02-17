@@ -64,4 +64,8 @@ public class ScmResponseStatusUtils {
         return ErrorCode.UNEXPECTED;
     }
   }
+
+  public boolean isSuccessResponse(int statusCode) {
+    return statusCode == 200;
+  }
 }

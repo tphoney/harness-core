@@ -29,6 +29,7 @@ import io.harness.gitsync.common.helper.GitSyncGrpcClientUtils;
 import io.harness.gitsync.common.helper.UserPrincipalMapper;
 import io.harness.gitsync.exceptions.GitSyncException;
 import io.harness.gitsync.interceptor.GitEntityInfo;
+import io.harness.gitsync.interceptor.GitSyncConstants;
 import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.gitsync.scm.beans.SCMNoOpResponse;
 import io.harness.gitsync.scm.beans.ScmPushResponse;
@@ -113,9 +114,9 @@ public class SCMGitSyncHelper {
       builder.setOldFileSha(StringValue.of(gitBranchInfo.getLastObjectId()));
     }
 
-    if (gitBranchInfo.getResolvedConflictCommitId() != null) {
-      builder.setCommitId(gitBranchInfo.getResolvedConflictCommitId());
-    }
+    builder.setCommitId(GitSyncConstants.DEFAULT.equals(gitBranchInfo.getResolvedConflictCommitId())
+            ? ""
+            : gitBranchInfo.getResolvedConflictCommitId());
 
     return builder.build();
   }

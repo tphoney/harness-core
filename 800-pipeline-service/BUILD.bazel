@@ -18,6 +18,8 @@ java_binary(
     visibility = ["//visibility:public"],
     runtime_deps = [
         "@maven//:javax_ws_rs_javax_ws_rs_api",
+        "@maven//:io_debezium_debezium_connector_mongodb",
+        "@maven//:io_debezium_debezium_embedded",
     ],
     deps = [
         "//:lombok",
@@ -100,6 +102,11 @@ java_binary(
         "@maven//:org_glassfish_jersey_media_jersey_media_multipart",
         "@maven//:org_jooq_jooq",
         "@maven//:org_jooq_joor",
+        "@maven//:org_apache_kafka_connect_api",
+        "@maven//:org_apache_kafka_connect_runtime",
+        "@maven//:org_apache_kafka_kafka_clients",
+        "@maven//:io_debezium_debezium_api",
+        "@maven//:io_debezium_debezium_core",
         "@maven//:org_modelmapper_modelmapper",
         "@maven//:org_mongodb_morphia_morphia",
         "@maven//:org_postgresql_postgresql",

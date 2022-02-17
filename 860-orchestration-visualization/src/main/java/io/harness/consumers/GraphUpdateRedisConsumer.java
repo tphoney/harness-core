@@ -121,7 +121,7 @@ public class GraphUpdateRedisConsumer implements PmsRedisConsumer {
         try (AutoLogContext autoLogContext = new AutoLogContext(
                  ImmutableMap.of("planExecutionId", planExecutionId), AutoLogContext.OverrideBehavior.OVERRIDE_NESTS)) {
           checkAndLogSchedulingDelays(planExecutionId, startTs);
-          graphGenerationService.updateGraph(planExecutionId);
+//          graphGenerationService.updateGraph(planExecutionId);
         } catch (Exception ex) {
           log.error("Exception occurred while updating graph with planExecutionId {}", planExecutionId, ex);
         }

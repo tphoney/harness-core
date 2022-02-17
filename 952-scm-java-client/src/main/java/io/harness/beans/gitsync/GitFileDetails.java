@@ -7,12 +7,11 @@
 
 package io.harness.beans.gitsync;
 
-import static io.harness.annotations.dev.HarnessTeam.DX;
-
 import io.harness.annotations.dev.OwnedBy;
-
 import lombok.Builder;
 import lombok.Value;
+
+import static io.harness.annotations.dev.HarnessTeam.DX;
 
 @Value
 @Builder
@@ -26,4 +25,19 @@ public class GitFileDetails {
   String userEmail;
   String userName;
   String commitId; // current commit of file in Harness, needed in case of bitbucket
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("GitFileDetails{");
+    sb.append("filePath='").append(filePath).append('\'');
+    sb.append(", branch='").append(branch).append('\'');
+    sb.append(", fileContent='").append(fileContent).append('\'');
+    sb.append(", commitMessage='").append(commitMessage).append('\'');
+    sb.append(", oldFileSha='").append(oldFileSha).append('\'');
+    sb.append(", userEmail='").append(userEmail).append('\'');
+    sb.append(", userName='").append(userName).append('\'');
+    sb.append(", commitId='").append(commitId).append('\'');
+    sb.append('}');
+    return sb.toString();
+  }
 }

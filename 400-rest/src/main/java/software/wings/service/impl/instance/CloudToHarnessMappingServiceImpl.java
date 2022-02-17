@@ -423,8 +423,8 @@ public class CloudToHarnessMappingServiceImpl implements CloudToHarnessMappingSe
   }
 
   private ClusterRecord getCluster(String clusterId) {
-    Query<ClusterRecord> query =
-        persistence.createQuery(ClusterRecord.class).filter(ClusterRecordKeys.uuid, new ObjectId(clusterId));
+    Query<ClusterRecord> query = persistence.createQuery(ClusterRecord.class, excludeValidate)
+                                     .filter(ClusterRecordKeys.uuid, new ObjectId(clusterId));
     return query.get();
   }
 
@@ -457,8 +457,8 @@ public class CloudToHarnessMappingServiceImpl implements CloudToHarnessMappingSe
 
   @Override
   public CEUserInfo getUserForCluster(String clusterId) {
-    Query<ClusterRecord> clusterQuery =
-        persistence.createQuery(ClusterRecord.class).filter(ClusterRecordKeys.uuid, new ObjectId(clusterId));
+    Query<ClusterRecord> clusterQuery = persistence.createQuery(ClusterRecord.class, excludeValidate)
+                                            .filter(ClusterRecordKeys.uuid, new ObjectId(clusterId));
     ClusterRecord cluster = clusterQuery.get();
     if (cluster == null) {
       return null;

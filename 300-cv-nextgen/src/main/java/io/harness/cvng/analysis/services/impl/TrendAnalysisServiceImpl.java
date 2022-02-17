@@ -316,20 +316,29 @@ public class TrendAnalysisServiceImpl implements TrendAnalysisService {
       String txnName = txnMetricAnalysis.getKey();
       ServiceGuardTxnMetricAnalysisDataDTO analysisDataDTO = txnMetricAnalysis.getValue().get(TREND_METRIC_NAME);
       LogAnalysisCluster cluster = logAnalysisClusterMap.get(Long.valueOf(txnName));
-      if (analysisDataDTO.getRisk().isGreaterThanEq(Risk.OBSERVE)) {
-        unexpectedClustersWithRiskScore.put(cluster.getLabel(), analysisDataDTO.getScore());
-      }
-      int index = cluster.getFrequencyTrend().size() - 1;
-      while (index >= 0) {
-        Frequency frequency = cluster.getFrequencyTrend().get(index);
-        Instant timestamp = DateTimeUtils.epochMinuteToInstant(frequency.getTimestamp());
-        if (timestamp.isBefore(startTime)) {
-          break;
+      if (cluster == null) {
+        // This if condition is added as the LE also sends the data for control data points in case of log clusters as
+        // the last step for log analysis is SERVICE_GAURD_TIME_SERIES. once we remove this and do distribution analysis
+        // instead, we need to make sure that the data for control cluster is not there in the LE output and remove this
+        // if condition
+        log.warn(String.format(
+            "Cluster does not exists for verificationTaskId %s , txnName %s", verificationTaskId, txnName));
+      } else {
+        if (analysisDataDTO.getRisk().isGreaterThanEq(Risk.OBSERVE)) {
+          unexpectedClustersWithRiskScore.put(cluster.getLabel(), analysisDataDTO.getScore());
         }
-        if (timestamp.isBefore(endTime)) {
-          frequency.setRiskScore(analysisDataDTO.getScore());
+        int index = cluster.getFrequencyTrend().size() - 1;
+        while (index >= 0) {
+          Frequency frequency = cluster.getFrequencyTrend().get(index);
+          Instant timestamp = DateTimeUtils.epochMinuteToInstant(frequency.getTimestamp());
+          if (timestamp.isBefore(startTime)) {
+            break;
+          }
+          if (timestamp.isBefore(endTime)) {
+            frequency.setRiskScore(analysisDataDTO.getScore());
+          }
+          index--;
         }
-        index--;
       }
     }
     hPersistence.save(new ArrayList<>(logAnalysisClusterMap.values()));

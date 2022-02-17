@@ -76,7 +76,8 @@ def main(event, context):
     jsonData["tableName"] = f"awsBilling_{jsonData['tableSuffix']}"
     jsonData["tableId"] = "%s.%s.%s" % (PROJECTID, jsonData["datasetName"], jsonData["tableName"])
 
-    create_dataset_and_tables(jsonData)
+    if not create_dataset_and_tables(jsonData):
+        return
     ingest_data_from_csv(jsonData)
     get_unique_accountids(jsonData)
     ingest_data_to_awscur(jsonData)
@@ -90,7 +91,8 @@ def main(event, context):
 def create_dataset_and_tables(jsonData):
     create_dataset(client, jsonData["datasetName"], jsonData.get("accountId"))
     dataset = client.dataset(jsonData["datasetName"])
-    create_table_from_manifest(jsonData)
+    if not create_table_from_manifest(jsonData):
+        return False
 
     aws_cur_table_ref = dataset.table("awscur_%s" % (jsonData["awsCurTableSuffix"]))
     pre_aggragated_table_ref = dataset.table(PREAGGREGATED)
@@ -108,6 +110,7 @@ def create_dataset_and_tables(jsonData):
                 alter_unified_table(jsonData)
             print_("%s table exists" % table_ref)
 
+    return True
 
 def create_table_from_manifest(jsonData):
     # Read the CSV from GCS as string
@@ -131,6 +134,7 @@ def create_table_from_manifest(jsonData):
                 break
     except Exception as e:
         print_(e)
+        return False
 
     # Prepare table schema from manifest json
     reg = re.compile("[^a-zA-Z0-9_]")
@@ -165,9 +169,12 @@ def create_table_from_manifest(jsonData):
             print_("Deleted Manifest Json {}".format(blob_to_delete.name))
         else:
             print_("No Manifest found. No table to create")
+            return False
     except Exception as e:
         print_("Error while creating table\n {}".format(e), "ERROR")
+        return False
 
+    return True
 
 def get_mapped_data_column(data_type):
     if data_type == "String":
@@ -233,6 +240,16 @@ def ingest_data_to_awscur(jsonData):
     date_end = "%s-%s-%s" % (year, month, monthrange(int(year), int(month))[1])
     print_("Loading into %s table..." % tableName)
 
+    tags_query = """( SELECT ARRAY_AGG(STRUCT( regexp_replace(REGEXP_EXTRACT(unpivotedData, '[^"]*'), 'TAG_' , '') AS key ,
+        regexp_replace(REGEXP_EXTRACT(unpivotedData, r':\"[^"]*'), ':"', '') AS value ))
+        FROM UNNEST(( SELECT REGEXP_EXTRACT_ALL(json, 'TAG_' || r'[^:]+:\"[^"]+\"') FROM (SELECT TO_JSON_STRING(table) json))) unpivotedData)
+        AS tags """
+
+    # This is temp fix for colourtokens. refer CCM-5462 for more information
+    if (jsonData["connectorId"] in ["QA096742272934"]) and (jsonData["accountId"] in ["MN8FCTn_Q9-DDHGIJWm-Xg"]):
+        print_("Skipping ingesting tags")
+        tags_query = "null AS tags "
+
     query = """
     DELETE FROM `%s` WHERE DATE(usagestartdate) >= '%s' AND DATE(usagestartdate) <= '%s' and usageaccountid IN (%s);
     INSERT INTO `%s` (resourceid, usagestartdate, productname, productfamily, servicecode, blendedrate, blendedcost, 
@@ -240,13 +257,11 @@ def ingest_data_to_awscur(jsonData):
                     lineitemtype, effectivecost, billingentity, instanceFamily, marketOption, tags) 
     SELECT resourceid, usagestartdate, productname, productfamily, servicecode, blendedrate, blendedcost, 
                     unblendedrate, unblendedcost, region, availabilityzone, usageaccountid, instancetype, usagetype, 
-                    lineitemtype, effectivecost, billingentity, instanceFamily, marketOption, 
-                    ( SELECT ARRAY_AGG(STRUCT( regexp_replace(REGEXP_EXTRACT(unpivotedData, '[^"]*'), 'TAG_' , '') AS key , 
-                         regexp_replace(REGEXP_EXTRACT(unpivotedData, r':\"[^"]*'), ':"', '') AS value )) 
-                         FROM UNNEST(( SELECT REGEXP_EXTRACT_ALL(json, 'TAG_' || r'[^:]+:\"[^"]+\"') FROM (SELECT TO_JSON_STRING(table) json))) unpivotedData) 
-               AS tags FROM `%s` table WHERE DATE(usagestartdate) >= '%s' AND DATE(usagestartdate) <= '%s';
-     """ % (tableName, date_start, date_end, jsonData["usageaccountid"], tableName, jsonData["tableId"], date_start, date_end)
+                    lineitemtype, effectivecost, billingentity, instanceFamily, marketOption, %s
+                     FROM `%s` table WHERE DATE(usagestartdate) >= '%s' AND DATE(usagestartdate) <= '%s';
+     """ % (tableName, date_start, date_end, jsonData["usageaccountid"], tableName, tags_query, jsonData["tableId"], date_start, date_end)
     # Configure the query job.
+    print_(query)
     job_config = bigquery.QueryJobConfig(
         query_parameters=[
             bigquery.ScalarQueryParameter(

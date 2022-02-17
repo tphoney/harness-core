@@ -78,7 +78,7 @@ public class K8sNodeInfoTasklet implements Tasklet {
                                                 .filter(x -> x.getAccountId() != null)
                                                 .collect(Collectors.toList());
 
-      instanceDataBulkWriteService.updateList(
+      instanceDataBulkWriteService.upsertInstanceInfo(
           instanceInfoList.stream()
               .filter(x -> x.getMetaData().containsKey(InstanceMetaDataConstants.INSTANCE_CATEGORY))
               .collect(Collectors.toList()));

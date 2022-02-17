@@ -31,6 +31,7 @@ import software.wings.beans.container.PcfServiceSpecification;
 import software.wings.beans.container.UserDataSpecification;
 import software.wings.beans.template.Template;
 import software.wings.beans.trigger.Trigger;
+import software.wings.beans.yaml.FullSyncError;
 import software.wings.beans.yaml.GitFileChange;
 import software.wings.infra.InfrastructureDefinition;
 import software.wings.security.AppPermissionSummary;
@@ -45,7 +46,6 @@ import software.wings.yaml.gitSync.YamlGitConfig;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -80,7 +80,7 @@ public interface YamlDirectoryService {
   YamlGitConfig weNeedToPushChanges(String accountId, String entityId);
 
   List<GitFileChange> traverseDirectory(List<GitFileChange> gitFileChanges, String accountId, FolderNode fn,
-      String path, boolean includeFiles, boolean failFast, Optional<List<String>> listOfYamlErrors);
+      String path, boolean includeFiles, boolean failFast, List<FullSyncError> listOfYamlErrors);
 
   FolderNode doTemplateLibrary(String accountId, DirectoryPath directoryPath, String appId,
       String templateLibraryFolderName, YamlVersion.Type type, boolean applyPermissions, Set<String> allowedTemplates);
@@ -140,8 +140,7 @@ public interface YamlDirectoryService {
   String getRootPathByEventConfig(CgEventConfig cgEventConfig);
 
   void getGitFileChange(DirectoryNode dn, String path, String accountId, boolean includeFiles,
-      List<GitFileChange> gitFileChanges, boolean failFast, Optional<List<String>> listOfYamlErrors,
-      boolean gitSyncPath);
+      List<GitFileChange> gitFileChanges, boolean failFast, List<FullSyncError> listOfYamlErrors, boolean gitSyncPath);
 
   <R, T> String obtainEntityRootPath(R helperEntity, T entity);
 

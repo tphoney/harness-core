@@ -17,6 +17,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
 import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity;
 import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys;
+import io.harness.pms.plan.execution.service.PmsExecutionSummaryReadHelper;
 
 import com.google.inject.Inject;
 import com.mongodb.client.result.UpdateResult;
@@ -44,6 +45,7 @@ import org.springframework.data.repository.support.PageableExecutionUtils;
 @OwnedBy(PIPELINE)
 public class PmsExecutionSummaryRepositoryCustomImpl implements PmsExecutionSummaryRepositoryCustom {
   private final MongoTemplate mongoTemplate;
+  private final PmsExecutionSummaryReadHelper pmsExecutionSummaryReadHelper;
   private final Duration RETRY_SLEEP_DURATION = Duration.ofSeconds(10);
   private final int MAX_ATTEMPTS = 3;
 
@@ -71,9 +73,11 @@ public class PmsExecutionSummaryRepositoryCustomImpl implements PmsExecutionSumm
   public Page<PipelineExecutionSummaryEntity> findAll(Criteria criteria, Pageable pageable) {
     try {
       Query query = new Query(criteria).with(pageable);
-      List<PipelineExecutionSummaryEntity> projects = mongoTemplate.find(query, PipelineExecutionSummaryEntity.class);
-      return PageableExecutionUtils.getPage(projects, pageable,
-          () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), PipelineExecutionSummaryEntity.class));
+      // Do not add directly the read helper inside the lambda, as secondary mongo reads were not going through if used
+      // inside lambda in PageableExecutionUtils
+      long count = pmsExecutionSummaryReadHelper.findCount(query);
+      List<PipelineExecutionSummaryEntity> summaryEntities = pmsExecutionSummaryReadHelper.find(query);
+      return PageableExecutionUtils.getPage(summaryEntities, pageable, () -> count);
     } catch (IllegalArgumentException ex) {
       log.error(ex.getMessage(), ex);
       throw new InvalidRequestException("Execution Status not found", ex);

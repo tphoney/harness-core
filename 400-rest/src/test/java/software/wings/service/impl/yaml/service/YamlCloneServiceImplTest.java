@@ -42,6 +42,7 @@ import software.wings.beans.EntityType;
 import software.wings.beans.Pipeline;
 import software.wings.beans.Workflow;
 import software.wings.beans.yaml.Change;
+import software.wings.beans.yaml.FullSyncError;
 import software.wings.beans.yaml.GitFileChange;
 import software.wings.service.intfc.AppService;
 import software.wings.service.intfc.InfrastructureProvisionerService;
@@ -59,7 +60,6 @@ import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -146,7 +146,7 @@ public class YamlCloneServiceImplTest extends WingsBaseTest {
         .when(yamlDirectoryService)
         .getGitFileChange(any(), anyString(), anyString(), anyBoolean(), any(), anyBoolean(), any(), anyBoolean());
 
-    Optional<List<String>> errorMessages = Optional.of(new ArrayList<>());
+    List<FullSyncError> errorMessages = new ArrayList<>();
     yamlCloneServiceImpl.traverseDirectory(gitFileChangeList, ACCOUNT_ID, workflowsFolder,
         workflowsFolder.getDirectoryPath().getPath(), false, errorMessages);
     assertThat(gitFileChangeList).hasSize(1);

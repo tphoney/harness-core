@@ -65,7 +65,7 @@ public class K8sPVInfoTasklet implements Tasklet {
                                                 .filter(instanceInfo -> instanceInfo.getAccountId() != null)
                                                 .collect(Collectors.toList());
 
-      instanceDataBulkWriteService.updateList(instanceInfoList);
+      instanceDataBulkWriteService.upsertInstanceInfo(instanceInfoList);
     } while (publishedMessageList.size() == batchSize);
     return null;
   }

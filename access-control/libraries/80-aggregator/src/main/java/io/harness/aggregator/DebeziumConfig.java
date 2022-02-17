@@ -41,6 +41,24 @@ public class DebeziumConfig {
   @JsonProperty("offset.flush.interval.ms") private String offsetFlushIntervalMillis;
 
   /**
+   * Positive integer value that specifies the initial delay when trying to reconnect to a primary after the first
+   * failed connection attempt or when no primary is available.
+   */
+  @JsonProperty("connect.backoff.initial.delay.ms") private String connectBackoffInitialDelayMillis;
+
+  /**
+   * Positive integer value that specifies the maximum delay when trying to reconnect to a primary after repeated failed
+   * connection attempts or when no primary is available.
+   */
+  @JsonProperty("connect.backoff.max.delay.ms") private String connectBackoffMaxDelayMillis;
+
+  /**
+   * Positive integer value that specifies the maximum number of failed connection attempts to a replica set primary
+   * before an exception occurs and task is aborted.
+   */
+  @JsonProperty("connect.max.attempts") private String connectMaxAttempts;
+
+  /**
    * The name of the Java class for the connector. Always use a value of io.debezium.connector.mongodb.MongoDbConnector
    * for the MongoDB connector.
    */

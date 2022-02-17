@@ -51,6 +51,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
@@ -64,6 +65,8 @@ public abstract class AggregatorBaseSyncController implements Runnable {
   protected final ExecutorService executorService;
   private final ChangeEventFailureHandler changeEventFailureHandler;
   private final PersistentLocker persistentLocker;
+  private final AtomicLong hostSelectorIndex;
+
   protected static final String ACCESS_CONTROL_AGGREGATOR_LOCK = "ACCESS_CONTROL_AGGREGATOR_LOCK";
   private static final String MONGO_DB_CONNECTOR = "io.debezium.connector.mongodb.MongoDbConnector";
   private static final String CONNECTOR_NAME = "name";
@@ -73,8 +76,12 @@ public abstract class AggregatorBaseSyncController implements Runnable {
   private static final String KEY_CONVERTER_SCHEMAS_ENABLE = "key.converter.schemas.enable";
   private static final String VALUE_CONVERTER_SCHEMAS_ENABLE = "value.converter.schemas.enable";
   private static final String OFFSET_FLUSH_INTERVAL_MS = "offset.flush.interval.ms";
+  private static final String CONNECT_BACKOFF_INITIAL_DELAY_MS = "connect.backoff.initial.delay.ms";
+  private static final String CONNECT_BACKOFF_MAX_DELAY_MS = "connect.backoff.max.delay.ms";
+  private static final String CONNECT_MAX_ATTEMPTS = "connect.max.attempts";
   private static final String CONNECTOR_CLASS = "connector.class";
   private static final String MONGODB_HOSTS = "mongodb.hosts";
+  private static final String MONGODB_HOSTS_DELIMITER = ",";
   private static final String MONGODB_NAME = "mongodb.name";
   private static final String MONGODB_USER = "mongodb.user";
   private static final String MONGODB_PASSWORD = "mongodb.password";
@@ -124,6 +131,7 @@ public abstract class AggregatorBaseSyncController implements Runnable {
         4, new ThreadFactoryBuilder().setNameFormat(String.format("aggregator-%s", aggregatorJobType) + "-%d").build());
     this.persistentLocker = persistentLocker;
     this.changeEventFailureHandler = changeEventFailureHandler;
+    this.hostSelectorIndex = new AtomicLong(-1);
   }
 
   protected DebeziumEngine<ChangeEvent<String, String>> getEngine(
@@ -140,7 +148,9 @@ public abstract class AggregatorBaseSyncController implements Runnable {
 
     /* begin connector properties */
     props.setProperty(CONNECTOR_CLASS, MONGO_DB_CONNECTOR);
-    props.setProperty(MONGODB_HOSTS, debeziumConfig.getMongodbHosts());
+    String[] mongoDbHosts = debeziumConfig.getMongodbHosts().split(MONGODB_HOSTS_DELIMITER);
+    int hostSelector = (int) (hostSelectorIndex.incrementAndGet() % mongoDbHosts.length);
+    props.setProperty(MONGODB_HOSTS, mongoDbHosts[hostSelector]);
     props.setProperty(MONGODB_NAME, debeziumConfig.getMongodbName());
     Optional.ofNullable(debeziumConfig.getMongodbUser())
         .filter(x -> !x.isEmpty())
@@ -148,6 +158,9 @@ public abstract class AggregatorBaseSyncController implements Runnable {
     Optional.ofNullable(debeziumConfig.getMongodbPassword())
         .filter(x -> !x.isEmpty())
         .ifPresent(x -> props.setProperty(MONGODB_PASSWORD, x));
+    props.setProperty(CONNECT_BACKOFF_INITIAL_DELAY_MS, debeziumConfig.getConnectBackoffInitialDelayMillis());
+    props.setProperty(CONNECT_BACKOFF_MAX_DELAY_MS, debeziumConfig.getConnectBackoffMaxDelayMillis());
+    props.setProperty(CONNECT_MAX_ATTEMPTS, debeziumConfig.getConnectMaxAttempts());
     props.setProperty(MONGODB_SSL_ENABLED, debeziumConfig.getSslEnabled());
     props.setProperty(DATABASE_INCLUDE_LIST, debeziumConfig.getDatabaseIncludeList());
     props.setProperty(COLLECTION_INCLUDE_LIST, debeziumConfig.getCollectionIncludeList());

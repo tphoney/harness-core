@@ -61,7 +61,7 @@ public class LogRecordServiceImpl implements LogRecordService {
   }
 
   private void saveRecords(List<LogRecord> logRecords) {
-    hPersistence.save(logRecords);
+    hPersistence.saveBatch(logRecords);
   }
   private LogRecord toLogRecord(LogRecordDTO logRecordDTO) {
     return LogRecord.builder()

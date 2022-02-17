@@ -12,7 +12,6 @@ import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import io.harness.OrchestrationPublisherName;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.engine.NodeDispatcher;
 import io.harness.engine.OrchestrationEngine;
 import io.harness.engine.executions.node.NodeExecutionService;
 import io.harness.engine.executions.plan.PlanService;
@@ -35,7 +34,6 @@ import com.google.inject.name.Named;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
@@ -46,7 +44,6 @@ public class SpawnChildrenRequestProcessor implements SdkResponseProcessor {
   @Inject private NodeExecutionService nodeExecutionService;
   @Inject private OrchestrationEngine engine;
   @Inject private WaitNotifyEngine waitNotifyEngine;
-  @Inject @Named("EngineExecutorService") private ExecutorService executorService;
   @Inject @Named(OrchestrationPublisherName.PUBLISHER_NAME) private String publisherName;
 
   @Override
@@ -61,7 +58,7 @@ public class SpawnChildrenRequestProcessor implements SdkResponseProcessor {
         callbackIds.add(uuid);
         Node node = planService.fetchNode(ambiance.getPlanId(), child.getChildNodeId());
         Ambiance clonedAmbiance = AmbianceUtils.cloneForChild(ambiance, PmsLevelUtils.buildLevelFromNode(uuid, node));
-        executorService.submit(NodeDispatcher.builder().node(node).ambiance(clonedAmbiance).engine(engine).build());
+        engine.triggerNode(clonedAmbiance, node, null);
       }
 
       // Attach a Callback to the parent for the child

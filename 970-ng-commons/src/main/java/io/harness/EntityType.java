@@ -53,6 +53,9 @@ public enum EntityType {
       ModuleType.PMS, EntityTypeConstants.HARNESS_APPROVAL, IdentifierRef.class, EntityYamlRootNames.HARNESS_APPROVAL),
   @JsonProperty(EntityTypeConstants.BARRIER)
   BARRIER_STEP(ModuleType.PMS, EntityTypeConstants.BARRIER, IdentifierRef.class, EntityYamlRootNames.BARRIER),
+  @JsonProperty(EntityTypeConstants.FlagConfiguration)
+  FLAG_CONFIGURATION(ModuleType.CF, EntityTypeConstants.FlagConfiguration, IdentifierRef.class,
+      EntityYamlRootNames.FLAG_CONFIGURATION),
   @JsonProperty(EntityTypeConstants.SHELL_SCRIPT)
   SHELL_SCRIPT_STEP(
       ModuleType.PMS, EntityTypeConstants.SHELL_SCRIPT, IdentifierRef.class, EntityYamlRootNames.SHELL_SCRIPT),
@@ -142,6 +145,8 @@ public enum EntityType {
   @JsonProperty(EntityTypeConstants.SAVE_CACHE_S3)
   SAVE_CACHE_S3(
       ModuleType.CI, EntityTypeConstants.SAVE_CACHE_S3, IdentifierRef.class, EntityYamlRootNames.SAVE_CACHE_S3),
+  @JsonProperty(EntityTypeConstants.SECURITY)
+  SECURITY(ModuleType.CI, EntityTypeConstants.SECURITY, IdentifierRef.class, EntityYamlRootNames.SECURITY),
   @JsonProperty(EntityTypeConstants.ARTIFACTORY_UPLOAD)
   ARTIFACTORY_UPLOAD(ModuleType.CI, EntityTypeConstants.ARTIFACTORY_UPLOAD, IdentifierRef.class,
       EntityYamlRootNames.ARTIFACTORY_UPLOAD),

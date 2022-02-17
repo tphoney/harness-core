@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/wings-software/portal/commons/go/lib/logs"
-	pb "github.com/wings-software/portal/product/ci/scm/proto"
+	"github.com/harness/harness-core/commons/go/lib/logs"
+	pb "github.com/harness/harness-core/product/ci/scm/proto"
 	"go.uber.org/zap"
 )
 
@@ -378,4 +378,111 @@ func TestFindPR(t *testing.T) {
 	assert.NotNil(t, got.Pr, "no errors")
 	assert.Equal(t, got.Pr.Number, int64(1), "number: 1")
 	assert.Equal(t, got.Pr.Sha, "7044a8a032e85b6ab611033b2ac8af7ce85805b2", "sha: 7044a8a032e85b6ab611033b2ac8af7ce85805b2")
+}
+
+func TestGetLatestCommitOnFileOnNonExistingFile(t *testing.T) {
+	provider :=	&pb.Provider{
+			Hook: &pb.Provider_BitbucketCloud{
+				BitbucketCloud: &pb.BitbucketCloudProvider{
+					Username:    "mohitgargharness",
+					AppPassword: "d58ztzmwJksybeatmP4e",
+				},
+			},
+		}
+
+	log, _ := logs.GetObservedLogger(zap.InfoLevel)
+	commitId, err := GetLatestCommitOnFile(context.Background(), *provider, "mohitgargharness/test-repository", "main", "DUMMYPATH", log.Sugar())
+	
+	assert.NotNil(t, err, "found errors")
+	assert.Equal(t, commitId, "", "status matches")
+}
+
+func TestGetLatestCommitOnExistingFile(t *testing.T) {
+	provider :=	&pb.Provider{
+			Hook: &pb.Provider_BitbucketCloud{
+				BitbucketCloud: &pb.BitbucketCloudProvider{
+					Username:    "mohitgargharness",
+					AppPassword: "d58ztzmwJksybeatmP4e",
+				},
+			},
+		}
+
+	log, _ := logs.GetObservedLogger(zap.InfoLevel)
+	commitId, err := GetLatestCommitOnFile(context.Background(), *provider, "mohitgargharness/test-repository", "master", "DO-NOT-DELETE.txt", log.Sugar())
+
+	assert.Nil(t, err, "no errors")
+	assert.NotNil(t, commitId, "commit exists")
+}
+
+func TestListCommitsBitbucket(t *testing.T) {
+	in := &pb.ListCommitsRequest{
+		Slug: "mohitgargharness/test-repository",
+		Type: &pb.ListCommitsRequest_Branch{
+			Branch: "master",
+		},
+		Provider: &pb.Provider{
+			Hook: &pb.Provider_BitbucketCloud{
+				BitbucketCloud: &pb.BitbucketCloudProvider{
+					Username:    "mohitgargharness",
+					AppPassword: "d58ztzmwJksybeatmP4e",
+				},
+			},
+		},
+	}
+
+	log, _ := logs.GetObservedLogger(zap.InfoLevel)
+	got, err := ListCommits(context.Background(), in, log.Sugar())
+
+	assert.Nil(t, err, "no errors")
+	assert.NotNil(t, len(got.CommitIds), "has commit")
+}
+
+
+func TestListCommitsBitbucketOnFile(t *testing.T) {
+	in := &pb.ListCommitsRequest{
+		Slug: "mohitgargharness/test-repository",
+		Type: &pb.ListCommitsRequest_Branch{
+			Branch: "master",
+		},
+		FilePath: "DO-NOT-DELETE.txt",
+		Provider: &pb.Provider{
+			Hook: &pb.Provider_BitbucketCloud{
+				BitbucketCloud: &pb.BitbucketCloudProvider{
+					Username:    "mohitgargharness",
+					AppPassword: "d58ztzmwJksybeatmP4e",
+				},
+			},
+		},
+	}
+
+	log, _ := logs.GetObservedLogger(zap.InfoLevel)
+	got, err := ListCommits(context.Background(), in, log.Sugar())
+
+	assert.Nil(t, err, "no errors")
+	assert.NotNil(t, len(got.CommitIds), "has commit")
+}
+
+
+func TestListCommitsBitbucketOnNewFileThatDoesntExist(t *testing.T) {
+	in := &pb.ListCommitsRequest{
+		Slug: "mohitgargharness/test-repository",
+		Type: &pb.ListCommitsRequest_Branch{
+			Branch: "master",
+		},
+		FilePath: "DUMMY-FILE-THAT-NEVER-EXISTED",
+		Provider: &pb.Provider{
+			Hook: &pb.Provider_BitbucketCloud{
+				BitbucketCloud: &pb.BitbucketCloudProvider{
+					Username:    "mohitgargharness",
+					AppPassword: "d58ztzmwJksybeatmP4e",
+				},
+			},
+		},
+	}
+
+	log, _ := logs.GetObservedLogger(zap.InfoLevel)
+	got, err := ListCommits(context.Background(), in, log.Sugar())
+
+	assert.Nil(t, err, "no errors")
+	assert.Equal(t, len(got.CommitIds), 0, "0 commits found")
 }

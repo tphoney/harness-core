@@ -12,6 +12,7 @@ import io.harness.cvng.beans.change.ChangeEventDTO;
 import io.harness.cvng.beans.change.ChangeSourceType;
 import io.harness.cvng.core.beans.change.ChangeSummaryDTO;
 import io.harness.cvng.core.beans.monitoredService.ChangeSourceDTO;
+import io.harness.cvng.core.beans.params.MonitoredServiceParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.entities.changeSource.ChangeSource;
 import io.harness.cvng.core.entities.changeSource.HarnessCDCurrentGenChangeSource;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface ChangeSourceService {
-  void create(ServiceEnvironmentParams environmentParams, Set<ChangeSourceDTO> changeSourceDTOs);
+  void create(MonitoredServiceParams monitoredServiceParams, Set<ChangeSourceDTO> changeSourceDTOs);
 
   Set<ChangeSourceDTO> get(ServiceEnvironmentParams environmentParams, List<String> identifiers);
   ChangeSource get(ServiceEnvironmentParams serviceEnvironmentParams, String identifier);
@@ -31,7 +32,7 @@ public interface ChangeSourceService {
 
   void delete(ServiceEnvironmentParams environmentParams, List<String> identifiers);
 
-  void update(ServiceEnvironmentParams environmentParams, Set<ChangeSourceDTO> changeSourceDTOs);
+  void update(MonitoredServiceParams monitoredServiceParams, Set<ChangeSourceDTO> changeSourceDTOs);
 
   void enqueueDataCollectionTask(KubernetesChangeSource changeSource);
 

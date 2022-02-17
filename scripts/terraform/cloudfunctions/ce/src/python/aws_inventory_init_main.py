@@ -21,7 +21,7 @@ from google.cloud import pubsub_v1
 """
 
 PROJECTID = os.environ.get('GCP_PROJECT', 'ccm-play')
-INVENTORY_TYPE = ["ebs", "ec2"]
+INVENTORY_TYPE = ["ebs", "ec2", "rds"]
 sc_client = scheduler.CloudSchedulerClient()
 publisher = pubsub_v1.PublisherClient()
 parent = f"projects/{PROJECTID}/locations/us-central1"
@@ -133,6 +133,8 @@ def manage_inventory_metric_scheduler_job(event, inventory_type):
         topic_path = publisher.topic_path(PROJECTID, f"ce-awsdata-{inventory_type}-metrics-inventory-scheduler")
     elif inventory_type == "ec2":
         topic_path = publisher.topic_path(PROJECTID, f"ce-awsdata-{inventory_type}-metric-inventory-scheduler")
+    else:
+        return
 
     jsonData = {
         "accountId": event["accountId"],

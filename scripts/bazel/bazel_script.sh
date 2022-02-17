@@ -31,6 +31,10 @@ if [[ ! -z "${CACHE_TEST_RESULTS}" ]]; then
   export CACHE_TEST_RESULTS_ARG=--cache_test_results=${CACHE_TEST_RESULTS}
 fi
 
+#delegate jat is not flattened so need to copy the versionInfo.yaml to delegate root
+mkdir 260-delegate/src/main/resources-filtered
+cp 980-commons/src/main/resources-filtered/versionInfo.yaml 260-delegate/src/main/resources-filtered/
+
 bazel ${bazelrc} build ${BAZEL_ARGUMENTS}  //:resource
 cat ${BAZEL_DIRS}/out/stable-status.txt
 cat ${BAZEL_DIRS}/out/volatile-status.txt

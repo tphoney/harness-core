@@ -12,6 +12,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.ci.pipeline.executions.beans.CIWebhookInfoDTO;
 import io.harness.pms.sdk.execution.beans.PipelineModuleInfo;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
@@ -27,5 +28,5 @@ public class CIPipelineModuleInfo implements PipelineModuleInfo {
   private String prNumber;
   private String buildType;
   private Boolean isPrivateRepo;
-  private Boolean isUsingDeprecatedTag;
+  private List<String> deprecatedImageTags;
 }

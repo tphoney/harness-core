@@ -109,7 +109,6 @@ ciExecutionServiceConfig:
   addonImage: harness/ci-addon:release-61
   liteEngineImage: harness/ci-lite-engine:release-30
   ciImageTag: release-30
-  supportedCIImageTags: release-30
   isLocal: false
   stepConfig:
     # The below config is for K8 steps

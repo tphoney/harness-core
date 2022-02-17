@@ -7,6 +7,7 @@ import io.harness.NGCommonEntityConstants;
 import io.harness.accesscontrol.NGAccessControlCheck;
 import io.harness.account.accesscontrol.ResourceTypes;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.ci.beans.entities.CIExecutionImages;
 import io.harness.execution.CIExecutionConfigService;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
@@ -17,13 +18,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import lombok.AllArgsConstructor;
+import retrofit2.http.Body;
 
 @OwnedBy(CI)
 @Api("/execution-config")
@@ -42,8 +41,10 @@ public class CIExecutionConfigResource {
   @Path("/")
   @ApiOperation(value = "Update execution config", nickname = "updateExecutionConfig")
   @NGAccessControlCheck(resourceType = ResourceTypes.ACCOUNT, permission = EDIT_ACCOUNT_PERMISSION)
-  public ResponseDTO<Boolean> updateExecutionConfig(@NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY)
-                                                    String accountIdentifier, @NotNull @QueryParam("tag") String tag) {
-    return ResponseDTO.newResponse(configService.updateCIContainerTag(accountIdentifier, tag));
+  public ResponseDTO<Boolean> updateExecutionConfig(
+      @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
+      @RequestBody(
+          required = true, description = "Details of the filters applied") @Body CIExecutionImages cIExecutionImages) {
+    return ResponseDTO.newResponse(configService.updateCIContainerTag(accountIdentifier, cIExecutionImages));
   }
 }

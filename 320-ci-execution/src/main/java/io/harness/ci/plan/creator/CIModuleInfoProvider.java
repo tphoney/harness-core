@@ -213,7 +213,7 @@ public class CIModuleInfoProvider implements ExecutionSummaryModuleInfoProvider 
       }
     }
 
-    Boolean usingDeprecatedTag = executionConfigService.isUsingDeprecatedTag(baseNGAccess.getAccountIdentifier());
+    List<String> deprecatedTagsList = executionConfigService.getDeprecatedTags(baseNGAccess.getAccountIdentifier());
 
     return CIPipelineModuleInfo.builder()
         .branch(branch)
@@ -221,8 +221,8 @@ public class CIModuleInfoProvider implements ExecutionSummaryModuleInfoProvider 
         .prNumber(prNumber)
         .buildType(buildType)
         .tag(tag)
+        .deprecatedImageTags(deprecatedTagsList)
         .repoName(repoName)
-        .isUsingDeprecatedTag(usingDeprecatedTag)
         .ciExecutionInfoDTO(getCiExecutionInfoDTO(codebaseSweepingOutput, author, prNumber, triggerCommits))
         .isPrivateRepo(isPrivateRepo)
         .build();

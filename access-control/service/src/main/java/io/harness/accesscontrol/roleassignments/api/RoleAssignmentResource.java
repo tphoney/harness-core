@@ -70,11 +70,13 @@ import io.harness.accesscontrol.scopes.harness.HarnessScopeParams;
 import io.harness.accesscontrol.scopes.harness.HarnessScopeService;
 import io.harness.accesscontrol.scopes.harness.ScopeMapper;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.eraro.ErrorCode;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnauthorizedException;
 import io.harness.exception.WingsException;
 import io.harness.ng.beans.PageRequest;
 import io.harness.ng.beans.PageResponse;
+import io.harness.ng.core.Status;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
@@ -394,7 +396,7 @@ public class RoleAssignmentResource {
           "Create multiple role assignments in a scope. Returns all successfully created role assignments. Ignores failures and duplicates.",
       responses =
       { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Successfully created role assignments") })
-  public ResponseDTO<List<RoleAssignmentResponseDTO>>
+  public List<Object>
   create(@BeanParam HarnessScopeParams harnessScopeParams,
       @RequestBody(description = "List of role assignments to create",
           required = true) @Body RoleAssignmentCreateRequestDTO roleAssignmentCreateRequestDTO) {
@@ -403,7 +405,7 @@ public class RoleAssignmentResource {
       validateDeprecatedResourceGroupNotUsed(
           roleAssignmentDTO.getResourceGroupIdentifier(), scope.getLevel().toString());
     });
-    return ResponseDTO.newResponse(createRoleAssignments(harnessScopeParams, roleAssignmentCreateRequestDTO, false));
+    return createRoleAssignments(harnessScopeParams, roleAssignmentCreateRequestDTO, false);
   }
 
   @POST
@@ -416,7 +418,7 @@ public class RoleAssignmentResource {
       responses =
       { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Successfully created role assignments") },
       hidden = true)
-  public ResponseDTO<List<RoleAssignmentResponseDTO>>
+  public ResponseDTO<List<Object>>
   create(@BeanParam HarnessScopeParams harnessScopeParams,
       @Body RoleAssignmentCreateRequestDTO roleAssignmentCreateRequestDTO,
       @QueryParam("managed") @DefaultValue("false") Boolean managed) {
@@ -501,17 +503,13 @@ public class RoleAssignmentResource {
     }));
   }
 
-  private List<RoleAssignmentResponseDTO> createRoleAssignments(
+  private List<Object> createRoleAssignments(
       HarnessScopeParams harnessScopeParams, RoleAssignmentCreateRequestDTO requestDTO, boolean managed) {
     Scope scope = ScopeMapper.fromParams(harnessScopeParams);
-    List<RoleAssignment> roleAssignmentsPayload =
-        requestDTO.getRoleAssignments()
-            .stream()
-            .map(roleAssignmentDTO -> fromDTO(scope, roleAssignmentDTO, managed))
-            .collect(Collectors.toList());
-    List<RoleAssignmentResponseDTO> createdRoleAssignments = new ArrayList<>();
-    for (RoleAssignment roleAssignment : roleAssignmentsPayload) {
+    List<Object> createRoleAssignmentBatchResponse = new ArrayList<>();
+    for (RoleAssignmentDTO roleAssignmentDTO : requestDTO.getRoleAssignments()) {
       try {
+        RoleAssignment roleAssignment = fromDTO(scope, roleAssignmentDTO, managed);
         syncDependencies(roleAssignment, scope);
         checkUpdatePermission(harnessScopeParams, roleAssignment);
         RoleAssignmentResponseDTO roleAssignmentResponseDTO =
@@ -522,12 +520,15 @@ public class RoleAssignmentResource {
                   response.getScope().getAccountIdentifier(), response.getRoleAssignment(), response.getScope()));
               return response;
             }));
-        createdRoleAssignments.add(roleAssignmentResponseDTO);
+        createRoleAssignmentBatchResponse.add(ResponseDTO.newResponse(roleAssignmentResponseDTO));
       } catch (Exception e) {
-        log.error(String.format("Could not create role assignment %s", roleAssignment), e);
+        String errorMessage = String.format("Could not create role assignment. %s", e.getMessage());
+        ErrorDTO errorDTO = new RoleAssignmentErrorDTO(
+            Status.ERROR, ErrorCode.DEFAULT_ERROR_CODE, errorMessage, null, roleAssignmentDTO);
+        createRoleAssignmentBatchResponse.add(errorDTO);
       }
     }
-    return createdRoleAssignments;
+    return createRoleAssignmentBatchResponse;
   }
 
   private void checkUpdatePermission(HarnessScopeParams harnessScopeParams, RoleAssignment roleAssignment) {

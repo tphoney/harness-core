@@ -47,6 +47,7 @@ public class ErrorDTO {
     this.code = code;
     this.message = message;
     this.detailedMessage = detailedMessage;
+    this.correlationId = CorrelationContext.getCorrelationId();
   }
 
   public static ErrorDTO newError(

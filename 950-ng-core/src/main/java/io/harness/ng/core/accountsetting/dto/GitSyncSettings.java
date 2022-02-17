@@ -22,7 +22,7 @@ import org.springframework.data.annotation.TypeAlias;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@TypeAlias("io.harness.ng.core.accountsetting.dto.GitSyncSettings")
+@TypeAlias("GitSyncSettings")
 public class GitSyncSettings extends AccountSettingConfig {
   private SCMType scmType;
 

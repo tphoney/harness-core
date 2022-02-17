@@ -767,9 +767,9 @@ public class ScmServiceClientImpl implements ScmServiceClient {
     // Check if current file commit is same as latest commit on file on remote
     GetLatestCommitOnFileResponse latestCommitResponse =
         getLatestCommitOnFile(scmConnector, scmBlockingStub, gitFileDetails.getBranch(), gitFileDetails.getFilePath());
-    log.info("GitFileDetails : ", gitFileDetails.toString());
-    log.info("GetLatestCommitOnFileResponse commit id : ", latestCommitResponse.getCommitId());
-    log.info("GetLatestCommitOnFileResponse error : ", latestCommitResponse.getError());
+    log.info("GitFileDetails : {}", gitFileDetails.toString());
+    log.info("GetLatestCommitOnFileResponse commit id : {}", latestCommitResponse.getCommitId());
+    log.info("GetLatestCommitOnFileResponse error : {}", latestCommitResponse.getError());
     if (!latestCommitResponse.getCommitId().equals(gitFileDetails.getCommitId())) {
       return Optional.of(UpdateFileResponse.newBuilder()
                              .setStatus(Constants.SCM_CONFLICT_ERROR_CODE)

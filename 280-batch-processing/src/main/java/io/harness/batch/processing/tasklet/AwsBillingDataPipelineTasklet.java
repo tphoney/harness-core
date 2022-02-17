@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -43,12 +42,11 @@ public class AwsBillingDataPipelineTasklet implements Tasklet {
   @Autowired private BillingDataPipelineService billingDataPipelineService;
   @Autowired private BillingDataPipelineRecordDao billingDataPipelineRecordDao;
   @Autowired protected CloudToHarnessMappingService cloudToHarnessMappingService;
-  private JobParameters parameters;
 
   @Override
   public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
-    parameters = chunkContext.getStepContext().getStepExecution().getJobParameters();
-    String accountId = parameters.getString(CCMJobConstants.ACCOUNT_ID);
+    final CCMJobConstants jobConstants = new CCMJobConstants(chunkContext);
+    String accountId = jobConstants.getAccountId();
     Account account = cloudToHarnessMappingService.getAccountInfoFromId(accountId);
     String accountName = account.getAccountName();
 

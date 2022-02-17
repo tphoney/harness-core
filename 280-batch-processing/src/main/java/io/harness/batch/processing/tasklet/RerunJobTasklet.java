@@ -13,7 +13,6 @@ import io.harness.batch.processing.billing.timeseries.service.impl.BillingDataSe
 import io.harness.batch.processing.ccm.BatchJobType;
 import io.harness.batch.processing.ccm.CCMJobConstants;
 import io.harness.batch.processing.service.intfc.BatchJobScheduledDataService;
-import io.harness.batch.processing.service.intfc.InstanceDataBulkWriteService;
 import io.harness.ccm.commons.dao.CEMetadataRecordDao;
 import io.harness.ccm.commons.entities.batch.CEMetadataRecord;
 
@@ -21,7 +20,6 @@ import com.google.common.collect.ImmutableList;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -31,8 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 @OwnedBy(HarnessTeam.CE)
 @Slf4j
 public class RerunJobTasklet implements Tasklet {
-  private JobParameters parameters;
-  @Autowired private InstanceDataBulkWriteService instanceDataBulkWriteService;
   @Autowired private CEMetadataRecordDao ceMetadataRecordDao;
   @Autowired private BatchJobScheduledDataService batchJobScheduledDataService;
   @Autowired private BillingDataServiceImpl billingDataService;

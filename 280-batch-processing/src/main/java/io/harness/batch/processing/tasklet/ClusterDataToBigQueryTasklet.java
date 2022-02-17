@@ -98,8 +98,7 @@ public class ClusterDataToBigQueryTasklet implements Tasklet {
   @Override
   public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
     JobParameters parameters = chunkContext.getStepContext().getStepExecution().getJobParameters();
-    BatchJobType batchJobType =
-        CCMJobConstants.getBatchJobTypeFromJobParams(parameters, CCMJobConstants.BATCH_JOB_TYPE);
+    BatchJobType batchJobType = CCMJobConstants.getBatchJobTypeFromJobParams(parameters);
     final CCMJobConstants jobConstants = new CCMJobConstants(chunkContext);
     int batchSize = config.getBatchQueryConfig().getQueryBatchSize();
 

@@ -631,7 +631,7 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   private String getCgK8SDelegateTemplate(final String accountId, final boolean isCeEnabled) {
-    if (featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, accountId)) {
+    if (isImmutableDelegate(accountId, KUBERNETES)) {
       return IMMUTABLE_CG_DELEGATE_YAML;
     }
 
@@ -642,7 +642,7 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   private String obtainK8sTemplateNameFromConfig(final K8sConfigDetails k8sConfigDetails, final String accountId) {
-    if (featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, accountId)) {
+    if (isImmutableDelegate(accountId, KUBERNETES)) {
       return IMMUTABLE_DELEGATE_YAML;
     }
 
@@ -1227,8 +1227,10 @@ public class DelegateServiceImpl implements DelegateService {
       final String base64Secret = Base64.getEncoder().encodeToString(accountSecret.getBytes());
       ImmutableMap.Builder<String, String> params =
           ImmutableMap.<String, String>builder()
-              .put("delegateDockerImage", getDelegateDockerImage(templateParameters.getAccountId()))
-              .put("upgraderDockerImage", getUpgraderDockerImage(templateParameters.getAccountId()))
+              .put("delegateDockerImage",
+                  getDelegateDockerImage(templateParameters.getAccountId(), templateParameters.getDelegateType()))
+              .put("upgraderDockerImage",
+                  getUpgraderDockerImage(templateParameters.getAccountId(), templateParameters.getDelegateType()))
               .put("accountId", templateParameters.getAccountId())
               .put("accountSecret", accountSecret)
               .put("base64Secret", base64Secret)
@@ -1364,7 +1366,7 @@ public class DelegateServiceImpl implements DelegateService {
       }
 
       params.put("isImmutable",
-          String.valueOf(featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, templateParameters.getAccountId())));
+          String.valueOf(isImmutableDelegate(templateParameters.getAccountId(), templateParameters.getDelegateType())));
 
       return params.build();
     }
@@ -1412,9 +1414,9 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   @VisibleForTesting
-  protected String getDelegateDockerImage(String accountId) {
+  protected String getDelegateDockerImage(final String accountId, final String delegateType) {
     final String ringImage = delegateRingService.getDelegateImageTag(accountId);
-    if (featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, accountId) && isNotBlank(ringImage)) {
+    if (isImmutableDelegate(accountId, delegateType) && isNotBlank(ringImage)) {
       return ringImage;
     }
     if (isNotBlank(mainConfiguration.getPortal().getDelegateDockerImage())) {
@@ -1424,9 +1426,9 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   @VisibleForTesting
-  protected String getUpgraderDockerImage(String accountId) {
+  protected String getUpgraderDockerImage(final String accountId, final String delegateType) {
     final String ringImage = delegateRingService.getUpgraderImageTag(accountId);
-    if (featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, accountId) && isNotBlank(ringImage)) {
+    if (isImmutableDelegate(accountId, delegateType) && isNotBlank(ringImage)) {
       return ringImage;
     }
     if (isNotBlank(mainConfiguration.getPortal().getUpgraderDockerImage())) {
@@ -2988,9 +2990,9 @@ public class DelegateServiceImpl implements DelegateService {
         .count();
   }
 
-  private boolean hasVersionCheckDisabled(String accountId) {
-    return accountService.getAccountPrimaryDelegateVersion(accountId) != null
-        || featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, accountId);
+  private boolean isImmutableDelegate(final String accountId, final String delegateType) {
+    return featureFlagService.isEnabled(USE_IMMUTABLE_DELEGATE, accountId)
+        && (KUBERNETES.equals(delegateType) || CE_KUBERNETES.equals(delegateType));
   }
 
   @Override

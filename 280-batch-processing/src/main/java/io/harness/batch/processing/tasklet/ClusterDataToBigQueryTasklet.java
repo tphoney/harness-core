@@ -25,6 +25,7 @@ import io.harness.batch.processing.tasklet.support.HarnessEntitiesService.Harnes
 import io.harness.batch.processing.tasklet.support.HarnessTagService;
 import io.harness.batch.processing.tasklet.support.K8SWorkloadService;
 import io.harness.ccm.commons.beans.InstanceType;
+import io.harness.ccm.commons.beans.JobConstants;
 import io.harness.ccm.commons.entities.k8s.K8sWorkload;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -98,9 +99,8 @@ public class ClusterDataToBigQueryTasklet implements Tasklet {
   @Override
   public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
     JobParameters parameters = chunkContext.getStepContext().getStepExecution().getJobParameters();
-    BatchJobType batchJobType =
-        CCMJobConstants.getBatchJobTypeFromJobParams(parameters, CCMJobConstants.BATCH_JOB_TYPE);
-    final CCMJobConstants jobConstants = new CCMJobConstants(chunkContext);
+    BatchJobType batchJobType = CCMJobConstants.getBatchJobTypeFromJobParams(parameters);
+    final JobConstants jobConstants = new CCMJobConstants(chunkContext);
     int batchSize = config.getBatchQueryConfig().getQueryBatchSize();
 
     BillingDataReader billingDataReader = new BillingDataReader(billingDataService, jobConstants.getAccountId(),

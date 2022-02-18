@@ -96,6 +96,8 @@ import io.harness.cvng.core.jobs.ConnectorChangeEventMessageProcessor;
 import io.harness.cvng.core.jobs.ConsumerMessageProcessor;
 import io.harness.cvng.core.jobs.OrganizationChangeEventMessageProcessor;
 import io.harness.cvng.core.jobs.ProjectChangeEventMessageProcessor;
+import io.harness.cvng.core.jobs.StateMachineEventPublisherService;
+import io.harness.cvng.core.jobs.StateMachineEventPublisherServiceImpl;
 import io.harness.cvng.core.services.CVNextGenConstants;
 import io.harness.cvng.core.services.api.AppDynamicsService;
 import io.harness.cvng.core.services.api.CVConfigService;
@@ -483,6 +485,9 @@ public class CVServiceModule extends AbstractModule {
     dataSourceTypeDataCollectionSLIInfoMapperMapBinder.addBinding(DataSourceType.APP_DYNAMICS)
         .to(AppDynamicsDataCollectionInfoMapper.class)
         .in(Scopes.SINGLETON);
+    dataSourceTypeDataCollectionSLIInfoMapperMapBinder.addBinding(DataSourceType.NEW_RELIC)
+        .to(NewRelicDataCollectionInfoMapper.class)
+        .in(Scopes.SINGLETON);
     dataSourceTypeDataCollectionSLIInfoMapperMapBinder.addBinding(DataSourceType.DATADOG_METRICS)
         .to(DatadogMetricDataCollectionInfoMapper.class)
         .in(Scopes.SINGLETON);
@@ -535,6 +540,7 @@ public class CVServiceModule extends AbstractModule {
     bind(NewRelicService.class).to(NewRelicServiceImpl.class);
     bind(ParseSampleDataService.class).to(ParseSampleDataServiceImpl.class);
     bind(VerifyStepDemoService.class).to(VerifyStepDemoServiceImpl.class);
+    bind(StateMachineEventPublisherService.class).to(StateMachineEventPublisherServiceImpl.class);
     bind(String.class)
         .annotatedWith(Names.named("portalUrl"))
         .toInstance(verificationConfiguration.getPortalUrl().endsWith("/")

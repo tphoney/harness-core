@@ -171,8 +171,7 @@ public class SLIDataCollectionTaskServiceTest extends CvNextGenTestBase {
     for (DataSourceType dataSourceType : DataSourceType.values()) {
       VerificationType verificationType = dataSourceType.getVerificationType();
       if (verificationType == VerificationType.TIME_SERIES && !dataSourceType.equals(DataSourceType.STACKDRIVER)
-          && !dataSourceType.equals(DataSourceType.DATADOG_METRICS) && !dataSourceType.equals(DataSourceType.DYNATRACE)
-          && !dataSourceType.equals(DataSourceType.KUBERNETES) && !dataSourceType.equals(DataSourceType.NEW_RELIC)) {
+          && !dataSourceType.equals(DataSourceType.DYNATRACE) && !dataSourceType.equals(DataSourceType.KUBERNETES)) {
         assertThat(dataSourceTypeDataCollectionInfoMapperMap.containsKey(dataSourceType)).isTrue();
       }
     }

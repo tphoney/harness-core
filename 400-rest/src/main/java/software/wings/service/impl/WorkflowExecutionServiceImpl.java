@@ -104,7 +104,6 @@ import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.ApiKeyInfo;
 import io.harness.beans.CreatedByType;
 import io.harness.beans.EmbeddedUser;
-import io.harness.beans.EnvironmentType;
 import io.harness.beans.EventPayload;
 import io.harness.beans.EventType;
 import io.harness.beans.ExecutionInterruptType;
@@ -5724,10 +5723,6 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     }
     if (lastWE.getWorkflowType() == PIPELINE) {
       log.info("On demand rollback not available for pipeline executions {}", lastWE);
-      return false;
-    }
-    if (lastWE.getEnvType() != EnvironmentType.PROD) {
-      log.info("On demand rollback not available for Non prod environments {}", lastWE);
       return false;
     }
     List<String> infraDefId = lastWE.getInfraDefinitionIds();

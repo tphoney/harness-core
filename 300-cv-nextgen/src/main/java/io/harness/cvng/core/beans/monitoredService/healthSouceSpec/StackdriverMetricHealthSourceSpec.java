@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,9 +45,16 @@ import org.apache.commons.lang3.StringUtils;
 public class StackdriverMetricHealthSourceSpec extends HealthSourceSpec {
   @UniqueIdentifierCheck @Valid private List<StackdriverDefinition> metricDefinitions;
 
+  public List<StackdriverDefinition> getMetricDefinitions() {
+    if (metricDefinitions == null) {
+      return Collections.emptyList();
+    }
+    return metricDefinitions;
+  }
+
   @Override
   public void validate() {
-    metricDefinitions.forEach(metricDefinition
+    getMetricDefinitions().forEach(metricDefinition
         -> Preconditions.checkArgument(
             !(Objects.nonNull(metricDefinition.getAnalysis())
                 && Objects.nonNull(metricDefinition.getAnalysis().getDeploymentVerification())

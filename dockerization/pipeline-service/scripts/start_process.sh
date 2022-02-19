@@ -26,7 +26,7 @@ fi
 if [[ "${ENABLE_SERIALGC}" == "true" ]]; then
     export GC_PARAMS=" -XX:+UseSerialGC -Dfile.encoding=UTF-8"
 else
-    export GC_PARAMS=" -XX:+UseG1GC -XX:InitiatingHeapOccupancyPercent=40 -XX:MaxGCPauseMillis=1000 -Dfile.encoding=UTF-8"
+    export GC_PARAMS=" -XX:+UseG1GC -XX:InitiatingHeapOccupancyPercent=40 -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -Dfile.encoding=UTF-8 -XX:+ParallelRefProcEnabled -XX:+OptimizeStringConcat"
 fi
 
 if [[ -z "$EXPERIMENTAL_GC" ]]; then

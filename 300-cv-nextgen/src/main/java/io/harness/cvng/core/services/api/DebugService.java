@@ -11,5 +11,5 @@ import io.harness.cvng.core.beans.SLODebugResponse;
 import io.harness.cvng.core.beans.params.ProjectParams;
 
 public interface DebugService {
-  SLODebugResponse get(ProjectParams projectParams, String identifier);
+  SLODebugResponse getSLODebugResponse(ProjectParams projectParams, String identifier);
 }

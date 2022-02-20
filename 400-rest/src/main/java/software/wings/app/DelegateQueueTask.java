@@ -234,7 +234,7 @@ public class DelegateQueueTask implements Runnable {
                 DelegateTaskResponse.builder()
                     .accountId(delegateTasks.get(taskId).getAccountId())
                     .responseCode(DelegateTaskResponse.ResponseCode.FAILED)
-                    .response(ErrorNotifyResponseData.builder().errorMessage(errorMessage).build())
+                    .response(ErrorNotifyResponseData.builder().expired(true).errorMessage(errorMessage).build())
                     .build());
           }
         }

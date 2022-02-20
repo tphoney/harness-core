@@ -53,7 +53,7 @@ public class K8SSyncEventTasklet extends EventWriter implements Tasklet {
     if (config.getBatchQueryConfig().isSyncJobDisabled()) {
       return null;
     }
-    final CCMJobConstants jobConstants = new CCMJobConstants(chunkContext);
+    final JobConstants jobConstants = new CCMJobConstants(chunkContext);
     int batchSize = config.getBatchQueryConfig().getQueryBatchSize();
 
     String messageType = EventTypeConstants.K8S_SYNC_EVENT;

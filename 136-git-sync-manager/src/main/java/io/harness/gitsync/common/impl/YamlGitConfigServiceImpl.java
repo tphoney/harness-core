@@ -40,6 +40,7 @@ import io.harness.eventsframework.schemas.entity.EntityScopeInfo;
 import io.harness.eventsframework.schemas.entity.EntityTypeProtoEnum;
 import io.harness.eventsframework.schemas.entity.IdentifierRefProtoDTO;
 import io.harness.eventsframework.schemas.entitysetupusage.EntitySetupUsageCreateV2DTO;
+import io.harness.exception.DuplicateEntityException;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.gitsync.common.beans.YamlGitConfig;
@@ -277,9 +278,8 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
     } catch (DuplicateKeyException ex) {
       log.error("A git sync config with this identifier or repo %s and branch %s already exists",
           gitSyncConfigDTO.getRepo(), gitSyncConfigDTO.getBranch());
-      throw new InvalidRequestException(
-          String.format("A git sync config with this identifier or repo %s and branch %s already exists",
-              gitSyncConfigDTO.getRepo(), gitSyncConfigDTO.getBranch()));
+      throw new DuplicateEntityException(String.format(
+          "A git sync config with this identifier or repo %s already exists", gitSyncConfigDTO.getRepo()));
     }
 
     executorService.submit(() -> {

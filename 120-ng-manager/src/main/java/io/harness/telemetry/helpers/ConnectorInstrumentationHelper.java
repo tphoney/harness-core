@@ -40,16 +40,16 @@ public class ConnectorInstrumentationHelper {
         HashMap<String, Object> map = new HashMap<>();
         String projectIdentifier = connector.getProjectIdentifier();
         String orgIdentifier = connector.getOrgIdentifier();
-        if (projectIdentifier == null)
-          projectIdentifier = "null";
-        if (orgIdentifier == null)
-          orgIdentifier = "null";
+        if (projectIdentifier != null) {
+          map.put(CONNECTOR_PROJECT, projectIdentifier);
+        }
+        if (orgIdentifier != null) {
+          map.put(CONNECTOR_ORG, orgIdentifier);
+        }
         map.put(ACCOUNT_ID, accountId);
         map.put(CONNECTOR_ID, connector.getIdentifier());
         map.put(CONNECTOR_TYPE, connector.getConnectorType());
         map.put(CONNECTOR_NAME, connector.getName());
-        map.put(CONNECTOR_ORG, orgIdentifier);
-        map.put(CONNECTOR_PROJECT, projectIdentifier);
         telemetryReporter.sendTrackEvent("connector_creation_finished", map,
             ImmutableMap.<Destination, Boolean>builder()
                 .put(Destination.AMPLITUDE, true)
@@ -69,14 +69,14 @@ public class ConnectorInstrumentationHelper {
       String orgIdentifier, String projectIdentifier, String connectorIdentifier, String accountId) {
     try {
       if (EmptyPredicate.isNotEmpty(accountId) || !accountId.equals(GLOBAL_ACCOUNT_ID)) {
-        if (projectIdentifier == null)
-          projectIdentifier = "null";
-        if (orgIdentifier == null)
-          orgIdentifier = "null";
         HashMap<String, Object> map = new HashMap<>();
-        map.put(CONNECTOR_PROJECT, projectIdentifier);
-        map.put(CONNECTOR_ID, connectorIdentifier);
-        map.put(CONNECTOR_ORG, orgIdentifier);
+        if (projectIdentifier != null) {
+          map.put(CONNECTOR_PROJECT, projectIdentifier);
+        }
+        if (orgIdentifier != null) {
+          map.put(CONNECTOR_ID, connectorIdentifier);
+        }
+        map.put(ACCOUNT_ID, accountId);
         telemetryReporter.sendTrackEvent("connector_deletion", map,
             ImmutableMap.<Destination, Boolean>builder()
                 .put(Destination.AMPLITUDE, true)

@@ -17,6 +17,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.EmbeddedUser;
 import io.harness.mongo.index.CompoundMongoIndex;
+import io.harness.mongo.index.FdIndex;
 import io.harness.mongo.index.MongoIndex;
 import io.harness.persistence.AccountAccess;
 import io.harness.persistence.LogKeyUtils;
@@ -78,7 +79,7 @@ public class Application extends Base implements KeywordsAware, NameAccess, TagA
   @NotEmpty private String name;
   private String description;
 
-  @Getter @Setter @NotEmpty private String lowerCaseName;
+  @Getter @Setter @NotEmpty @FdIndex private String lowerCaseName;
   @NotEmpty private String accountId;
 
   @Transient private List<Service> services = new ArrayList<>();

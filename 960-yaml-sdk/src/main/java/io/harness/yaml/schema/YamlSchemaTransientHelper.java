@@ -64,6 +64,8 @@ public class YamlSchemaTransientHelper {
       add(EntityType.HARNESS_APPROVAL_STEP);
       add(EntityType.BARRIER_STEP);
       add(EntityType.VERIFY_STEP);
+      add(EntityType.SERVICENOW_CREATE_STEP);
+      add(EntityType.SERVICENOW_UPDATE_STEP);
     }
   };
 

@@ -63,4 +63,6 @@ public interface EntityTypeConstants {
   String Verify = "Verify";
   String OPAPOLICIES = "GovernancePolicies";
   String POLICY_STEP = "PolicyStep";
+  String SERVICENOW_CREATE = "ServiceNowCreate";
+  String SERVICENOW_UPDATE = "ServiceNowUpdate";
 }

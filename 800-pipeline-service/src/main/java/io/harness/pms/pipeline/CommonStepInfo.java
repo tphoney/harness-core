@@ -103,6 +103,27 @@ public class CommonStepInfo {
           .setFeatureFlag(FeatureName.SERVICENOW_NG_INTEGRATION.name())
           .build();
 
+  StepInfo serviceNowCreateStepInfo =
+      StepInfo.newBuilder()
+          .setName("ServiceNow Create")
+          .setType(StepSpecTypeConstants.SERVICENOW_CREATE)
+          .setStepMetaData(StepMetaData.newBuilder()
+                               .addCategory(StepCategoryConstants.SERVICENOW)
+                               .addFolderPaths(FolderPathConstants.SERVICENOW)
+                               .build())
+          .setFeatureRestrictionName(FeatureRestrictionName.INTEGRATED_APPROVALS_WITH_SERVICE_NOW.name())
+          .setFeatureFlag(FeatureName.SERVICENOW_NG_INTEGRATION.name())
+          .build();
+
+  StepInfo serviceNowUpdateStepInfo =
+      StepInfo.newBuilder()
+          .setName("ServiceNow Update")
+          .setType(StepSpecTypeConstants.SERVICENOW_UPDATE)
+          .setStepMetaData(StepMetaData.newBuilder().addCategory("ServiceNow").addFolderPaths("ServiceNow").build())
+          .setFeatureRestrictionName(FeatureRestrictionName.INTEGRATED_APPROVALS_WITH_SERVICE_NOW.name())
+          .setFeatureFlag(FeatureName.SERVICENOW_NG_INTEGRATION.name())
+          .build();
+
   public List<StepInfo> getCommonSteps(String category) {
     List<StepInfo> stepInfos = new ArrayList<>();
     stepInfos.add(shellScriptStepInfo);
@@ -113,6 +134,8 @@ public class CommonStepInfo {
     stepInfos.add(jiraUpdateStepInfo);
     stepInfos.add(barrierStepInfo);
     stepInfos.add(serviceNowApprovalStepInfo);
+    stepInfos.add(serviceNowCreateStepInfo);
+    stepInfos.add(serviceNowUpdateStepInfo);
     return stepInfos;
   }
 }

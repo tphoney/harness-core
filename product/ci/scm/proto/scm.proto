@@ -500,6 +500,7 @@ message ListCommitsRequest {
   }
   PageRequest pagination = 4;
   Provider provider = 5;
+  string filePath = 6;
 }
 
 message ListCommitsResponse {

@@ -555,6 +555,16 @@ public class UserResource {
         ngUserService.removeUserFromScope(userId, scope, UserMembershipUpdateSource.USER, removeUserFilter)));
   }
 
+  @GET
+  @Hidden
+  @Path("internal/{userId}")
+  @InternalApi
+  @ApiOperation(value = "Get user", nickname = "getUserInternal", hidden = true)
+  public ResponseDTO<UserMetadataDTO> getUser(@NotNull @PathParam("userId") String userId,
+      @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier) {
+    return ResponseDTO.newResponse(ngUserService.getUserMetadata(userId).orElse(null));
+  }
+
   public Optional<String> getUserIdentifierFromSecurityContext() {
     Optional<String> userId = Optional.empty();
     if (SourcePrincipalContextBuilder.getSourcePrincipal() != null

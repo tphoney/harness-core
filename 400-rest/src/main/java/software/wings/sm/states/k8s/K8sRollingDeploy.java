@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessModule._870_CG_ORCHESTRATION;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.beans.FeatureName.NEW_KUBECTL_VERSION;
 import static io.harness.beans.FeatureName.PRUNE_KUBERNETES_RESOURCES;
+import static io.harness.beans.FeatureName.SKIP_ADDING_TRACK_LABEL_SELECTOR_IN_ROLLING;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.exception.WingsException.USER;
 
@@ -187,6 +188,8 @@ public class K8sRollingDeploy extends AbstractK8sState {
             .isPruningEnabled(featureFlagService.isEnabled(PRUNE_KUBERNETES_RESOURCES, infraMapping.getAccountId()))
             .useLatestKustomizeVersion(isUseLatestKustomizeVersion(context.getAccountId()))
             .useNewKubectlVersion(featureFlagService.isEnabled(NEW_KUBECTL_VERSION, infraMapping.getAccountId()))
+            .skipAddingSelectorToDeployment(
+                featureFlagService.isEnabled(SKIP_ADDING_TRACK_LABEL_SELECTOR_IN_ROLLING, infraMapping.getAccountId()))
             .build();
 
     return queueK8sDelegateTask(context, k8sTaskParameters, appManifestMap);

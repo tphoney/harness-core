@@ -104,7 +104,6 @@ import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.ApiKeyInfo;
 import io.harness.beans.CreatedByType;
 import io.harness.beans.EmbeddedUser;
-import io.harness.beans.EnvironmentType;
 import io.harness.beans.EventPayload;
 import io.harness.beans.EventType;
 import io.harness.beans.ExecutionInterruptType;
@@ -120,6 +119,7 @@ import io.harness.beans.SortOrder.OrderType;
 import io.harness.beans.SweepingOutputInstance.Scope;
 import io.harness.beans.WorkflowType;
 import io.harness.beans.event.cg.CgPipelineStartPayload;
+import io.harness.beans.event.cg.CgWorkflowStartPayload;
 import io.harness.beans.event.cg.application.ApplicationEventData;
 import io.harness.beans.event.cg.entities.EnvironmentEntity;
 import io.harness.beans.event.cg.entities.InfraDefinitionEntity;
@@ -127,6 +127,8 @@ import io.harness.beans.event.cg.entities.ServiceEntity;
 import io.harness.beans.event.cg.pipeline.ExecutionArgsEventData;
 import io.harness.beans.event.cg.pipeline.PipelineEventData;
 import io.harness.beans.event.cg.pipeline.PipelineExecData;
+import io.harness.beans.event.cg.workflow.WorkflowEventData;
+import io.harness.beans.event.cg.workflow.WorkflowExecData;
 import io.harness.cache.MongoStore;
 import io.harness.context.ContextElementType;
 import io.harness.data.structure.CollectionUtils;
@@ -1794,6 +1796,47 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     return workflowExecution;
   }
 
+  private PipelineEventData getPipelineEventData(PipelineSummary summary) {
+    if (summary == null) {
+      return null;
+    }
+    return PipelineEventData.builder().id(summary.getPipelineId()).name(summary.getPipelineName()).build();
+  }
+
+  private CgWorkflowStartPayload getEventPayloadData(
+      Application app, ExecutionArgs executionArgs, WorkflowExecution execution, PipelineSummary summary) {
+    return CgWorkflowStartPayload.builder()
+        .application(ApplicationEventData.builder().id(app.getAppId()).name(app.getName()).build())
+        .services(isEmpty(execution.getServiceIds()) ? Collections.emptyList()
+                                                     : execution.getServiceIds()
+                                                           .stream()
+                                                           .map(id -> ServiceEntity.builder().id(id).build())
+                                                           .collect(toList()))
+        .infraDefinitions(isEmpty(execution.getInfraDefinitionIds())
+                ? Collections.emptyList()
+                : execution.getInfraDefinitionIds()
+                      .stream()
+                      .map(id -> InfraDefinitionEntity.builder().id(id).build())
+                      .collect(toList()))
+        .environments(isEmpty(execution.getEnvIds()) ? Collections.emptyList()
+                                                     : execution.getEnvIds()
+                                                           .stream()
+                                                           .map(id -> EnvironmentEntity.builder().id(id).build())
+                                                           .collect(toList()))
+        .pipeline(getPipelineEventData(summary))
+        .workflow(WorkflowEventData.builder()
+                      .id(execution.getWorkflowId())
+                      .name(workflowService.fetchWorkflowName(app.getUuid(), execution.getWorkflowId()))
+                      .build())
+        .startedAt(execution.getCreatedAt())
+        .triggeredByType(execution.getCreatedByType())
+        .triggeredBy(execution.getCreatedBy())
+        .executionArgs(ExecutionArgsEventData.builder().notes(executionArgs.getNotes()).build())
+        .pipelineExecution(PipelineExecData.builder().id(execution.getPipelineExecutionId()).build())
+        .workflowExecution(WorkflowExecData.builder().id(execution.getUuid()).build())
+        .build();
+  }
+
   private void sendEvent(Application app, ExecutionArgs executionArgs, WorkflowExecution execution) {
     if (!featureFlagService.isEnabled(FeatureName.APP_TELEMETRY, app.getAccountId())) {
       return;
@@ -1837,6 +1880,13 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
                           .build())
                 .build());
       }
+    } else {
+      PipelineSummary summary = execution.getPipelineSummary();
+      eventService.deliverEvent(app.getAccountId(), app.getUuid(),
+          EventPayload.builder()
+              .eventType(EventType.WORKFLOW_START.getEventValue())
+              .data(getEventPayloadData(app, executionArgs, execution, summary))
+              .build());
     }
   }
 
@@ -5673,10 +5723,6 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     }
     if (lastWE.getWorkflowType() == PIPELINE) {
       log.info("On demand rollback not available for pipeline executions {}", lastWE);
-      return false;
-    }
-    if (lastWE.getEnvType() != EnvironmentType.PROD) {
-      log.info("On demand rollback not available for Non prod environments {}", lastWE);
       return false;
     }
     List<String> infraDefId = lastWE.getInfraDefinitionIds();

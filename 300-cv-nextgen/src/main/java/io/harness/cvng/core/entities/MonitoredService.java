@@ -25,6 +25,7 @@ import io.harness.persistence.UuidAware;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -96,5 +97,11 @@ public final class MonitoredService
       return new ArrayList<>();
     }
     return changeSourceIdentifiers;
+  }
+  public List<String> getEnvironmentIdentifierList() {
+    if (environmentIdentifierList == null) {
+      return Collections.emptyList();
+    }
+    return environmentIdentifierList;
   }
 }

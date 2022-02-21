@@ -137,10 +137,13 @@ public class ArtifactUtilities {
 
   public String trimSlashforwardChars(String stringToTrim) {
     if (isNotEmpty(stringToTrim)) {
-      if (stringToTrim.startsWith("/")) {
+      if (stringToTrim.charAt(0) == '/') {
         stringToTrim = stringToTrim.substring(1);
       }
-      if (stringToTrim.endsWith("/")) {
+    }
+
+    if (isNotEmpty(stringToTrim)) {
+      if (stringToTrim.charAt(stringToTrim.length() - 1) == '/') {
         stringToTrim = stringToTrim.substring(0, stringToTrim.length() - 1);
       }
     }

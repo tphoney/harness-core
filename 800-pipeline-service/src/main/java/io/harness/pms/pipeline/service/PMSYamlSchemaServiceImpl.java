@@ -232,49 +232,6 @@ public class PMSYamlSchemaServiceImpl implements PMSYamlSchemaService {
     }
   }
 
-  // TODO(Brijesh): Will remove this method.
-  private void mergeCVIntoCDIfPresent(Map<ModuleType, List<PartialSchemaDTO>> partialSchemaDTOMap) {
-    if (!partialSchemaDTOMap.containsKey(ModuleType.CD) || !partialSchemaDTOMap.containsKey(ModuleType.CV)) {
-      partialSchemaDTOMap.remove(ModuleType.CV);
-      return;
-    }
-
-    // Adding index 0. This complete method will be removed after moving cv step onto new schema.
-    PartialSchemaDTO cdPartialSchemaDTO = partialSchemaDTOMap.get(ModuleType.CD).get(0);
-    PartialSchemaDTO cvPartialSchemaDTO = partialSchemaDTOMap.get(ModuleType.CV).get(0);
-
-    JsonNode cvDefinitions =
-        cvPartialSchemaDTO.getSchema().get(DEFINITIONS_NODE).get(cvPartialSchemaDTO.getNamespace());
-    yamlSchemaGenerator.modifyRefsNamespace(cvDefinitions, cdPartialSchemaDTO.getNamespace());
-
-    JsonNode cdDefinitions =
-        cdPartialSchemaDTO.getSchema().get(DEFINITIONS_NODE).get(cdPartialSchemaDTO.getNamespace());
-
-    JsonNode cdDefinitionsCopy = cdDefinitions.deepCopy();
-
-    JsonNodeUtils.merge(cdDefinitions, cvDefinitions);
-
-    // TODO(Alexei) This is SOOOO ugly, find better way to do it
-    populateAllOfForCD(cdDefinitions, cdDefinitionsCopy);
-
-    partialSchemaDTOMap.remove(ModuleType.CV);
-  }
-
-  private void populateAllOfForCD(JsonNode cdDefinitions, JsonNode cdDefinitionsCopy) {
-    ArrayNode cdDefinitionsAllOfNode =
-        (ArrayNode) cdDefinitions.get(PmsYamlSchemaHelper.STEP_ELEMENT_CONFIG).get(ALL_OF_NODE);
-    ArrayNode cdDefinitionsCopyAllOfNode =
-        (ArrayNode) cdDefinitionsCopy.get(PmsYamlSchemaHelper.STEP_ELEMENT_CONFIG).get(ALL_OF_NODE);
-
-    if (cdDefinitionsCopyAllOfNode == null || cdDefinitionsAllOfNode == null) {
-      return;
-    }
-    for (int i = 0; i < cdDefinitionsCopyAllOfNode.size(); i++) {
-      cdDefinitionsAllOfNode.add(cdDefinitionsCopyAllOfNode.get(i));
-    }
-    JsonNodeUtils.removeDuplicatesFromArrayNode(cdDefinitionsAllOfNode);
-  }
-
   private ArrayNode getAllOfNodeWithTypeAndSpec(ArrayNode node) {
     for (int i = 0; i < node.size(); i++) {
       if (node.get(i).get(PROPERTIES_NODE).get(SPEC_NODE) != null) {

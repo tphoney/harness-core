@@ -62,6 +62,7 @@ public interface EntityTypeConstants {
   String HARNESS_APPROVAL = "HarnessApproval";
   String BARRIER = "Barrier";
   String Verify = "Verify";
+  String FlagConfiguration = "FlagConfiguration";
   String OPAPOLICIES = "GovernancePolicies";
-  String POLICY_STEP = "PolicyStep";
+  String POLICY_STEP = "Policy";
 }

@@ -54,6 +54,7 @@ import io.harness.migrations.all.AddInfraMappingNameToInstanceData;
 import io.harness.migrations.all.AddIsDefaultFlagToUserGroup;
 import io.harness.migrations.all.AddLowerCaseNameForApplicationMigration;
 import io.harness.migrations.all.AddOrchestrationToWorkflows;
+import io.harness.migrations.all.AddPipelinesReferenceToUserGroups;
 import io.harness.migrations.all.AddRingDetailsToDelegateRing;
 import io.harness.migrations.all.AddRingsToAccountMigration;
 import io.harness.migrations.all.AddStateMachineToWorkflowExecutions;
@@ -71,7 +72,6 @@ import io.harness.migrations.all.ConvertHttpHeadersStringTypeToList;
 import io.harness.migrations.all.CreateDefaultNgDelegateTokenMigration;
 import io.harness.migrations.all.CreateNgPrimaryProfileForExistingAccounts;
 import io.harness.migrations.all.CreatePrimiryProfileForAllAccounts;
-import io.harness.migrations.all.DefaultDelegateNgTokenMigration;
 import io.harness.migrations.all.DefaultExperienceMigration;
 import io.harness.migrations.all.DelegateGroupIdentifierMigration;
 import io.harness.migrations.all.DelegateNgDetailsToDelegateGroupMigration;
@@ -365,12 +365,13 @@ public class MigrationBackgroundList {
         .add(Pair.of(207, DeleteDelegateAlertsExceptDelegateDown.class))
         .add(Pair.of(208, MigrationSMCredentialsFromLocalToGlobalKMS.class))
         .add(Pair.of(209, NullAppFilterPermissionMigration.class))
-        .add(Pair.of(210, DefaultDelegateNgTokenMigration.class))
+        .add(Pair.of(210, BaseMigration.class))
         .add(Pair.of(211, AddRingsToAccountMigration.class))
         .add(Pair.of(212, AddRingDetailsToDelegateRing.class))
         .add(Pair.of(213, RemoveUsageRestrictionForApplicationDefaultsMigration.class))
         .add(Pair.of(214, CreateDefaultNgDelegateTokenMigration.class))
-        .add(Pair.of(215, AddLowerCaseNameForApplicationMigration.class))
+        .add(Pair.of(215, AddPipelinesReferenceToUserGroups.class))
+        .add(Pair.of(216, AddLowerCaseNameForApplicationMigration.class))
         .build();
   }
 }

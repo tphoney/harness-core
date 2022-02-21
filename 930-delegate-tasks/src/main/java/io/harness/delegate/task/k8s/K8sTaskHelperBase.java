@@ -171,6 +171,9 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.github.resilience4j.retry.Retry;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.models.V1ConfigMap;
+import io.kubernetes.client.openapi.models.V1Deployment;
+import io.kubernetes.client.openapi.models.V1DeploymentSpec;
+import io.kubernetes.client.openapi.models.V1LabelSelector;
 import io.kubernetes.client.openapi.models.V1LoadBalancerIngress;
 import io.kubernetes.client.openapi.models.V1LoadBalancerStatus;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
@@ -204,6 +207,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -410,6 +414,36 @@ public class K8sTaskHelperBase {
       String color, long timeoutInMillis) throws Exception {
     Map<String, String> labels = ImmutableMap.of(HarnessLabels.releaseName, releaseName, HarnessLabels.color, color);
     return getPodDetailsWithLabels(kubernetesConfig, namespace, releaseName, labels, timeoutInMillis);
+  }
+
+  public List<KubernetesResource> getDeploymentContainingTrackStableSelector(KubernetesConfig kubernetesConfig,
+      List<KubernetesResource> managedWorkloads, Map.Entry<String, String> selector) {
+    List<KubernetesResource> resources = new ArrayList<>();
+    for (KubernetesResource deployment : managedWorkloads) {
+      KubernetesResourceId resourceId = deployment.getResourceId();
+      if (resourceId == null || !resourceId.getKind().equals(Kind.Deployment.name())) {
+        continue;
+      }
+      V1Deployment deploymentFromServer = kubernetesContainerService.getDeployment(kubernetesConfig,
+          isBlank(resourceId.getNamespace()) ? kubernetesConfig.getNamespace() : resourceId.getNamespace(),
+          resourceId.getName());
+      if (deploymentFromServer != null && deploymentContainsHarnessTrackSelector(deploymentFromServer, selector)) {
+        resources.add(deployment);
+      }
+    }
+    return resources;
+  }
+
+  private boolean deploymentContainsHarnessTrackSelector(
+      V1Deployment v1Deployment, Map.Entry<String, String> selector) {
+    AtomicBoolean containsHarnessTrackSelector = new AtomicBoolean(false);
+    Optional.ofNullable(v1Deployment)
+        .map(V1Deployment::getSpec)
+        .map(V1DeploymentSpec::getSelector)
+        .map(V1LabelSelector::getMatchLabels)
+        .ifPresent(selectors -> containsHarnessTrackSelector.set(selectors.entrySet().contains(selector)));
+
+    return containsHarnessTrackSelector.get();
   }
 
   private V1Service waitForLoadBalancerService(

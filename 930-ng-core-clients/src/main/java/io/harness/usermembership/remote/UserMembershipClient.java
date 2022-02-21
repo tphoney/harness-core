@@ -13,6 +13,7 @@ import io.harness.NGCommonEntityConstants;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.user.NGRemoveUserFilter;
+import io.harness.ng.core.user.remote.dto.UserMetadataDTO;
 
 import retrofit2.Call;
 import retrofit2.http.DELETE;
@@ -37,4 +38,8 @@ public interface UserMembershipClient {
       @Query(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Query(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @Query("removeUserFilter") NGRemoveUserFilter removeUserFilter);
+
+  @GET(USER_API + "/internal/{userId}")
+  Call<ResponseDTO<UserMetadataDTO>> getUser(@Path(NGCommonEntityConstants.USER_ID) String userId,
+      @Query(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier);
 }

@@ -153,18 +153,27 @@ public class K8sApplyState extends AbstractK8sState {
     return handleAsyncResponseWrapper(this, context, response);
   }
 
+  private String getStepOverride(K8sStateExecutionData stateExecutionData) {
+    if(stateExecutionData!=null) {
+      if(stateExecutionData.getValuesFiles()!=null) {
+        if(stateExecutionData.getValuesFiles().get(K8sValuesLocation.Service)!=null) {
+          if(stateExecutionData.getValuesFiles().get(K8sValuesLocation.Service).iterator()!=null) {
+            return stateExecutionData.getValuesFiles().get(K8sValuesLocation.Service).iterator().next();
+          }
+        }
+      }
+    }
+    return "";
+  }
+
   @Override
   public ExecutionResponse executeK8sTask(ExecutionContext context, String activityId) {
     Map<K8sValuesLocation, ApplicationManifest> appManifestMap = fetchApplicationManifests(context);
     ContainerInfrastructureMapping infraMapping = k8sStateHelper.fetchContainerInfrastructureMapping(context);
     storePreviousHelmDeploymentInfo(context, appManifestMap.get(K8sValuesLocation.Service));
 
-    if (isBlank(stepValuesOverride)) {
-      stepValuesOverride = ((K8sStateExecutionData) context.getStateExecutionData())
-                               .getValuesFiles()
-                               .get(K8sValuesLocation.Service)
-                               .iterator()
-                               .next();
+    if (isBlank(stepValuesOverride)){
+      stepValuesOverride = getStepOverride(context.getStateExecutionData());
     }
 
     renderStateVariables(context);

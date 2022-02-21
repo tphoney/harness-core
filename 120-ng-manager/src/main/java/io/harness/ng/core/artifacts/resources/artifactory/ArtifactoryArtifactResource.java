@@ -25,8 +25,6 @@ import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.pipeline.remote.PipelineServiceClient;
 import io.harness.utils.IdentifierRefHelper;
 
-import software.wings.utils.RepositoryFormat;
-
 import com.google.inject.Inject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -59,15 +57,15 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor(access = AccessLevel.PACKAGE, onConstructor = @__({ @Inject }))
 @Slf4j
 public class ArtifactoryArtifactResource {
-  private final PipelineServiceClient pipelineServiceClient;
   private final ArtifactoryResourceService artifactoryResourceService;
+  private final PipelineServiceClient pipelineServiceClient;
 
   @GET
   @Path("getBuildDetails")
   @ApiOperation(value = "Gets artifactory artifact build details", nickname = "getBuildDetailsForArtifactoryArtifact")
   public ResponseDTO<ArtifactoryResponseDTO> getBuildDetails(@QueryParam("repository") String repository,
       @QueryParam("imagePath") String imagePath, @QueryParam("repositoryFormat") String repositoryFormat,
-      @QueryParam("dockerRepositoryServer") String dockerRepositoryServer,
+      @QueryParam("artifactRepositoryUrl") String artifactRepositoryUrl,
       @QueryParam("connectorRef") String artifactoryConnectorIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
@@ -75,10 +73,9 @@ public class ArtifactoryArtifactResource {
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
     IdentifierRef connectorRef = IdentifierRefHelper.getIdentifierRef(
         artifactoryConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
-    if (!RepositoryFormat.docker.name().equals(repositoryFormat)) {
-      repositoryFormat = RepositoryFormat.docker.name();
-    }
-    return ResponseDTO.newResponse(null);
+    ArtifactoryResponseDTO buildDetails = artifactoryResourceService.getBuildDetails(
+        connectorRef, repository, imagePath, repositoryFormat, artifactRepositoryUrl, orgIdentifier, projectIdentifier);
+    return ResponseDTO.newResponse(buildDetails);
   }
 
   @POST
@@ -88,7 +85,7 @@ public class ArtifactoryArtifactResource {
   public ResponseDTO<ArtifactoryResponseDTO>
   getBuildDetailsV2(@QueryParam("repository") String repository, @QueryParam("imagePath") String imagePath,
       @QueryParam("repositoryFormat") String repositoryFormat,
-      @QueryParam("dockerRepositoryServer") String dockerRepositoryServer,
+      @QueryParam("artifactRepositoryUrl") String artifactRepositoryUrl,
       @QueryParam("connectorRef") String artifactoryConnectorIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
@@ -100,10 +97,9 @@ public class ArtifactoryArtifactResource {
         artifactoryConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
     imagePath = ArtifactResourceUtils.getResolvedImagePath(pipelineServiceClient, accountId, orgIdentifier,
         projectIdentifier, pipelineIdentifier, runtimeInputYaml, imagePath, fqnPath, gitEntityBasicInfo);
-    if (!RepositoryFormat.docker.name().equals(repositoryFormat)) {
-      repositoryFormat = RepositoryFormat.docker.name();
-    }
-    return ResponseDTO.newResponse(null);
+    ArtifactoryResponseDTO buildDetails = artifactoryResourceService.getBuildDetails(
+        connectorRef, repository, imagePath, repositoryFormat, artifactRepositoryUrl, orgIdentifier, projectIdentifier);
+    return ResponseDTO.newResponse(buildDetails);
   }
 
   @POST
@@ -113,7 +109,7 @@ public class ArtifactoryArtifactResource {
   public ResponseDTO<ArtifactoryBuildDetailsDTO>
   getLastSuccessfulBuild(@QueryParam("repository") String repository, @QueryParam("imagePath") String imagePath,
       @QueryParam("repositoryFormat") String repositoryFormat,
-      @QueryParam("dockerRepositoryServer") String dockerRepositoryServer,
+      @QueryParam("artifactRepositoryUrl") String artifactRepositoryUrl,
       @QueryParam("connectorRef") String dockerConnectorIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
@@ -121,10 +117,9 @@ public class ArtifactoryArtifactResource {
       ArtifactoryRequestDTO requestDTO) {
     IdentifierRef connectorRef =
         IdentifierRefHelper.getIdentifierRef(dockerConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
-    if (!RepositoryFormat.docker.name().equals(repositoryFormat)) {
-      repositoryFormat = RepositoryFormat.docker.name();
-    }
-    return ResponseDTO.newResponse(null);
+    ArtifactoryBuildDetailsDTO buildDetails = artifactoryResourceService.getSuccessfulBuild(connectorRef, repository,
+        imagePath, repositoryFormat, artifactRepositoryUrl, requestDTO, orgIdentifier, projectIdentifier);
+    return ResponseDTO.newResponse(buildDetails);
   }
 
   @GET
@@ -136,7 +131,9 @@ public class ArtifactoryArtifactResource {
       @NotNull @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
     IdentifierRef connectorRef = IdentifierRefHelper.getIdentifierRef(
         artifactoryConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
-    return ResponseDTO.newResponse(false);
+    boolean isValidArtifactServer =
+        artifactoryResourceService.validateArtifactServer(connectorRef, orgIdentifier, projectIdentifier);
+    return ResponseDTO.newResponse(isValidArtifactServer);
   }
 
   @GET

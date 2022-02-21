@@ -548,13 +548,10 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
     final UpdateOperations<Delegate> updateOperationsForDelegates = persistence.createUpdateOperations(Delegate.class);
     setUnset(updateOperationsForDelegates, DelegateKeys.tags, tags);
     persistence.update(delegatesToBeUpdated, updateOperationsForDelegates);
-    List<String> updatedUuid = new ArrayList<String>();
-    for (Delegate delegate : delegatesToBeUpdated.asList()) {
-      updatedUuid.add(delegate.getUuid());
-      delegateCache.get(accountId, delegate.getUuid(), true);
-    }
-    log.info("Updating tags for delegate group: {} Delegate:{} tags:{}", delegateGroupName, updatedUuid.toString(),
-        tags.toString());
+    final List<String> updatedUuid =
+        delegatesToBeUpdated.asList().stream().peek(delegate -> delegateCache.get(accountId, delegate.getUuid(), true))
+            .map(delegate -> delegate.getUuid()).collect(toList());
+    log.info("Updating tags for delegate group: {} Delegate:{} tags:{}", delegateGroupName, updatedUuid, tags.toString());
     return updatedDelegateGroup;
   }
 }

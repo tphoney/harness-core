@@ -22,6 +22,7 @@ import static software.wings.beans.artifact.Artifact.Builder.anArtifact;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -52,6 +53,7 @@ import io.harness.deployment.InstanceDetails;
 import io.harness.encryption.Scope;
 import io.harness.encryption.SecretRefData;
 import io.harness.exception.InvalidRequestException;
+import io.harness.ff.FeatureFlagService;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.rule.Owner;
 import io.harness.rule.OwnerRule;
@@ -128,6 +130,7 @@ public class AzureVMSSStateHelperTest extends CategoryTest {
   @Mock private AzureSweepingOutputServiceHelper azureSweepingOutputServiceHelper;
   @Mock private WorkflowExecutionService workflowExecutionService;
   @Mock private ArtifactService artifactService;
+  @Mock private FeatureFlagService featureFlagService;
 
   @Spy @Inject @InjectMocks AzureVMSSStateHelper azureVMSSStateHelper;
 
@@ -1174,6 +1177,8 @@ public class AzureVMSSStateHelperTest extends CategoryTest {
     doReturn(ArtifactType.DOCKER).when(artifactStreamAttributes).getArtifactType();
     doReturn(ArtifactStreamType.DOCKER.name()).when(artifactStreamAttributes).getArtifactStreamType();
     doReturn(artifactStreamAttributes).when(artifactStream).fetchArtifactStreamAttributes(any());
+
+    doReturn(true).when(featureFlagService).isEnabled(any(), anyString());
 
     ArtifactConnectorMapper artifactConnectorMapper =
         azureVMSSStateHelper.getConnectorMapper(executionContext, artifact);

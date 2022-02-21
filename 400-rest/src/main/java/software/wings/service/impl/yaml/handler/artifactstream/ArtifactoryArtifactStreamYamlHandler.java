@@ -8,15 +8,18 @@
 package software.wings.service.impl.yaml.handler.artifactstream;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.beans.FeatureName.ARTIFACT_STREAM_METADATA_ONLY;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.ff.FeatureFlagService;
 
 import software.wings.beans.artifact.ArtifactoryArtifactStream;
 import software.wings.beans.artifact.ArtifactoryArtifactStream.Yaml;
 import software.wings.beans.yaml.ChangeContext;
 import software.wings.utils.RepositoryType;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 /**
@@ -25,6 +28,7 @@ import com.google.inject.Singleton;
 @OwnedBy(CDC)
 @Singleton
 public class ArtifactoryArtifactStreamYamlHandler extends ArtifactStreamYamlHandler<Yaml, ArtifactoryArtifactStream> {
+  @Inject private FeatureFlagService featureFlagService;
   @Override
   public Yaml toYaml(ArtifactoryArtifactStream bean, String appId) {
     Yaml yaml = Yaml.builder().build();
@@ -40,7 +44,13 @@ public class ArtifactoryArtifactStreamYamlHandler extends ArtifactStreamYamlHand
     yaml.setRepositoryType(bean.getRepositoryType());
     yaml.setUseDockerFormat(bean.isUseDockerFormat());
     if (!bean.getRepositoryType().equals(RepositoryType.docker.name())) {
-      yaml.setMetadataOnly(bean.isMetadataOnly());
+      boolean metadataOnly;
+      if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, bean.getAccountId())) {
+        metadataOnly = true;
+      } else {
+        metadataOnly = bean.isMetadataOnly();
+      }
+      yaml.setMetadataOnly(metadataOnly);
     } else {
       yaml.setMetadataOnly(true);
     }
@@ -62,7 +72,13 @@ public class ArtifactoryArtifactStreamYamlHandler extends ArtifactStreamYamlHand
     artifactStream.setRepositoryType(yaml.getRepositoryType());
     artifactStream.setUseDockerFormat(yaml.isUseDockerFormat());
     if (!yaml.getRepositoryType().equals(RepositoryType.docker.name())) {
-      artifactStream.setMetadataOnly(yaml.isMetadataOnly());
+      boolean metadataOnly;
+      if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, artifactStream.getAccountId())) {
+        metadataOnly = true;
+      } else {
+        metadataOnly = yaml.isMetadataOnly();
+      }
+      artifactStream.setMetadataOnly(metadataOnly);
     } else {
       artifactStream.setMetadataOnly(true);
     }

@@ -8,6 +8,7 @@
 package software.wings.beans.artifact;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.beans.FeatureName.ARTIFACT_STREAM_METADATA_ONLY;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
@@ -25,6 +26,7 @@ import io.harness.ff.FeatureFlagService;
 import software.wings.utils.Utils;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.inject.Inject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,6 +44,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class BambooArtifactStream extends ArtifactStream {
+  @Inject FeatureFlagService featureFlagService;
   @NotEmpty private String jobname;
   private List<String> artifactPaths;
 
@@ -62,7 +65,13 @@ public class BambooArtifactStream extends ArtifactStream {
 
   @Override
   public void validateRequiredFields() {
-    if (!isMetadataOnly() && isEmpty(artifactPaths)) {
+    boolean metadataOnly;
+    if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, getAccountId())) {
+      metadataOnly = true;
+    } else {
+      metadataOnly = isMetadataOnly();
+    }
+    if (!metadataOnly && isEmpty(artifactPaths)) {
       throw new InvalidRequestException("Please provide at least one artifact path for non-metadata only");
     }
     // for both metadata and non-metadata remove artifact path containing empty strings

@@ -8,13 +8,16 @@
 package software.wings.service.impl.yaml.handler.artifactstream;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.beans.FeatureName.ARTIFACT_STREAM_METADATA_ONLY;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.ff.FeatureFlagService;
 
 import software.wings.beans.artifact.JenkinsArtifactStream;
 import software.wings.beans.artifact.JenkinsArtifactStream.Yaml;
 import software.wings.beans.yaml.ChangeContext;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 /**
@@ -24,13 +27,22 @@ import com.google.inject.Singleton;
 @Singleton
 public class JenkinsArtifactStreamYamlHandler
     extends ArtifactStreamYamlHandler<JenkinsArtifactStream.Yaml, JenkinsArtifactStream> {
+  @Inject FeatureFlagService featureFlagService;
+
   @Override
   public Yaml toYaml(JenkinsArtifactStream bean, String appId) {
     Yaml yaml = Yaml.builder().build();
     super.toYaml(yaml, bean);
     yaml.setArtifactPaths(bean.getArtifactPaths());
     yaml.setJobName(bean.getJobname());
-    yaml.setMetadataOnly(bean.isMetadataOnly());
+
+    boolean metadataOnly;
+    if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, bean.getAccountId())) {
+      metadataOnly = true;
+    } else {
+      metadataOnly = bean.isMetadataOnly();
+    }
+    yaml.setMetadataOnly(metadataOnly);
     return yaml;
   }
 
@@ -45,7 +57,14 @@ public class JenkinsArtifactStreamYamlHandler
     Yaml yaml = changeContext.getYaml();
     bean.setArtifactPaths(yaml.getArtifactPaths());
     bean.setJobname(yaml.getJobName());
-    bean.setMetadataOnly(yaml.isMetadataOnly());
+
+    boolean metadataOnly;
+    if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, bean.getAccountId())) {
+      metadataOnly = true;
+    } else {
+      metadataOnly = yaml.isMetadataOnly();
+    }
+    bean.setMetadataOnly(metadataOnly);
   }
 
   @Override

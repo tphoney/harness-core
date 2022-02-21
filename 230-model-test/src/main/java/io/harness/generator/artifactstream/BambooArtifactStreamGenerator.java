@@ -8,12 +8,14 @@
 package io.harness.generator.artifactstream;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
+import static io.harness.beans.FeatureName.ARTIFACT_STREAM_METADATA_ONLY;
 
 import static software.wings.beans.CGConstants.GLOBAL_APP_ID;
 
 import static java.util.Arrays.asList;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.ff.FeatureFlagService;
 import io.harness.generator.OwnerManager;
 import io.harness.generator.Randomizer;
 import io.harness.generator.SettingGenerator;
@@ -34,6 +36,7 @@ import com.google.inject.Singleton;
 public class BambooArtifactStreamGenerator implements ArtifactStreamsGenerator {
   @Inject private ArtifactStreamGeneratorHelper artifactStreamGeneratorHelper;
   @Inject private SettingGenerator settingGenerator;
+  @Inject FeatureFlagService featureFlagService;
 
   @Override
   public ArtifactStream ensureArtifactStream(Randomizer.Seed seed, OwnerManager.Owners owners) {
@@ -101,7 +104,14 @@ public class BambooArtifactStreamGenerator implements ArtifactStreamsGenerator {
     builder.artifactPaths(bambooArtifactStream.getArtifactPaths());
     builder.sourceName(artifactStream.getSourceName());
     builder.settingId(artifactStream.getSettingId());
-    builder.metadataOnly(artifactStream.isMetadataOnly());
+
+    boolean metadataOnly;
+    if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, artifactStream.getAccountId())) {
+      metadataOnly = true;
+    } else {
+      metadataOnly = artifactStream.isMetadataOnly();
+    }
+    builder.metadataOnly(metadataOnly);
 
     return artifactStreamGeneratorHelper.saveArtifactStream(builder.build(), owners);
   }

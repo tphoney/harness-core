@@ -8,6 +8,7 @@
 package software.wings.beans.artifact;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.beans.FeatureName.ARTIFACT_STREAM_METADATA_ONLY;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.WingsException.USER;
@@ -86,9 +87,16 @@ public class AzureArtifactsArtifactStream extends ArtifactStream {
 
   @Override
   public ArtifactStreamAttributes fetchArtifactStreamAttributes(FeatureFlagService featureFlagService) {
+    boolean metadataOnly;
+    if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, getAccountId())) {
+      metadataOnly = true;
+    } else {
+      metadataOnly = isMetadataOnly();
+    }
+
     return ArtifactStreamAttributes.builder()
         .artifactStreamType(getArtifactStreamType())
-        .metadataOnly(isMetadataOnly())
+        .metadataOnly(metadataOnly)
         .protocolType(protocolType)
         .project(project)
         .feed(feed)

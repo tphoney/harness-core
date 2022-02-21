@@ -8,11 +8,7 @@
 package software.wings.sm.states.pcf;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.beans.FeatureName.CF_ALLOW_SPECIAL_CHARACTERS;
-import static io.harness.beans.FeatureName.CF_APP_NON_VERSIONING_INACTIVE_ROLLBACK;
-import static io.harness.beans.FeatureName.CF_CUSTOM_EXTRACTION;
-import static io.harness.beans.FeatureName.IGNORE_PCF_CONNECTION_CONTEXT_CACHE;
-import static io.harness.beans.FeatureName.LIMIT_PCF_THREADS;
+import static io.harness.beans.FeatureName.*;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
@@ -505,13 +501,20 @@ public class PcfSetupState extends State {
   }
 
   private boolean onlyMetaForArtifactaType(ArtifactStream artifactStream) {
+    boolean metadataOnly;
+    if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, artifactStream.getAccountId())) {
+      metadataOnly = true;
+    } else {
+      metadataOnly = artifactStream.isMetadataOnly();
+    }
+
     switch (artifactStream.getArtifactStreamType()) {
       case JENKINS:
       case BAMBOO:
       case ARTIFACTORY:
       case NEXUS:
       case S3:
-        return artifactStream.isMetadataOnly();
+        return metadataOnly;
       default:
         return false;
     }

@@ -8,6 +8,7 @@
 package software.wings.beans.artifact;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.beans.FeatureName.ARTIFACT_STREAM_METADATA_ONLY;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.WingsException.USER;
@@ -138,6 +139,13 @@ public class ArtifactoryArtifactStream extends ArtifactStream {
 
   @Override
   public ArtifactStreamAttributes fetchArtifactStreamAttributes(FeatureFlagService featureFlagService) {
+    boolean metadataOnly;
+    if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, getAccountId())) {
+      metadataOnly = true;
+    } else {
+      metadataOnly = isMetadataOnly();
+    }
+
     return ArtifactStreamAttributes.builder()
         .artifactStreamType(getArtifactStreamType())
         .jobName(jobname)
@@ -145,7 +153,7 @@ public class ArtifactoryArtifactStream extends ArtifactStream {
         .artifactPattern(artifactPattern)
         .artifactName(artifactPaths == null ? "" : artifactPaths.get(0))
         .repositoryType(getRepositoryType())
-        .metadataOnly(isMetadataOnly())
+        .metadataOnly(metadataOnly)
         .artifactoryDockerRepositoryServer(dockerRepositoryServer)
         .dockerBasedDeployment(useDockerFormat)
         .build();

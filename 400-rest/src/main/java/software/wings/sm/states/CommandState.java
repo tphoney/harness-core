@@ -8,6 +8,7 @@
 package software.wings.sm.states;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.beans.FeatureName.ARTIFACT_STREAM_METADATA_ONLY;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.eraro.ErrorCode.COMMAND_DOES_NOT_EXIST;
@@ -766,7 +767,14 @@ public class CommandState extends State {
           (EncryptableSetting) artifactStreamAttributes.getServerSetting().getValue(), context.getAppId(),
           context.getWorkflowExecutionId()));
     }
-    artifactStreamAttributes.setMetadataOnly(artifactStream.isMetadataOnly());
+
+    boolean metadataOnly;
+    if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, artifactStream.getAccountId())) {
+      metadataOnly = true;
+    } else {
+      metadataOnly = artifactStream.isMetadataOnly();
+    }
+    artifactStreamAttributes.setMetadataOnly(metadataOnly);
     artifactStreamAttributes.setMetadata(artifact.getMetadata());
     artifactStreamAttributes.setArtifactFileMetadata(artifact.getArtifactFileMetadata());
 
@@ -812,7 +820,14 @@ public class CommandState extends State {
           artifactStreamAttributes.setArtifactServerEncryptedDataDetails(encryptedDataDetails);
           artifactServerEncryptedDataDetailsMap.put(artifact.getUuid(), encryptedDataDetails);
         }
-        artifactStreamAttributes.setMetadataOnly(artifactStream.isMetadataOnly());
+
+        boolean metadataOnly;
+        if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, artifactStream.getAccountId())) {
+          metadataOnly = true;
+        } else {
+          metadataOnly = artifactStream.isMetadataOnly();
+        }
+        artifactStreamAttributes.setMetadataOnly(metadataOnly);
         artifactStreamAttributes.setMetadata(artifact.getMetadata());
         artifactStreamAttributes.setArtifactFileMetadata(artifact.getArtifactFileMetadata());
 

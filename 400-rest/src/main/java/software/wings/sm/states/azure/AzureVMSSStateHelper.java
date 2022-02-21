@@ -10,6 +10,7 @@ package software.wings.sm.states.azure;
 import static io.harness.azure.model.AzureConstants.AZURE_WEBAPP_SLOT_SETUP_ACTIVITY_COMMAND_NAME;
 import static io.harness.azure.model.AzureConstants.STEADY_STATE_TIMEOUT_REGEX;
 import static io.harness.beans.ExecutionStatus.SUCCESS;
+import static io.harness.beans.FeatureName.ARTIFACT_STREAM_METADATA_ONLY;
 import static io.harness.beans.OrchestrationWorkflowType.BLUE_GREEN;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -696,9 +697,16 @@ public class AzureVMSSStateHelper {
   }
 
   private boolean onlyMetaForArtifactType(ArtifactStream artifactStream) {
+    boolean metadataOnly;
+    if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, artifactStream.getAccountId())) {
+      metadataOnly = true;
+    } else {
+      metadataOnly = artifactStream.isMetadataOnly();
+    }
+
     return METADATA_ONLY_ARTIFACT_STREAM_TYPES.stream().anyMatch(
                streamType -> streamType.name().equals(artifactStream.getArtifactStreamType()))
-        && artifactStream.isMetadataOnly();
+        && metadataOnly;
   }
 
   public void validateAppSettings(List<AzureAppServiceApplicationSetting> appSettings) {

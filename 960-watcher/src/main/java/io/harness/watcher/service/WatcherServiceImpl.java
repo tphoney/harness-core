@@ -639,8 +639,8 @@ public class WatcherServiceImpl implements WatcherService {
 
               if (multiVersion) {
                 if (!expectedVersions.contains(delegateVersion) && !shutdownPending) {
-                  log.info("Delegate version {} ({}) is not a published version. Future requests will go to primary.",
-                      delegateVersion, delegateProcess);
+                  log.info("Delegate version {} ({}) is not a published version. Future requests will go to primary. Expected version {}, shutdown pending {}",
+                      delegateVersion, delegateProcess, expectedVersions, shutdownPending);
                   drainingNeededList.add(delegateProcess);
                 }
               }

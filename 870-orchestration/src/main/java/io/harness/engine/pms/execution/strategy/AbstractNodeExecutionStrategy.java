@@ -8,6 +8,8 @@
 package io.harness.engine.pms.execution.strategy;
 
 import io.harness.engine.OrchestrationEngine;
+import io.harness.engine.executions.plan.PlanService;
+import io.harness.engine.utils.PmsLevelUtils;
 import io.harness.event.handlers.SdkResponseProcessor;
 import io.harness.execution.NodeExecution;
 import io.harness.execution.PmsNodeExecutionMetadata;
@@ -27,9 +29,23 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractNodeExecutionStrategy<P extends Node, M extends PmsNodeExecutionMetadata>
     implements NodeExecutionStrategy<P, NodeExecution, M> {
+  @Inject private PlanService planService;
   @Inject private OrchestrationEngine orchestrationEngine;
   @Inject private SdkResponseProcessorFactory sdkResponseProcessorFactory;
   @Inject @Named("EngineExecutorService") private ExecutorService executorService;
+
+  @Override
+  public NodeExecution triggerNode(@NonNull Ambiance ambiance, @NonNull String nodeId, String runtimeId, M metadata) {
+    try{
+      Node node = planService.fetchNode(ambiance.getPlanId(), nodeId);
+      Ambiance clonedAmbiance = AmbianceUtils.cloneForChild(ambiance, PmsLevelUtils.buildLevelFromNode(runtimeId, node));
+      return orchestrationEngine.triggerNode(clonedAmbiance, node, metadata);
+    }catch (Exception ex){
+      log.error("Error happened while triggering node", ex);
+      handleError(ambiance, ex);
+      return null;
+    }
+  }
 
   @Override
   public NodeExecution triggerNode(@NonNull Ambiance ambiance, @NonNull P node, M metadata) {
@@ -52,7 +68,7 @@ public abstract class AbstractNodeExecutionStrategy<P extends Node, M extends Pm
   private NodeExecution createAndTriggerNodeExecution(
       Ambiance ambiance, P node, M metadata, String notifyId, String parentId, String previousId) {
     NodeExecution savedExecution = createNodeExecution(ambiance, node, metadata, notifyId, parentId, previousId);
-    executorService.submit(() -> { orchestrationEngine.startNodeExecution(savedExecution.getAmbiance()); });
+    executorService.submit(() -> orchestrationEngine.startNodeExecution(savedExecution.getAmbiance()));
     return savedExecution;
   }
 

@@ -41,6 +41,7 @@ import io.harness.event.OrchestrationLogPublisher;
 import io.harness.event.OrchestrationStartEventHandler;
 import io.harness.exception.GeneralException;
 import io.harness.execution.consumers.SdkResponseEventRedisConsumer;
+import io.harness.execution.consumers.TriggerNodeEventRedisConsumer;
 import io.harness.gitsync.AbstractGitSyncSdkModule;
 import io.harness.gitsync.GitSdkConfiguration;
 import io.harness.gitsync.GitSyncEntitiesConfiguration;
@@ -501,8 +502,8 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
     planExecutionStrategy.getOrchestrationStartSubject().register(
         injector.getInstance(Key.get(ExecutionSummaryCreateEventHandler.class)));
     // End Observers
-//    planExecutionStrategy.getOrchestrationEndSubject().register(
-//        injector.getInstance(Key.get(OrchestrationEndGraphHandler.class)));
+    //    planExecutionStrategy.getOrchestrationEndSubject().register(
+    //        injector.getInstance(Key.get(OrchestrationEndGraphHandler.class)));
     planExecutionStrategy.getOrchestrationEndSubject().register(
         injector.getInstance(Key.get(OrchestrationEndInterruptHandler.class)));
     planExecutionStrategy.getOrchestrationEndSubject().register(
@@ -653,6 +654,9 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
         pipelineServiceConsumersConfig.getPlanNotify().getThreads());
     pipelineEventConsumerController.register(injector.getInstance(PmsNotifyEventConsumerRedis.class),
         pipelineServiceConsumersConfig.getPmsNotify().getThreads());
+
+    // TODO: Trigger Node Consumer Registration. Make this configurable
+    pipelineEventConsumerController.register(injector.getInstance(TriggerNodeEventRedisConsumer.class), 1);
   }
 
   /**-----------------------------Git sync --------------------------------------*/

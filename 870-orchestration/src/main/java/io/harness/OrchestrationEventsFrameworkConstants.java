@@ -20,4 +20,9 @@ public class OrchestrationEventsFrameworkConstants {
 
   public static final String PARTIAL_PLAN_EVENT_CONSUMER = "PARTIAL_PLAN_EVENT_RESPONSE_CONSUMER";
   public static final int PARTIAL_PLAN_EVENT_BATCH_SIZE = 1;
+
+  public static final String TRIGGER_NODE_EVENT_CONSUMER = "TRIGGER_NODE_EVENT_CONSUMER";
+  public static final int TRIGGER_NODE_EVENT_BATCH_SIZE = 10;
+
+  public static final String TRIGGER_NODE_EVENT_PRODUCER = "TRIGGER_NODE_EVENT_PRODUCER";
 }

@@ -47,6 +47,12 @@ public class OrchestrationEngine {
     return (T) strategy.triggerNode(ambiance, node, metadata);
   }
 
+  public <T extends PmsNodeExecution> T triggerNode(@NonNull Ambiance ambiance, @NonNull String nodeId,
+      @NonNull String runtimeId, PmsNodeExecutionMetadata metadata) {
+    NodeExecutionStrategy strategy = strategyFactory.obtainStrategy(OrchestrationUtils.currentNodeType(ambiance));
+    return (T) strategy.triggerNode(ambiance, nodeId, runtimeId, metadata);
+  }
+
   public <T extends PmsNodeExecution> T triggerNextNode(
       @NonNull Ambiance ambiance, @NonNull Node node, T previousExecution, PmsNodeExecutionMetadata metadata) {
     NodeExecutionStrategy strategy = strategyFactory.obtainStrategy(node.getNodeType());

@@ -7,13 +7,12 @@
 
 package io.harness.execution.consumers;
 
-import static io.harness.pms.sdk.PmsSdkModuleUtils.SDK_SERVICE_NAME;
-
+import io.harness.ModuleType;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.eventsframework.consumer.Message;
-import io.harness.execution.SdkResponseHandler;
-import io.harness.pms.contracts.execution.events.SdkResponseEventProto;
+import io.harness.execution.TriggerNodeHandler;
+import io.harness.pms.contracts.execution.events.TriggerNodeEvent;
 import io.harness.pms.events.base.PmsAbstractMessageListener;
 
 import com.google.inject.Inject;
@@ -25,12 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(HarnessTeam.PIPELINE)
 @Slf4j
 @Singleton
-public class SdkResponseEventMessageListener
-    extends PmsAbstractMessageListener<SdkResponseEventProto, SdkResponseHandler> {
+public class TriggerNodeEventMessageListener extends PmsAbstractMessageListener<TriggerNodeEvent, TriggerNodeHandler> {
   @Inject
-  public SdkResponseEventMessageListener(@Named(SDK_SERVICE_NAME) String serviceName,
-      SdkResponseHandler sdkResponseHandler, @Named("EngineExecutorService") ExecutorService executorService) {
-    super(serviceName, SdkResponseEventProto.class, sdkResponseHandler, executorService);
+  public TriggerNodeEventMessageListener(
+      TriggerNodeHandler triggerNodeHandler, @Named("EngineExecutorService") ExecutorService executorService) {
+    super(ModuleType.PMS.name(), TriggerNodeEvent.class, triggerNodeHandler, executorService);
   }
 
   @Override

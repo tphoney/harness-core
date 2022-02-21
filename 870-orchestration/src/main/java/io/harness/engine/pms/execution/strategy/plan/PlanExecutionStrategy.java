@@ -46,6 +46,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.util.concurrent.ExecutorService;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
@@ -64,6 +65,12 @@ public class PlanExecutionStrategy implements NodeExecutionStrategy<Plan, PlanEx
 
   @Getter private final Subject<OrchestrationStartObserver> orchestrationStartSubject = new Subject<>();
   @Getter private final Subject<OrchestrationEndObserver> orchestrationEndSubject = new Subject<>();
+
+  @Override
+  public PlanExecution triggerNode(
+      @NonNull Ambiance ambiance, @NonNull String nodeId, String runtimeId, PlanExecutionMetadata metadata) {
+    throw new UnsupportedOperationException("Trigger Node via event is not supported for plan Execution");
+  }
 
   @Override
   public PlanExecution triggerNode(@NotNull Ambiance ambiance, @NotNull Plan plan, PlanExecutionMetadata metadata) {

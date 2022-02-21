@@ -9,6 +9,7 @@ package io.harness.engine.pms.execution.strategy;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.execution.NodeExecution;
 import io.harness.execution.PmsNodeExecution;
 import io.harness.execution.PmsNodeExecutionMetadata;
 import io.harness.plan.Node;
@@ -27,6 +28,8 @@ import lombok.NonNull;
 
 @OwnedBy(HarnessTeam.PIPELINE)
 public interface NodeExecutionStrategy<P extends Node, N extends PmsNodeExecution, M extends PmsNodeExecutionMetadata> {
+  N triggerNode(@NonNull Ambiance ambiance, @NonNull String nodeId, String runtimeId, M metadata);
+
   N triggerNode(@NonNull Ambiance ambiance, @NonNull P node, M metadata);
 
   default N triggerNextNode(@NonNull Ambiance ambiance, @NonNull P node, N prevExecution, M metadata) {

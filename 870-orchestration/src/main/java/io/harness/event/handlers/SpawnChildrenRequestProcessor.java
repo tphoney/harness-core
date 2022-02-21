@@ -7,27 +7,28 @@
 
 package io.harness.event.handlers;
 
+import static io.harness.OrchestrationEventsFrameworkConstants.TRIGGER_NODE_EVENT_PRODUCER;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 
 import io.harness.OrchestrationPublisherName;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.engine.OrchestrationEngine;
 import io.harness.engine.executions.node.NodeExecutionService;
-import io.harness.engine.executions.plan.PlanService;
 import io.harness.engine.pms.resume.EngineResumeCallback;
-import io.harness.engine.utils.PmsLevelUtils;
+import io.harness.eventsframework.api.Producer;
+import io.harness.eventsframework.producer.Message;
 import io.harness.execution.NodeExecution.NodeExecutionKeys;
 import io.harness.logging.AutoLogContext;
-import io.harness.plan.Node;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.ChildrenExecutableResponse.Child;
 import io.harness.pms.contracts.execution.ExecutableResponse;
 import io.harness.pms.contracts.execution.events.SdkResponseEventProto;
 import io.harness.pms.contracts.execution.events.SpawnChildrenRequest;
+import io.harness.pms.contracts.execution.events.TriggerNodeEvent;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.waiter.WaitNotifyEngine;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -40,10 +41,9 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(HarnessTeam.PIPELINE)
 @Slf4j
 public class SpawnChildrenRequestProcessor implements SdkResponseProcessor {
-  @Inject private PlanService planService;
   @Inject private NodeExecutionService nodeExecutionService;
-  @Inject private OrchestrationEngine engine;
   @Inject private WaitNotifyEngine waitNotifyEngine;
+  @Inject @Named(TRIGGER_NODE_EVENT_PRODUCER) private Producer producer;
   @Inject @Named(OrchestrationPublisherName.PUBLISHER_NAME) private String publisherName;
 
   @Override
@@ -56,9 +56,20 @@ public class SpawnChildrenRequestProcessor implements SdkResponseProcessor {
       for (Child child : request.getChildren().getChildrenList()) {
         String uuid = generateUuid();
         callbackIds.add(uuid);
-        Node node = planService.fetchNode(ambiance.getPlanId(), child.getChildNodeId());
-        Ambiance clonedAmbiance = AmbianceUtils.cloneForChild(ambiance, PmsLevelUtils.buildLevelFromNode(uuid, node));
-        engine.triggerNode(clonedAmbiance, node, null);
+        producer.send(Message.newBuilder()
+                          .putAllMetadata(ImmutableMap.<String, String>builder()
+                                              .put("eventType", "TRIGGER_NODE")
+                                              .put("nodeId", child.getChildNodeId())
+                                              .put("nodeRuntimeId", uuid)
+                                              .putAll(AmbianceUtils.logContextMap(ambiance))
+                                              .build())
+                          .setData(TriggerNodeEvent.newBuilder()
+                                       .setAmbiance(ambiance)
+                                       .setNodeId(child.getChildNodeId())
+                                       .setRuntimeId(uuid)
+                                       .build()
+                                       .toByteString())
+                          .build());
       }
 
       // Attach a Callback to the parent for the child

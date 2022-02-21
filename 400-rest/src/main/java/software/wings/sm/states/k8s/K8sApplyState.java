@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessModule._870_CG_ORCHESTRATION;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.beans.FeatureName.NEW_KUBECTL_VERSION;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.WingsException.USER;
 
 import static software.wings.sm.StateType.K8S_APPLY;
@@ -36,6 +37,7 @@ import software.wings.api.k8s.K8sStateExecutionData;
 import software.wings.beans.Activity;
 import software.wings.beans.Application;
 import software.wings.beans.ContainerInfrastructureMapping;
+import software.wings.beans.GitFileConfig;
 import software.wings.beans.appmanifest.ApplicationManifest;
 import software.wings.beans.command.CommandUnit;
 import software.wings.beans.command.K8sDummyCommandUnit;
@@ -90,6 +92,8 @@ public class K8sApplyState extends AbstractK8sState {
   @Getter @Setter @Attributes(title = "Skip manifest rendering") private boolean skipRendering;
   @Getter @Setter @Attributes(title = "Export manifests") private boolean exportManifests;
   @Getter @Setter @Attributes(title = "Inherit manifests") private boolean inheritManifests;
+  @Getter @Setter @Attributes(title = "Override remote values yaml") private GitFileConfig gitFileConfig;
+  @Getter @Setter @Attributes(title = "Override inline values yaml") private String stepValuesOverride;
 
   @Override
   public Integer getTimeoutMillis() {
@@ -155,6 +159,14 @@ public class K8sApplyState extends AbstractK8sState {
     ContainerInfrastructureMapping infraMapping = k8sStateHelper.fetchContainerInfrastructureMapping(context);
     storePreviousHelmDeploymentInfo(context, appManifestMap.get(K8sValuesLocation.Service));
 
+    if (isBlank(stepValuesOverride)) {
+      stepValuesOverride = ((K8sStateExecutionData) context.getStateExecutionData())
+                               .getValuesFiles()
+                               .get(K8sValuesLocation.Service)
+                               .iterator()
+                               .next();
+    }
+
     renderStateVariables(context);
 
     K8sApplyTaskParametersBuilder builder = K8sApplyTaskParameters.builder();
@@ -172,6 +184,11 @@ public class K8sApplyState extends AbstractK8sState {
       }
     }
 
+    List<String> valuesYamlList = fetchRenderedValuesFiles(appManifestMap, context);
+    if (isNotEmpty(stepValuesOverride)) {
+      valuesYamlList.add(stepValuesOverride);
+    }
+
     K8sTaskParameters k8sTaskParameters =
         builder.activityId(activityId)
             .releaseName(fetchReleaseName(context, infraMapping))
@@ -181,7 +198,7 @@ public class K8sApplyState extends AbstractK8sState {
             .filePaths(filePaths)
             .k8sDelegateManifestConfig(
                 createDelegateManifestConfig(context, appManifestMap.get(K8sValuesLocation.Service)))
-            .valuesYamlList(fetchRenderedValuesFiles(appManifestMap, context))
+            .valuesYamlList(valuesYamlList)
             .skipDryRun(skipDryRun)
             .skipRendering(skipRendering)
             .useLatestKustomizeVersion(isUseLatestKustomizeVersion(context.getAccountId()))
@@ -250,6 +267,10 @@ public class K8sApplyState extends AbstractK8sState {
 
     if (isNotBlank(stateTimeoutInMinutes)) {
       stateTimeoutInMinutes = context.renderExpression(stateTimeoutInMinutes);
+    }
+
+    if (isNotBlank(stepValuesOverride)) {
+      stepValuesOverride = context.renderExpression(stepValuesOverride);
     }
   }
 }

@@ -1083,7 +1083,7 @@ public class AbstractK8SStateTest extends WingsBaseTest {
     when(infrastructureMappingService.get(APP_ID, null)).thenReturn(infrastructureMapping);
 
     ExecutionResponse executionResponse =
-        abstractK8SState.executeGitTask(context, appManifestMap, ACTIVITY_ID, "commandName");
+        abstractK8SState.executeGitTask(context, appManifestMap, ACTIVITY_ID, "commandName", null);
     assertThat(executionResponse.isAsync()).isTrue();
     K8sStateExecutionData responseStateExecutionData =
         (K8sStateExecutionData) executionResponse.getStateExecutionData();
@@ -1127,7 +1127,7 @@ public class AbstractK8SStateTest extends WingsBaseTest {
     when(infrastructureMappingService.get(APP_ID, null)).thenReturn(infrastructureMapping);
     doReturn(Service.builder().uuid("serviceId").build()).when(applicationManifestUtils).fetchServiceFromContext(any());
 
-    k8sRollingDeploy.executeGitTask(context, appManifestMap, ACTIVITY_ID, "commandName");
+    k8sRollingDeploy.executeGitTask(context, appManifestMap, ACTIVITY_ID, "commandName", null);
     ArgumentCaptor<SweepingOutputInquiry> sweepingOutputInquiryCaptor =
         ArgumentCaptor.forClass(SweepingOutputInquiry.class);
     verify(mockedSweepingOutputService, times(1)).findSweepingOutput(sweepingOutputInquiryCaptor.capture());
@@ -1136,16 +1136,16 @@ public class AbstractK8SStateTest extends WingsBaseTest {
     assertThat(sweepingOutputInquiryCaptor.getValue().getAppId()).isEqualTo(APP_ID);
 
     reset(mockedSweepingOutputService);
-    k8sCanaryDeploy.executeGitTask(context, appManifestMap, ACTIVITY_ID, "commandName");
+    k8sCanaryDeploy.executeGitTask(context, appManifestMap, ACTIVITY_ID, "commandName", null);
     verify(mockedSweepingOutputService, times(0)).findSweepingOutput(any());
 
     reset(featureFlagService);
     doReturn(false).when(featureFlagService).isEnabled(any(), any());
-    k8sRollingDeploy.executeGitTask(context, appManifestMap, ACTIVITY_ID, "commandName");
+    k8sRollingDeploy.executeGitTask(context, appManifestMap, ACTIVITY_ID, "commandName", null);
     verify(mockedSweepingOutputService, times(0)).findSweepingOutput(any());
 
     reset(mockedSweepingOutputService);
-    k8sCanaryDeploy.executeGitTask(context, appManifestMap, ACTIVITY_ID, "commandName");
+    k8sCanaryDeploy.executeGitTask(context, appManifestMap, ACTIVITY_ID, "commandName", null);
     verify(mockedSweepingOutputService, times(0)).findSweepingOutput(any());
   }
 

@@ -323,8 +323,24 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
     manifestConfigBuilder.encryptedDataDetails(encryptionDetails);
   }
 
+  public GitFetchFilesConfig convertGitFileConfig(
+      GitFileConfig gitFileConfig, String appId, String workflowExecutionId) {
+    GitConfig gitConfig = settingsService.fetchGitConfigFromConnectorId(gitFileConfig.getConnectorId());
+    notNullCheck("Git config not found", gitConfig);
+    gitConfigHelperService.convertToRepoGitConfig(gitConfig, gitFileConfig.getRepoName());
+    List<EncryptedDataDetail> encryptionDetails =
+        secretManager.getEncryptionDetails(gitConfig, appId, workflowExecutionId);
+
+    return GitFetchFilesConfig.builder()
+        .gitConfig(gitConfig)
+        .gitFileConfig(gitFileConfig)
+        .encryptedDataDetails(encryptionDetails)
+        .build();
+  }
+
   public ExecutionResponse executeGitTask(ExecutionContext context,
-      Map<K8sValuesLocation, ApplicationManifest> appManifestMap, String activityId, String commandName) {
+      Map<K8sValuesLocation, ApplicationManifest> appManifestMap, String activityId, String commandName,
+      GitFileConfig gitFileConfig) {
     Application app = appService.get(context.getAppId());
     applicationManifestUtils.populateRemoteGitConfigFilePathList(context, appManifestMap);
 
@@ -347,6 +363,11 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
       if (null != k8sGitConfigMapInfo) {
         fetchFilesTaskParams.setGitFetchFilesConfigMap(k8sGitConfigMapInfo.getGitFetchFilesConfigMap());
       }
+    }
+
+    if (gitFileConfig != null) {
+      fetchFilesTaskParams.getGitFetchFilesConfigMap().put(
+          "Service", convertGitFileConfig(gitFileConfig, context.getAppId(), context.getWorkflowExecutionId()));
     }
 
     ContainerInfrastructureMapping infraMapping = k8sStateHelper.fetchContainerInfrastructureMapping(context);
@@ -682,7 +703,12 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
   public String fetchActivityId(ExecutionContext context) {
     return ((K8sStateExecutionData) context.getStateExecutionData()).getActivityId();
   }
-
+  public GitFileConfig getApplyStateGitConfig(K8sStateExecutor k8sStateExecutor) {
+    if (k8sStateExecutor instanceof K8sApplyState) {
+      return ((K8sApplyState) k8sStateExecutor).getGitFileConfig();
+    }
+    return null;
+  }
   public ExecutionResponse executeWrapperWithManifest(
       K8sStateExecutor k8sStateExecutor, ExecutionContext context, long timeoutInMillis) {
     try {
@@ -695,6 +721,7 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
       boolean remotePatches = false;
       boolean customSourceParams = false;
       boolean ocTemplateSource = false;
+      GitFileConfig gitFileConfig = getApplyStateGitConfig(k8sStateExecutor);
 
       Activity activity;
       Map<K8sValuesLocation, ApplicationManifest> appManifestMap;
@@ -727,8 +754,9 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
       if (valuesInHelmChartRepo) {
         return executeHelmValuesFetchTask(
             context, activity.getUuid(), k8sStateExecutor.commandName(), timeoutInMillis, appManifestMap);
-      } else if (valuesInGit || remoteParams || remotePatches) {
-        return executeGitTask(context, appManifestMap, activity.getUuid(), k8sStateExecutor.commandName());
+      } else if (valuesInGit || remoteParams || remotePatches || (gitFileConfig != null)) {
+        return executeGitTask(
+            context, appManifestMap, activity.getUuid(), k8sStateExecutor.commandName(), gitFileConfig);
       } else if (isCustomManifestFeatureEnabled && (valuesInCustomSource || customSourceParams)) {
         return executeCustomFetchValuesTask(context, appManifestMap, activity.getUuid(), k8sStateExecutor);
       } else {
@@ -1063,7 +1091,7 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
     boolean valuesInGit = isValuesInGit(appManifestMap);
     boolean valuesInCustomSource = isValuesInCustomSource(appManifestMap);
     if (valuesInGit) {
-      return executeGitTask(context, appManifestMap, activityId, k8sStateExecutor.commandName());
+      return executeGitTask(context, appManifestMap, activityId, k8sStateExecutor.commandName(), null);
     } else if (valuesInCustomSource) {
       return executeCustomFetchValuesTask(context, appManifestMap, activityId, k8sStateExecutor);
     } else {

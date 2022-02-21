@@ -163,7 +163,7 @@ public class ChartMuseumClientHelperTest extends CategoryTest {
   }
 
   @Test
-  @Owner(developers = ABOSII)
+  @Owner(developers = NAMAN_TALAYCHA)
   @Category(UnitTests.class)
   public void testStartGCSChartMuseumServerLatestChartMuseumBin() throws Exception {
     final String bucketName = "gcs-bucket";

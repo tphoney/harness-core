@@ -74,7 +74,7 @@ public class ConnectorInstrumentationHelper {
           map.put(CONNECTOR_PROJECT, projectIdentifier);
         }
         if (orgIdentifier != null) {
-          map.put(CONNECTOR_ID, orgIdentifier);
+          map.put(CONNECTOR_ORG, orgIdentifier);
         }
         map.put(ACCOUNT_ID, accountId);
         map.put(CONNECTOR_ID, connectorIdentifier);

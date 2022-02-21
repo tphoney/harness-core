@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2021 Harness Inc. All rights reserved.
  * Use of this source code is governed by the PolyForm Shield 1.0.0 license
@@ -121,7 +122,7 @@ public class GraphUpdateRedisConsumer implements PmsRedisConsumer {
         try (AutoLogContext autoLogContext = new AutoLogContext(
                  ImmutableMap.of("planExecutionId", planExecutionId), AutoLogContext.OverrideBehavior.OVERRIDE_NESTS)) {
           checkAndLogSchedulingDelays(planExecutionId, startTs);
-//          graphGenerationService.updateGraph(planExecutionId);
+          graphGenerationService.updateGraph(planExecutionId);
         } catch (Exception ex) {
           log.error("Exception occurred while updating graph with planExecutionId {}", planExecutionId, ex);
         }

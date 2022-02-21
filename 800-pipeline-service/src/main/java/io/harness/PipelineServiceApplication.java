@@ -451,8 +451,8 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
     // NodeStatusUpdateObserver
     nodeExecutionService.getStepStatusUpdateSubject().register(
         injector.getInstance(Key.get(PlanExecutionService.class)));
-    //    nodeExecutionService.getStepStatusUpdateSubject().register(
-    //        injector.getInstance(Key.get(StageStatusUpdateNotificationEventHandler.class)));
+    nodeExecutionService.getStepStatusUpdateSubject().register(
+        injector.getInstance(Key.get(StageStatusUpdateNotificationEventHandler.class)));
     nodeExecutionService.getStepStatusUpdateSubject().register(
         injector.getInstance(Key.get(BarrierPositionHelperEventHandler.class)));
     nodeExecutionService.getStepStatusUpdateSubject().register(injector.getInstance(Key.get(BarrierDropper.class)));
@@ -468,9 +468,9 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
     nodeExecutionService.getNodeUpdateObserverSubject().register(
         injector.getInstance(Key.get(OrchestrationLogPublisher.class)));
 
-    // NodeExecutionStartObserver
-    //    nodeExecutionService.getNodeExecutionStartSubject().register(
-    //        injector.getInstance(Key.get(StageStartNotificationHandler.class)));
+    //     NodeExecutionStartObserver
+    nodeExecutionService.getNodeExecutionStartSubject().register(
+        injector.getInstance(Key.get(StageStartNotificationHandler.class)));
     nodeExecutionService.getNodeExecutionStartSubject().register(
         injector.getInstance(Key.get(OrchestrationLogPublisher.class)));
 
@@ -502,8 +502,8 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
     planExecutionStrategy.getOrchestrationStartSubject().register(
         injector.getInstance(Key.get(ExecutionSummaryCreateEventHandler.class)));
     // End Observers
-    //    planExecutionStrategy.getOrchestrationEndSubject().register(
-    //        injector.getInstance(Key.get(OrchestrationEndGraphHandler.class)));
+    planExecutionStrategy.getOrchestrationEndSubject().register(
+        injector.getInstance(Key.get(OrchestrationEndGraphHandler.class)));
     planExecutionStrategy.getOrchestrationEndSubject().register(
         injector.getInstance(Key.get(OrchestrationEndInterruptHandler.class)));
     planExecutionStrategy.getOrchestrationEndSubject().register(

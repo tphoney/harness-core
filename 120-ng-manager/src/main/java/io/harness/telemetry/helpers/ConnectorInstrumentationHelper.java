@@ -74,9 +74,10 @@ public class ConnectorInstrumentationHelper {
           map.put(CONNECTOR_PROJECT, projectIdentifier);
         }
         if (orgIdentifier != null) {
-          map.put(CONNECTOR_ID, connectorIdentifier);
+          map.put(CONNECTOR_ID, orgIdentifier);
         }
         map.put(ACCOUNT_ID, accountId);
+        map.put(CONNECTOR_ID, connectorIdentifier);
         telemetryReporter.sendTrackEvent("connector_deletion", map,
             ImmutableMap.<Destination, Boolean>builder()
                 .put(Destination.AMPLITUDE, true)

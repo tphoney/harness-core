@@ -8,6 +8,12 @@
 package io.harness.serverless;
 
 public enum ServerlessCommandUnitConstants {
+  fetchFiles {
+    @Override
+    public String toString() {
+      return "Fetch Files";
+    }
+  },
   init {
     @Override
     public String toString() {

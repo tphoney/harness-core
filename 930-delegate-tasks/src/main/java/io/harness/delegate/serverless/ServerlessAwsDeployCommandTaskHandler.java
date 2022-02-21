@@ -46,7 +46,8 @@ public class ServerlessAwsDeployCommandTaskHandler extends ServerlessCommandTask
   private ServerlessClient serverlessClient;
   private ServerlessAwsManifest serverlessAwsManifest;
 
-  private static final String HOME_DIRECTORY = "./repository/sls/home";
+  private static final String HOME_DIRECTORY = "./repository/serverless/home";
+  // todo: need to move to constants file
   @Override
   protected ServerlessCommandResponse executeTaskInternal(ServerlessCommandRequest serverlessCommandRequest,
       ServerlessDelegateTaskParams serverlessDelegateTaskParams, ILogStreamingTaskClient iLogStreamingTaskClient,
@@ -61,6 +62,7 @@ public class ServerlessAwsDeployCommandTaskHandler extends ServerlessCommandTask
       throw new InvalidArgumentsException(
           Pair.of("ServerlessInfraConfig", "Must be instance of AwsServerlessInfraConfig"));
     }
+    // todo: instance check for other configs
     LogCallback initLogCallback = serverlessTaskHelperBase.getLogCallback(
         iLogStreamingTaskClient, ServerlessCommandUnitConstants.init.toString(), true, commandUnitsProgress);
     init(serverlessDeployRequest, initLogCallback, serverlessDelegateTaskParams);

@@ -47,6 +47,7 @@ public class ServerlessDelegateTaskHelper {
 
     log.info("Starting task execution for command: {}", serverlessCommandRequest.getServerlessCommandType().name());
     decryptRequestDTOs(serverlessCommandRequest);
+    // todo: add execution id to directory path
     String workingDirectory = Paths.get(WORKING_DIR_BASE, convertBase64UuidToCanonicalForm(generateUuid()))
                                   .normalize()
                                   .toAbsolutePath()
@@ -81,6 +82,7 @@ public class ServerlessDelegateTaskHelper {
 
   private void decryptRequestDTOs(ServerlessCommandRequest serverlessCommandRequest) {
     serverlessInfraConfigHelper.decryptServerlessInfraConfig(serverlessCommandRequest.getServerlessInfraConfig());
+    // todo: have to add more decrypting capabaility for others
   }
 
   private void cleanup(String workingDirectory) {

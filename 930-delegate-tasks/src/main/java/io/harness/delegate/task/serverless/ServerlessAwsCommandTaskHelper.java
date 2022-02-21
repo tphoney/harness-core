@@ -70,9 +70,10 @@ public class ServerlessAwsCommandTaskHelper {
     DeployCommand command = serverlessClient.deploy()
                                 .region(serverlessAwsDeployConfig.getRegion())
                                 .stage(serverlessAwsDeployConfig.getStage())
-                                .forceDeployment(serverlessAwsDeployConfig.getForceDeploymentFlag())
-                                .awsS3Accelerate(serverlessAwsDeployConfig.getAwsS3AccelerateFlag())
-                                .noAwsS3Accelerate(serverlessAwsDeployConfig.getNoAwsS3AccelerateFlag());
+                                .forceDeployment(serverlessAwsDeployConfig.isForceDeploymentFlag())
+                                .awsS3Accelerate(serverlessAwsDeployConfig.isAwsS3AccelerateFlag())
+                                .noAwsS3Accelerate(serverlessAwsDeployConfig.isNoAwsS3AccelerateFlag());
+    // todo: add other options for deploy command
     ProcessResult result =
         executeCommand(command, serverlessDelegateTaskParams.getWorkingDirectory(), executionLogCallback, true);
     if (result.getExitValue() == 0) {

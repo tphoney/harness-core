@@ -7,17 +7,20 @@
 
 package io.harness.delegate.task.serverless;
 
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
+import io.harness.delegate.beans.storeconfig.GitStoreDelegateConfig;
+
 import lombok.Builder;
 import lombok.Value;
 
 @Value
 @Builder
-public class ServerlessAwsDeployConfig implements ServerlessDeployConfig {
-  String region;
-  String stage;
-  boolean forceDeploymentFlag;
-  boolean awsS3AccelerateFlag;
-  boolean noAwsS3AccelerateFlag;
-  String configFileName;
-  boolean configFileFlag;
+@OwnedBy(HarnessTeam.CDP)
+public class ServerlessGitFetchFileConfig {
+  String identifier;
+  String manifestType;
+  GitStoreDelegateConfig gitStoreDelegateConfig;
+  String configOverridePath;
+  boolean succeedIfFileNotFound;
 }

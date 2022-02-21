@@ -462,9 +462,9 @@ func GetLatestCommitOnFile(ctx context.Context, request *pb.GetLatestCommitOnFil
 		}, err
 	}
 	
-	if (listCommitsResponse.CommitIds != nil && len(listCommitsResponse.CommitIds) !=0) {
+	if (response.CommitIds != nil && len(response.CommitIds) !=0) {
 		return &pb.GetLatestCommitOnFileResponse {
-			CommitId: listCommitsResponse.CommitIds[0],
+			CommitId: response.CommitIds[0],
 		}, nil
 	}
 	// TODO Return an error saying no commit found for the given file

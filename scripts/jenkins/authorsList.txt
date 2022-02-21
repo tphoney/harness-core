@@ -241,4 +241,5 @@ William Wissemann william.wissemann@harness.io
 Shubham Maheshwari shubham.maheshwari@harness.io
 Scott Walker scott.walker@harness.io
 Dev Mittal devki.mittal@harness.io
+Lalit Kumar lalit.kumar@harness.io
 Naman Goenka naman.goenka@harness.io

@@ -263,6 +263,7 @@ import io.harness.pcf.CfSdkClient;
 import io.harness.pcf.cfcli.client.CfCliClientImpl;
 import io.harness.pcf.cfsdk.CfSdkClientImpl;
 import io.harness.perpetualtask.internal.AssignmentTask;
+import io.harness.perpetualtask.manifest.ArtifactoryHelmRepositoryService;
 import io.harness.perpetualtask.manifest.HelmRepositoryService;
 import io.harness.perpetualtask.manifest.ManifestRepositoryService;
 import io.harness.perpetualtask.polling.manifest.HelmChartCollectionService;
@@ -406,6 +407,7 @@ import software.wings.delegatetasks.cvng.K8InfoDataService;
 import software.wings.delegatetasks.helm.HelmCollectChartTask;
 import software.wings.delegatetasks.helm.HelmCommandTask;
 import software.wings.delegatetasks.helm.HelmValuesFetchTask;
+import software.wings.delegatetasks.helm.ManifestRepoServiceType;
 import software.wings.delegatetasks.jira.JiraTask;
 import software.wings.delegatetasks.jira.ShellScriptApprovalTask;
 import software.wings.delegatetasks.k8s.K8sTask;
@@ -1100,7 +1102,12 @@ public class DelegateModule extends AbstractModule {
     bind(AzureWebClient.class).to(AzureWebClientImpl.class);
     bind(NGGitService.class).to(NGGitServiceImpl.class);
     bind(GcpClient.class).to(GcpClientImpl.class);
-    bind(ManifestRepositoryService.class).to(HelmRepositoryService.class);
+    bind(ManifestRepositoryService.class)
+        .annotatedWith(Names.named(ManifestRepoServiceType.HELM_COMMAND_SERVICE))
+        .to(HelmRepositoryService.class);
+    bind(ManifestRepositoryService.class)
+        .annotatedWith(Names.named(ManifestRepoServiceType.ARTIFACTORY_HELM_SERVICE))
+        .to(ArtifactoryHelmRepositoryService.class);
     bind(AwsClient.class).to(AwsClientImpl.class);
     bind(CVNGDataCollectionDelegateService.class).to(CVNGDataCollectionDelegateServiceImpl.class);
     bind(AzureManagementClient.class).to(AzureManagementClientImpl.class);

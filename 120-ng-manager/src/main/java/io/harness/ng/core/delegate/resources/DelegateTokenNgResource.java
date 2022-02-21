@@ -5,25 +5,26 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.resources;
+package io.harness.ng.core.delegate.resources;
 
-import static software.wings.security.PermissionAttribute.PermissionType.MANAGE_DELEGATES;
-import static software.wings.security.PermissionAttribute.ResourceType.DELEGATE;
+import static io.harness.delegate.utils.RbacConstants.DELEGATE_DELETE_PERMISSION;
+import static io.harness.delegate.utils.RbacConstants.DELEGATE_EDIT_PERMISSION;
+import static io.harness.delegate.utils.RbacConstants.DELEGATE_RESOURCE_TYPE;
+import static io.harness.delegate.utils.RbacConstants.DELEGATE_VIEW_PERMISSION;
 
 import io.harness.NGCommonEntityConstants;
+import io.harness.accesscontrol.clients.AccessControlClient;
+import io.harness.accesscontrol.clients.Resource;
+import io.harness.accesscontrol.clients.ResourceScope;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.delegate.beans.DelegateEntityOwner;
 import io.harness.delegate.beans.DelegateTokenDetails;
 import io.harness.delegate.beans.DelegateTokenStatus;
-import io.harness.delegate.service.intfc.DelegateNgTokenService;
-import io.harness.delegate.utils.DelegateEntityOwnerHelper;
+import io.harness.ng.core.delegate.client.DelegateTokenNgClient;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
+import io.harness.remote.client.RestClientUtils;
 import io.harness.rest.RestResponse;
-
-import software.wings.security.annotations.AuthRule;
-import software.wings.security.annotations.Scope;
 
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.Timed;
@@ -36,6 +37,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -44,13 +46,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import lombok.extern.slf4j.Slf4j;
 
-@Api("/ng/delegate-token")
-@Path("/ng/delegate-token")
+@Api("delegate-token-ng")
+@Path("/delegate-token-ng")
 @Produces("application/json")
-@Scope(DELEGATE)
+@Consumes({"application/json"})
 @Slf4j
 @OwnedBy(HarnessTeam.DEL)
-@Tag(name = "Delegate Token Resource", description = "Contains APIs related to Delegate NG Token management")
+@Tag(name = "Delegate Token Ng Resource", description = "Contains APIs related to Delegate NG Token management")
 @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Bad Request",
     content =
     {
@@ -64,12 +66,14 @@ import lombok.extern.slf4j.Slf4j;
       , @Content(mediaType = "application/yaml", schema = @Schema(implementation = ErrorDTO.class))
     })
 
-public class DelegateNgTokenResource {
-  private final DelegateNgTokenService delegateTokenService;
+public class DelegateTokenNgResource {
+  private final DelegateTokenNgClient delegateTokenClient;
+  private final AccessControlClient accessControlClient;
 
   @Inject
-  public DelegateNgTokenResource(DelegateNgTokenService delegateTokenService) {
-    this.delegateTokenService = delegateTokenService;
+  public DelegateTokenNgResource(DelegateTokenNgClient delegateTokenClient, AccessControlClient accessControlClient) {
+    this.delegateTokenClient = delegateTokenClient;
+    this.accessControlClient = accessControlClient;
   }
 
   // TODO: ARPIT implement a separate rbac for token (create/view/revoke)
@@ -77,45 +81,46 @@ public class DelegateNgTokenResource {
   @POST
   @Timed
   @ExceptionMetered
-  @AuthRule(permissionType = MANAGE_DELEGATES)
-  @Operation(operationId = "createToken", summary = "Creates Delegate NG Token.",
+  @Operation(operationId = "createDelegateToken", summary = "Creates Delegate NG Token.",
       responses =
       {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "default", description = "A created Token.")
       })
   public RestResponse<DelegateTokenDetails>
-  createToken(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
-                  "accountId") @NotNull String accountId,
+  createDelegateToken(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
+                          NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountIdentifier,
       @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.ORG_KEY) String orgId,
+          NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectId,
+          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @Parameter(description = "Delegate Token name") @QueryParam("tokenName") @NotNull String tokenName) {
-    DelegateEntityOwner owner = DelegateEntityOwnerHelper.buildOwner(orgId, projectId);
-    return new RestResponse<>(delegateTokenService.createToken(accountId, owner, tokenName));
+    accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
+        Resource.of(DELEGATE_RESOURCE_TYPE, null), DELEGATE_EDIT_PERMISSION);
+    return new RestResponse<>(RestClientUtils.getResponse(
+        delegateTokenClient.createToken(accountIdentifier, orgIdentifier, projectIdentifier, tokenName)));
   }
 
   @PUT
   @Timed
   @ExceptionMetered
-  @AuthRule(permissionType = MANAGE_DELEGATES)
   @Operation(operationId = "revokeDelegateToken", summary = "Revokes Delegate Ng Token.",
       responses =
       {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "200 Ok response if everything successfully revoked token")
       })
-  public RestResponse<Void>
-  revokeToken(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
-                  "accountId") @NotNull String accountId,
+  public RestResponse<DelegateTokenDetails>
+  revokeDelegateToken(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
+                          NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountIdentifier,
       @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.ORG_KEY) String orgId,
+          NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectId,
+          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @Parameter(description = "Delegate Token name") @QueryParam("tokenName") @NotNull String tokenName) {
-    DelegateEntityOwner owner = DelegateEntityOwnerHelper.buildOwner(orgId, projectId);
-    delegateTokenService.revokeDelegateToken(accountId, owner, tokenName);
-    return new RestResponse<>();
+    accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
+        Resource.of(DELEGATE_RESOURCE_TYPE, null), DELEGATE_DELETE_PERMISSION);
+    return new RestResponse<>(RestClientUtils.getResponse(
+        delegateTokenClient.revokeToken(accountIdentifier, orgIdentifier, projectIdentifier, tokenName)));
   }
 
   @GET
@@ -130,15 +135,17 @@ public class DelegateNgTokenResource {
       })
   public RestResponse<List<DelegateTokenDetails>>
   getDelegateTokens(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
-                        "accountId") @NotNull String accountId,
+                        NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountIdentifier,
       @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.ORG_KEY) String orgId,
+          NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectId,
+          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @Parameter(description = "Status of Delegate Token (ACTIVE or REVOKED). "
               + "If left empty both active and revoked tokens will be retrieved") @QueryParam("status")
       DelegateTokenStatus status) {
-    DelegateEntityOwner owner = DelegateEntityOwnerHelper.buildOwner(orgId, projectId);
-    return new RestResponse<>(delegateTokenService.getDelegateTokens(accountId, owner, status));
+    accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
+        Resource.of(DELEGATE_RESOURCE_TYPE, null), DELEGATE_VIEW_PERMISSION);
+    return new RestResponse<>(RestClientUtils.getResponse(
+        delegateTokenClient.getTokens(accountIdentifier, orgIdentifier, projectIdentifier, status)));
   }
 }

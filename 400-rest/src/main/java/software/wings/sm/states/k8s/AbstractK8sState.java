@@ -323,13 +323,14 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
     manifestConfigBuilder.encryptedDataDetails(encryptionDetails);
   }
 
-  public GitFetchFilesConfig convertGitFileConfig(
-      GitFileConfig gitFileConfig, String appId, String workflowExecutionId) {
+  public GitFetchFilesConfig convertGitFileConfig(GitFileConfig gitFileConfig, ExecutionContext context) {
+    gitFileConfigHelperService.renderGitFileConfig(context, gitFileConfig);
+    applicationManifestUtils.splitGitFileConfigFilePath(gitFileConfig);
     GitConfig gitConfig = settingsService.fetchGitConfigFromConnectorId(gitFileConfig.getConnectorId());
     notNullCheck("Git config not found", gitConfig);
     gitConfigHelperService.convertToRepoGitConfig(gitConfig, gitFileConfig.getRepoName());
     List<EncryptedDataDetail> encryptionDetails =
-        secretManager.getEncryptionDetails(gitConfig, appId, workflowExecutionId);
+        secretManager.getEncryptionDetails(gitConfig, context.getAppId(), context.getWorkflowExecutionId());
 
     return GitFetchFilesConfig.builder()
         .gitConfig(gitConfig)
@@ -340,7 +341,7 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
 
   public ExecutionResponse executeGitTask(ExecutionContext context,
       Map<K8sValuesLocation, ApplicationManifest> appManifestMap, String activityId, String commandName,
-      GitFileConfig gitFileConfig) {
+      GitFileConfig applyStepOverrideGitFileConfig) {
     Application app = appService.get(context.getAppId());
     applicationManifestUtils.populateRemoteGitConfigFilePathList(context, appManifestMap);
 
@@ -365,9 +366,9 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
       }
     }
 
-    if (gitFileConfig != null) {
+    if (applyStepOverrideGitFileConfig != null) {
       fetchFilesTaskParams.getGitFetchFilesConfigMap().put(
-          "Service", convertGitFileConfig(gitFileConfig, context.getAppId(), context.getWorkflowExecutionId()));
+          "Step", convertGitFileConfig(applyStepOverrideGitFileConfig, context));
     }
 
     ContainerInfrastructureMapping infraMapping = k8sStateHelper.fetchContainerInfrastructureMapping(context);
@@ -564,6 +565,10 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
       addNonEmptyValuesToList(K8sValuesLocation.Environment, valuesFiles.get(K8sValuesLocation.Environment), result);
     }
 
+    if (valuesFiles.containsKey(K8sValuesLocation.Step)) {
+      addNonEmptyValuesToList(K8sValuesLocation.Step, valuesFiles.get(K8sValuesLocation.Step), result);
+    }
+
     // OpenShift takes in reverse order
     if (openShiftManagerService.isOpenShiftManifestConfig(context)) {
       Collections.reverse(result);
@@ -703,12 +708,11 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
   public String fetchActivityId(ExecutionContext context) {
     return ((K8sStateExecutionData) context.getStateExecutionData()).getActivityId();
   }
-  public GitFileConfig getApplyStateGitConfig(K8sStateExecutor k8sStateExecutor) {
-    if (k8sStateExecutor instanceof K8sApplyState) {
-      return ((K8sApplyState) k8sStateExecutor).getGitFileConfig();
-    }
+
+  public GitFileConfig getApplyStepRemoteOverrideGitConfig() {
     return null;
   }
+
   public ExecutionResponse executeWrapperWithManifest(
       K8sStateExecutor k8sStateExecutor, ExecutionContext context, long timeoutInMillis) {
     try {
@@ -721,7 +725,7 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
       boolean remotePatches = false;
       boolean customSourceParams = false;
       boolean ocTemplateSource = false;
-      GitFileConfig gitFileConfig = getApplyStateGitConfig(k8sStateExecutor);
+      GitFileConfig applyStepRemoteOverride = getApplyStepRemoteOverrideGitConfig();
 
       Activity activity;
       Map<K8sValuesLocation, ApplicationManifest> appManifestMap;
@@ -754,9 +758,9 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
       if (valuesInHelmChartRepo) {
         return executeHelmValuesFetchTask(
             context, activity.getUuid(), k8sStateExecutor.commandName(), timeoutInMillis, appManifestMap);
-      } else if (valuesInGit || remoteParams || remotePatches || (gitFileConfig != null)) {
+      } else if (valuesInGit || remoteParams || remotePatches || (applyStepRemoteOverride != null)) {
         return executeGitTask(
-            context, appManifestMap, activity.getUuid(), k8sStateExecutor.commandName(), gitFileConfig);
+            context, appManifestMap, activity.getUuid(), k8sStateExecutor.commandName(), applyStepRemoteOverride);
       } else if (isCustomManifestFeatureEnabled && (valuesInCustomSource || customSourceParams)) {
         return executeCustomFetchValuesTask(context, appManifestMap, activity.getUuid(), k8sStateExecutor);
       } else {

@@ -32,6 +32,7 @@ import static io.harness.beans.ExecutionStatus.brokeStatuses;
 import static io.harness.beans.ExecutionStatus.isBrokeStatus;
 import static io.harness.beans.ExecutionStatus.isFinalStatus;
 import static io.harness.beans.ExecutionStatus.isPositiveStatus;
+import static io.harness.beans.FeatureName.TIMEOUT_FAILURE_SUPPORT;
 import static io.harness.beans.PageRequest.PageRequestBuilder.aPageRequest;
 import static io.harness.beans.SearchFilter.Operator.EQ;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
@@ -1580,14 +1581,15 @@ public class StateMachineExecutor implements StateInspectionListener {
         MapperUtils.mapObject(stateExecutionInstance.getStateParams(), currentState);
       }
       currentState.handleAbortEvent(context);
+      if (!(featureFlagService.isEnabled(TIMEOUT_FAILURE_SUPPORT, context.getAccountId()) && finalStatus == EXPIRED)) {
+        updated = terminateAndTransition(context, stateExecutionInstance, finalStatus, errorMessage);
+        invokeAdvisors(ExecutionEvent.builder()
+                           .failureTypes(EnumSet.<FailureType>of(FailureType.EXPIRED))
+                           .context(context)
+                           .state(currentState)
+                           .build());
+      }
 
-      updated = terminateAndTransition(context, stateExecutionInstance, finalStatus, errorMessage);
-
-      invokeAdvisors(ExecutionEvent.builder()
-                         .failureTypes(EnumSet.<FailureType>of(FailureType.EXPIRED))
-                         .context(context)
-                         .state(currentState)
-                         .build());
     } catch (Exception e) {
       log.error("[AbortInstance] Error in discontinuing", e);
     }
@@ -1958,7 +1960,8 @@ public class StateMachineExecutor implements StateInspectionListener {
     injector.injectMembers(context);
     log.info(DEBUG_LINE + "kick off stateExecution from resume for state {}", currentState);
     // TODO: Should this changed to stateMachineExecutor or Not?
-    executorService.execute(new SmExecutionAsyncResumer(context, currentState, response, this, asyncError));
+    executorService.execute(
+        new SmExecutionAsyncResumer(context, currentState, response, this, asyncError, featureFlagService));
   }
 
   /**
@@ -2020,7 +2023,6 @@ public class StateMachineExecutor implements StateInspectionListener {
           retryStateExecutionInstance(stateExecutionInstance, workflowExecutionInterrupt.getProperties());
           break;
         }
-
         case MARK_EXPIRED:
         case ABORT: {
           ExecutionContextImpl context = getExecutionContext(workflowExecutionInterrupt);
@@ -2180,13 +2182,22 @@ public class StateMachineExecutor implements StateInspectionListener {
     ops.set(StateExecutionInstanceKeys.status, NEW);
     ops.set(StateExecutionInstanceKeys.retry, Boolean.TRUE);
     ops.set(StateExecutionInstanceKeys.retryCount, stateExecutionInstance.getRetryCount() + 1);
+    ops.set(StateExecutionInstanceKeys.waitingForManualIntervention, false);
 
-    Query<StateExecutionInstance> query =
-        wingsPersistence.createQuery(StateExecutionInstance.class)
-            .filter(StateExecutionInstanceKeys.appId, stateExecutionInstance.getAppId())
-            .filter(ID_KEY, stateExecutionInstance.getUuid())
-            .field(StateExecutionInstanceKeys.status)
-            .in(asList(WAITING, FAILED, ERROR));
+    Query<StateExecutionInstance> query;
+    if (featureFlagService.isEnabled(TIMEOUT_FAILURE_SUPPORT, stateExecutionInstance.getAccountId())) {
+      query = wingsPersistence.createQuery(StateExecutionInstance.class)
+                  .filter(StateExecutionInstanceKeys.appId, stateExecutionInstance.getAppId())
+                  .filter(ID_KEY, stateExecutionInstance.getUuid())
+                  .field(StateExecutionInstanceKeys.status)
+                  .in(asList(WAITING, FAILED, ERROR, EXPIRED));
+    } else {
+      query = wingsPersistence.createQuery(StateExecutionInstance.class)
+                  .filter(StateExecutionInstanceKeys.appId, stateExecutionInstance.getAppId())
+                  .filter(ID_KEY, stateExecutionInstance.getUuid())
+                  .field(StateExecutionInstanceKeys.status)
+                  .in(asList(WAITING, FAILED, ERROR));
+    }
 
     UpdateResults updateResult = wingsPersistence.update(query, ops);
     if (updateResult == null || updateResult.getWriteResult() == null || updateResult.getWriteResult().getN() != 1) {
@@ -2419,6 +2430,7 @@ public class StateMachineExecutor implements StateInspectionListener {
     private State state;
     private Map<String, ResponseData> response;
     private boolean asyncError;
+    private FeatureFlagService featureFlagService;
 
     /**
      * Instantiates a new Sm execution dispatcher.
@@ -2429,12 +2441,13 @@ public class StateMachineExecutor implements StateInspectionListener {
      * @param stateMachineExecutor the state machine executor
      */
     SmExecutionAsyncResumer(ExecutionContextImpl context, State state, Map<String, ResponseData> response,
-        StateMachineExecutor stateMachineExecutor, boolean asyncError) {
+        StateMachineExecutor stateMachineExecutor, boolean asyncError, FeatureFlagService featureFlagService) {
       this.context = context;
       this.state = state;
       this.response = response;
       this.stateMachineExecutor = stateMachineExecutor;
       this.asyncError = asyncError;
+      this.featureFlagService = featureFlagService;
     }
 
     /* (non-Javadoc)
@@ -2449,13 +2462,35 @@ public class StateMachineExecutor implements StateInspectionListener {
           ErrorNotifyResponseData errorNotifyResponseData =
               (ErrorNotifyResponseData) response.values().iterator().next();
           stateExecutionData.setErrorMsg(errorNotifyResponseData.getErrorMessage());
-          stateExecutionData.setStatus(ERROR);
-          stateMachineExecutor.handleExecuteResponse(context,
-              ExecutionResponse.builder()
-                  .executionStatus(ERROR)
-                  .stateExecutionData(stateExecutionData)
-                  .errorMessage(errorNotifyResponseData.getErrorMessage())
-                  .build());
+          if (featureFlagService.isEnabled(TIMEOUT_FAILURE_SUPPORT, context.getAccountId())
+              && errorNotifyResponseData.isExpired()) {
+            stateExecutionData.setStatus(EXPIRED);
+            EnumSet<FailureType> failureTypes;
+            if (errorNotifyResponseData.getFailureTypes() == null) {
+              failureTypes = EnumSet.of(FailureType.EXPIRED, FailureType.TIMEOUT_ERROR);
+            } else {
+              failureTypes = errorNotifyResponseData.getFailureTypes();
+              failureTypes.addAll(EnumSet.of(FailureType.EXPIRED, FailureType.TIMEOUT_ERROR));
+            }
+
+            stateMachineExecutor.handleExecuteResponse(context,
+                ExecutionResponse.builder()
+                    .executionStatus(EXPIRED)
+                    .stateExecutionData(stateExecutionData)
+                    .failureTypes(failureTypes)
+                    .errorMessage(errorNotifyResponseData.getErrorMessage())
+                    .build());
+          } else {
+            stateExecutionData.setStatus(ERROR);
+            stateMachineExecutor.handleExecuteResponse(context,
+                ExecutionResponse.builder()
+                    .executionStatus(ERROR)
+                    .stateExecutionData(stateExecutionData)
+                    .failureTypes(errorNotifyResponseData.getFailureTypes())
+                    .errorMessage(errorNotifyResponseData.getErrorMessage())
+                    .build());
+          }
+
           return;
         }
 

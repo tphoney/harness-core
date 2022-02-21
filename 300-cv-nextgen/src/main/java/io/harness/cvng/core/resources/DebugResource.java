@@ -55,6 +55,6 @@ public class DebugResource {
                                       .projectIdentifier(projectIdentifier)
                                       .build();
 
-    return new RestResponse<>(debugService.get(projectParams, identifier));
+    return new RestResponse<>(debugService.getSLODebugResponse(projectParams, identifier));
   }
 }

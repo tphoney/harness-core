@@ -59,4 +59,6 @@ enum EntityTypeProtoEnum {
   RESTORE_CACHE_S3 = 46;
   SAVE_CACHE_GCS = 47;
   SAVE_CACHE_S3 = 48;
+  FLAG_CONFIGURATION = 49;
+  SECURITY = 50;
 }

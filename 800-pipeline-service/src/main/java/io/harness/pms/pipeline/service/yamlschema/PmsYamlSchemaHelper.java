@@ -13,6 +13,7 @@ import static io.harness.yaml.schema.beans.SchemaConstants.PROPERTIES_NODE;
 import io.harness.EntityType;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.FeatureName;
 import io.harness.jackson.JsonNodeUtils;
 import io.harness.plancreator.stages.parallel.ParallelStageElementConfig;
 import io.harness.plancreator.stages.stage.StageElementConfig;
@@ -228,6 +229,10 @@ public class PmsYamlSchemaHelper {
       }
     }
     return enabledFeatureFlags;
+  }
+
+  public boolean isFeatureFlagEnabled(FeatureName featureName, String accountId) {
+    return pmsFeatureFlagHelper.isEnabled(accountId, featureName);
   }
 
   public void processStageSchema(List<YamlSchemaWithDetails> allSchemaDetails, ObjectNode pipelineDefinitions) {

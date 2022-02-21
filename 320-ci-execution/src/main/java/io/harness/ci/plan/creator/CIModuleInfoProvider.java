@@ -65,10 +65,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
@@ -213,7 +210,9 @@ public class CIModuleInfoProvider implements ExecutionSummaryModuleInfoProvider 
       }
     }
 
-    List<String> deprecatedTagsList = executionConfigService.getDeprecatedTags(baseNGAccess.getAccountIdentifier());
+    List<String> deprecatedTagsList;
+//            executionConfigService.getDeprecatedTags(baseNGAccess.getAccountIdentifier());
+    deprecatedTagsList = Arrays.asList("lite engine, addon");
 
     return CIPipelineModuleInfo.builder()
         .branch(branch)

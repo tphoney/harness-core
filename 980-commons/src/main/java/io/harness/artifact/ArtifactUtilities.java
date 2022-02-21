@@ -22,10 +22,10 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 @OwnedBy(HarnessTeam.CDC)
 public class ArtifactUtilities {
-  public static String getArtifactoryRegistryUrl(String url, String dockerRepositoryServer, String jobName) {
+  public static String getArtifactoryRegistryUrl(String url, String artifactRepositoryUrl, String jobName) {
     String registryUrl;
-    if (dockerRepositoryServer != null) {
-      registryUrl = format("http%s://%s", url.startsWith("https") ? "s" : "", dockerRepositoryServer);
+    if (artifactRepositoryUrl != null) {
+      registryUrl = format("http%s://%s", url.startsWith("https") ? "s" : "", artifactRepositoryUrl);
     } else {
       int firstDotIndex = url.indexOf('.');
       int slashAfterDomain = url.indexOf('/', firstDotIndex);
@@ -36,10 +36,10 @@ public class ArtifactUtilities {
   }
 
   public static String getArtifactoryRepositoryName(
-      String url, String dockerRepositoryServer, String jobName, String imageName) {
+      String url, String artifactRepositoryUrl, String jobName, String imageName) {
     String registryName;
-    if (dockerRepositoryServer != null) {
-      registryName = dockerRepositoryServer + "/" + imageName;
+    if (artifactRepositoryUrl != null) {
+      registryName = artifactRepositoryUrl + "/" + imageName;
     } else {
       String registryUrl = getArtifactoryRegistryUrl(url, null, jobName);
       String namePrefix = registryUrl.substring(registryUrl.indexOf("://") + 3);
@@ -93,6 +93,22 @@ public class ArtifactUtilities {
     }
   }
 
+  public static String getBaseUrl(String url) {
+    return url.endsWith("/") ? url : url + "/";
+  }
+
+  public static String getHostname(String resourceUrl) {
+    try {
+      URL url = new URL(resourceUrl);
+      if (isNotEmpty(url.getProtocol())) {
+        return url.getProtocol() + "://" + extractUrl(resourceUrl);
+      }
+      return "https://" + extractUrl(resourceUrl);
+    } catch (MalformedURLException e) {
+      return resourceUrl;
+    }
+  }
+
   public static String getFileSearchPattern(String artifactPath) {
     int index = artifactPath.lastIndexOf('/');
     if (index == -1) {
@@ -117,5 +133,17 @@ public class ArtifactUtilities {
     } else {
       return artifactPath.substring(0, index);
     }
+  }
+
+  public String trimSlashforwardChars(String stringToTrim) {
+    if (isNotEmpty(stringToTrim)) {
+      if (stringToTrim.startsWith("/")) {
+        stringToTrim = stringToTrim.substring(1);
+      }
+      if (stringToTrim.endsWith("/")) {
+        stringToTrim = stringToTrim.substring(0, stringToTrim.length() - 1);
+      }
+    }
+    return stringToTrim;
   }
 }

@@ -124,6 +124,7 @@ import io.harness.ng.core.api.impl.NGModulesServiceImpl;
 import io.harness.ng.core.api.impl.NGSecretServiceV2Impl;
 import io.harness.ng.core.api.impl.TokenServiceImpl;
 import io.harness.ng.core.api.impl.UserGroupServiceImpl;
+import io.harness.ng.core.delegate.client.DelegateTokenNgClientModule;
 import io.harness.ng.core.encryptors.NGManagerKmsEncryptor;
 import io.harness.ng.core.encryptors.NGManagerVaultEncryptor;
 import io.harness.ng.core.entityactivity.event.EntityActivityCrudEventMessageListener;
@@ -162,7 +163,9 @@ import io.harness.ng.core.services.ProjectService;
 import io.harness.ng.core.smtp.NgSMTPSettingsHttpClientModule;
 import io.harness.ng.core.smtp.SmtpNgService;
 import io.harness.ng.core.smtp.SmtpNgServiceImpl;
+import io.harness.ng.core.user.service.LastAdminCheckService;
 import io.harness.ng.core.user.service.NgUserService;
+import io.harness.ng.core.user.service.impl.LastAdminCheckServiceImpl;
 import io.harness.ng.core.user.service.impl.NgUserServiceImpl;
 import io.harness.ng.core.user.service.impl.UserEntityCrudStreamListener;
 import io.harness.ng.eventsframework.EventsFrameworkModule;
@@ -549,6 +552,8 @@ public class NextGenModule extends AbstractModule {
     install(ConnectorModule.getInstance(appConfig.getNextGenConfig(), appConfig.getCeNextGenClientConfig()));
     install(new NgConnectorManagerClientModule(
         appConfig.getManagerClientConfig(), appConfig.getNextGenConfig().getManagerServiceSecret()));
+    install(new DelegateTokenNgClientModule(appConfig.getManagerClientConfig(),
+        appConfig.getNextGenConfig().getManagerServiceSecret(), NG_MANAGER.getServiceId()));
     bind(NgGlobalKmsService.class).to(NgGlobalKmsServiceImpl.class);
     install(new ProviderModule() {
       @Provides
@@ -644,6 +649,7 @@ public class NextGenModule extends AbstractModule {
     bind(ConnectorService.class)
         .annotatedWith(Names.named(SECRET_MANAGER_CONNECTOR_SERVICE))
         .to(SecretManagerConnectorServiceImpl.class);
+    bind(LastAdminCheckService.class).to(LastAdminCheckServiceImpl.class);
     bind(NgUserService.class).to(NgUserServiceImpl.class);
     bind(UserGroupService.class).to(UserGroupServiceImpl.class);
     bind(YamlBaseUrlService.class).to(YamlBaseUrlServiceImpl.class);

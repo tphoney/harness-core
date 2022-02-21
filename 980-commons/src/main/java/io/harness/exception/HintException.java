@@ -47,7 +47,8 @@ public class HintException extends WingsException {
   public static final String HINT_AZURE_VAULT_SM_CRUD_DENIED =
       "Please ensure Azure Vault engine have valid permissions";
   public static final String HINT_AZURE_VAULT_SM_SUBSCRIPTION_ID_ERROR = "Please ensure Subscription ID is valid";
-  public static final String HINT_HASHICORP_VAULT_SM_ACCESS_DENIED = "Please ensure Azure Vault credentials are valid";
+  public static final String HINT_HASHICORP_VAULT_SM_ACCESS_DENIED =
+      "Please ensure Hashicorp Vault credentials are valid";
   public static final String HINT_INVALID_TAG_REFER_LINK_GCR =
       "Please check if tag is available. Refer https://cloud.google.com/sdk/gcloud/reference/container/images/list-tags for more information";
   public static final String HINT_INVALID_IMAGE_REFER_LINK_GCR =

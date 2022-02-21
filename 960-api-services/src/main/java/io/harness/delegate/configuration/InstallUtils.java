@@ -1107,7 +1107,8 @@ public class InstallUtils {
       ProcessResult result = processExecutor.execute();
 
       if (result.getExitValue() == 0) {
-        kustomizePath = Paths.get(kustomizeDir + "/kustomize").toAbsolutePath().normalize().toString();
+        kustomizePath = Paths.get(kustomizeDir, "kustomize").toAbsolutePath().normalize().toString();
+        kustomizePaths.put(kustomizeVersion, kustomizePath);
         log.info(result.outputUTF8());
         if (validateKustomizeExists(kustomizeDir)) {
           log.info("kustomize path: {}", kustomizePath);
@@ -1209,6 +1210,19 @@ public class InstallUtils {
     if (isNotEmpty(delegateConfiguration.getKustomizePath())) {
       kustomizePath = delegateConfiguration.getKustomizePath();
       isCustomKustomizePath = true;
+    }
+    if (isNotEmpty(delegateConfiguration.getKubectlPath())) {
+      kubectlPaths.put(defaultKubectlVersion, delegateConfiguration.getKubectlPath());
+      kubectlPaths.put(newKubectlVersion, delegateConfiguration.getKubectlPath());
+    }
+    if (isNotEmpty(delegateConfiguration.getHelm3Path())) {
+      helmPaths.put(helm3Version, delegateConfiguration.getHelm3Path());
+    }
+    if (isNotEmpty(delegateConfiguration.getHelmPath())) {
+      helmPaths.put(helm2Version, delegateConfiguration.getHelmPath());
+    }
+    if (isNotEmpty(delegateConfiguration.getOcPath())) {
+      ocPath = delegateConfiguration.getOcPath();
     }
   }
 }

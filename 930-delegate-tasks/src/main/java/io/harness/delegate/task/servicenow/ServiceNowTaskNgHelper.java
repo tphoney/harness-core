@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
@@ -81,8 +80,7 @@ public class ServiceNowTaskNgHelper {
     ServiceNowConnectorDTO serviceNowConnectorDTO = serviceNowTaskNGParameters.getServiceNowConnectorDTO();
     String userName = getUserName(serviceNowConnectorDTO);
     String password = new String(serviceNowConnectorDTO.getPasswordRef().getDecryptedValue());
-    ServiceNowRestClient serviceNowRestClient =
-        getServiceNowRestClient(serviceNowConnectorDTO.getServiceNowUrl(), userName, password);
+    ServiceNowRestClient serviceNowRestClient = getServiceNowRestClient(serviceNowConnectorDTO.getServiceNowUrl());
 
     final Call<JsonNode> request = serviceNowRestClient.getIssue(Credentials.basic(userName, password),
         serviceNowTaskNGParameters.getTicketType().toLowerCase(),
@@ -131,8 +129,7 @@ public class ServiceNowTaskNgHelper {
     ServiceNowConnectorDTO serviceNowConnectorDTO = serviceNowTaskNGParameters.getServiceNowConnectorDTO();
     String userName = getUserName(serviceNowConnectorDTO);
     String password = new String(serviceNowConnectorDTO.getPasswordRef().getDecryptedValue());
-    ServiceNowRestClient serviceNowRestClient =
-        getServiceNowRestClient(serviceNowConnectorDTO.getServiceNowUrl(), userName, password);
+    ServiceNowRestClient serviceNowRestClient = getServiceNowRestClient(serviceNowConnectorDTO.getServiceNowUrl());
 
     final Call<JsonNode> request = serviceNowRestClient.getAdditionalFields(
         Credentials.basic(userName, password), serviceNowTaskNGParameters.getTicketType().toLowerCase());
@@ -166,7 +163,7 @@ public class ServiceNowTaskNgHelper {
     String url = serviceNowConnectorDTO.getServiceNowUrl();
     String userName = getUserName(serviceNowConnectorDTO);
     String password = new String(serviceNowConnectorDTO.getPasswordRef().getDecryptedValue());
-    ServiceNowRestClient serviceNowRestClient = getServiceNowRestClient(url, userName, password);
+    ServiceNowRestClient serviceNowRestClient = getServiceNowRestClient(url);
     final Call<JsonNode> request = serviceNowRestClient.validateConnection(Credentials.basic(userName, password));
     Response<JsonNode> response = null;
     try {
@@ -193,9 +190,9 @@ public class ServiceNowTaskNgHelper {
     }
   }
 
-  private ServiceNowRestClient getServiceNowRestClient(String url, String userName, String password) {
+  private ServiceNowRestClient getServiceNowRestClient(String url) {
     Retrofit retrofit = new Retrofit.Builder()
-                            .client(getHttpClient(url, userName, password))
+                            .client(getHttpClient(url))
                             .baseUrl(url)
                             .addConverterFactory(JacksonConverterFactory.create())
                             .build();
@@ -203,16 +200,11 @@ public class ServiceNowTaskNgHelper {
   }
 
   @NotNull
-  private OkHttpClient getHttpClient(String url, String userName, String password) {
+  private OkHttpClient getHttpClient(String url) {
     return getOkHttpClientBuilder()
         .connectTimeout(TIME_OUT, TimeUnit.SECONDS)
         .readTimeout(TIME_OUT, TimeUnit.SECONDS)
         .proxy(Http.checkAndGetNonProxyIfApplicable(url))
-        .addInterceptor(chain -> {
-          Request newRequest =
-              chain.request().newBuilder().addHeader("Authorization", Credentials.basic(userName, password)).build();
-          return chain.proceed(newRequest);
-        })
         .build();
   }
 

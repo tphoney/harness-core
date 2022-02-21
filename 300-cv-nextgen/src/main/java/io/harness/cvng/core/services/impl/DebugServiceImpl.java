@@ -9,7 +9,11 @@ package io.harness.cvng.core.services.impl;
 
 import io.harness.cvng.core.beans.SLODebugResponse;
 import io.harness.cvng.core.beans.params.ProjectParams;
+import io.harness.cvng.core.entities.DataCollectionTask;
+import io.harness.cvng.core.entities.VerificationTask;
+import io.harness.cvng.core.services.api.DataCollectionTaskService;
 import io.harness.cvng.core.services.api.DebugService;
+import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.cvng.servicelevelobjective.entities.SLOHealthIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective;
@@ -19,15 +23,19 @@ import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelObjectiveS
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DebugServiceImpl implements DebugService {
   @Inject ServiceLevelObjectiveService serviceLevelObjectiveService;
   @Inject ServiceLevelIndicatorService serviceLevelIndicatorService;
   @Inject SLOHealthIndicatorService sloHealthIndicatorService;
+  @Inject VerificationTaskService verificationTaskService;
+  @Inject DataCollectionTaskService dataCollectionTaskService;
 
   @Override
-  public SLODebugResponse get(ProjectParams projectParams, String identifier) {
+  public SLODebugResponse getSLODebugResponse(ProjectParams projectParams, String identifier) {
     ServiceLevelObjective serviceLevelObjective = serviceLevelObjectiveService.getEntity(projectParams, identifier);
 
     Preconditions.checkNotNull(serviceLevelObjective, "Value of Identifier is not present in database");
@@ -38,11 +46,26 @@ public class DebugServiceImpl implements DebugService {
     SLOHealthIndicator sloHealthIndicator =
         sloHealthIndicatorService.getBySLOIdentifier(projectParams, serviceLevelObjective.getIdentifier());
 
+    Map<String, VerificationTask> sliIdentifierToVerificationTaskMap = new HashMap<>();
+
+    Map<String, List<DataCollectionTask>> sliIdentifierToDataCollectionTaskMap = new HashMap<>();
+
+    for (ServiceLevelIndicator serviceLevelIndicator : serviceLevelIndicatorList) {
+      sliIdentifierToVerificationTaskMap.put(serviceLevelIndicator.getIdentifier(),
+          verificationTaskService.getSLITask(projectParams.getAccountIdentifier(), serviceLevelIndicator.getUuid()));
+
+      sliIdentifierToDataCollectionTaskMap.put(serviceLevelIndicator.getIdentifier(),
+          dataCollectionTaskService.getLatestDataCollectionTasks(
+              projectParams.getAccountIdentifier(), serviceLevelIndicator.getUuid(), 3));
+    }
+
     return SLODebugResponse.builder()
         .projectParams(projectParams)
         .serviceLevelObjective(serviceLevelObjective)
         .serviceLevelIndicatorList(serviceLevelIndicatorList)
         .sloHealthIndicator(sloHealthIndicator)
+        .sliIdentifierToVerificationTaskMap(sliIdentifierToVerificationTaskMap)
+        .sliIdentifierToDataCollectionTaskMap(sliIdentifierToDataCollectionTaskMap)
         .build();
   }
 }

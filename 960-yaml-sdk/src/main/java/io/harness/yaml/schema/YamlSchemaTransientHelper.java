@@ -65,6 +65,7 @@ public class YamlSchemaTransientHelper {
       add(EntityType.HARNESS_APPROVAL_STEP);
       add(EntityType.BARRIER_STEP);
       add(EntityType.VERIFY_STEP);
+      add(EntityType.FLAG_CONFIGURATION);
       add(EntityType.POLICY_STEP);
     }
   };
@@ -99,6 +100,9 @@ public class YamlSchemaTransientHelper {
   }
 
   public void removeV2StepEnumsFromStepElementConfig(JsonNode stepElementConfigNode) {
+    if (stepElementConfigNode == null) {
+      return;
+    }
     Set<String> v2StepTypes = allStepV2EntityTypes.stream().map(EntityType::getYamlName).collect(Collectors.toSet());
     removeV2StepFromAllOfNode((ArrayNode) stepElementConfigNode.get(ALL_OF_NODE), v2StepTypes);
     ArrayNode enumNode = (ArrayNode) stepElementConfigNode.get(PROPERTIES_NODE).get(TYPE_NODE).get(ENUM_NODE);

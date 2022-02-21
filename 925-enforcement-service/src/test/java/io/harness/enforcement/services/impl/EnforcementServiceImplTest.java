@@ -64,11 +64,13 @@ public class EnforcementServiceImplTest extends CategoryTest {
   FeatureRestriction featureStaticLimit;
   FeatureRestriction featureRateLimit;
   FeatureRestriction ciFeatureRestriction;
+  FeatureRestriction cfFeatureRestriction;
   EnforcementSdkClient enforcementSdkClient;
   private static final FeatureRestrictionName FEATURE_NAME = FeatureRestrictionName.TEST1;
   private static final FeatureRestrictionName FEATURE_NAME_STATIC = FeatureRestrictionName.TEST2;
   private static final FeatureRestrictionName CI_FEATURE_NAME = FeatureRestrictionName.TEST3;
   private static final FeatureRestrictionName FEATURE_NAME_RATE = FeatureRestrictionName.TEST4;
+  private static final FeatureRestrictionName CF_FEATURE_NAME = FeatureRestrictionName.TEST5;
   private static final String ACCOUNT_ID = "1";
 
   @Before
@@ -108,10 +110,15 @@ public class EnforcementServiceImplTest extends CategoryTest {
         ImmutableMap.<Edition, Restriction>builder()
             .put(Edition.FREE, new AvailabilityRestriction(RestrictionType.AVAILABILITY, false))
             .build());
+    cfFeatureRestriction = new FeatureRestriction(CF_FEATURE_NAME, "description", ModuleType.CF,
+        ImmutableMap.<Edition, Restriction>builder()
+            .put(Edition.FREE, new AvailabilityRestriction(RestrictionType.AVAILABILITY, true))
+            .build());
     enforcementService.registerFeature(FEATURE_NAME, featureRestriction);
     enforcementService.registerFeature(FEATURE_NAME_STATIC, featureStaticLimit);
     enforcementService.registerFeature(FEATURE_NAME_RATE, featureRateLimit);
     enforcementService.registerFeature(CI_FEATURE_NAME, ciFeatureRestriction);
+    enforcementService.registerFeature(CF_FEATURE_NAME, cfFeatureRestriction);
 
     when(licenseService.getLicenseSummary(any(), eq(ModuleType.CD)))
         .thenReturn(CDLicenseSummaryDTO.builder()
@@ -119,6 +126,7 @@ public class EnforcementServiceImplTest extends CategoryTest {
                         .edition(Edition.FREE)
                         .moduleType(ModuleType.CD)
                         .build());
+    when(licenseService.getLicenseSummary(any(), eq(ModuleType.CF))).thenReturn(null);
     when(licenseService.getLicenseSummary(any(), eq(ModuleType.CI)))
         .thenReturn(CILicenseSummaryDTO.builder()
                         .maxExpiryTime(Long.MAX_VALUE)
@@ -186,7 +194,7 @@ public class EnforcementServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testGetEnabledFeatures() {
     List<FeatureRestrictionDetailsDTO> result = enforcementService.getEnabledFeatureDetails(ACCOUNT_ID);
-    assertThat(result.size()).isEqualTo(1);
+    assertThat(result.size()).isEqualTo(2);
   }
 
   @Test
@@ -194,6 +202,14 @@ public class EnforcementServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testAllFeatureRestrictionMetadata() {
     List<FeatureRestrictionMetadataDTO> result = enforcementService.getAllFeatureRestrictionMetadata();
-    assertThat(result.size()).isEqualTo(4);
+    assertThat(result.size()).isEqualTo(5);
+  }
+
+  @Test
+  @Owner(developers = ZHUO)
+  @Category(UnitTests.class)
+  public void testFallbackWithoutLicense() {
+    FeatureRestrictionDetailsDTO result = enforcementService.getFeatureDetail(CF_FEATURE_NAME, ACCOUNT_ID);
+    assertThat(result.getRestrictionType()).isEqualTo(RestrictionType.AVAILABILITY);
   }
 }

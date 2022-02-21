@@ -57,8 +57,9 @@ public class EntityYamlRootNames {
   public static String JIRA_APPROVAL = "JiraApproval";
   public static String HARNESS_APPROVAL = "HarnessApproval";
   public static String BARRIER = "Barrier";
+  public static String FLAG_CONFIGURATION = "FlagConfiguration";
   public static String OPAPOLICY = "governancePolicy";
-  public static String POLICY_STEP = "PolicyStep";
+  public static String POLICY_STEP = "Policy";
   public static String RUN_STEP = "Run";
   public static String RUN_TEST = "RunTests";
   public static String PLUGIN = "Plugin";

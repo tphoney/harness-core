@@ -654,8 +654,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
       MonitoredService monitoredService, ProjectParams projectParams, DurationDTO duration, Instant endTime) {
     Preconditions.checkNotNull(monitoredService,
         "Monitored service for provided serviceIdentifier and envIdentifier or monitoredServiceIdentifier does not exist.");
-    return heatMapService.getOverAllHealthScore(projectParams, monitoredService.getServiceIdentifier(),
-        monitoredService.getEnvironmentIdentifier(), duration, endTime);
+    return heatMapService.getOverAllHealthScore(projectParams, monitoredService.getIdentifier(), duration, endTime);
   }
 
   @Override

@@ -93,6 +93,10 @@ public class HintException extends WingsException {
   public static final HintException MOVE_TO_THE_PARENT_OBJECT =
       new HintException("Navigate back to the parent object page and continue from there.");
   public static final HintException REFRESH_THE_PAGE = new HintException("Refresh the web page to update the data.");
+  public static final String DELEGATE_NOT_AVAILABLE_FOR_GIT_SYNC =
+      "Please make sure that your delegates are connected. If you are using delegate selectors, "
+      + "please ensure that a delegate exists with the delegate selector used in the Connector which is used for git sync. "
+      + "Refer %s for more information on delegate Installation";
 
   public HintException(String message) {
     super(message, null, HINT, INFO, null, null);

@@ -122,7 +122,7 @@ import io.harness.delegate.beans.connector.awsconnector.AwsValidateTaskResponse;
 import io.harness.delegate.beans.connector.awsconnector.AwsValidationParams;
 import io.harness.delegate.beans.connector.awskmsconnector.AwsKmsValidationParams;
 import io.harness.delegate.beans.connector.awssecretmanager.AwsSecretManagerValidationParams;
-import io.harness.delegate.beans.connector.azureconnector.AzureContainerRegistryConnectorDTO;
+import io.harness.delegate.beans.connector.azureconnector.*;
 import io.harness.delegate.beans.connector.azurekeyvaultconnector.AzureKeyVaultValidationParams;
 import io.harness.delegate.beans.connector.cvconnector.CVConnectorTaskParams;
 import io.harness.delegate.beans.connector.cvconnector.CVConnectorTaskResponse;
@@ -1103,5 +1103,9 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(VmServiceDependency.class, 543474);
     kryo.register(VmServiceStatus.class, 543475);
     kryo.register(VmServiceStatus.Status.class, 543476);
+    kryo.register(AzureTaskParams.class, 543477);
+    kryo.register(AzureTaskType.class, 543478);
+    kryo.register(AzureValidateTaskResponse.class, 543479);
+    kryo.register(AzureValidationParams.class, 543480);
   }
 }

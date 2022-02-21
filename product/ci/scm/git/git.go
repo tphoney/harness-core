@@ -453,8 +453,8 @@ func GetUserRepos(ctx context.Context, request *pb.GetUserReposRequest, log *zap
 func GetLatestCommitOnFile(ctx context.Context, request *pb.GetLatestCommitOnFileRequest, log *zap.SugaredLogger) (out *pb.GetLatestCommitOnFileResponse, err error) {
 	log.Infow("GetLatestCommitOnFile", "request", request)
 	// For Bitbucket, we also get commits for a non-existent file if it had been created before (deleted now)
-	listCommitsResponse, err := ListCommits(ctx, &pb.ListCommitsRequest{Provider: request.Provider, Slug: request.Slug, Type: &pb.ListCommitsRequest_Branch{Branch: request.Branch}, FilePath: request.FilePath}, log)
-	log.Infow("GetLatestCommitOnFile", "listCommitsResponse", listCommitsResponse)
+	response, err := ListCommits(ctx, &pb.ListCommitsRequest{Provider: request.Provider, Slug: request.Slug, Type: &pb.ListCommitsRequest_Branch{Branch: request.Branch}, FilePath: request.FilePath}, log)
+	log.Infow("GetLatestCommitOnFile", "listCommitsResponse", response)
 	if err != nil {
 		return &pb.GetLatestCommitOnFileResponse {
 			CommitId: "",

@@ -8,7 +8,7 @@ replace github.com/harness/harness-core/product/log-service => ../../../product/
 
 require (
 	github.com/alexflint/go-arg v1.3.0
-	github.com/drone/go-scm v1.19.0
+	github.com/drone/go-scm v1.19.1-0.20220221095150-2a7e432e5a32
 	github.com/drone/go-scm-codecommit v0.0.0-20210315104920-2d8b9dc5ed8a
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.2

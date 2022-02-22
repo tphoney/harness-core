@@ -29,6 +29,7 @@ import io.harness.licensing.services.LicenseService;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -204,23 +205,25 @@ public class EnforcementServiceImpl implements EnforcementService {
     return featureRestrictionMap.containsKey(featureRestrictionName);
   }
 
+  private boolean isLicenseValid(LicensesWithSummaryDTO licenseInfo) {
+    return licenseInfo != null && licenseInfo.getMaxExpiryTime() > Instant.now().toEpochMilli();
+  }
+
   private Edition getLicenseEdition(String accountIdentifier, ModuleType moduleType) {
     // if PL feature edition check
     if (ModuleType.CORE.equals(moduleType)) {
-      return licenseService.calculateAccountEdition(accountIdentifier);
+      Edition edition = licenseService.calculateAccountEdition(accountIdentifier);
+      if (edition == null) {
+        throw new FeatureNotSupportedException("Invalid license status");
+      }
+      return edition;
     }
 
     // other module feature
     LicensesWithSummaryDTO licenseInfo = licenseService.getLicenseSummary(accountIdentifier, moduleType);
-    if (licenseInfo == null) {
-      log.warn("Account {} has no license on module {}, fallback to free", accountIdentifier, moduleType.name());
-      return Edition.FREE;
+    if (!isLicenseValid(licenseInfo)) {
+      throw new FeatureNotSupportedException("Invalid license status");
     }
-
-    //    Expired license won't block user
-    //    if (!isLicenseValid(licenseInfo)) {
-    //      throw new FeatureNotSupportedException("Invalid license status");
-    //    }
     return licenseInfo.getEdition();
   }
 

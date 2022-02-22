@@ -30,7 +30,7 @@ public class RunInfoUtils {
 
   public String getRunCondition(StageWhenCondition stageWhenCondition) {
     if (stageWhenCondition == null) {
-      return null;
+      return getDefaultWhenCondition(true);
     }
     if (stageWhenCondition.getPipelineStatus() == null) {
       throw new InvalidRequestException("Pipeline Status in stage when condition cannot be empty.");

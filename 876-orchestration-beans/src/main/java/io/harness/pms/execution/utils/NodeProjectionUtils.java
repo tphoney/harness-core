@@ -19,7 +19,6 @@ public class NodeProjectionUtils {
       NodeExecutionKeys.ambiance, NodeExecutionKeys.status, NodeExecutionKeys.oldRetry, NodeExecutionKeys.mode);
   public static final Set<String> withAmbianceAndStatus =
       Sets.newHashSet(NodeExecutionKeys.ambiance, NodeExecutionKeys.status);
-  public static final Set<String> withAmbiance = Sets.newHashSet(NodeExecutionKeys.ambiance);
   public static final Set<String> withStatus = Sets.newHashSet(NodeExecutionKeys.status);
   public static final Set<String> withStatusAndMode = Sets.newHashSet(NodeExecutionKeys.status, NodeExecutionKeys.mode);
 
@@ -32,10 +31,9 @@ public class NodeProjectionUtils {
   public static final Set<String> fieldsForResume = Sets.newHashSet(NodeExecutionKeys.status,
       NodeExecutionKeys.ambiance, NodeExecutionKeys.planNode, NodeExecutionKeys.executableResponses,
       NodeExecutionKeys.resolvedStepParameters, NodeExecutionKeys.mode, NodeExecutionKeys.resolvedParams);
-  public static final Set<String> fieldsForExpressionEngine =
-      Sets.newHashSet(NodeExecutionKeys.status, NodeExecutionKeys.ambiance, NodeExecutionKeys.planNode,
-          NodeExecutionKeys.resolvedStepParameters, NodeExecutionKeys.mode, NodeExecutionKeys.startTs,
-          NodeExecutionKeys.endTs, NodeExecutionKeys.parentId, NodeExecutionKeys.resolvedParams);
+  public static final Set<String> fieldsForExpressionEngine = Sets.newHashSet(NodeExecutionKeys.status,
+      NodeExecutionKeys.ambiance, NodeExecutionKeys.mode, NodeExecutionKeys.startTs, NodeExecutionKeys.endTs,
+      NodeExecutionKeys.parentId, NodeExecutionKeys.resolvedParams);
   public static Set<String> forFacilitation =
       Sets.newHashSet(NodeExecutionKeys.ambiance, NodeExecutionKeys.planNode, NodeExecutionKeys.originalNodeExecutionId,
           NodeExecutionKeys.resolvedStepParameters, NodeExecutionKeys.module, NodeExecutionKeys.resolvedParams);

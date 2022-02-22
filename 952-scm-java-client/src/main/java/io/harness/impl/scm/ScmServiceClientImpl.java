@@ -7,8 +7,15 @@
 
 package io.harness.impl.scm;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import static io.harness.annotations.dev.HarnessTeam.DX;
+import static io.harness.data.structure.CollectionUtils.emptyIfNull;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.git.GitClientHelper.isBitBucketSAAS;
+import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
+
+import static java.util.stream.Collectors.toList;
+
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FileContentBatchResponse;
 import io.harness.beans.gitsync.GitFileDetails;
@@ -82,22 +89,16 @@ import io.harness.product.ci.scm.proto.Signature;
 import io.harness.product.ci.scm.proto.UpdateFileResponse;
 import io.harness.product.ci.scm.proto.WebhookResponse;
 import io.harness.service.ScmServiceClient;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import static io.harness.annotations.dev.HarnessTeam.DX;
-import static io.harness.data.structure.CollectionUtils.emptyIfNull;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.git.GitClientHelper.isBitBucketSAAS;
-import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
-import static java.util.stream.Collectors.toList;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
 @Slf4j
@@ -767,17 +768,14 @@ public class ScmServiceClientImpl implements ScmServiceClient {
       ScmConnector scmConnector, SCMGrpc.SCMBlockingStub scmBlockingStub, GitFileDetails gitFileDetails) {
     // Check if current file commit is same as latest commit on file on remote
     if (ConnectorType.BITBUCKET.equals(scmConnector.getConnectorType())) {
-      GetLatestCommitOnFileResponse latestCommitResponse =
-              getLatestCommitOnFile(scmConnector, scmBlockingStub, gitFileDetails.getBranch(), gitFileDetails.getFilePath());
-      log.info("GitFileDetails : {}", gitFileDetails.toString());
-      log.info("GetLatestCommitOnFileResponse commit id : {}", latestCommitResponse.getCommitId());
-      log.info("GetLatestCommitOnFileResponse error : {}", latestCommitResponse.getError());
+      GetLatestCommitOnFileResponse latestCommitResponse = getLatestCommitOnFile(
+          scmConnector, scmBlockingStub, gitFileDetails.getBranch(), gitFileDetails.getFilePath());
       if (!latestCommitResponse.getCommitId().equals(gitFileDetails.getCommitId())) {
         return Optional.of(UpdateFileResponse.newBuilder()
-                .setStatus(Constants.SCM_CONFLICT_ERROR_CODE)
-                .setError(Constants.SCM_CONFLICT_ERROR_MESSAGE)
-                .setCommitId(latestCommitResponse.getCommitId())
-                .build());
+                               .setStatus(Constants.SCM_CONFLICT_ERROR_CODE)
+                               .setError(Constants.SCM_CONFLICT_ERROR_MESSAGE)
+                               .setCommitId(latestCommitResponse.getCommitId())
+                               .build());
       }
     }
     return Optional.empty();

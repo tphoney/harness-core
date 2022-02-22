@@ -10,6 +10,7 @@ package io.harness.gitsync.scm;
 import static io.harness.annotations.dev.HarnessTeam.DX;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.data.structure.HarnessStringUtils.emptyIfNull;
+import static io.harness.gitsync.interceptor.GitSyncConstants.DEFAULT;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.eraro.ErrorCode;
@@ -18,7 +19,6 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.ScmException;
 import io.harness.exception.WingsException;
 import io.harness.exception.ngexception.beans.ScmErrorMetadataDTO;
-import io.harness.exception.ngexception.beans.templateservice.TemplateInputsErrorMetadataDTO;
 import io.harness.git.model.ChangeType;
 import io.harness.gitsync.FileInfo;
 import io.harness.gitsync.HarnessToGitPushInfoServiceGrpc.HarnessToGitPushInfoServiceBlockingStub;
@@ -29,7 +29,6 @@ import io.harness.gitsync.common.helper.GitSyncGrpcClientUtils;
 import io.harness.gitsync.common.helper.UserPrincipalMapper;
 import io.harness.gitsync.exceptions.GitSyncException;
 import io.harness.gitsync.interceptor.GitEntityInfo;
-import io.harness.gitsync.interceptor.GitSyncConstants;
 import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.gitsync.scm.beans.SCMNoOpResponse;
 import io.harness.gitsync.scm.beans.ScmPushResponse;
@@ -114,9 +113,10 @@ public class SCMGitSyncHelper {
       builder.setOldFileSha(StringValue.of(gitBranchInfo.getLastObjectId()));
     }
 
-    builder.setCommitId(GitSyncConstants.DEFAULT.equals(gitBranchInfo.getResolvedConflictCommitId())
-            ? ""
-            : gitBranchInfo.getResolvedConflictCommitId());
+    if (gitBranchInfo.getResolvedConflictCommitId() != null
+        && !gitBranchInfo.getResolvedConflictCommitId().equals(DEFAULT)) {
+      builder.setCommitId(gitBranchInfo.getResolvedConflictCommitId());
+    }
 
     return builder.build();
   }

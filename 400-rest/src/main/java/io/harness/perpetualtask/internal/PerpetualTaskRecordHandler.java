@@ -52,8 +52,10 @@ import io.harness.perpetualtask.PerpetualTaskState;
 import io.harness.perpetualtask.PerpetualTaskUnassignedReason;
 import io.harness.perpetualtask.internal.PerpetualTaskRecord.PerpetualTaskRecordKeys;
 import io.harness.serializer.KryoSerializer;
+import io.harness.workers.background.AccountLevelEntityProcessController;
 import io.harness.workers.background.AccountStatusBasedEntityProcessController;
 
+import software.wings.beans.Account;
 import software.wings.beans.TaskType;
 import software.wings.service.InstanceSyncConstants;
 import software.wings.service.impl.PerpetualTaskCapabilityCheckResponse;
@@ -80,14 +82,14 @@ public class PerpetualTaskRecordHandler implements PerpetualTaskCrudObserver {
   @Inject private PerpetualTaskService perpetualTaskService;
   @Inject private PerpetualTaskServiceClientRegistry clientRegistry;
   @Inject private MorphiaPersistenceProvider<PerpetualTaskRecord> persistenceProvider;
-  @Inject private MorphiaPersistenceRequiredProvider<PerpetualTaskRecord> persistenceRequiredProvider;
+  @Inject private MorphiaPersistenceRequiredProvider<Account> persistenceRequiredProvider;
   @Inject private transient AlertService alertService;
   @Inject private AccountService accountService;
   @Inject private KryoSerializer kryoSerializer;
   @Inject private PerpetualTaskRecordDao perpetualTaskRecordDao;
 
   PersistenceIterator<PerpetualTaskRecord> assignmentIterator;
-  PersistenceIterator<PerpetualTaskRecord> rebalanceIterator;
+  PersistenceIterator<Account> rebalanceIterator;
 
   public void registerIterators(int perpetualTaskAssignmentThreadPoolSize, int perpetualTaskRebalanceThreadPoolSize) {
     assignmentIterator = persistenceIteratorFactory.createPumpIteratorWithDedicatedThreadPool(
@@ -119,15 +121,14 @@ public class PerpetualTaskRecordHandler implements PerpetualTaskCrudObserver {
             .interval(ofMinutes(PERPETUAL_TASK_ASSIGNMENT_INTERVAL_MINUTE))
             .build(),
         PerpetualTaskRecordHandler.class,
-        MongoPersistenceIterator.<PerpetualTaskRecord, MorphiaFilterExpander<PerpetualTaskRecord>>builder()
-            .clazz(PerpetualTaskRecord.class)
-            .fieldName(PerpetualTaskRecordKeys.rebalanceIteration)
+        MongoPersistenceIterator.<Account, MorphiaFilterExpander<Account>>builder()
+            .clazz(Account.class)
+            .fieldName(Account.AccountKeys.perpetualTaskAccountLevelIteration)
             .targetInterval(ofMinutes(PERPETUAL_TASK_ASSIGNMENT_INTERVAL_MINUTE))
-            .acceptableNoAlertDelay(ofSeconds(45))
-            .acceptableExecutionTime(ofSeconds(30))
+            .acceptableNoAlertDelay(ofSeconds(60))
+            .acceptableExecutionTime(ofSeconds(60))
             .handler(this::rebalance)
-            .filterExpander(query -> query.filter(PerpetualTaskRecordKeys.state, PerpetualTaskState.TASK_TO_REBALANCE))
-            .entityProcessController(new AccountStatusBasedEntityProcessController<>(accountService))
+            .entityProcessController(new AccountLevelEntityProcessController(accountService))
             .schedulingType(REGULAR)
             .persistenceProvider(persistenceRequiredProvider)
             .redistribute(true));
@@ -190,13 +191,17 @@ public class PerpetualTaskRecordHandler implements PerpetualTaskCrudObserver {
     }
   }
 
-  public void rebalance(PerpetualTaskRecord taskRecord) {
-    if (delegateService.checkDelegateConnected(taskRecord.getAccountId(), taskRecord.getDelegateId())) {
-      perpetualTaskService.appointDelegate(taskRecord.getAccountId(), taskRecord.getUuid(), taskRecord.getDelegateId(),
-          taskRecord.getClientContext().getLastContextUpdated());
-      return;
+  public void rebalance(Account account) {
+    List<PerpetualTaskRecord> perpetualTaskRecordList =
+        perpetualTaskRecordDao.listBatchOfPerpetualTasksToRebalanceForAccount(account.getAppId());
+    for (PerpetualTaskRecord taskRecord : perpetualTaskRecordList) {
+      if (delegateService.checkDelegateConnected(taskRecord.getAccountId(), taskRecord.getDelegateId())) {
+        perpetualTaskService.appointDelegate(taskRecord.getAccountId(), taskRecord.getUuid(),
+            taskRecord.getDelegateId(), taskRecord.getClientContext().getLastContextUpdated());
+        continue;
+      }
+      assign(taskRecord);
     }
-    assign(taskRecord);
   }
 
   protected DelegateTask getValidationTask(PerpetualTaskRecord taskRecord) {

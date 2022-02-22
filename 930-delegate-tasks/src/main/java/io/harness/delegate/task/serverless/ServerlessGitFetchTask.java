@@ -18,7 +18,6 @@ import static java.lang.String.format;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.connector.helper.GitApiAccessDecryptionHelper;
 import io.harness.connector.task.git.GitDecryptionHelper;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.DelegateResponseData;
@@ -42,10 +41,7 @@ import io.harness.git.model.FetchFilesResult;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 import io.harness.secret.SecretSanitizerThreadLocal;
-import io.harness.security.encryption.SecretDecryptionService;
 import io.harness.serverless.ServerlessCommandUnitConstants;
-
-import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 import com.google.inject.Inject;
 import java.nio.file.NoSuchFileException;
@@ -59,7 +55,6 @@ import org.apache.commons.lang3.NotImplementedException;
 @OwnedBy(HarnessTeam.CDP)
 public class ServerlessGitFetchTask extends AbstractDelegateRunnableTask {
   @Inject private GitDecryptionHelper gitDecryptionHelper;
-  @Inject private SecretDecryptionService secretDecryptionService;
   @Inject private ServerlessGitFetchTaskHelper serverlessGitFetchTaskHelper;
   public ServerlessGitFetchTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
@@ -120,12 +115,7 @@ public class ServerlessGitFetchTask extends AbstractDelegateRunnableTask {
     executionLogCallback.saveExecutionLog(fetchTypeInfo);
     if (gitStoreDelegateConfig.isOptimizedFilesFetch()) {
       executionLogCallback.saveExecutionLog("Using optimized file fetch ");
-      secretDecryptionService.decrypt(
-          GitApiAccessDecryptionHelper.getAPIAccessDecryptableEntity(gitStoreDelegateConfig.getGitConfigDTO()),
-          gitStoreDelegateConfig.getApiAuthEncryptedDataDetails());
-      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
-          GitApiAccessDecryptionHelper.getAPIAccessDecryptableEntity(gitStoreDelegateConfig.getGitConfigDTO()),
-          gitStoreDelegateConfig.getApiAuthEncryptedDataDetails());
+      serverlessGitFetchTaskHelper.decryptGitStoreConfig(gitStoreDelegateConfig);
     } else {
       gitConfigDTO = ScmConnectorMapper.toGitConfigDTO(gitStoreDelegateConfig.getGitConfigDTO());
       gitDecryptionHelper.decryptGitConfig(gitConfigDTO, gitStoreDelegateConfig.getEncryptedDataDetails());

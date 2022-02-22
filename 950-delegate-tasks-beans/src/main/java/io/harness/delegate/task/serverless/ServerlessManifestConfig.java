@@ -16,12 +16,13 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ServerlessAwsManifest implements ServerlessManifest {
+public class ServerlessManifestConfig implements ServerlessManifest {
   @Expression(ALLOW_SECRETS) String yamlContent;
   String artifactPathVariable;
+  ServerlessGitFetchFileConfig serverlessGitFetchFileConfig;
 
   @Override
   public ServerlessManifestType getServerlessManifestType() {
-    return ServerlessManifestType.AWS_SERVERLESS_MANIFEST;
+    return ServerlessManifestType.SERVERLESS_MANIFEST;
   }
 }

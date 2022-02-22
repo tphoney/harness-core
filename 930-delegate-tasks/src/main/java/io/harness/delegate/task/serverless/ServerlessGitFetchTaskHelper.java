@@ -13,6 +13,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.connector.helper.GitApiAccessDecryptionHelper;
 import io.harness.connector.service.git.NGGitService;
 import io.harness.connector.task.git.GitDecryptionHelper;
 import io.harness.delegate.beans.connector.scm.genericgitconnector.GitConfigDTO;
@@ -23,7 +24,10 @@ import io.harness.git.GitClientV2;
 import io.harness.git.model.FetchFilesByPathRequest;
 import io.harness.git.model.FetchFilesResult;
 import io.harness.logging.LogCallback;
+import io.harness.security.encryption.SecretDecryptionService;
 import io.harness.shell.SshSessionConfig;
+
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 import com.google.inject.Inject;
 import java.util.List;
@@ -37,6 +41,7 @@ public class ServerlessGitFetchTaskHelper {
   @Inject private ScmFetchFilesHelperNG scmFetchFilesHelper;
   @Inject private GitDecryptionHelper gitDecryptionHelper;
   @Inject private NGGitService ngGitService;
+  @Inject private SecretDecryptionService secretDecryptionService;
 
   public static String getCompleteFilePath(String folderPath, String fileKey) {
     if (isBlank(folderPath)) {
@@ -70,5 +75,14 @@ public class ServerlessGitFetchTaskHelper {
             .repoUrl(gitConfigDTO.getUrl())
             .build();
     return gitClientV2.fetchFilesByPath(fetchFilesByPathRequest);
+  }
+
+  public void decryptGitStoreConfig(GitStoreDelegateConfig gitStoreDelegateConfig) {
+    secretDecryptionService.decrypt(
+        GitApiAccessDecryptionHelper.getAPIAccessDecryptableEntity(gitStoreDelegateConfig.getGitConfigDTO()),
+        gitStoreDelegateConfig.getApiAuthEncryptedDataDetails());
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
+        GitApiAccessDecryptionHelper.getAPIAccessDecryptableEntity(gitStoreDelegateConfig.getGitConfigDTO()),
+        gitStoreDelegateConfig.getApiAuthEncryptedDataDetails());
   }
 }

@@ -106,9 +106,9 @@ ciExecutionServiceConfig:
   defaultInternalImageConnector: ''
   pvcDefaultStorageSize: 25600
   delegateServiceEndpointVariableValue: "delegate-service:8080"
-  addonImage: harness/ci-addon:release-61
-  liteEngineImage: harness/ci-lite-engine:release-30
   ciImageTag: release-30
+  addonImage: harness/ci-addon:release-84
+  liteEngineImage: harness/ci-lite-engine:release-38
   isLocal: false
   stepConfig:
     # The below config is for K8 steps
@@ -137,16 +137,22 @@ ciExecutionServiceConfig:
       image: plugins/s3:1.0.3
       entrypoint:
         - /bin/drone-s3
+    securityConfig:
+      image: zeronorth/sto_plugin:dev
+      entrypoint:
+        - /bin/sh
+        - -c
+        - python3 ${DOCKER_ENTRYPOINT}
     artifactoryUploadConfig:
       image: plugins/artifactory:1.0.4
       entrypoint:
         - /bin/plugin
     cacheGCSConfig:
-      image: plugins/cache:1.3.5
+      image: plugins/cache:1.3.6
       entrypoint:
         - /bin/drone-cache
     cacheS3Config:
-      image: plugins/cache:1.3.5
+      image: plugins/cache:1.3.6
       entrypoint:
         - /bin/drone-cache
 
@@ -158,9 +164,10 @@ ciExecutionServiceConfig:
       buildAndPushGCR: plugins/gcr:latest
       gcsUpload: plugins/gcs:1.2.4
       s3Upload: plugins/s3:1.0.3
+      security: plugin/sto_plugin:dev
       artifactoryUpload: plugins/artifactory:1.0.4
-      cacheGCS: plugins/cache:1.3.5
-      cacheS3: plugins/cache:1.3.5
+      cacheGCS: plugins/cache:1.3.6
+      cacheS3: plugins/cache:1.3.6
 
 pmsSdkExecutionPoolConfig:
   corePoolSize: ${PMS_SDK_EXECUTION_POOL_CORE_SIZE:-50}
@@ -227,6 +234,12 @@ eventsFramework:
 hostname: ${HOSTNAME:-localhost}
 
 basePathPrefix: ${BASE_PATH_PREFIX:-""}
+
+segmentConfiguration:
+  enabled: false
+  url: "segment_url_place_holder"
+  apiKey: "segment_api_key"
+  certValidationRequired: false
 
 cacheConfig:
   cacheBackend: REDIS

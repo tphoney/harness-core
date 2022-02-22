@@ -49,6 +49,7 @@ import static software.wings.settings.SettingVariableTypes.NEXUS;
 import static software.wings.settings.SettingVariableTypes.PCF;
 import static software.wings.settings.SettingVariableTypes.PHYSICAL_DATA_CENTER;
 import static software.wings.settings.SettingVariableTypes.PROMETHEUS;
+import static software.wings.settings.SettingVariableTypes.RANCHER;
 import static software.wings.settings.SettingVariableTypes.SERVICENOW;
 import static software.wings.settings.SettingVariableTypes.SFTP;
 import static software.wings.settings.SettingVariableTypes.SLACK;
@@ -89,7 +90,6 @@ import io.harness.yaml.BaseYaml;
 import software.wings.beans.artifact.ArtifactStreamSummary;
 import software.wings.beans.entityinterface.ApplicationAccess;
 import software.wings.ngmigration.NGMigrationEntity;
-import software.wings.ngmigration.NGMigrationEntityType;
 import software.wings.security.UsageRestrictions;
 import software.wings.settings.SettingValue;
 import software.wings.settings.SettingVariableTypes;
@@ -250,18 +250,13 @@ public class SettingAttribute
 
   @JsonIgnore
   @Override
-  public NGMigrationEntityType getMigrationEntityType() {
-    return NGMigrationEntityType.CONNECTOR;
-  }
-
-  @JsonIgnore
-  @Override
   public String getMigrationEntityName() {
     return getName();
   }
 
   public enum SettingCategory {
-    CLOUD_PROVIDER(Lists.newArrayList(PHYSICAL_DATA_CENTER, AWS, AZURE, GCP, KUBERNETES_CLUSTER, PCF, SPOT_INST)),
+    CLOUD_PROVIDER(
+        Lists.newArrayList(PHYSICAL_DATA_CENTER, AWS, AZURE, GCP, KUBERNETES_CLUSTER, PCF, SPOT_INST, RANCHER)),
 
     CONNECTOR(Lists.newArrayList(SMTP, JENKINS, BAMBOO, SPLUNK, ELK, LOGZ, SUMO, APP_DYNAMICS, INSTANA, NEW_RELIC,
         DYNA_TRACE, BUG_SNAG, DATA_DOG, APM_VERIFICATION, PROMETHEUS, ELB, SLACK, DOCKER, ECR, GCR, NEXUS, ARTIFACTORY,
@@ -454,6 +449,7 @@ public class SettingAttribute
   public static final class SettingAttributeKeys {
     public static final String value_type = SettingAttributeKeys.value + ".type";
     public static final String isCEEnabled = SettingAttributeKeys.value + ".ccmConfig.cloudCostEnabled";
+    public static final String referencedConnector = SettingAttributeKeys.value + ".connectorId";
   }
 
   @Nonnull

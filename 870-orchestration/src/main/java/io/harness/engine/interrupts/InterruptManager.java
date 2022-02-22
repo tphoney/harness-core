@@ -35,11 +35,10 @@ public class InterruptManager {
                               .type(interruptPackage.getInterruptType())
                               .metadata(interruptPackage.getMetadata())
                               .nodeExecutionId(interruptPackage.getNodeExecutionId())
-                              .parameters(interruptPackage.getParameters())
                               .interruptConfig(interruptPackage.getInterruptConfig())
                               .build();
-    try (AcquiredLock<?> lock = persistentLocker.tryToAcquireLock(
-             LOCK_NAME_PREFIX + interrupt.getPlanExecutionId(), Duration.ofSeconds(15));
+    try (AcquiredLock<?> lock = persistentLocker.waitToAcquireLock(
+             LOCK_NAME_PREFIX + interrupt.getPlanExecutionId(), Duration.ofSeconds(15), Duration.ofMinutes(1));
          AutoLogContext ignore = interrupt.autoLogContext()) {
       if (lock == null) {
         throw new InvalidRequestException("Cannot register the interrupt. Please retry.");

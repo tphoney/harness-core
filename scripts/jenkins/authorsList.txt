@@ -28,6 +28,7 @@ Ankush Shaw ankush.shaw@harness.io
 Anshul Anshul anshul@harness.io
 Anubhaw Srivastava anubhaw@harness.io
 Archit Singla archit.singla@harness.io
+arpit-harness arpit.jain@harness.io
 Arpit Tiwari arpit.tiwari@harness.io
 Arvind Choudhary arvind.choudhary@harness.io
 Ashish Sanodia ashish.sanodia@harness.io
@@ -137,6 +138,7 @@ Rama Tummala rama@harness.io
 Rathnakara Malatesha rathna@harness.io
 Raunak Agrawal raunak.agrawal@harness.io
 Reetika mallavarapu.reetika@harness.io
+Richa Jajoo richa.jajoo@harness.io
 Rihaz Zahir rihaz.zahir@harness.io
 Rishi Singh rishi@harness.io
 Riyas P riyas.yash@harness.io
@@ -154,6 +156,7 @@ Sanja Jokic sanja.jokic@harness.io
 Sanyasi Naidu Annepu sanyasi.naidu@harness.io
 Satyam Shanker satyam.shanker@harness.io
 Seán Dunne sean.dunne@harness.io
+Shalini Agrawal shalini.agarwal@harness.io
 Shashank Singh shashank.singh@harness.io
 Shaswat Deep shaswat.deep@harness.io
 Shivakumar Ningappa shivakumar.ningappa@harness.io
@@ -237,3 +240,6 @@ Sergey Bobrov sergey.bobrov@harness.io
 William Wissemann william.wissemann@harness.io
 Shubham Maheshwari shubham.maheshwari@harness.io
 Scott Walker scott.walker@harness.io
+Dev Mittal devki.mittal@harness.io
+Lalit Kumar lalit.kumar@harness.io
+Naman Goenka naman.goenka@harness.io

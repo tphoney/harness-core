@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.beans.EnvironmentType.ALL;
 import static io.harness.beans.FeatureName.CUSTOM_MANIFEST;
 import static io.harness.beans.FeatureName.GIT_HOST_CONNECTIVITY;
+import static io.harness.beans.FeatureName.HELM_CHART_VERSION_STRICT_MATCH;
 import static io.harness.beans.FeatureName.OPTIMIZED_GIT_FETCH_FILES;
 import static io.harness.beans.FeatureName.OVERRIDE_VALUES_YAML_FROM_HELM_CHART;
 import static io.harness.beans.FeatureName.USE_HELM_REPO_FLAGS;
@@ -1046,6 +1047,9 @@ public class HelmDeployState extends State {
               helmChartConfigTaskParams.setUseRepoFlags(
                   featureFlagService.isEnabled(USE_HELM_REPO_FLAGS, context.getAccountId()));
             }
+
+            helmChartConfigTaskParams.setCheckIncorrectChartVersion(
+                featureFlagService.isEnabled(HELM_CHART_VERSION_STRICT_MATCH, context.getAccountId()));
 
             manifestConfig = K8sDelegateManifestConfig.builder()
                                  .helmChartConfigParams(helmChartConfigTaskParams)

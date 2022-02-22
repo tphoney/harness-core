@@ -307,14 +307,14 @@ public class WebhookEventUtilsTest extends WingsBaseTest {
   public void shouldObtainCloneUrl() throws IOException {
     assertThat(internalShouldObtainCloneUrl(AuthenticationScheme.HTTP_PASSWORD, GITHUB, X_GIT_HUB_EVENT,
                    GitHubEventType.PUSH.getValue(), GH_PUSH_REQ_FILE))
-        .isEqualTo("https://github.com/wings-software/portal.git");
+        .isEqualTo("https://github.com/harness/harness-core.git");
     assertThat(internalShouldObtainCloneUrl(AuthenticationScheme.SSH_KEY, GITHUB, X_GIT_HUB_EVENT,
                    GitHubEventType.PUSH.getValue(), GH_PUSH_REQ_FILE))
         .isEqualTo("git@github.com:wings-software/portal.git");
 
     assertThat(internalShouldObtainCloneUrl(AuthenticationScheme.HTTP_PASSWORD, GITHUB, X_GIT_HUB_EVENT,
                    GitHubEventType.PULL_REQUEST.getValue(), GH_PULL_REQ_FILE))
-        .isEqualTo("https://github.com/wings-software/portal.git");
+        .isEqualTo("https://github.com/harness/harness-core.git");
     assertThat(internalShouldObtainCloneUrl(AuthenticationScheme.SSH_KEY, GITHUB, X_GIT_HUB_EVENT,
                    GitHubEventType.PULL_REQUEST.getValue(), GH_PULL_REQ_FILE))
         .isEqualTo("git@github.com:wings-software/portal.git");

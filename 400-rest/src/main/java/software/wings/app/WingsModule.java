@@ -71,6 +71,8 @@ import io.harness.ccm.views.service.impl.CEReportTemplateBuilderServiceImpl;
 import io.harness.ccm.views.service.impl.CEViewServiceImpl;
 import io.harness.ccm.views.service.impl.ViewCustomFieldServiceImpl;
 import io.harness.ccm.views.service.impl.ViewsBillingServiceImpl;
+import io.harness.cdlicense.impl.CgCdLicenseUsageService;
+import io.harness.cdlicense.impl.CgCdLicenseUsageServiceImpl;
 import io.harness.config.PipelineConfig;
 import io.harness.configuration.DeployVariant;
 import io.harness.connector.ConnectorResourceClientModule;
@@ -168,6 +170,7 @@ import io.harness.notifications.AlertNotificationRuleChecker;
 import io.harness.notifications.AlertNotificationRuleCheckerImpl;
 import io.harness.notifications.AlertVisibilityChecker;
 import io.harness.notifications.AlertVisibilityCheckerImpl;
+import io.harness.organization.OrganizationClientModule;
 import io.harness.outbox.TransactionOutboxModule;
 import io.harness.outbox.api.OutboxEventHandler;
 import io.harness.pcf.CfDeploymentManager;
@@ -176,6 +179,7 @@ import io.harness.perpetualtask.PerpetualTaskScheduleServiceImpl;
 import io.harness.perpetualtask.PerpetualTaskServiceModule;
 import io.harness.persistence.HPersistence;
 import io.harness.polling.client.PollResourceClientModule;
+import io.harness.project.ProjectClientModule;
 import io.harness.queue.QueueController;
 import io.harness.redis.RedisConfig;
 import io.harness.remote.client.ClientMode;
@@ -1122,6 +1126,8 @@ public class WingsModule extends AbstractModule implements ServersModule {
     bind(DelegateTaskServiceClassic.class).to(DelegateTaskServiceClassicImpl.class);
     bind(DelegateNgTokenService.class).to(DelegateNgTokenServiceImpl.class);
 
+    bind(CgCdLicenseUsageService.class).to(CgCdLicenseUsageServiceImpl.class);
+
     bind(GcbService.class).to(GcbServiceImpl.class);
     bind(ACRResourceProvider.class);
     bind(AzureK8sResourceProvider.class);
@@ -1436,6 +1442,13 @@ public class WingsModule extends AbstractModule implements ServersModule {
 
     install(new MetricsModule());
     bind(MetricsPublisher.class).to(DelegateMetricsPublisher.class).in(Scopes.SINGLETON);
+
+    // these two module needed for background migration # 214.
+    install(new OrganizationClientModule(configuration.getNgManagerServiceHttpClientConfig(),
+        configuration.getPortal().getJwtNextGenManagerSecret(), MANAGER.getServiceId()));
+
+    install(new ProjectClientModule(configuration.getNgManagerServiceHttpClientConfig(),
+        configuration.getPortal().getJwtNextGenManagerSecret(), MANAGER.getServiceId()));
   }
 
   private void registerOutboxEventHandlers() {

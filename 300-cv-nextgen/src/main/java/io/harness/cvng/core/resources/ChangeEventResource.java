@@ -18,7 +18,9 @@ import io.harness.cvng.beans.change.ChangeEventDTO;
 import io.harness.cvng.beans.change.ChangeSourceType;
 import io.harness.cvng.core.beans.change.ChangeSummaryDTO;
 import io.harness.cvng.core.beans.change.ChangeTimeline;
+import io.harness.cvng.core.beans.monitoredService.DurationDTO;
 import io.harness.cvng.core.beans.params.ProjectParams;
+import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.services.CVNextGenConstants;
 import io.harness.cvng.core.services.api.ChangeEventService;
 import io.harness.ng.beans.PageRequest;
@@ -174,5 +176,32 @@ public class ChangeEventResource {
     return new RestResponse<>(
         changeEventService.getTimeline(projectParams, serviceIdentifiers, envIdentifiers, searchText, changeCategories,
             changeSourceTypes, Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), pointCount));
+  }
+
+  @GET
+  @Timed
+  @NextGenManagerAuth
+  @Path("change-event/monitored-service-timeline")
+  @ExceptionMetered
+  @ApiOperation(
+      value = "get monitored service timeline with durationDTO", nickname = "getMonitoredServiceChangeTimeline")
+  public RestResponse<ChangeTimeline>
+  getMonitoredServiceChangeTimeline(@NotNull @QueryParam("accountId") String accountId,
+      @NotNull @QueryParam("orgIdentifier") String orgIdentifier,
+      @NotNull @QueryParam("projectIdentifier") String projectIdentifier,
+      @NotNull @QueryParam("environmentIdentifier") String environmentIdentifier,
+      @NotNull @QueryParam("serviceIdentifier") String serviceIdentifier,
+      @QueryParam("changeSourceTypes") List<ChangeSourceType> changeSourceTypes,
+      @QueryParam("searchText") String searchText, @NotNull @QueryParam("duration") DurationDTO durationDTO,
+      @NotNull @QueryParam("endTime") Long endTime) {
+    ServiceEnvironmentParams serviceEnvironmentParams = ServiceEnvironmentParams.builder()
+                                                            .serviceIdentifier(serviceIdentifier)
+                                                            .environmentIdentifier(environmentIdentifier)
+                                                            .accountIdentifier(accountId)
+                                                            .orgIdentifier(orgIdentifier)
+                                                            .projectIdentifier(projectIdentifier)
+                                                            .build();
+    return new RestResponse<>(changeEventService.getMonitoredServiceChangeTimeline(
+        serviceEnvironmentParams, searchText, changeSourceTypes, durationDTO, Instant.ofEpochMilli(endTime)));
   }
 }

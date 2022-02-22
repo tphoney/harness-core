@@ -20,6 +20,7 @@ import io.harness.remote.client.RestClientUtils;
 import io.harness.telemetry.TelemetryOption;
 import io.harness.telemetry.TelemetryReporter;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.Collections;
@@ -86,7 +87,8 @@ public class PipelineTelemetryPublisher {
     }
   }
 
-  private String getAccountId() {
+  @VisibleForTesting
+  String getAccountId() {
     List<AccountDTO> accountDTOList = RestClientUtils.getResponse(accountClient.getAllAccounts());
     String accountId = accountDTOList.get(0).getIdentifier();
     if (accountDTOList.size() > 1 && accountId.equals(GLOBAL_ACCOUNT_ID)) {

@@ -9,6 +9,7 @@ package software.wings.service.impl.security;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.rule.OwnerRule.DEEPAK;
+import static io.harness.rule.OwnerRule.PRATEEK;
 import static io.harness.rule.OwnerRule.UTKARSH;
 
 import static software.wings.beans.Account.GLOBAL_ACCOUNT_ID;
@@ -29,6 +30,7 @@ import software.wings.WingsBaseTest;
 import software.wings.beans.GcpKmsConfig;
 
 import com.google.inject.Inject;
+import java.util.HashMap;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -105,5 +107,19 @@ public class SecretManagerConfigServiceImplTest extends WingsBaseTest {
     String configId = secretManagerConfigService.save(secretManagerConfig);
     String name = secretManagerConfigService.getSecretManagerName(configId, accountId);
     assertThat(name).isEqualTo(null);
+  }
+
+  @Test(expected = SecretManagementException.class)
+  @Owner(developers = PRATEEK)
+  @Category(UnitTests.class)
+  public void test_getSecretManager_NullSecretManager() {
+    String secretManagerName = "secretManagerName";
+    char[] credentials = "{\"credentials\":\"abc\"}".toCharArray();
+    SecretManagerConfig secretManagerConfig =
+        new GcpKmsConfig(secretManagerName, "projectId", "region", "keyRing", "keyName", credentials, null);
+    secretManagerConfig.setAccountId(accountId);
+    String configId = secretManagerConfigService.save(secretManagerConfig);
+    EncryptionType encryptionType = secretManagerConfigService.getEncryptionBySecretManagerId(configId, accountId);
+    secretManagerConfigService.getSecretManager(accountId, "randomConfigId", encryptionType, new HashMap<>());
   }
 }

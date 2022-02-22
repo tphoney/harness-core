@@ -51,18 +51,17 @@ public class PmsGraphStepDetailsServiceImpl implements PmsGraphStepDetailsServic
         StepDetailsUpdateInfo.builder().nodeExecutionId(nodeExecutionId).planExecutionId(planExecutionId).build());
   }
 
+  // TODO: Make this better this should be called from no where else
   @Override
-  public void addStepInputs(String nodeExecutionId, String planExecutionId, PmsStepParameters stepParameters) {
+  public void addStepInputs(String nodeExecutionId, String planExecutionId, PmsStepParameters resolvedInputs) {
     NodeExecutionsInfo nodeExecutionsInfo = NodeExecutionsInfo.builder()
                                                 .nodeExecutionId(nodeExecutionId)
                                                 .planExecutionId(planExecutionId)
-                                                .resolvedInputs(stepParameters)
+                                                .resolvedInputs(resolvedInputs)
                                                 .build();
-    if (!nodeExecutionsInfoRepository.findByNodeExecutionId(nodeExecutionId).isPresent()) {
-      nodeExecutionsInfoRepository.save(nodeExecutionsInfo);
-      stepDetailsUpdateObserverSubject.fireInform(StepDetailsUpdateObserver::onStepInputsAdd,
-          StepDetailsUpdateInfo.builder().nodeExecutionId(nodeExecutionId).planExecutionId(planExecutionId).build());
-    }
+    nodeExecutionsInfoRepository.save(nodeExecutionsInfo);
+    stepDetailsUpdateObserverSubject.fireInform(StepDetailsUpdateObserver::onStepInputsAdd,
+        StepDetailsUpdateInfo.builder().nodeExecutionId(nodeExecutionId).planExecutionId(planExecutionId).build());
   }
 
   @Override

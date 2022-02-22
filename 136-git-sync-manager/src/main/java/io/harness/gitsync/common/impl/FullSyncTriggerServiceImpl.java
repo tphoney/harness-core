@@ -18,7 +18,9 @@ import io.harness.exception.WingsException;
 import io.harness.gitsync.FullSyncEventRequest;
 import io.harness.gitsync.common.dtos.TriggerFullSyncRequestDTO;
 import io.harness.gitsync.common.dtos.TriggerFullSyncResponseDTO;
+import io.harness.gitsync.common.helper.UserProfileHelper;
 import io.harness.gitsync.common.service.FullSyncTriggerService;
+import io.harness.gitsync.common.service.GitBranchService;
 import io.harness.gitsync.core.fullsync.GitFullSyncConfigService;
 import io.harness.gitsync.core.fullsync.entity.GitFullSyncJob;
 import io.harness.gitsync.core.fullsync.service.FullSyncJobService;
@@ -38,26 +40,32 @@ public class FullSyncTriggerServiceImpl implements FullSyncTriggerService {
   private final Producer eventProducer;
   private final GitFullSyncConfigService gitFullSyncConfigService;
   private final FullSyncJobService fullSyncJobService;
+  private final UserProfileHelper userProfileHelper;
+  private final GitBranchService gitBranchService;
 
   @Inject
-  public FullSyncTriggerServiceImpl(
-      @Named(EventsFrameworkConstants.GIT_FULL_SYNC_STREAM) Producer fullSyncEventProducer,
-      GitFullSyncConfigService gitFullSyncConfigService, FullSyncJobService fullSyncJobService) {
+  public FullSyncTriggerServiceImpl(@Named(EventsFrameworkConstants.GIT_FULL_SYNC_STREAM)
+                                    Producer fullSyncEventProducer, GitFullSyncConfigService gitFullSyncConfigService,
+      FullSyncJobService fullSyncJobService, UserProfileHelper userProfileHelper, GitBranchService gitBranchService) {
     this.eventProducer = fullSyncEventProducer;
     this.gitFullSyncConfigService = gitFullSyncConfigService;
     this.fullSyncJobService = fullSyncJobService;
+    this.userProfileHelper = userProfileHelper;
+    this.gitBranchService = gitBranchService;
   }
 
   @Override
   public TriggerFullSyncResponseDTO triggerFullSync(
       String accountIdentifier, String orgIdentifier, String projectIdentifier) {
+    userProfileHelper.validateIfScmUserProfileIsSet(accountIdentifier);
     GitFullSyncConfigDTO gitFullSyncConfigDTO =
         gitFullSyncConfigService.get(accountIdentifier, orgIdentifier, projectIdentifier)
             .orElseThrow(()
                              -> new InvalidRequestException(
                                  "There is no configuration saved for performing full sync, please save and try again",
                                  WingsException.USER));
-
+    validateBranch(accountIdentifier, orgIdentifier, projectIdentifier, gitFullSyncConfigDTO.getRepoIdentifier(),
+        gitFullSyncConfigDTO.getBranch(), gitFullSyncConfigDTO.isNewBranch());
     Optional<GitFullSyncJob> fullSyncJob =
         fullSyncJobService.getRunningOrQueuedJob(accountIdentifier, orgIdentifier, projectIdentifier);
     if (fullSyncJob.isPresent()) {
@@ -101,7 +109,8 @@ public class FullSyncTriggerServiceImpl implements FullSyncTriggerService {
                                                      .setBranch(fullSyncRequest.getBranch())
                                                      .setCreatePr(fullSyncRequest.isCreatePR())
                                                      .setIsNewBranch(fullSyncRequest.isNewBranch())
-                                                     .setRootFolder(fullSyncRequest.getRootFolder());
+                                                     .setRootFolder(fullSyncRequest.getRootFolder())
+                                                     .setUserPrincipal(userProfileHelper.getUserPrincipal());
 
     if (fullSyncRequest.isCreatePR()) {
       builder.setTargetBranch(fullSyncRequest.getTargetBranchForPR()).setPrTitle(fullSyncRequest.getPrTitle());
@@ -123,6 +132,17 @@ public class FullSyncTriggerServiceImpl implements FullSyncTriggerService {
       log.error("Event to send git config update failed for accountId [{}] for yamlgitconfig [{}]", accountIdentifier,
           fullSyncRequest.getYamlGitConfigIdentifier(), e);
       return null;
+    }
+  }
+
+  private void validateBranch(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      String yamlGitConfigId, String branch, boolean isNewBranch) {
+    boolean isBranchExists =
+        gitBranchService.isBranchExists(accountIdentifier, orgIdentifier, projectIdentifier, yamlGitConfigId, branch);
+    if (!isBranchExists && !isNewBranch) {
+      throw new InvalidRequestException(String.format("Branch [%s] does not exist. Please check the config.", branch));
+    } else if (isBranchExists && isNewBranch) {
+      throw new InvalidRequestException(String.format("Branch [%s] already exist. Please check the config.", branch));
     }
   }
 }

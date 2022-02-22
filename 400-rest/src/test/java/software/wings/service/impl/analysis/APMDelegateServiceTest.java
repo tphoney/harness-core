@@ -25,11 +25,13 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.APMValidateCollectorConfig;
 import software.wings.beans.DatadogConfig;
+import software.wings.beans.PrometheusConfig;
 import software.wings.delegatetasks.cv.RequestExecutor;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.sm.states.APMVerificationState;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -138,5 +140,54 @@ public class APMDelegateServiceTest extends CategoryTest {
     assertThat(request.request().url().toString()).contains("from=");
     assertThat(request.request().url().toString()).doesNotContain("to=");
     assertThat(request.request().headers().names().size()).isEqualTo(1);
+  }
+
+  @Test
+  @Owner(developers = PRAVEEN)
+  @Category(UnitTests.class)
+  public void testValidateConnection_prometheusWithoutAuth() throws Exception {
+    PrometheusConfig config = PrometheusConfig.builder().accountId("accountId").url("https://123.343.34.3/v1/").build();
+    APMValidateCollectorConfig validateCollectorConfig = config.createAPMValidateCollectorConfig();
+    boolean isValid = apmDelegateService.validateCollector(validateCollectorConfig);
+    verify(mockRequestExecutor).executeRequest(argumentCaptor.capture());
+    Call<Object> request = argumentCaptor.getValue();
+
+    assertThat(isValid).isTrue();
+    assertThat(request.request().url().toString()).contains(PrometheusConfig.VALIDATION_URL);
+    assertThat(request.request().url().toString()).contains("https://123.343.34.3/v1/api/v1/query?query=up");
+    assertThat(request.request().headers().names().size()).isEqualTo(1);
+  }
+
+  @Test
+  @Owner(developers = PRAVEEN)
+  @Category(UnitTests.class)
+  public void testValidateConnection_prometheusWithAuth() {
+    PrometheusConfig config = PrometheusConfig.builder()
+                                  .accountId("accountId")
+                                  .url("https://123.343.34.3/v1/")
+                                  .password("prometheusPass".toCharArray())
+                                  .username("prometheusUser")
+                                  .build();
+    APMValidateCollectorConfig validateCollectorConfig = config.createAPMValidateCollectorConfig();
+    validateCollectorConfig.setBase64EncodingRequired(true);
+    ArrayList<EncryptedDataDetail> encryptedDataDetails = new ArrayList<>();
+    encryptedDataDetails.add(EncryptedDataDetail.builder().fieldName("password").build());
+    validateCollectorConfig.setEncryptedDataDetails(encryptedDataDetails);
+    validateCollectorConfig.getHeaders().put("Authorization", "Basic encodeWithBase64(%s:${password})");
+
+    when(mockEncryptionService.getDecryptedValue(encryptedDataDetails.get(0), false))
+        .thenReturn("somePass".toCharArray());
+
+    boolean isValid = apmDelegateService.validateCollector(validateCollectorConfig);
+    verify(mockRequestExecutor).executeRequest(argumentCaptor.capture());
+    Call<Object> request = argumentCaptor.getValue();
+
+    assertThat(isValid).isTrue();
+    assertThat(request.request().url().toString()).contains(PrometheusConfig.VALIDATION_URL);
+    assertThat(request.request().url().toString()).contains("https://123.343.34.3/v1/api/v1/query?query=up");
+    assertThat(request.request().headers().names().size()).isEqualTo(2);
+    assertThat(request.request().headers().get("Authorization")).contains("Basic");
+    assertThat(request.request().headers().get("Authorization").indexOf("encodeWithBase64(%s:${password})"))
+        .isEqualTo(-1);
   }
 }

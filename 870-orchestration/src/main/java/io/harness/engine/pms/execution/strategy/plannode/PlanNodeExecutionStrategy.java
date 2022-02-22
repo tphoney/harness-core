@@ -7,12 +7,10 @@
 
 package io.harness.engine.pms.execution.strategy.plannode;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Singleton;
-import com.google.protobuf.ByteString;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.pms.contracts.execution.Status.RUNNING;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.engine.ExecutionCheck;
@@ -56,19 +54,21 @@ import io.harness.pms.sdk.core.steps.io.StepResponseNotifyData;
 import io.harness.pms.utils.OrchestrationMapBackwardCompatibilityUtils;
 import io.harness.serializer.KryoSerializer;
 import io.harness.waiter.WaitNotifyEngine;
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Singleton;
+import com.google.protobuf.ByteString;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.pms.contracts.execution.Status.RUNNING;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 @Singleton
@@ -120,13 +120,13 @@ public class PlanNodeExecutionStrategy extends AbstractNodeExecutionStrategy<Pla
   private void resolveParameters(Ambiance ambiance, PmsStepParameters stepParameters, boolean skipUnresolvedCheck) {
     String nodeExecutionId = Objects.requireNonNull(AmbianceUtils.obtainCurrentRuntimeId(ambiance));
     log.info("Starting to Resolve step parameters");
-//    Object resolvedStepParameters = pmsEngineExpressionService.resolve(ambiance, stepParameters, skipUnresolvedCheck);
-//    PmsStepParameters resolvedParameters = PmsStepParameters.parse(
-//        OrchestrationMapBackwardCompatibilityUtils.extractToOrchestrationMap(resolvedStepParameters));
+    Object resolvedStepParameters = pmsEngineExpressionService.resolve(ambiance, stepParameters, skipUnresolvedCheck);
+    PmsStepParameters resolvedParameters = PmsStepParameters.parse(
+        OrchestrationMapBackwardCompatibilityUtils.extractToOrchestrationMap(resolvedStepParameters));
     // TODO (prashant) : This is a hack right now to serialize in binary as findAndModify is not honoring converter
     // for maps Find a better way to do this
     nodeExecutionService.update(
-        nodeExecutionId, ops -> ops.set(NodeExecutionKeys.resolvedParams, kryoSerializer.asBytes(stepParameters)));
+        nodeExecutionId, ops -> ops.set(NodeExecutionKeys.resolvedParams, kryoSerializer.asBytes(resolvedParameters)));
     log.info("Resolved to step parameters");
   }
 
@@ -136,12 +136,12 @@ public class PlanNodeExecutionStrategy extends AbstractNodeExecutionStrategy<Pla
     String nodeId = AmbianceUtils.obtainCurrentSetupId(ambiance);
     try (AutoLogContext ignore = AmbianceUtils.autoLogContext(ambiance)) {
       PlanNode planNode = planService.fetchNode(ambiance.getPlanId(), nodeId);
-//      ExecutionCheck check = performPreFacilitationChecks(ambiance, planNode);
-//      if (!check.isProceed()) {
-//        log.info("Not Proceeding with  Execution. Reason : {}", check.getReason());
-//        return;
-//      }
-//      log.info("Proceeding with  Execution. Reason : {}", check.getReason());
+      ExecutionCheck check = performPreFacilitationChecks(ambiance, planNode);
+      if (!check.isProceed()) {
+        log.info("Not Proceeding with  Execution. Reason : {}", check.getReason());
+        return;
+      }
+      log.info("Proceeding with  Execution. Reason : {}", check.getReason());
 
       resolveParameters(ambiance, planNode.getStepParameters(), planNode.isSkipUnresolvedExpressionsCheck());
 

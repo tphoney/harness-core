@@ -320,7 +320,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   private final String delegateDescription = System.getenv().get("DELEGATE_DESCRIPTION");
   private final boolean delegateNg = isNotBlank(System.getenv().get("DELEGATE_SESSION_IDENTIFIER"))
       || (isNotBlank(System.getenv().get("NEXT_GEN")) && Boolean.parseBoolean(System.getenv().get("NEXT_GEN")));
-  private final String delegateTokenName = System.getenv().get("DELEGATE_TOKEN_NAME");
   public static final String JAVA_VERSION = "java.version";
 
   private static volatile String delegateId;
@@ -548,10 +547,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
             DELEGATE_TYPE, DELEGATE_GROUP_NAME, supportedTasks);
       }
 
-      if (isNotEmpty(delegateTokenName)) {
-        log.info("Registering Delegate with Token: {}", delegateTokenName);
-      }
-
       final DelegateParamsBuilder builder =
           DelegateParams.builder()
               .ip(getLocalHostAddress())
@@ -574,8 +569,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
                                              : emptyList())
               .sampleDelegate(isSample)
               .location(Paths.get("").toAbsolutePath().toString())
-              .ceEnabled(Boolean.parseBoolean(System.getenv("ENABLE_CE")))
-              .delegateTokenName(delegateTokenName);
+              .ceEnabled(Boolean.parseBoolean(System.getenv("ENABLE_CE")));
 
       delegateId = registerDelegate(builder);
       log.info("[New] Delegate registered in {} ms", clock.millis() - start);
@@ -2279,24 +2273,20 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
       Response<ResponseBody> response = null;
       try {
-        response = HTimeLimiter.callInterruptible21(timeLimiter, Duration.ofSeconds(30), () -> {
-          Response<ResponseBody> resp = null;
-          int retries = 5;
-          for (int attempt = 0; attempt < retries; attempt++) {
-            resp = delegateAgentManagerClient.sendTaskStatus(delegateId, taskId, accountId, taskResponse).execute();
-            if (resp != null && resp.code() >= 200 && resp.code() <= 299) {
-              log.info("Task {} response sent to manager", taskId);
-              return resp;
-            } else {
-              log.warn("Failed to send response for task {}: {}. {}", taskId, resp == null ? "null" : resp.code(),
-                  retries > 0 ? "Retrying." : "Giving up.");
+        int retries = 5;
+        for (int attempt = 0; attempt < retries; attempt++) {
+          response = delegateAgentManagerClient.sendTaskStatus(delegateId, taskId, accountId, taskResponse).execute();
+          if (response != null && response.code() >= 200 && response.code() <= 299) {
+            log.info("Task {} response sent to manager", taskId);
+          } else {
+            log.warn("Failed to send response for task {}: {}. {}", taskId, response == null ? "null" : response.code(),
+                attempt < (retries - 1) ? "Retrying." : "Giving up.");
+            if (attempt < retries - 1) {
+              // Do not sleep for last loop round, as we are going to fail.
               sleep(ofSeconds(FibonacciBackOff.getFibonacciElement(attempt)));
             }
           }
-          return resp;
-        });
-      } catch (UncheckedTimeoutException ex) {
-        log.warn("Timed out sending response to manager", ex);
+        }
       } catch (Exception e) {
         log.error("Unable to send response to manager", e);
       } finally {

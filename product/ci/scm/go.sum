@@ -392,6 +392,7 @@ github.com/h2non/gock v1.0.9 h1:17gCehSo8ZOgEsFKpQgqHiR7VLyjxdAG3lkhVvO9QZU=
 github.com/h2non/gock v1.0.9/go.mod h1:CZMcB0Lg5IWnr9bF79pPMg9WeV6WumxQiUJ1UvdO1iE=
 github.com/harness/harness-core v0.0.0-20220211091232-3264ff316d59 h1:ZGXfVc18W/AavaIb/6yLfHZrNpYTXsnLeREp4r323WI=
 github.com/harness/harness-core v0.0.0-20220214094039-3065ab86ee41 h1:7U3eai4BOP+vTHF0c2X17gqEaBlejfJpppPfWjENLdo=
+github.com/harness/harness-core v0.0.0-20220214175437-7a99fc032ed7 h1:iSLHVcLDwDTbXclW0BBSmUVwMcw/EfkBnz9RkQndnkI=
 github.com/harness/harness-core/product/log-service v0.0.0-20210305084455-298bbd5bd1fd h1:rnqAsP+LEd4EYkp1SNPKkLHDnnjVFVsYeJSYQ2/mjH0=
 github.com/harness/harness-core/product/log-service v0.0.0-20210305084455-298bbd5bd1fd/go.mod h1:YJWGsWeA3Ki7cVC9OGzheZcWwGso9pCtXm9X+Bk68rE=
 github.com/hashicorp/consul/api v1.3.0/go.mod h1:MmDNSzIMUjNpY/mQ398R4bk2FnqQLoPndWW5VkKPlCE=

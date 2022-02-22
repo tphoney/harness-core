@@ -389,12 +389,18 @@ func TestGetLatestCommitOnFileOnNonExistingFile(t *testing.T) {
 				},
 			},
 		}
+	in := &pb.GetLatestCommitOnFileRequest {
+			Slug: "mohitgargharness/test-repository",
+			Branch: "main",
+			Provider: provider,
+			FilePath: "DUMMYPATH",
+		}
 
 	log, _ := logs.GetObservedLogger(zap.InfoLevel)
-	commitId, err := GetLatestCommitOnFile(context.Background(), *provider, "mohitgargharness/test-repository", "main", "DUMMYPATH", log.Sugar())
+	latestCommitIdResponse, err := GetLatestCommitOnFile(context.Background(), in, log.Sugar())
 	
 	assert.NotNil(t, err, "found errors")
-	assert.Equal(t, commitId, "", "status matches")
+	assert.Equal(t, latestCommitIdResponse.CommitId, "", "status matches")
 }
 
 func TestGetLatestCommitOnExistingFile(t *testing.T) {
@@ -406,12 +412,18 @@ func TestGetLatestCommitOnExistingFile(t *testing.T) {
 				},
 			},
 		}
+	in := &pb.GetLatestCommitOnFileRequest {
+		Slug: "mohitgargharness/test-repository",
+		Branch: "master",
+		Provider: provider,
+		FilePath: "DO-NOT-DELETE.txt",
+	}
 
 	log, _ := logs.GetObservedLogger(zap.InfoLevel)
-	commitId, err := GetLatestCommitOnFile(context.Background(), *provider, "mohitgargharness/test-repository", "master", "DO-NOT-DELETE.txt", log.Sugar())
+	latestCommitIdResponse, err := GetLatestCommitOnFile(context.Background(), in, log.Sugar())
 
 	assert.Nil(t, err, "no errors")
-	assert.NotNil(t, commitId, "commit exists")
+	assert.NotNil(t, latestCommitIdResponse.CommitId, "commit exists")
 }
 
 func TestListCommitsBitbucket(t *testing.T) {

@@ -416,11 +416,17 @@ func parseCrudResponse(ctx context.Context, client *scm.Client, body io.Reader, 
 		// Bitbucket doesn't work on blobId concept for a file, thus it will  always be empty
 		// We try to find out the latest commit on the file, which is most-likely the commit done by SCM itself
 		// It works on best-effort basis
-		commit, err := git.GetLatestCommitOnFile(ctx, p, request.Slug, request.Branch, request.FilePath, log)
+		request := &pb.GetLatestCommitOnFileRequest {
+			Slug: request.Slug,
+			Branch: request.Branch,
+			Provider: &p,
+			FilePath: request.FilePath,
+		}
+		response, err := git.GetLatestCommitOnFile(ctx, request, log)
 		if err != nil {
 			return "", ""
 		}
-		return commit, ""
+		return response.CommitId, ""
 	default:
 		return "", ""
 	}

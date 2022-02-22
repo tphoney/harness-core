@@ -757,7 +757,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     double currentCPU = osBean.getSystemCpuLoad();
 
     if (currentRSS >= RESOURCE_USAGE_THRESHOLD * maxRSS || currentCPU >= RESOURCE_USAGE_THRESHOLD) {
-      log.error(
+      log.warn(
           "Reached resource threshold, temporarily reject incoming task request. CurrentCPU {} CurrentRSSMB {} ThresholdMB {}",
           currentCPU, currentRSS, RESOURCE_USAGE_THRESHOLD * maxRSS);
       rejectRequest.compareAndSet(false, true);
@@ -1508,7 +1508,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       try {
         maybeUpdateTaskRejectionStatus();
       } catch (Exception ex) {
-        log.error("Exception while sending heartbeat", ex);
+        log.error("Exception while determining delegate behaviour", ex);
       }
     }, 0, 1, TimeUnit.SECONDS);
   }

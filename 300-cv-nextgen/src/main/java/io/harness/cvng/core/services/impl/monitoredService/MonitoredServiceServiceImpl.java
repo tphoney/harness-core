@@ -654,8 +654,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
       MonitoredService monitoredService, ProjectParams projectParams, DurationDTO duration, Instant endTime) {
     Preconditions.checkNotNull(monitoredService,
         "Monitored service for provided serviceIdentifier and envIdentifier or monitoredServiceIdentifier does not exist.");
-    return heatMapService.getOverAllHealthScore(projectParams, monitoredService.getServiceIdentifier(),
-        monitoredService.getEnvironmentIdentifier(), duration, endTime);
+    return heatMapService.getOverAllHealthScore(projectParams, monitoredService.getIdentifier(), duration, endTime);
   }
 
   @Override
@@ -1028,6 +1027,16 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   @Override
   public List<HealthSourceDTO> getHealthSources(ServiceEnvironmentParams serviceEnvironmentParams) {
     MonitoredService monitoredServiceEntity = getMonitoredService(serviceEnvironmentParams);
+    return getHealthSources(monitoredServiceEntity);
+  }
+
+  @Override
+  public List<HealthSourceDTO> getHealthSources(ProjectParams projectParams, String monitoredServiceIdentifier) {
+    MonitoredService monitoredServiceEntity = getMonitoredService(projectParams, monitoredServiceIdentifier);
+    return getHealthSources(monitoredServiceEntity);
+  }
+
+  private List<HealthSourceDTO> getHealthSources(MonitoredService monitoredServiceEntity) {
     Set<HealthSource> healthSources = healthSourceService.get(monitoredServiceEntity.getAccountId(),
         monitoredServiceEntity.getOrgIdentifier(), monitoredServiceEntity.getProjectIdentifier(),
         monitoredServiceEntity.getIdentifier(), monitoredServiceEntity.getHealthSourceIdentifiers());

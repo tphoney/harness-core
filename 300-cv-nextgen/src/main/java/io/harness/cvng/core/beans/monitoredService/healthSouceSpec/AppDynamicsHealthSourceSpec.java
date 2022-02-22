@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,10 +53,15 @@ public class AppDynamicsHealthSourceSpec extends MetricHealthSourceSpec {
   @NotEmpty String tierName;
   @Valid Set<MetricPackDTO> metricPacks;
   @Valid @UniqueIdentifierCheck List<AppDMetricDefinitions> metricDefinitions;
-
+  public List<AppDMetricDefinitions> getMetricDefinitions() {
+    if (metricDefinitions == null) {
+      return Collections.emptyList();
+    }
+    return metricDefinitions;
+  }
   @Override
   public void validate() {
-    metricDefinitions.forEach(metricDefinition
+    getMetricDefinitions().forEach(metricDefinition
         -> Preconditions.checkArgument(
             !(Objects.nonNull(metricDefinition.getAnalysis())
                 && Objects.nonNull(metricDefinition.getAnalysis().getDeploymentVerification())

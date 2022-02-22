@@ -12,6 +12,7 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
+import io.harness.delegate.task.winrm.WinRmSessionConfig;
 
 import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.core.ssh.executors.FileBasedWinRmExecutor;

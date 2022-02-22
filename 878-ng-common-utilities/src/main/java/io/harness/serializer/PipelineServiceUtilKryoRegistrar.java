@@ -15,6 +15,7 @@ import io.harness.advisers.retry.RetryAdviserRollbackParameters;
 import io.harness.advisers.rollback.OnFailRollbackParameters;
 import io.harness.advisers.rollback.RollbackStrategy;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.steps.environment.EnvironmentOutcome;
 
 import com.esotericsoftware.kryo.Kryo;
 
@@ -27,5 +28,8 @@ public class PipelineServiceUtilKryoRegistrar implements KryoRegistrar {
     kryo.register(OnFailRollbackParameters.class, 87803);
     kryo.register(ManualInterventionAdviserRollbackParameters.class, 87804);
     kryo.register(NextStepAdviserParameters.class, 87805);
+
+    // Moved from CD
+    kryo.register(EnvironmentOutcome.class, 8107);
   }
 }

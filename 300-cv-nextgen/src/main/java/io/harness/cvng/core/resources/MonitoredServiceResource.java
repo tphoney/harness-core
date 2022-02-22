@@ -407,6 +407,18 @@ public class MonitoredServiceResource {
 
   @GET
   @Timed
+  @ExceptionMetered
+  @Path("{monitoredServiceIdentifier}/health-sources")
+  @ApiOperation(value = "get all health sources for service and environment",
+      nickname = "getAllHealthSourcesForMonitoredServiceIdentifier")
+  public RestResponse<List<HealthSourceDTO>>
+  getHealthSourcesForMonitoredServiceIdentifier(@BeanParam ProjectParams projectParams,
+      @NotNull @PathParam("monitoredServiceIdentifier") String monitoredServiceIdentifier) {
+    return new RestResponse<>(monitoredServiceService.getHealthSources(projectParams, monitoredServiceIdentifier));
+  }
+
+  @GET
+  @Timed
   @Path("{identifier}/change-event")
   @ExceptionMetered
   @ApiOperation(value = "get ChangeEvent List", nickname = "getChangeEventList")

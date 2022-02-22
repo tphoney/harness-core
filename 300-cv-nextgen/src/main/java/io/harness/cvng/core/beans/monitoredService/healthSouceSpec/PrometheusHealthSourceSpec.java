@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,13 @@ import org.apache.commons.lang3.StringUtils;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PrometheusHealthSourceSpec extends MetricHealthSourceSpec {
   @UniqueIdentifierCheck @Valid List<PrometheusMetricDefinition> metricDefinitions;
+
+  public List<PrometheusMetricDefinition> getMetricDefinitions() {
+    if (metricDefinitions == null) {
+      return Collections.emptyList();
+    }
+    return metricDefinitions;
+  }
 
   @Override
   public CVConfigUpdateResult getCVConfigUpdateResult(String accountId, String orgIdentifier, String projectIdentifier,
@@ -94,7 +102,7 @@ public class PrometheusHealthSourceSpec extends MetricHealthSourceSpec {
 
   @Override
   public void validate() {
-    metricDefinitions.forEach(metricDefinition
+    getMetricDefinitions().forEach(metricDefinition
         -> Preconditions.checkArgument(
             !(Objects.nonNull(metricDefinition.getAnalysis())
                 && Objects.nonNull(metricDefinition.getAnalysis().getDeploymentVerification())

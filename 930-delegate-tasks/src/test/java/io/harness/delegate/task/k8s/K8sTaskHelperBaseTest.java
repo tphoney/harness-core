@@ -178,6 +178,7 @@ import io.harness.shell.SshSessionConfig;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
 import com.google.common.util.concurrent.TimeLimiter;
 import com.google.common.util.concurrent.UncheckedTimeoutException;
@@ -193,6 +194,9 @@ import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.models.V1ConfigMap;
 import io.kubernetes.client.openapi.models.V1ContainerStatus;
 import io.kubernetes.client.openapi.models.V1ContainerStatusBuilder;
+import io.kubernetes.client.openapi.models.V1Deployment;
+import io.kubernetes.client.openapi.models.V1DeploymentSpec;
+import io.kubernetes.client.openapi.models.V1LabelSelector;
 import io.kubernetes.client.openapi.models.V1LoadBalancerIngress;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1ObjectMetaBuilder;
@@ -214,6 +218,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -240,6 +245,7 @@ import me.snowdrop.istio.api.networking.v1alpha3.VirtualService;
 import me.snowdrop.istio.api.networking.v1alpha3.VirtualServiceBuilder;
 import me.snowdrop.istio.api.networking.v1alpha3.VirtualServiceSpec;
 import me.snowdrop.istio.api.networking.v1alpha3.VirtualServiceSpecBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.junit.Before;
 import org.junit.Rule;
@@ -3039,7 +3045,7 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
   @Test
   @Owner(developers = TATHAGAT)
   @Category(UnitTests.class)
-  public void testexecuteDeleteHandlingPartialExecution() throws Exception {
+  public void testExecuteDeleteHandlingPartialExecution() throws Exception {
     K8sTaskHelperBase spyK8sHelperBase = spy(k8sTaskHelperBase);
     K8sDelegateTaskParams k8sDelegateTaskParams = K8sDelegateTaskParams.builder().build();
     List<KubernetesResourceId> resourceIds = new ArrayList<>();
@@ -3285,5 +3291,78 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
         k8sTaskHelperBase.validateCEKubernetesCluster(connector, DEFAULT, emptyList(), emptyList());
 
     assertThat(result.getStatus()).isEqualTo(ConnectivityStatus.SUCCESS);
+  }
+
+  @Test
+  @Owner(developers = TATHAGAT)
+  @Category(UnitTests.class)
+  public void testGetDeploymentContainingTrackStableSelector() {
+    List<V1Deployment> deployments = getV1DeploymentTestData();
+    when(mockKubernetesContainerService.getDeployment(any(KubernetesConfig.class), anyString(), anyString()))
+        .thenReturn(deployments.get(0))
+        .thenReturn(deployments.get(1))
+        .thenReturn(deployments.get(2))
+        .thenReturn(deployments.get(3));
+    k8sTaskHelperBase.getDeploymentContainingTrackStableSelector(KubernetesConfig.builder().build(),
+        generateInputWorkloadTestResource(), Maps.immutableEntry("harness.io/track", "stable"));
+  }
+
+  @NotNull
+  private List<V1Deployment> getV1DeploymentTestData() {
+    V1Deployment v1Deployment1 = new V1Deployment()
+                                     .metadata(new V1ObjectMeta().name("d1"))
+                                     .kind("Deployment")
+                                     .apiVersion("apps/v1")
+                                     .spec(new V1DeploymentSpec().selector(new V1LabelSelector().matchLabels(
+                                         Collections.singletonMap("harness.io/track", "stable"))));
+    V1Deployment v1Deployment2 = new V1Deployment()
+                                     .metadata(new V1ObjectMeta().name("d2"))
+                                     .kind("Deployment")
+                                     .apiVersion("apps/v1")
+                                     .spec(new V1DeploymentSpec().selector(
+                                         new V1LabelSelector().matchLabels(Collections.singletonMap("app", "nginx"))));
+
+    V1Deployment v1Deployment3 =
+        new V1Deployment().metadata(new V1ObjectMeta().name("d3")).kind("Deployment").apiVersion("apps/v1");
+
+    V1Deployment v1Deployment4 = new V1Deployment()
+                                     .metadata(new V1ObjectMeta().name("d4"))
+                                     .kind("Deployment")
+                                     .apiVersion("apps/v1")
+                                     .spec(new V1DeploymentSpec().selector(new V1LabelSelector()));
+
+    V1Deployment v1Deployment5 = new V1Deployment()
+                                     .metadata(new V1ObjectMeta().name("d5"))
+                                     .kind("Deployment")
+                                     .apiVersion("apps/v1")
+                                     .spec(new V1DeploymentSpec());
+    return Arrays.asList(v1Deployment1, v1Deployment2, v1Deployment3, v1Deployment4, v1Deployment5);
+  }
+
+  private List<KubernetesResource> generateInputWorkloadTestResource() {
+    List<KubernetesResource> resources = new ArrayList<>();
+    resources.add(KubernetesResource.builder()
+                      .resourceId(KubernetesResourceId.builder().name("d1").kind("Deployment").namespace("ns1").build())
+                      .build());
+    resources.add(KubernetesResource.builder()
+                      .resourceId(KubernetesResourceId.builder().name("d2").kind("Deployment").namespace("ns2").build())
+                      .build());
+    resources.add(KubernetesResource.builder()
+                      .resourceId(KubernetesResourceId.builder().name("d3").kind("Deployment").namespace("ns3").build())
+                      .build());
+
+    resources.add(KubernetesResource.builder()
+                      .resourceId(KubernetesResourceId.builder().name("d4").kind("Deployment").namespace("ns4").build())
+                      .build());
+    return resources;
+  }
+
+  private List<KubernetesResourceId> generateServerWorkloadTestResource() {
+    List<KubernetesResourceId> resources = new ArrayList<>();
+    resources.add(KubernetesResourceId.builder().name("d1").kind("Deployment").namespace("ns1").build());
+    resources.add(KubernetesResourceId.builder().name("d2").kind("Deployment").namespace("ns-diff").build());
+    resources.add(KubernetesResourceId.builder().name("d3").kind("Service").namespace("ns3").build());
+    resources.add(KubernetesResourceId.builder().name("d4").kind("Deployment").namespace("ns4").build());
+    return resources;
   }
 }

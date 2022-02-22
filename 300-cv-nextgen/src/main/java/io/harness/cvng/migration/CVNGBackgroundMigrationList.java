@@ -12,6 +12,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.migration.list.AddDefaultFieldsToMonitoredService;
 import io.harness.cvng.migration.list.AddDeploymentMonitoringSourcePerpetualTask;
 import io.harness.cvng.migration.list.AddEnvRefsToMonitoredServiceMigration;
+import io.harness.cvng.migration.list.AddMonitoredServiceToActivityMigration;
 import io.harness.cvng.migration.list.AddMonitoredServiceToCVConfigMigration;
 import io.harness.cvng.migration.list.AddMonitoredServiceToChangeSourceMigration;
 import io.harness.cvng.migration.list.AddMonitoredServiceToHeatMapMigration;
@@ -93,6 +94,8 @@ public class CVNGBackgroundMigrationList {
         .add(Pair.of(36, AddEnvRefsToMonitoredServiceMigration.class))
         // Migration logic was missed in default monitored service create. Adding the migration again.
         .add(Pair.of(37, AddEnvRefsToMonitoredServiceMigration.class))
+        .add(Pair.of(38, AddMonitoredServiceToHeatMapMigration.class))
+        .add(Pair.of(39, AddMonitoredServiceToActivityMigration.class))
         .build();
   }
 }

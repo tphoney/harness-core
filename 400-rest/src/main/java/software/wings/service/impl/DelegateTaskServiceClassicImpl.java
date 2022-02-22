@@ -844,7 +844,6 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
         } else if (assignDelegateService.isWhitelisted(delegateTask, delegateId)) {
           return assignTask(delegateId, taskId, delegateTask, delegateInstanceId);
         }
-
         log.info("Delegate {} is blacklisted for task {}", delegateId, taskId);
         return null;
       }
@@ -1300,8 +1299,8 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
           log.info("Marking task as expired: {}", errorMessage);
 
           if (isNotBlank(delegateTask.getWaitId())) {
-            waitNotifyEngine.doneWith(
-                delegateTask.getWaitId(), ErrorNotifyResponseData.builder().errorMessage(errorMessage).build());
+            waitNotifyEngine.doneWith(delegateTask.getWaitId(),
+                ErrorNotifyResponseData.builder().errorMessage(errorMessage).expired(true).build());
           }
         }
       }

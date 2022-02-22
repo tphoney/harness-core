@@ -20,8 +20,8 @@ require (
 	github.com/minio/minio-go/v6 v6.0.57
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.6.1
-	github.com/harness/harness-core/commons/go/lib v0.0.0-20220210161509-69d6cb167b7a
-	github.com/harness/harness-core/product/log-service v0.0.0-20220210161509-69d6cb167b7a
+	github.com/harness/harness-core/commons/go/lib v0.0.0-20220222141117-7659b7eca599
+	github.com/harness/harness-core/product/log-service v0.0.0-20220222141117-7659b7eca599
 	go.uber.org/zap v1.15.0
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect

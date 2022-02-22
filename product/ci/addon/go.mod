@@ -48,8 +48,8 @@ require (
 	github.com/tj/assert v0.0.0-20171129193455-018094318fb0
 	github.com/vdemeester/k8s-pkg-credentialprovider v1.18.1-0.20201019120933-f1d16962a4db
 	github.com/harness/harness-core v0.0.0-20220210161509-69d6cb167b7a
-	github.com/harness/harness-core/commons/go/lib v0.0.0-20220210161509-69d6cb167b7a
-	github.com/harness/harness-core/product/ci/engine v0.0.0-20220210161509-69d6cb167b7a
+	github.com/harness/harness-core/commons/go/lib v0.0.0-20220222141117-7659b7eca599
+	github.com/harness/harness-core/product/ci/engine v0.0.0-20220222141117-7659b7eca599
 	github.com/xanzy/go-gitlab v0.32.0 // indirect
 	go.uber.org/zap v1.16.0
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b

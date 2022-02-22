@@ -40,7 +40,6 @@ import lombok.extern.slf4j.Slf4j;
 public class RunPreFacilitationChecker extends ExpressionEvalPreFacilitationChecker {
   @Inject private OrchestrationEngine orchestrationEngine;
   @Inject private NodeExecutionService nodeExecutionService;
-  @Inject private PlanService planService;
   @Inject PmsEngineExpressionService pmsEngineExpressionService;
 
   @Override

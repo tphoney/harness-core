@@ -111,9 +111,9 @@ ciExecutionServiceConfig:
   liteEngineImage: harness/ci-lite-engine:release-38
   isLocal: false
   stepConfig:
-#The below config is for K8 steps
+    # The below config is for K8 steps
     gitCloneConfig:
-#Use rootless image only for K8 git clone
+      # Use rootless image only for K8 git clone
       image: harness/drone-git:1.0.6-rootless-linux-amd64
       entrypoint:
         - /usr/local/bin/clone
@@ -157,7 +157,7 @@ ciExecutionServiceConfig:
         - /bin/drone-cache
 
     vmImageConfig:
-#Use root image for VM git clone
+      # Use root image for VM git clone
       gitClone: harness/drone-git:1.0.6
       buildAndPushDockerRegistry: plugins/docker:latest
       buildAndPushECR: plugins/ecr:latest
@@ -257,7 +257,4 @@ pmsPlanCreatorServicePoolConfig:
   corePoolSize: ${PLAN_CREATOR_SERVICE_EXECUTOR_POOL_CORE_SIZE:-2}
   maxPoolSize: ${PLAN_CREATOR_SERVICE_EXECUTOR_POOL_MAX_SIZE:-3}
   idleTime: ${PLAN_CREATOR_SERVICE_EXECUTOR_POOL_IDLE_TIME:-30}
-  timeUnit: ${
-PLAN_CREATOR_SERVICE_EXECUTOR_POOL_IDLE_TIME_TIME_UNIT:
-  -SECONDS
-}
+  timeUnit: ${PLAN_CREATOR_SERVICE_EXECUTOR_POOL_IDLE_TIME_TIME_UNIT:-SECONDS}

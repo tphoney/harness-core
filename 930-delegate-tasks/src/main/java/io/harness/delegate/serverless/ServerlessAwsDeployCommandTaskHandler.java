@@ -44,7 +44,7 @@ public class ServerlessAwsDeployCommandTaskHandler extends ServerlessCommandTask
 
   private ServerlessAwsConfig serverlessAwsConfig;
   private ServerlessClient serverlessClient;
-  private ServerlessAwsManifest serverlessAwsManifest;
+  private ServerlessManifestConfig serverlessManifestConfig;
 
   private static final String HOME_DIRECTORY = "./repository/serverless/home";
   // todo: need to move to constants file
@@ -85,9 +85,10 @@ public class ServerlessAwsDeployCommandTaskHandler extends ServerlessCommandTask
                                .toAbsolutePath()
                                .toString();
     serverlessTaskHelperBase.createHomeDirectory(homeDirectory);
-    serverlessAwsManifest = (ServerlessAwsManifest) serverlessDeployRequest.getServerlessManifest();
-    serverlessTaskHelperBase.putManifestFileToWorkingDirectory(
-        serverlessAwsManifest.getYamlContent(), serverlessDelegateTaskParams);
+    serverlessManifestConfig = (ServerlessManifestConfig) serverlessDeployRequest.getServerlessManifest();
+    serverlessTaskHelperBase.fetchManifestFilesAndWriteToDirectory(serverlessManifestConfig,
+        serverlessDeployRequest.getAccountId(), executionLogCallback, serverlessDelegateTaskParams);
+    serverlessTaskHelperBase.replaceManifestWithRenderedContent(serverlessDelegateTaskParams, serverlessManifestConfig);
     serverlessAwsConfig = (ServerlessAwsConfig) serverlessInfraConfigHelper.createServerlessConfig(
         serverlessDeployRequest.getServerlessInfraConfig());
     serverlessClient = ServerlessClient.client(serverlessDelegateTaskParams.getServerlessClientPath(), homeDirectory);

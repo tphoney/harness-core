@@ -95,8 +95,14 @@ public class SCMGitSyncHelper {
                                    .setCommitMsg(StringValue.of(gitBranchInfo.getCommitMsg()))
                                    .setYamlGitConfigId(gitBranchInfo.getYamlGitConfigId())
                                    .putAllContextMap(MDC.getCopyOfContextMap())
-                                   .setYaml(emptyIfNull(yaml))
-                                   .setIsFullSyncFlow(gitBranchInfo.getIsFullSyncFlow());
+                                   .setYaml(emptyIfNull(yaml));
+
+    if (gitBranchInfo.getIsFullSyncFlow() != null) {
+      builder.setIsFullSyncFlow(gitBranchInfo.getIsFullSyncFlow());
+    } else {
+      builder.setIsFullSyncFlow(false);
+    }
+
     if (gitBranchInfo.getBaseBranch() != null) {
       builder.setBaseBranch(StringValue.of(gitBranchInfo.getBaseBranch()));
     }

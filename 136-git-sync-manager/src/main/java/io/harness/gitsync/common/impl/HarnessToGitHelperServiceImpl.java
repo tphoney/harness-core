@@ -130,7 +130,7 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
     }
     final ConnectorResponseDTO connector = connectorResponseDTO.get();
     if (principal.hasUserPrincipal()) {
-      userProfileHelper.setConnectorDetailsFromUserProfile(yamlGitConfig, principal.getUserPrincipal(), connector);
+      userProfileHelper.setConnectorDetailsFromUserProfile(yamlGitConfig, connector);
     }
     setRepoUrlInConnector(yamlGitConfig, connector);
     return Optional.of(connector);

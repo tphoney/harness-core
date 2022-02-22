@@ -18,6 +18,7 @@ import io.harness.pms.helpers.PmsFeatureFlagHelper;
 import io.harness.steps.FolderPathConstants;
 import io.harness.steps.StepCategoryConstants;
 import io.harness.steps.StepSpecTypeConstants;
+import io.harness.steps.policy.PolicyStepConstants;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -103,6 +104,16 @@ public class CommonStepInfo {
           .setFeatureFlag(FeatureName.SERVICENOW_NG_INTEGRATION.name())
           .build();
 
+  StepInfo policyStepInfo = StepInfo.newBuilder()
+                                .setName(PolicyStepConstants.POLICY_STEP_NAME)
+                                .setType(StepSpecTypeConstants.POLICY_STEP)
+                                .setFeatureFlag(FeatureName.CUSTOM_POLICY_STEP.name())
+                                .setStepMetaData(StepMetaData.newBuilder()
+                                                     .addCategory(PolicyStepConstants.POLICY_STEP_CATEGORY)
+                                                     .addFolderPaths(PolicyStepConstants.POLICY_STEP_FOLDER_PATH)
+                                                     .build())
+                                .build();
+
   StepInfo serviceNowCreateStepInfo =
       StepInfo.newBuilder()
           .setName("ServiceNow Create")
@@ -134,6 +145,7 @@ public class CommonStepInfo {
     stepInfos.add(jiraUpdateStepInfo);
     stepInfos.add(barrierStepInfo);
     stepInfos.add(serviceNowApprovalStepInfo);
+    stepInfos.add(policyStepInfo);
     stepInfos.add(serviceNowCreateStepInfo);
     stepInfos.add(serviceNowUpdateStepInfo);
     return stepInfos;

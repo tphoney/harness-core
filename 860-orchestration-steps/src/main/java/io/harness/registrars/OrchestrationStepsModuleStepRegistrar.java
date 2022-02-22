@@ -23,6 +23,7 @@ import io.harness.steps.common.pipeline.PipelineSetupStep;
 import io.harness.steps.http.HttpStep;
 import io.harness.steps.jira.create.JiraCreateStep;
 import io.harness.steps.jira.update.JiraUpdateStep;
+import io.harness.steps.policy.step.PolicyStep;
 import io.harness.steps.resourcerestraint.ResourceRestraintStep;
 import io.harness.steps.servicenow.create.ServiceNowCreateStep;
 import io.harness.steps.servicenow.update.ServiceNowUpdateStep;
@@ -57,6 +58,8 @@ public class OrchestrationStepsModuleStepRegistrar {
     // Feature Flag
     engineSteps.put(FlagConfigurationStep.STEP_TYPE, FlagConfigurationStep.class);
     engineSteps.put(FeatureFlagStageStep.STEP_TYPE, FeatureFlagStageStep.class);
+
+    engineSteps.put(PolicyStep.STEP_TYPE, PolicyStep.class);
 
     engineSteps.putAll(OrchestrationStepsModuleSdkStepRegistrar.getEngineSteps());
 

@@ -112,6 +112,8 @@ import io.harness.ng.core.DelegateServiceModule;
 import io.harness.ng.core.InviteModule;
 import io.harness.ng.core.NGAggregateModule;
 import io.harness.ng.core.SecretManagementModule;
+import io.harness.ng.core.accountsetting.services.NGAccountSettingService;
+import io.harness.ng.core.accountsetting.services.NGAccountSettingServiceImpl;
 import io.harness.ng.core.api.ApiKeyService;
 import io.harness.ng.core.api.NGModulesService;
 import io.harness.ng.core.api.NGSecretServiceV2;
@@ -122,6 +124,7 @@ import io.harness.ng.core.api.impl.NGModulesServiceImpl;
 import io.harness.ng.core.api.impl.NGSecretServiceV2Impl;
 import io.harness.ng.core.api.impl.TokenServiceImpl;
 import io.harness.ng.core.api.impl.UserGroupServiceImpl;
+import io.harness.ng.core.delegate.client.DelegateTokenNgClientModule;
 import io.harness.ng.core.encryptors.NGManagerKmsEncryptor;
 import io.harness.ng.core.encryptors.NGManagerVaultEncryptor;
 import io.harness.ng.core.entityactivity.event.EntityActivityCrudEventMessageListener;
@@ -160,7 +163,9 @@ import io.harness.ng.core.services.ProjectService;
 import io.harness.ng.core.smtp.NgSMTPSettingsHttpClientModule;
 import io.harness.ng.core.smtp.SmtpNgService;
 import io.harness.ng.core.smtp.SmtpNgServiceImpl;
+import io.harness.ng.core.user.service.LastAdminCheckService;
 import io.harness.ng.core.user.service.NgUserService;
+import io.harness.ng.core.user.service.impl.LastAdminCheckServiceImpl;
 import io.harness.ng.core.user.service.impl.NgUserServiceImpl;
 import io.harness.ng.core.user.service.impl.UserEntityCrudStreamListener;
 import io.harness.ng.eventsframework.EventsFrameworkModule;
@@ -547,6 +552,8 @@ public class NextGenModule extends AbstractModule {
     install(ConnectorModule.getInstance(appConfig.getNextGenConfig(), appConfig.getCeNextGenClientConfig()));
     install(new NgConnectorManagerClientModule(
         appConfig.getManagerClientConfig(), appConfig.getNextGenConfig().getManagerServiceSecret()));
+    install(new DelegateTokenNgClientModule(appConfig.getManagerClientConfig(),
+        appConfig.getNextGenConfig().getManagerServiceSecret(), NG_MANAGER.getServiceId()));
     bind(NgGlobalKmsService.class).to(NgGlobalKmsServiceImpl.class);
     install(new ProviderModule() {
       @Provides
@@ -632,14 +639,17 @@ public class NextGenModule extends AbstractModule {
     bind(ProjectService.class).to(ProjectServiceImpl.class);
     bind(OrganizationService.class).to(OrganizationServiceImpl.class);
     bind(NGModulesService.class).to(NGModulesServiceImpl.class);
+    bind(NGAccountSettingService.class).to(NGAccountSettingServiceImpl.class);
     bind(NGSecretServiceV2.class).to(NGSecretServiceV2Impl.class);
     bind(ScheduledExecutorService.class)
         .annotatedWith(Names.named("taskPollExecutor"))
         .toInstance(new ManagedScheduledExecutorService("TaskPoll-Thread"));
     bind(ConnectorService.class).annotatedWith(Names.named(CONNECTOR_DECORATOR_SERVICE)).to(ConnectorServiceImpl.class);
+
     bind(ConnectorService.class)
         .annotatedWith(Names.named(SECRET_MANAGER_CONNECTOR_SERVICE))
         .to(SecretManagerConnectorServiceImpl.class);
+    bind(LastAdminCheckService.class).to(LastAdminCheckServiceImpl.class);
     bind(NgUserService.class).to(NgUserServiceImpl.class);
     bind(UserGroupService.class).to(UserGroupServiceImpl.class);
     bind(YamlBaseUrlService.class).to(YamlBaseUrlServiceImpl.class);

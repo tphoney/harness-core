@@ -19,6 +19,9 @@ import io.harness.delegate.beans.DelegateToken.DelegateTokenKeys;
 import io.harness.delegate.beans.DelegateTokenDetails;
 import io.harness.delegate.beans.DelegateTokenDetails.DelegateTokenDetailsBuilder;
 import io.harness.delegate.beans.DelegateTokenStatus;
+import io.harness.delegate.dto.DelegateNgTokenDTO;
+import io.harness.delegate.events.DelegateNgTokenCreateEvent;
+import io.harness.delegate.events.DelegateNgTokenRevokeEvent;
 import io.harness.delegate.service.intfc.DelegateNgTokenService;
 import io.harness.delegate.utils.DelegateEntityOwnerHelper;
 import io.harness.exception.InvalidRequestException;
@@ -74,7 +77,7 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
                                       .build();
 
     persistence.save(delegateToken);
-    // publishCreateTokenAuditEvent(delegateToken);
+    publishCreateTokenAuditEvent(delegateToken);
     return getDelegateTokenDetails(delegateToken, true);
   }
 
@@ -89,7 +92,7 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
                 Date.from(OffsetDateTime.now().plusDays(DelegateToken.TTL.toDays()).toInstant()));
     DelegateToken updatedDelegateToken =
         persistence.findAndModify(filterQuery, updateOperations, new FindAndModifyOptions());
-    // publishRevokeTokenAuditEvent(updatedDelegateToken);
+    publishRevokeTokenAuditEvent(updatedDelegateToken);
     return getDelegateTokenDetails(updatedDelegateToken, false);
   }
 
@@ -225,15 +228,15 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
     return delegateTokenDetailsBuilder.build();
   }
 
-  //  private OutboxEvent publishCreateTokenAuditEvent(DelegateToken delegateToken) {
-  //    DelegateNgTokenDTO token = convert(delegateToken);
-  //    return outboxService.save(DelegateNgTokenCreateEvent.builder().token(token).build());
-  //  }
+  private void publishCreateTokenAuditEvent(DelegateToken delegateToken) {
+    DelegateNgTokenDTO token = convert(delegateToken);
+    outboxService.save(DelegateNgTokenCreateEvent.builder().token(token).build());
+  }
 
-  //  private OutboxEvent publishRevokeTokenAuditEvent(DelegateNgToken delegateToken) {
-  //    DelegateNgTokenDTO token = convert(delegateToken);
-  //    return outboxService.save(DelegateNgTokenRevokeEvent.builder().token(token).build());
-  //  }
+  private void publishRevokeTokenAuditEvent(DelegateToken delegateToken) {
+    DelegateNgTokenDTO token = convert(delegateToken);
+    outboxService.save(DelegateNgTokenRevokeEvent.builder().token(token).build());
+  }
 
   private void validateTokenToBeRevoked(DelegateToken delegateToken) {
     if (delegateToken == null) {
@@ -252,5 +255,17 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
   private String extractProject(DelegateEntityOwner owner) {
     return owner != null ? DelegateEntityOwnerHelper.extractProjectIdFromOwnerIdentifier(owner.getIdentifier())
                          : StringUtils.EMPTY;
+  }
+
+  private DelegateNgTokenDTO convert(DelegateToken delegateToken) {
+    return DelegateNgTokenDTO.builder()
+        .accountIdentifier(delegateToken.getAccountId())
+        .orgIdentifier(DelegateEntityOwnerHelper.extractOrgIdFromOwnerIdentifier(
+            delegateToken.getOwner() != null ? delegateToken.getOwner().getIdentifier() : null))
+        .projectIdentifier(DelegateEntityOwnerHelper.extractProjectIdFromOwnerIdentifier(
+            delegateToken.getOwner() != null ? delegateToken.getOwner().getIdentifier() : null))
+        .name(delegateToken.getName())
+        .identifier(delegateToken.getUuid())
+        .build();
   }
 }

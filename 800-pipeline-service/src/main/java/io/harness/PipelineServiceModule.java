@@ -132,6 +132,7 @@ import io.harness.steps.approval.step.servicenow.ServiceNowApprovalStepNode;
 import io.harness.steps.jira.JiraStepHelperService;
 import io.harness.steps.jira.create.JiraCreateStepNode;
 import io.harness.steps.jira.update.JiraUpdateStepNode;
+import io.harness.steps.policy.PolicyStepNode;
 import io.harness.steps.servicenow.create.ServiceNowCreateStepNode;
 import io.harness.steps.servicenow.update.ServiceNowUpdateStepNode;
 import io.harness.steps.shellscript.ShellScriptHelperService;
@@ -208,6 +209,7 @@ public class PipelineServiceModule extends AbstractModule {
       add(JiraUpdateStepNode.class);
       add(JiraApprovalStepNode.class);
       add(HarnessApprovalStepNode.class);
+      add(PolicyStepNode.class);
       add(ServiceNowCreateStepNode.class);
       add(ServiceNowUpdateStepNode.class);
     }
@@ -632,5 +634,12 @@ public class PipelineServiceModule extends AbstractModule {
     return harnessCacheManager.getCache("partialSchemaCache", SchemaCacheKey.class, PartialSchemaDTOWrapperValue.class,
         CreatedExpiryPolicy.factoryOf(new Duration(TimeUnit.HOURS, 1)),
         versionInfoManager.getVersionInfo().getBuildNo());
+  }
+
+  @Provides
+  @Singleton
+  @Named("allowedParallelStages")
+  public Integer getAllowedParallelStages() {
+    return configuration.getAllowedParallelStages();
   }
 }

@@ -26,13 +26,12 @@ import java.util.Map;
 import lombok.NonNull;
 
 @OwnedBy(HarnessTeam.PIPELINE)
-public interface NodeExecutionStrategy<T extends Node, N extends PmsNodeExecution, M extends PmsNodeExecutionMetadata> {
-  N triggerNode(@NonNull Ambiance ambiance, @NonNull T node, M metadata);
+public interface NodeExecutionStrategy<P extends Node, N extends PmsNodeExecution, M extends PmsNodeExecutionMetadata> {
+  N triggerNode(@NonNull Ambiance ambiance, @NonNull P node, M metadata);
 
-  default N triggerNextNode(
-      @NonNull Ambiance ambiance, @NonNull T node, N prevExecution, PmsNodeExecutionMetadata metadata) {
-    throw new UnsupportedOperationException("Trigger Next Node Node not psuppoerted for plan");
-  };
+  default N triggerNextNode(@NonNull Ambiance ambiance, @NonNull P node, N prevExecution, M metadata) {
+    throw new UnsupportedOperationException("Trigger Next Node Node not supported for plan");
+  }
 
   default void startExecution(Ambiance ambiance) {
     throw new UnsupportedOperationException("Start execution node Supported for plan");

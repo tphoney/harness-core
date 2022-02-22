@@ -39,6 +39,7 @@
   "lastIteration":0,
   "lastSuccessfulIteration":0,
   "maxAttempts":0,
+  "featureFlagService":null,
   "jobname": "CDP-Test-Artifacts",
   "artifactPaths": [
     "function.zip"

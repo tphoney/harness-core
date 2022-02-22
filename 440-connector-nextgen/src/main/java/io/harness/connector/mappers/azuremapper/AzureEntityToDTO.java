@@ -37,7 +37,12 @@ public class AzureEntityToDTO implements ConnectorEntityToDTOMapper<AzureConnect
   private AzureConnectorDTO buildManualCredential(AzureConfig connector) {
     final AzureManualCredential auth = (AzureManualCredential) connector.getCredential();
     final SecretRefData secretRef = SecretRefHelper.createSecretRef(auth.getSecretKeyRef());
-    final AzureManualDetailsDTO azureManualDetailsDTO = AzureManualDetailsDTO.builder().secretKey(secretRef).build();
+    final AzureManualDetailsDTO azureManualDetailsDTO = AzureManualDetailsDTO.builder()
+            .clientId(auth.getClientId())
+            .secretKey(secretRef)
+            .tenantId(auth.getTenantId())
+            .subscription(auth.getSubscription())
+            .build();
     return AzureConnectorDTO.builder()
         .delegateSelectors(connector.getDelegateSelectors())
         .credential(AzureConnectorCredentialDTO.builder()

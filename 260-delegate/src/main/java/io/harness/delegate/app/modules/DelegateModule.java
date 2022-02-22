@@ -142,6 +142,7 @@ import io.harness.delegate.task.aws.AwsCodeCommitApiDelegateTask;
 import io.harness.delegate.task.aws.AwsCodeCommitDelegateTask;
 import io.harness.delegate.task.aws.AwsDelegateTask;
 import io.harness.delegate.task.aws.AwsValidationHandler;
+import io.harness.delegate.task.azure.AzureValidationHandler;
 import io.harness.delegate.task.azure.appservice.AzureAppServiceTaskParameters.AzureAppServiceTaskType;
 import io.harness.delegate.task.azure.arm.AzureARMTaskParameters;
 import io.harness.delegate.task.azure.resource.operation.AzureResourceProvider;
@@ -1668,6 +1669,8 @@ public class DelegateModule extends AbstractModule {
         .to(ServiceNowValidationHandler.class);
     connectorTypeToConnectorValidationHandlerMap.addBinding(ConnectorType.ERROR_TRACKING.getDisplayName())
         .to(CVConnectorValidationHandler.class);
+    connectorTypeToConnectorValidationHandlerMap.addBinding(ConnectorType.AZURE.getDisplayName())
+         .to(AzureValidationHandler.class);
   }
 
   private void bindExceptionHandlers() {

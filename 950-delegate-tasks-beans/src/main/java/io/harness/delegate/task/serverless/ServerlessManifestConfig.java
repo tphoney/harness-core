@@ -17,8 +17,8 @@ import lombok.Value;
 @Value
 @Builder
 public class ServerlessManifestConfig implements ServerlessManifest {
-  @Expression(ALLOW_SECRETS) String yamlContent;
-  String artifactPathVariable;
+  @Expression(ALLOW_SECRETS) String manifestContent;
+  String manifestPath;
   ServerlessGitFetchFileConfig serverlessGitFetchFileConfig;
 
   @Override

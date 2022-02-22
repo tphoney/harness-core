@@ -317,7 +317,14 @@ func FindFilesInBranch(ctx context.Context, fileRequest *pb.FindFilesInBranchReq
 		return nil, err
 	}
 
-	files, response, err := client.Contents.List(ctx, fileRequest.GetSlug(), fileRequest.GetPath(), ref, scm.ListOptions{Page: int(fileRequest.GetPagination().GetPage())})
+	opts := &scm.ListOptions{}
+	if fileRequest.GetPagination.GetUrl != "" {
+		opts.URL = fileRequest.GetPagination.GetUrl
+	} else {
+		opts.Page = int(fileRequest.GetPagination().GetPage())
+	}
+
+	files, response, err := client.Contents.List(ctx, fileRequest.GetSlug(), fileRequest.GetPath(), ref, opts)
 	if err != nil {
 		log.Errorw("FindFilesInBranch failure", "provider", gitclient.GetProvider(*fileRequest.GetProvider()), "slug", fileRequest.GetSlug(), "ref", ref, "filepath", fileRequest.GetPath(), "elapsed_time_ms", utils.TimeSince(start), zap.Error(err))
 		return nil, err
@@ -327,6 +334,7 @@ func FindFilesInBranch(ctx context.Context, fileRequest *pb.FindFilesInBranchReq
 		File: convertContentList(files),
 		Pagination: &pb.PageResponse{
 			Next: int32(response.Page.Next),
+			Next_url: response.Page.NextURL,
 		},
 	}
 	return out, nil

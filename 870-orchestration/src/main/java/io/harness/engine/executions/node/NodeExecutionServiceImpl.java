@@ -173,6 +173,7 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
       for (String field : fieldsToBeIncluded) {
         query.fields().include(field);
       }
+      query.fields().exclude(NodeExecutionKeys.id);
     }
     if (isNotEmpty(statuses)) {
       query.addCriteria(where(NodeExecutionKeys.status).in(statuses));

@@ -119,7 +119,7 @@ public class NodeExecutionMap extends LateBindingMap {
     if (nodeExecution == null) {
       return Optional.empty();
     }
-    List<NodeExecution> allChildren = nodeExecutionsCache.fetchChildren(nodeExecution.getUuid());
+    List<NodeExecution> allChildren = nodeExecutionsCache.findAllChildren(nodeExecution.getUuid());
     List<NodeExecution> childrenNodesWithoutCurrentNodeList =
         allChildren.stream()
             .filter(node -> StatusUtils.finalStatuses().contains(node.getStatus()))

@@ -10,4 +10,4 @@ package io.harness.serverless;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
-@OwnedBy(HarnessTeam.CDP) public enum Option { stage, region, provider, key, secret }
+@OwnedBy(HarnessTeam.CDP) public enum Option { stage, region, provider, key, secret, name }

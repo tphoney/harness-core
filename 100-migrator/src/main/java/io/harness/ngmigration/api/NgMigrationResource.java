@@ -12,6 +12,7 @@ import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.ngmigration.beans.DiscoveryInput;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.service.DiscoveryService;
 import io.harness.rest.RestResponse;
@@ -45,6 +46,15 @@ import lombok.extern.slf4j.Slf4j;
 @Scope(ResourceType.APPLICATION)
 public class NgMigrationResource {
   @Inject DiscoveryService discoveryService;
+
+  @POST
+  @Path("/discover-multi")
+  @Timed
+  @ExceptionMetered
+  public RestResponse<DiscoveryResult> discoverMultipleEntities(
+      @QueryParam("accountId") String accountId, DiscoveryInput discoveryInput) {
+    return new RestResponse<>(discoveryService.discoverMulti(accountId, discoveryInput));
+  }
 
   @GET
   @Path("/discover")

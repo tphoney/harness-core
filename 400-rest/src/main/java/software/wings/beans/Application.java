@@ -134,7 +134,9 @@ public class Application extends Base implements KeywordsAware, NameAccess, TagA
    */
   public void setName(String name) {
     this.name = name;
-    this.lowerCaseName = name.toLowerCase();
+    if (name != null) {
+      this.lowerCaseName = name.toLowerCase();
+    }
   }
 
   /**

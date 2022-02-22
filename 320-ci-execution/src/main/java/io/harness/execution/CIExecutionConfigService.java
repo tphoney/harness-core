@@ -7,7 +7,7 @@ import io.harness.repositories.CIExecutionConfigRepository;
 
 import com.google.inject.Inject;
 import de.skuzzle.semantic.Version;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,47 +59,66 @@ public class CIExecutionConfigService {
     return tag;
   }
 
-  public List<String> getDeprecatedTags(String accountId) {
+  public List<DeprecatedImageInfo> getDeprecatedTags(String accountId) {
     Optional<CIExecutionConfig> configOptional = configRepository.findFirstByAccountIdentifier(accountId);
-    List<String> deprecatedTags = Collections.emptyList();
+    List<DeprecatedImageInfo> deprecatedTags = new ArrayList();
     if (configOptional.isPresent()) {
-      if (checkForCIImage(ciExecutionServiceConfig.getCiImageTag(), configOptional.get().getCiContainerTag())) {
-        deprecatedTags.add("CIImageTag");
+      CIExecutionConfig ciExecutionConfig = configOptional.get();
+      if (checkForCIImage(ciExecutionServiceConfig.getCiImageTag(), ciExecutionConfig.getCiContainerTag())) {
+        deprecatedTags.add(
+            DeprecatedImageInfo.builder().tag("CIImageTag").version(ciExecutionConfig.getCiContainerTag()).build());
       }
-      if (!ciExecutionServiceConfig.getStepConfig().getCacheS3Config().equals(configOptional.get().getCacheS3Tag())) {
-        deprecatedTags.add("CacheS3Tag");
+      if (!ciExecutionServiceConfig.getStepConfig().getCacheS3Config().equals(ciExecutionConfig.getCacheS3Tag())) {
+        deprecatedTags.add(
+            DeprecatedImageInfo.builder().tag("CacheS3Tag").version(ciExecutionConfig.getCacheS3Tag()).build());
       }
       if (!ciExecutionServiceConfig.getStepConfig().getArtifactoryUploadConfig().equals(
-              configOptional.get().getArtifactoryUploadTag())) {
-        deprecatedTags.add("ArtifactoryUploadTag");
+              ciExecutionConfig.getArtifactoryUploadTag())) {
+        deprecatedTags.add(DeprecatedImageInfo.builder()
+                               .tag("ArtifactoryUploadTag")
+                               .version(ciExecutionConfig.getArtifactoryUploadTag())
+                               .build());
       }
-      if (!ciExecutionServiceConfig.getStepConfig().getCacheGCSConfig().equals(configOptional.get().getCacheGCSTag())) {
-        deprecatedTags.add("CacheGCSTag");
+      if (!ciExecutionServiceConfig.getStepConfig().getCacheGCSConfig().equals(ciExecutionConfig.getCacheGCSTag())) {
+        deprecatedTags.add(
+            DeprecatedImageInfo.builder().tag("CacheGCSTag").version(ciExecutionConfig.getCacheGCSTag()).build());
       }
-      if (!ciExecutionServiceConfig.getStepConfig().getS3UploadConfig().equals(configOptional.get().getS3UploadTag())) {
-        deprecatedTags.add("S3UploadTag");
+      if (!ciExecutionServiceConfig.getStepConfig().getS3UploadConfig().equals(ciExecutionConfig.getS3UploadTag())) {
+        deprecatedTags.add(
+            DeprecatedImageInfo.builder().tag("S3UploadTag").version(ciExecutionConfig.getS3UploadTag()).build());
       }
-      if (!ciExecutionServiceConfig.getStepConfig().getCacheS3Config().equals(configOptional.get().getCacheS3Tag())) {
-        deprecatedTags.add("CacheS3Tag");
+      if (!ciExecutionServiceConfig.getStepConfig().getCacheS3Config().equals(ciExecutionConfig.getCacheS3Tag())) {
+        deprecatedTags.add(
+            DeprecatedImageInfo.builder().tag("CacheS3Tag").version(ciExecutionConfig.getCacheS3Tag()).build());
       }
-      if (!ciExecutionServiceConfig.getStepConfig().getGcsUploadConfig().equals(
-              configOptional.get().getGcsUploadTag())) {
-        deprecatedTags.add("GCSUploadTag");
+      if (!ciExecutionServiceConfig.getStepConfig().getGcsUploadConfig().equals(ciExecutionConfig.getGcsUploadTag())) {
+        deprecatedTags.add(
+            DeprecatedImageInfo.builder().tag("GCSUploadTag").version(ciExecutionConfig.getGcsUploadTag()).build());
       }
       if (!ciExecutionServiceConfig.getStepConfig().getBuildAndPushDockerRegistryConfig().equals(
-              configOptional.get().getBuildAndPushDockerRegistryTag())) {
-        deprecatedTags.add("BuildAndPushDockerTag");
+              ciExecutionConfig.getBuildAndPushDockerRegistryTag())) {
+        deprecatedTags.add(DeprecatedImageInfo.builder()
+                               .tag("BuildAndPushDockerTag")
+                               .version(ciExecutionConfig.getBuildAndPushDockerRegistryTag())
+                               .build());
       }
-      if (!ciExecutionServiceConfig.getStepConfig().getGitCloneConfig().equals(configOptional.get().getGitCloneTag())) {
-        deprecatedTags.add("GitCloneTag");
+      if (!ciExecutionServiceConfig.getStepConfig().getGitCloneConfig().equals(ciExecutionConfig.getGitCloneTag())) {
+        deprecatedTags.add(
+            DeprecatedImageInfo.builder().tag("GitCloneTag").version(ciExecutionConfig.getGitCloneTag()).build());
       }
       if (!ciExecutionServiceConfig.getStepConfig().getBuildAndPushECRConfig().equals(
-              configOptional.get().getBuildAndPushECRTag())) {
-        deprecatedTags.add("BuildAndPushECRConfig");
+              ciExecutionConfig.getBuildAndPushECRTag())) {
+        deprecatedTags.add(DeprecatedImageInfo.builder()
+                               .tag("BuildAndPushECRConfig")
+                               .version(ciExecutionConfig.getBuildAndPushECRTag())
+                               .build());
       }
       if (!ciExecutionServiceConfig.getStepConfig().getBuildAndPushGCRConfig().equals(
-              configOptional.get().getBuildAndPushGCRTag())) {
-        deprecatedTags.add("BuildAndPushGCRConfig");
+              ciExecutionConfig.getBuildAndPushGCRTag())) {
+        deprecatedTags.add(DeprecatedImageInfo.builder()
+                               .tag("BuildAndPushGCRConfig")
+                               .version(ciExecutionConfig.getBuildAndPushGCRTag())
+                               .build());
       }
     }
     return deprecatedTags;

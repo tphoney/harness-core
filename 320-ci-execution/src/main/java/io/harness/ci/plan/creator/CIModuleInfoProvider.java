@@ -34,6 +34,7 @@ import io.harness.ci.plan.creator.execution.CIStageModuleInfo;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.execution.CIExecutionConfigService;
+import io.harness.execution.DeprecatedImageInfo;
 import io.harness.ng.core.BaseNGAccess;
 import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.contracts.ambiance.Ambiance;
@@ -210,9 +211,8 @@ public class CIModuleInfoProvider implements ExecutionSummaryModuleInfoProvider 
       }
     }
 
-    List<String> deprecatedTagsList;
-//            executionConfigService.getDeprecatedTags(baseNGAccess.getAccountIdentifier());
-    deprecatedTagsList = Arrays.asList("lite engine, addon");
+    List<DeprecatedImageInfo> deprecatedImages =
+        executionConfigService.getDeprecatedTags(baseNGAccess.getAccountIdentifier());
 
     return CIPipelineModuleInfo.builder()
         .branch(branch)
@@ -220,7 +220,7 @@ public class CIModuleInfoProvider implements ExecutionSummaryModuleInfoProvider 
         .prNumber(prNumber)
         .buildType(buildType)
         .tag(tag)
-        .deprecatedImageTags(deprecatedTagsList)
+        .deprecatedImages(deprecatedImages)
         .repoName(repoName)
         .ciExecutionInfoDTO(getCiExecutionInfoDTO(codebaseSweepingOutput, author, prNumber, triggerCommits))
         .isPrivateRepo(isPrivateRepo)

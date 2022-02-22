@@ -719,7 +719,8 @@ public class AzureVMSSStateHelperTest extends CategoryTest {
 
     doReturn(artifact).when(context).getDefaultArtifactForService("serviceId");
     doReturn(artifactStream).when(artifactStreamService).get("artifactStreamId");
-    doReturn(artifactStreamAttributes).when(artifactStream).fetchArtifactStreamAttributes(null);
+    doReturn(artifactStreamAttributes).when(artifactStream).fetchArtifactStreamAttributes(any());
+    doReturn(true).when(featureFlagService).isEnabled(any(), anyString());
 
     AzureMachineImageArtifactDTO azureMachineImageArtifactDTO =
         azureVMSSStateHelper.getAzureMachineImageArtifactDTO(context, "serviceId");

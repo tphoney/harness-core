@@ -1027,6 +1027,16 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   @Override
   public List<HealthSourceDTO> getHealthSources(ServiceEnvironmentParams serviceEnvironmentParams) {
     MonitoredService monitoredServiceEntity = getMonitoredService(serviceEnvironmentParams);
+    return getHealthSources(monitoredServiceEntity);
+  }
+
+  @Override
+  public List<HealthSourceDTO> getHealthSources(ProjectParams projectParams, String monitoredServiceIdentifier) {
+    MonitoredService monitoredServiceEntity = getMonitoredService(projectParams, monitoredServiceIdentifier);
+    return getHealthSources(monitoredServiceEntity);
+  }
+
+  private List<HealthSourceDTO> getHealthSources(MonitoredService monitoredServiceEntity) {
     Set<HealthSource> healthSources = healthSourceService.get(monitoredServiceEntity.getAccountId(),
         monitoredServiceEntity.getOrgIdentifier(), monitoredServiceEntity.getProjectIdentifier(),
         monitoredServiceEntity.getIdentifier(), monitoredServiceEntity.getHealthSourceIdentifiers());

@@ -5216,7 +5216,7 @@
             "Git",
             "Github",
             "Bitbucket",
-            "GitLab",
+            "Gitlab",
             "Http",
             "S3",
             "Gcs",
@@ -5294,22 +5294,6 @@
           "if": {
             "properties": {
               "type": {
-                "const": "GitLab"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "spec": {
-                "$ref": "#/definitions/GitLabStore"
-              }
-            }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "type": {
                 "const": "Github"
               }
             }
@@ -5318,6 +5302,22 @@
             "properties": {
               "spec": {
                 "$ref": "#/definitions/GithubStore"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Gitlab"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/GitLabStore"
               }
             }
           }

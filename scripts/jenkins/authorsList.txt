@@ -32,6 +32,7 @@ arpit-harness arpit.jain@harness.io
 Arpit Tiwari arpit.tiwari@harness.io
 Arvind Choudhary arvind.choudhary@harness.io
 Ashish Sanodia ashish.sanodia@harness.io
+Atharva Trivedi atharva.trivedi@harness.io
 Bharat Goel bharat.goel@harness.io
 Bogdan Azaric bogdan.azaric@harness.io
 Bojan Micovic bojan.micovic@harness.io

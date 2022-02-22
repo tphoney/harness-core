@@ -66,6 +66,20 @@ public class YamlSchemaTransientHelper {
       add(EntityType.BARRIER_STEP);
       add(EntityType.VERIFY_STEP);
       add(EntityType.FLAG_CONFIGURATION);
+      add(EntityType.K8S_APPLY_STEP);
+      add(EntityType.K8S_BLUE_GREEN_DEPLOY_STEP);
+      add(EntityType.K8S_ROLLING_DEPLOY_STEP);
+      add(EntityType.K8S_ROLLING_ROLLBACK_STEP);
+      add(EntityType.K8S_SCALE_STEP);
+      add(EntityType.K8S_DELETE_STEP);
+      add(EntityType.K8S_BG_SWAP_SERVICES_STEP);
+      add(EntityType.K8S_CANARY_DELETE_STEP);
+      add(EntityType.TERRAFORM_APPLY_STEP);
+      add(EntityType.TERRAFORM_PLAN_STEP);
+      add(EntityType.TERRAFORM_DESTROY_STEP);
+      add(EntityType.TERRAFORM_ROLLBACK_STEP);
+      add(EntityType.HELM_DEPLOY_STEP);
+      add(EntityType.HELM_ROLLBACK_STEP);
       add(EntityType.POLICY_STEP);
     }
   };

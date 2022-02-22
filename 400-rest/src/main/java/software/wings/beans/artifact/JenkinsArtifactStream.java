@@ -8,7 +8,6 @@
 package software.wings.beans.artifact;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
-import static io.harness.beans.FeatureName.ARTIFACT_STREAM_METADATA_ONLY;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
@@ -24,7 +23,6 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.ff.FeatureFlagService;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.google.inject.Inject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;

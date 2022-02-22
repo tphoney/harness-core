@@ -42,7 +42,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class JenkinsArtifactStream extends ArtifactStream {
-  @Inject FeatureFlagService featureFlagService;
   @NotEmpty private String jobname;
   private List<String> artifactPaths;
 
@@ -82,14 +81,7 @@ public class JenkinsArtifactStream extends ArtifactStream {
 
   @Override
   public void validateRequiredFields() {
-    boolean metadataOnly;
-    if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, getAccountId())) {
-      metadataOnly = true;
-    } else {
-      metadataOnly = isMetadataOnly();
-    }
-
-    if (!metadataOnly && isEmpty(artifactPaths)) {
+    if (!isMetadataOnly() && isEmpty(artifactPaths)) {
       throw new InvalidRequestException("Please provide at least one artifact path for non-metadata only");
     }
     // for both metadata and non-metadata remove artifact path containing empty strings

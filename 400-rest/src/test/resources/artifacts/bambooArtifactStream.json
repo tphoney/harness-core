@@ -38,7 +38,6 @@
   "lastIteration":0,
   "lastSuccessfulIteration":0,
   "maxAttempts":0,
-  "featureFlagService":null,
   "jobname": "TES-GAR",
   "artifactPaths": [
     "metadata.json/metadata.json"

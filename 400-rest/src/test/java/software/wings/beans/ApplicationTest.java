@@ -7,6 +7,7 @@
 
 package software.wings.beans;
 
+import static io.harness.rule.OwnerRule.LALIT;
 import static io.harness.rule.OwnerRule.RAMA;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,5 +58,20 @@ public class ApplicationTest extends WingsBaseTest {
 
     Application app2 = JsonUtils.asObject(json, Application.class);
     assertThat(app2).isEqualToComparingFieldByField(app);
+  }
+
+  @Test
+  @Owner(developers = LALIT)
+  @Category(UnitTests.class)
+  public void testAppNameLowerCase() {
+    Application app = new Application();
+    final String appName = "TestApplicationForLowerCaseSearch-" + System.currentTimeMillis();
+    final String desc =
+        "This is for testing if the application has lower case name set correctly-" + System.currentTimeMillis();
+    app.setName(appName);
+    app.setDescription(desc);
+    app.onSave();
+
+    assertThat(app.getLowerCaseName()).isEqualTo(appName.toLowerCase());
   }
 }

@@ -158,8 +158,7 @@ public class KubernetesCliRuntimeExceptionHandlerTest extends CategoryTest {
     assertThat(handledException).isInstanceOf(HintException.class);
     assertThat(handledException.getMessage()).isEqualTo(KubernetesExceptionHints.K8S_CHARACTER_ERROR);
     assertThat(handledException.getCause()).isInstanceOf(ExplanationException.class);
-    assertThat(handledException.getCause().getMessage())
-        .contains("The resource [Deployment/Pqr] is breaching the naming constraints");
+    assertThat(handledException.getCause().getMessage()).contains("Deployment/Pqr");
     assertThat(handledException.getCause().getCause()).isInstanceOf(ExplanationException.class);
     assertThat(handledException.getCause().getCause().getCause()).isInstanceOf(KubernetesTaskException.class);
   }
@@ -190,6 +189,37 @@ public class KubernetesCliRuntimeExceptionHandlerTest extends CategoryTest {
     assertThat(handledException.getCause().getCause()).isInstanceOf(KubernetesTaskException.class);
   }
 
+  @Test
+  @Owner(developers = ABHINAV2)
+  @Category(UnitTests.class)
+  public void handleMultipleNamingExceptions() {
+    KubernetesCliTaskRuntimeException exception =
+        new KubernetesCliTaskRuntimeException(createProcessResponse(CliErrorMessages.MULTIPLE_NAMING_ERRORS), APPLY);
+    WingsException handledException = exceptionHandler.handleException(exception);
+    assertThat(handledException).isInstanceOf(HintException.class);
+    assertThat(handledException.getMessage()).isEqualTo(KubernetesExceptionHints.K8S_CHARACTER_ERROR);
+    assertThat(handledException.getCause()).isInstanceOf(ExplanationException.class);
+    assertThat(handledException.getCause().getMessage()).contains("Secret/InvalidSecret");
+    assertThat(handledException.getCause().getMessage()).contains("ConfigMap/InvalidConfigmap");
+    assertThat(handledException.getCause().getMessage()).contains("Service/InvalidService");
+    assertThat(handledException.getCause().getCause()).isInstanceOf(ExplanationException.class);
+    assertThat(handledException.getCause().getCause().getCause()).isInstanceOf(KubernetesTaskException.class);
+  }
+
+  @Test
+  @Owner(developers = ABHINAV2)
+  @Category(UnitTests.class)
+  public void handleUnresolvedFieldError() {
+    KubernetesCliTaskRuntimeException exception =
+        new KubernetesCliTaskRuntimeException(createProcessResponse(CliErrorMessages.UNRESOLVED_VALUE_ERROR), APPLY);
+    WingsException handledException = exceptionHandler.handleException(exception);
+    assertThat(handledException).isInstanceOf(HintException.class);
+    assertThat(handledException.getMessage()).isEqualTo(KubernetesExceptionHints.UNRESOLVED_MANIFEST_FIELD);
+    assertThat(handledException.getCause()).isInstanceOf(ExplanationException.class);
+    assertThat(handledException.getCause().getCause()).isInstanceOf(ExplanationException.class);
+    assertThat(handledException.getCause().getCause().getCause()).isInstanceOf(KubernetesTaskException.class);
+  }
+
   private ProcessResponse createProcessResponse(String cliErrorMessage) {
     return ProcessResponse.builder()
         .processResult(new ProcessResult(1, new ProcessOutput("process failed.".getBytes(StandardCharsets.UTF_8))))
@@ -208,5 +238,9 @@ public class KubernetesCliRuntimeExceptionHandlerTest extends CategoryTest {
     static final String SCALE_MISSING_RESOURCE = "deployments.apps \"abc\" not found";
     static final String INVALID_CHARACTERS_ERROR =
         "The Deployment \"Pqr\" is invalid: metadata.name: Invalid value: \"Pqr\": a DNS-1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character (e.g. 'example.com', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')";
+    static final String MULTIPLE_NAMING_ERRORS =
+        "Error from server (Invalid): error when creating \"manifests.yaml\": Secret \"InvalidSecret\" is invalid: metadata.name: Invalid value: \"InvalidSecret\": a DNS-1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character (e.g. 'example.com', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')Error from server (Invalid): error when creating \"manifests.yaml\": ConfigMap \"InvalidConfigmap\" is invalid: metadata.name: Invalid value: \"InvalidConfigmap\": a DNS-1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character (e.g. 'example.com', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')Error from server (Invalid): error when creating \"manifests.yaml\": Service \"InvalidService\" is invalid: [metadata.name: Invalid value: \"InvalidService\": a DNS-1035 label must consist of lower case alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character (e.g. 'my-name',  or 'abc-123', regex used for validation is '[a-z]([-a-z0-9]*[a-z0-9])?')";
+    static final String UNRESOLVED_VALUE_ERROR =
+        "Error from server (Invalid): error when creating \"manifests.yaml\": Secret \"<no value>-1\" is invalid: metadata.name: Invalid value: \"<no value>-1\": a DNS-1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character (e.g. 'example.com', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')";
   }
 }

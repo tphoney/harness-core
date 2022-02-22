@@ -115,6 +115,7 @@ git log -1000 --oneline --format='%aN <%aE>' | sort -u |\
     grep -iv "^Naman Talaycha <naman.talaycha@harness.io>$" |\
     grep -iv "^Naman Verma <naman.verma@harness.io>$" |\
     grep -iv "^Nandan Chandrashekar <nandan.chandrashekar@harness.io>$" |\
+    grep -iv "^Nasser Gonzalez Gonzalez <nasser.gonzalez@harness.io>$" |\
     grep -iv "^Nataraja Maruthi <nataraja@harness.io>$" |\
     grep -iv "^Nathan Nguyen <nnguyen01@users.noreply.github.com>$" |\
     grep -iv "^Nathan Nguyen <lenathan.nguyen@harness.io>$" |\
@@ -235,7 +236,8 @@ git log -1000 --oneline --format='%aN <%aE>' | sort -u |\
     grep -iv "^Sergey Bobrov sergey.bobrov@harness.io$" |\
     grep -iv "^William Wissemann william.wissemann@harness.io$" |\
     grep -iv "^Shubham Maheshwari <shubham.maheshwari@harness.io>$" |\
-    grep -iv "^Alexandru Ciofu <alexandru.ciofu@harness.io>$"` || :
+    grep -iv "^Alexandru Ciofu <alexandru.ciofu@harness.io>$" |\
+    grep -iv "^Dev Mittal <devki.mittal@harness.io>$"` || :
 
 if [ ! -z "$UNKNOWN_USERS" ]
 then

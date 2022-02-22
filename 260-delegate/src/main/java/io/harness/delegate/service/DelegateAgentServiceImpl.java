@@ -320,7 +320,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   private final String delegateDescription = System.getenv().get("DELEGATE_DESCRIPTION");
   private final boolean delegateNg = isNotBlank(System.getenv().get("DELEGATE_SESSION_IDENTIFIER"))
       || (isNotBlank(System.getenv().get("NEXT_GEN")) && Boolean.parseBoolean(System.getenv().get("NEXT_GEN")));
-  private final String delegateTokenName = System.getenv().get("DELEGATE_TOKEN_NAME");
   public static final String JAVA_VERSION = "java.version";
 
   private static volatile String delegateId;
@@ -548,10 +547,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
             DELEGATE_TYPE, DELEGATE_GROUP_NAME, supportedTasks);
       }
 
-      if (isNotEmpty(delegateTokenName)) {
-        log.info("Registering Delegate with Token: {}", delegateTokenName);
-      }
-
       final DelegateParamsBuilder builder =
           DelegateParams.builder()
               .ip(getLocalHostAddress())
@@ -574,8 +569,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
                                              : emptyList())
               .sampleDelegate(isSample)
               .location(Paths.get("").toAbsolutePath().toString())
-              .ceEnabled(Boolean.parseBoolean(System.getenv("ENABLE_CE")))
-              .delegateTokenName(delegateTokenName);
+              .ceEnabled(Boolean.parseBoolean(System.getenv("ENABLE_CE")));
 
       delegateId = registerDelegate(builder);
       log.info("[New] Delegate registered in {} ms", clock.millis() - start);
@@ -2327,7 +2321,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     long timeout = taskData.getTimeout() + TimeUnit.SECONDS.toMillis(30L);
     Future taskFuture = null;
     while (stillRunning && clock.millis() - startingTime < timeout) {
-      log.info("Task time remaining for {}: {} ms", taskId, startingTime + timeout - clock.millis());
+      log.info("Task time remaining for {}, taskype {}: {} ms", taskId, taskData.getTaskType(),
+          startingTime + timeout - clock.millis());
       sleep(ofSeconds(5));
       taskFuture = currentlyExecutingFutures.get(taskId).getTaskFuture();
       if (taskFuture != null) {
@@ -2336,7 +2331,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       stillRunning = taskFuture != null && !taskFuture.isDone() && !taskFuture.isCancelled();
     }
     if (stillRunning) {
-      log.error("Task {} timed out after {} milliseconds", taskId, timeout);
+      log.error("Task {} of taskType {} timed out after {} milliseconds", taskId, taskData.getTaskType(), timeout);
       metricRegistry.recordGaugeInc(TASK_TIMEOUT, new String[] {DELEGATE_NAME, taskData.getTaskType()});
       Optional.ofNullable(currentlyExecutingFutures.get(taskId).getTaskFuture())
           .ifPresent(future -> future.cancel(true));

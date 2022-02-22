@@ -91,6 +91,9 @@ public class CVNGBackgroundMigrationList {
         .add(Pair.of(34, AddMonitoredServiceToCVConfigMigration.class))
         .add(Pair.of(35, AddMonitoredServiceToHeatMapMigration.class))
         .add(Pair.of(36, AddEnvRefsToMonitoredServiceMigration.class))
+        // Migration logic was missed in default monitored service create. Adding the migration again.
+        .add(Pair.of(37, AddEnvRefsToMonitoredServiceMigration.class))
+        .add(Pair.of(38, AddMonitoredServiceToHeatMapMigration.class))
         .build();
   }
 }

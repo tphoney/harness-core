@@ -883,7 +883,7 @@ public class InstallUtils {
       String downloadUrl = getScmDownloadUrl(configuration);
       log.info("Download Url is {}", downloadUrl);
 
-      String script = "curl $MANAGER_PROXY_CURL -LO " + downloadUrl + "\n"
+      String script = "curl $MANAGER_PROXY_CURL -kLO " + downloadUrl + "\n"
           + "chmod +x ./scm";
 
       ProcessExecutor processExecutor = new ProcessExecutor()
@@ -1112,7 +1112,8 @@ public class InstallUtils {
       ProcessResult result = processExecutor.execute();
 
       if (result.getExitValue() == 0) {
-        kustomizePath = Paths.get(kustomizeDir + "/kustomize").toAbsolutePath().normalize().toString();
+        kustomizePath = Paths.get(kustomizeDir, "kustomize").toAbsolutePath().normalize().toString();
+        kustomizePaths.put(kustomizeVersion, kustomizePath);
         log.info(result.outputUTF8());
         if (validateKustomizeExists(kustomizeDir)) {
           log.info("kustomize path: {}", kustomizePath);

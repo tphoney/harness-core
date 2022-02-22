@@ -1550,7 +1550,7 @@ public class PcfStateHelperTest extends WingsBaseTest {
     ArgumentCaptor<SweepingOutputInstance> captor = ArgumentCaptor.forClass(SweepingOutputInstance.class);
 
     pcfStateHelper.updateInfoVariables(
-        context, stateExecutionData, CfCommandExecutionResponse.builder().build(), false, false);
+        context, stateExecutionData, CfCommandExecutionResponse.builder().build(), false);
 
     verify(sweepingOutputService, times(1)).deleteById(APP_ID, "1");
     verify(sweepingOutputService, times(1)).ensure(captor.capture());

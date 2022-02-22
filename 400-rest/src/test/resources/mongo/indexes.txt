@@ -47,6 +47,7 @@ appContainers {"name": "appId_1", "background": true} {"appId": 1}
 appContainers {"name": "createdAt_1", "background": true} {"createdAt": 1}
 appContainers {"name": "unique_yaml", "unique": true} {"accountId": 1, "name": 1}
 applicationManifests {"name": "accountId_1", "background": true} {"accountId": 1}
+applicationManifests {"name": "accountId_connectorId", "background": true} {"accountId": 1, "helmChartConfig.connectorId": 1}
 applicationManifests {"name": "appId_1", "background": true} {"appId": 1}
 applicationManifests {"name": "appManifestIdx2", "background": true} {"appId": 1, "envId": 1, "serviceId": 1, "kind": 1}
 applicationManifests {"name": "createdAt_1", "background": true} {"createdAt": 1}
@@ -790,6 +791,7 @@ users {"name": "email_1", "unique": true} {"email": 1}
 users {"name": "externalUserId_1", "background": true} {"externalUserId": 1}
 users {"name": "name_1", "background": true} {"name": 1}
 users {"name": "pendingAccountsIdx", "background": true} {"pendingAccounts": 1}
+users {"name": "userIdAccountIdx", "background": true} {"accounts": 1, "externalUserId": 1}
 verificationServiceConfigurations {"name": "accountId_1", "background": true} {"accountId": 1}
 verificationServiceConfigurations {"name": "appId_1", "background": true} {"appId": 1}
 verificationServiceConfigurations {"name": "createdAt_1", "background": true} {"createdAt": 1}

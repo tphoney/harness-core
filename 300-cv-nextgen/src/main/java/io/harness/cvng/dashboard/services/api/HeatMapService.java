@@ -40,6 +40,6 @@ public interface HeatMapService {
   Map<ServiceEnvKey, RiskData> getLatestRiskScoreByServiceMap(
       ProjectParams projectParams, List<Pair<String, String>> serviceEnvIdentifiers);
 
-  HistoricalTrend getOverAllHealthScore(ProjectParams projectParams, String serviceIdentifier,
-      String environmentIdentifier, DurationDTO duration, Instant endTime);
+  HistoricalTrend getOverAllHealthScore(
+      ProjectParams projectParams, String monitoredServiceIdentifier, DurationDTO duration, Instant endTime);
 }

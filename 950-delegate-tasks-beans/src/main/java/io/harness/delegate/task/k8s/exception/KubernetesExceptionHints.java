@@ -76,4 +76,6 @@ public class KubernetesExceptionHints {
   public final String VALIDATION_FAILED_UNKNOWN_FIELD = "Please check the provided manifest.";
   public final String SCALE_CLI_FAILED =
       "Please check the inputs provided to the scale step: namespace(if provided), resource type or resource name.";
+  public final String UNRESOLVED_MANIFEST_FIELD =
+      "Please check values.yaml file(s) for any missing/null fields inside manifests or any unresolved expressions referencing harness variables.";
 }

@@ -112,6 +112,7 @@ def create_dataset_and_tables(jsonData):
 
     return True
 
+
 def create_table_from_manifest(jsonData):
     # Read the CSV from GCS as string
     manifestdata = {}
@@ -175,6 +176,7 @@ def create_table_from_manifest(jsonData):
         return False
 
     return True
+
 
 def get_mapped_data_column(data_type):
     if data_type == "String":
@@ -259,7 +261,8 @@ def ingest_data_to_awscur(jsonData):
                     unblendedrate, unblendedcost, region, availabilityzone, usageaccountid, instancetype, usagetype, 
                     lineitemtype, effectivecost, billingentity, instanceFamily, marketOption, %s
                      FROM `%s` table WHERE DATE(usagestartdate) >= '%s' AND DATE(usagestartdate) <= '%s';
-     """ % (tableName, date_start, date_end, jsonData["usageaccountid"], tableName, tags_query, jsonData["tableId"], date_start, date_end)
+     """ % (tableName, date_start, date_end, jsonData["usageaccountid"],
+            tableName, tags_query, jsonData["tableId"], date_start, date_end)
     # Configure the query job.
     print_(query)
     job_config = bigquery.QueryJobConfig(
@@ -281,7 +284,13 @@ def ingest_data_to_awscur(jsonData):
 
 
 def get_unique_accountids(jsonData):
-    # Get unique subsids from main awsBilling table
+    # Support for account allowlist. When more usecases arises, we shall move this to a table in BQ
+    account_allowlist = {
+        'LI2hS5sbS_2gLSnDqpAbTg': ['087946768277', '102095771087', '753890487724', '912131591631', '551316786239',
+                                   '314840214426', '211958814005', '950940341780', '533349434853']
+    }
+
+    # Get unique aws accountIds from main awsBilling table
     query = """ 
             SELECT DISTINCT(usageaccountid) FROM `%s`;
             """ % (jsonData["tableId"])
@@ -291,12 +300,16 @@ def get_unique_accountids(jsonData):
         usageaccountid = []
         for row in results:
             usageaccountid.append(row.usageaccountid)
+        print_("usageaccountid available are: %s" % usageaccountid)
+        if len(account_allowlist.get(jsonData['accountId'], [])) > 0:
+            print_("allow listed accounts are: %s" % account_allowlist[jsonData['accountId']])
+            usageaccountid = list(set(usageaccountid) & set(account_allowlist[jsonData['accountId']]))
         jsonData["usageaccountid"] = ", ".join(f"'{w}'" for w in usageaccountid)
     except Exception as e:
-        print_("Failed to retrieve distinct subsids", "WARN")
+        print_("Failed to retrieve distinct aws usageaccountid", "WARN")
         jsonData["usageaccountid"] = ""
         raise e
-    print_("Found unique usageaccountid %s" % usageaccountid)
+    print_("usageaccountid we will use %s" % usageaccountid)
 
 
 def ingest_data_to_preagg(jsonData):
@@ -402,6 +415,7 @@ def ingest_data_to_costagg(jsonData):
     )
     run_batch_query(client, query, job_config, timeout=120)
 
+
 def alter_unified_table(jsonData):
     print_("Altering unifiedTable Table")
     ds = "%s.%s" % (PROJECTID, jsonData["datasetName"])
@@ -417,6 +431,7 @@ def alter_unified_table(jsonData):
         print_(e)
     else:
         print_("Finished Altering unifiedTable Table")
+
 
 def alter_awscur_table(jsonData):
     print_("Altering awscur Table")

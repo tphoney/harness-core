@@ -27,10 +27,10 @@ import io.harness.cvng.core.beans.change.ChangeSummaryDTO.CategoryCountDetails;
 import io.harness.cvng.core.beans.change.ChangeTimeline;
 import io.harness.cvng.core.beans.change.ChangeTimeline.ChangeTimelineBuilder;
 import io.harness.cvng.core.beans.change.ChangeTimeline.TimeRangeDetail;
-import io.harness.cvng.core.beans.monitoredService.ChangeSourceDTO;
 import io.harness.cvng.core.beans.monitoredService.DurationDTO;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
+import io.harness.cvng.core.entities.changeSource.ChangeSource;
 import io.harness.cvng.core.services.CVNextGenConstants;
 import io.harness.cvng.core.services.api.ChangeEventService;
 import io.harness.cvng.core.services.api.monitoredService.ChangeSourceService;
@@ -82,16 +82,19 @@ public class ChangeEventServiceImpl implements ChangeEventService {
                                                             .serviceIdentifier(changeEventDTO.getServiceIdentifier())
                                                             .environmentIdentifier(changeEventDTO.getEnvIdentifier())
                                                             .build();
-    Optional<ChangeSourceDTO> changeSourceDTOOptional =
-        changeSourceService.getByType(serviceEnvironmentParams, changeEventDTO.getType())
+    Optional<ChangeSource> changeSourceOptional =
+        changeSourceService.getEntityByType(serviceEnvironmentParams, changeEventDTO.getType())
             .stream()
             .filter(source -> source.isEnabled())
             .findAny();
-    if (!changeSourceDTOOptional.isPresent()) {
+    if (!changeSourceOptional.isPresent()) {
       return false;
     }
     if (StringUtils.isEmpty(changeEventDTO.getChangeSourceIdentifier())) {
-      changeEventDTO.setChangeSourceIdentifier(changeSourceDTOOptional.get().getIdentifier());
+      changeEventDTO.setChangeSourceIdentifier(changeSourceOptional.get().getIdentifier());
+    }
+    if (StringUtils.isEmpty(changeEventDTO.getMonitoredServiceIdentifier())) {
+      changeEventDTO.setMonitoredServiceIdentifier(changeSourceOptional.get().getMonitoredServiceIdentifier());
     }
     activityService.upsert(transformer.getEntity(changeEventDTO));
     return true;

@@ -2454,6 +2454,10 @@ public class YamlDirectoryServiceImpl implements YamlDirectoryService {
     final FolderNode templateLibraryFolder = new FolderNode(
         accountId, templateLibraryFolderName, SettingAttribute.class, directoryPath.add(templateLibraryFolderName));
 
+    if (applyPermissions && isEmpty(allowedTemplates)) {
+      return templateLibraryFolder;
+    }
+
     // get the whole template folder tree  structure
     final TemplateFolder templateTree =
         templateService.getTemplateTree(accountId, appId, null, TEMPLATE_TYPES_WITH_YAML_SUPPORT);

@@ -878,7 +878,7 @@ public class InstallUtils {
       String downloadUrl = getScmDownloadUrl(configuration);
       log.info("Download Url is {}", downloadUrl);
 
-      String script = "curl $MANAGER_PROXY_CURL -LO " + downloadUrl + "\n"
+      String script = "curl $MANAGER_PROXY_CURL -kLO " + downloadUrl + "\n"
           + "chmod +x ./scm";
 
       ProcessExecutor processExecutor = new ProcessExecutor()

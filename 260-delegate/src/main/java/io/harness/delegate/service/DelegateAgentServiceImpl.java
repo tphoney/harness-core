@@ -1988,17 +1988,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
             log.info("Did not get the go-ahead to proceed for task");
             if (validated) {
               log.info("Task validated but was not assigned");
-            } else {
-              int delay = POLL_INTERVAL_SECONDS + 3;
-              log.info("Waiting {} seconds to give other delegates a chance to validate task", delay);
-              sleep(ofSeconds(delay));
-              try {
-                log.info("Manager check whether to fail task");
-                execute(delegateAgentManagerClient.failIfAllDelegatesFailed(
-                    delegateId, delegateTaskEvent.getDelegateTaskId(), accountId, areAllClientToolsInstalled));
-              } catch (IOException e) {
-                log.error("Unable to tell manager to check whether to fail for task", e);
-              }
             }
           }
         } catch (IOException e) {
@@ -2273,24 +2262,20 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
       Response<ResponseBody> response = null;
       try {
-        response = HTimeLimiter.callInterruptible21(timeLimiter, Duration.ofSeconds(30), () -> {
-          Response<ResponseBody> resp = null;
-          int retries = 5;
-          for (int attempt = 0; attempt < retries; attempt++) {
-            resp = delegateAgentManagerClient.sendTaskStatus(delegateId, taskId, accountId, taskResponse).execute();
-            if (resp != null && resp.code() >= 200 && resp.code() <= 299) {
-              log.info("Task {} response sent to manager", taskId);
-              return resp;
-            } else {
-              log.warn("Failed to send response for task {}: {}. {}", taskId, resp == null ? "null" : resp.code(),
-                  retries > 0 ? "Retrying." : "Giving up.");
+        int retries = 5;
+        for (int attempt = 0; attempt < retries; attempt++) {
+          response = delegateAgentManagerClient.sendTaskStatus(delegateId, taskId, accountId, taskResponse).execute();
+          if (response != null && response.code() >= 200 && response.code() <= 299) {
+            log.info("Task {} response sent to manager", taskId);
+          } else {
+            log.warn("Failed to send response for task {}: {}. {}", taskId, response == null ? "null" : response.code(),
+                attempt < (retries - 1) ? "Retrying." : "Giving up.");
+            if (attempt < retries - 1) {
+              // Do not sleep for last loop round, as we are going to fail.
               sleep(ofSeconds(FibonacciBackOff.getFibonacciElement(attempt)));
             }
           }
-          return resp;
-        });
-      } catch (UncheckedTimeoutException ex) {
-        log.warn("Timed out sending response to manager", ex);
+        }
       } catch (Exception e) {
         log.error("Unable to send response to manager", e);
       } finally {

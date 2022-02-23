@@ -24,7 +24,8 @@ import lombok.experimental.FieldDefaults;
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Schema(name = "FullSyncEntityInfo", description = "This contains full sync details of a Git Sync Entity")
+@Schema(name = "FullSyncEntityInfo",
+    description = "This contains the details of a Git Sync Entity and it's full sync status")
 @OwnedBy(PL)
 public class GitFullSyncEntityInfoDTO {
   @Schema(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) String accountIdentifier;
@@ -39,6 +40,6 @@ public class GitFullSyncEntityInfoDTO {
   @Schema(description = GitSyncApiConstants.REPO_NAME_PARAM_MESSAGE) String repoName;
   @Schema(description = GitSyncApiConstants.REPO_URL_PARAM_MESSAGE) String repoUrl;
   @Schema(description = GitSyncApiConstants.FOLDER_PATH_PARAM_MESSAGE) String rootFolder;
-  @Schema(description = "This is the number of Full Sync retry attempts") long retryCount;
-  @Schema(description = "Contains the error while syncing the entity") String errorMessage;
+  @Schema(description = "This is the number of full sync retry attempts") long retryCount;
+  @Schema(description = "Contains the error message while syncing the entity to Git") String errorMessage;
 }

@@ -103,10 +103,10 @@ public class GitFullSyncResource {
   private final GitFullSyncEntityService gitFullSyncEntityService;
 
   @POST
-  @ApiOperation(value = "Triggers Full Sync", nickname = "triggerFullSync")
-  @Operation(operationId = "triggerFullSync", summary = "Triggers Full Sync",
+  @ApiOperation(value = "Triggers full sync", nickname = "triggerFullSync")
+  @Operation(operationId = "triggerFullSync", summary = "Triggers full sync",
       responses =
-      { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Successfully triggered Full Sync") })
+      { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Successfully triggered full sync") })
   @NGAccessControlCheck(resourceType = ResourceTypes.PROJECT, permission = VIEW_PROJECT_PERMISSION)
   public ResponseDTO<TriggerFullSyncResponseDTO>
   triggerFullSync(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY)
@@ -126,7 +126,7 @@ public class GitFullSyncResource {
       responses =
       {
         @io.swagger.v3.oas.annotations.responses.
-        ApiResponse(description = "Returns the configuration back along with the scope information")
+        ApiResponse(description = "Returns the saved configuration details and scope for the Git full sync")
       })
   @NGAccessControlCheck(resourceType = ResourceTypes.PROJECT, permission = VIEW_PROJECT_PERMISSION)
   public ResponseDTO<GitFullSyncConfigDTO>
@@ -137,7 +137,7 @@ public class GitFullSyncResource {
           NGCommonEntityConstants.ORG_KEY) @io.harness.accesscontrol.OrgIdentifier @OrgIdentifier String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.PROJECT_KEY) @io.
       harness.accesscontrol.ProjectIdentifier @ProjectIdentifier String projectIdentifier,
-      @RequestBody(description = "Configuration body") @NotNull @Valid GitFullSyncConfigRequestDTO requestDTO) {
+      @RequestBody(description = "Full sync configuration") @NotNull @Valid GitFullSyncConfigRequestDTO requestDTO) {
     return ResponseDTO.newResponse(
         gitFullSyncConfigService.createConfig(accountIdentifier, orgIdentifier, projectIdentifier, requestDTO));
   }
@@ -145,11 +145,12 @@ public class GitFullSyncResource {
   @PUT
   @Path("/config")
   @ApiOperation(value = "Update a full sync configuration", nickname = "updateGitFullSyncConfig")
-  @Operation(operationId = "updateGitFullSyncConfig", summary = "Updates a configuration for performing git full sync",
+  @Operation(operationId = "updateGitFullSyncConfig",
+      summary = "Updates configuration details for performing git full sync for the given scope",
       responses =
       {
         @io.swagger.v3.oas.annotations.responses.
-        ApiResponse(description = "Returns the configuration back along with the scope information")
+        ApiResponse(description = "Returns the updated configuration details and scope for the Git full sync")
       })
   @NGAccessControlCheck(resourceType = ResourceTypes.PROJECT, permission = VIEW_PROJECT_PERMISSION)
   public ResponseDTO<GitFullSyncConfigDTO>
@@ -160,7 +161,7 @@ public class GitFullSyncResource {
           NGCommonEntityConstants.ORG_KEY) @io.harness.accesscontrol.OrgIdentifier @OrgIdentifier String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.PROJECT_KEY) @io.
       harness.accesscontrol.ProjectIdentifier @ProjectIdentifier String projectIdentifier,
-      @RequestBody(description = "Configuration body") @NotNull @Valid GitFullSyncConfigRequestDTO requestDTO) {
+      @RequestBody(description = "Full sync configuration") @NotNull @Valid GitFullSyncConfigRequestDTO requestDTO) {
     return ResponseDTO.newResponse(
         gitFullSyncConfigService.updateConfig(accountIdentifier, orgIdentifier, projectIdentifier, requestDTO));
   }
@@ -168,11 +169,11 @@ public class GitFullSyncResource {
   @GET
   @Path("/config")
   @ApiOperation(value = "Get full sync configuration", nickname = "getGitFullSyncConfig")
-  @Operation(operationId = "getGitFullSyncConfig", summary = "Get configuration for performing git full sync",
+  @Operation(operationId = "getGitFullSyncConfig", summary = "Fetches configuration details to perform Git full sync",
       responses =
       {
         @io.swagger.v3.oas.annotations.responses.
-        ApiResponse(description = "Returns the configuration back along with the scope information")
+        ApiResponse(description = "Returns the saved configuration details and scope for the Git full sync")
       })
   @NGAccessControlCheck(resourceType = ResourceTypes.PROJECT, permission = VIEW_PROJECT_PERMISSION)
   public ResponseDTO<GitFullSyncConfigDTO>
@@ -193,7 +194,8 @@ public class GitFullSyncResource {
 
   @POST
   @Path("/files")
-  @ApiOperation(value = "List files in full sync along with their status", nickname = "listFullSyncFiles")
+  @ApiOperation(
+      value = "Fetches the list list of entities and their status in full sync", nickname = "listFullSyncFiles")
   @Operation(operationId = "listFullSyncFiles", summary = "List files in full sync along with their status",
       responses =
       { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "A list of files involved in full sync") })
@@ -205,10 +207,10 @@ public class GitFullSyncResource {
           NGCommonEntityConstants.ORG_KEY) @io.harness.accesscontrol.OrgIdentifier @OrgIdentifier String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.PROJECT_KEY) @io.
       harness.accesscontrol.ProjectIdentifier @ProjectIdentifier String projectIdentifier,
-      @RequestBody(description = "Details of Page including: size, index, sort") @BeanParam PageRequest pageRequest,
+      @RequestBody(description = "Details of fetch paginated results") @BeanParam PageRequest pageRequest,
       @Parameter(description = GitSyncApiConstants.SEARCH_TERM_PARAM_MESSAGE) @QueryParam(
           NGResourceFilterConstants.SEARCH_TERM_KEY) String searchTerm,
-      @RequestBody(description = "Filters like entityType and syncStatus")
+      @RequestBody(description = "Filters the entities based on entityType and syncStatus")
       @Body GitFullSyncEntityInfoFilterDTO gitFullSyncEntityInfoFilterDTO) {
     PaginationUtils.setSortOrder(pageRequest, GitFullSyncEntityInfoKeys.createdAt, SortOrder.OrderType.DESC);
     return ResponseDTO.newResponse(gitFullSyncEntityService.list(

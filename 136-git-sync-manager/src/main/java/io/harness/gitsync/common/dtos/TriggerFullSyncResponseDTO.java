@@ -19,8 +19,8 @@ import lombok.Value;
 @Value
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Schema(name = "TriggerFullSyncResponse", description = "This has details to trigger Full Sync")
+@Schema(name = "TriggerFullSyncResponse", description = "This has details to trigger full sync")
 @OwnedBy(DX)
 public class TriggerFullSyncResponseDTO {
-  @Schema(description = "Indicates whether Full Sync is triggered or not") Boolean isFullSyncTriggered;
+  @Schema(description = "Determines if full sync is triggered") Boolean isFullSyncTriggered;
 }

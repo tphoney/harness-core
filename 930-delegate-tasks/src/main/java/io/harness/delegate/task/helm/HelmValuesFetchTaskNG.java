@@ -34,6 +34,8 @@ import io.harness.logging.LogCallback;
 import com.google.inject.Inject;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+
+import io.harness.secret.SecretSanitizerThreadLocal;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -44,6 +46,7 @@ public class HelmValuesFetchTaskNG extends AbstractDelegateRunnableTask {
   public HelmValuesFetchTaskNG(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override

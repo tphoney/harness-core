@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cloudfoundry.operations.applications.ApplicationDetail;
 import org.cloudfoundry.operations.applications.InstanceDetail;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 @NoArgsConstructor
 @Singleton
@@ -56,7 +57,7 @@ public class PcfApplicationDetailsCommandTaskHandler extends PcfCommandTaskHandl
     try {
       CfInternalConfig pcfConfig = cfCommandRequest.getPcfConfig();
       secretDecryptionService.decrypt(pcfConfig, encryptedDataDetails, isInstanceSync);
-
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(pcfConfig, encryptedDataDetails);
       CfInstanceSyncRequest cfInstanceSyncRequest = (CfInstanceSyncRequest) cfCommandRequest;
       CfRequestConfig cfRequestConfig =
           CfRequestConfig.builder()
@@ -88,7 +89,7 @@ public class PcfApplicationDetailsCommandTaskHandler extends PcfCommandTaskHandl
       log.warn("Failed while collecting PCF Application Details For Application: {}, with Error: {}",
           ((CfInstanceSyncRequest) cfCommandRequest).getPcfApplicationName(), e);
       cfInstanceSyncResponse.setCommandExecutionStatus(CommandExecutionStatus.FAILURE);
-      cfInstanceSyncResponse.setOutput(ExceptionUtils.getMessage(e));
+      cfInstanceSyncResponse.setOutput(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)));
     }
 
     cfCommandExecutionResponse.setErrorMessage(cfInstanceSyncResponse.getOutput());

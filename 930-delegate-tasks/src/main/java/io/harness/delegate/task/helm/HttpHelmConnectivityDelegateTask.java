@@ -26,6 +26,8 @@ import io.harness.exception.HelmClientRuntimeException;
 import io.harness.exception.NestedExceptionUtils;
 
 import com.google.inject.Inject;
+import io.harness.secret.SecretSanitizerThreadLocal;
+
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
@@ -37,6 +39,7 @@ public class HttpHelmConnectivityDelegateTask extends AbstractDelegateRunnableTa
       ILogStreamingTaskClient logStreamingTaskClient, Consumer<DelegateTaskResponse> consumer,
       BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override

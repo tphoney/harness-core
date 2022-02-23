@@ -25,8 +25,10 @@ import io.harness.delegate.task.AbstractDelegateRunnableTask;
 import io.harness.delegate.task.TaskParameters;
 import io.harness.perpetualtask.manifest.ManifestRepositoryService;
 
+import io.harness.secret.SecretSanitizerThreadLocal;
 import software.wings.beans.appmanifest.HelmChart;
 import software.wings.delegatetasks.DelegateLogService;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.helpers.ext.helm.request.HelmChartCollectionParams;
 import software.wings.helpers.ext.helm.request.HelmChartCollectionParams.HelmChartCollectionType;
 import software.wings.helpers.ext.helm.response.HelmCollectChartResponse;
@@ -55,6 +57,7 @@ public class HelmCollectChartTask extends AbstractDelegateRunnableTask {
   public HelmCollectChartTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override
@@ -88,7 +91,7 @@ public class HelmCollectChartTask extends AbstractDelegateRunnableTask {
 
       return HelmCollectChartResponse.builder()
           .commandExecutionStatus(FAILURE)
-          .errorMessage("Execution failed with Exception: " + e.getMessage())
+          .errorMessage("Execution failed with Exception: " + ExceptionMessageSanitizer.sanitizeException(e).getMessage())
           .build();
     }
   }

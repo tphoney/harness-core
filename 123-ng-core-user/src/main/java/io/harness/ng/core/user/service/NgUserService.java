@@ -50,6 +50,8 @@ public interface NgUserService {
    */
   Page<UserInfo> listCurrentGenUsers(String accountIdentifier, String searchString, Pageable page);
 
+  Optional<UserInfo> getUserInfoByEmailFromCG(String email);
+
   List<UserInfo> listCurrentGenUsers(String accountId, UserFilterNG userFilter);
 
   ScimListResponse<ScimUser> searchScimUsersByEmailQuery(
@@ -81,6 +83,8 @@ public interface NgUserService {
   boolean isUserAtScope(String userId, Scope scope);
 
   boolean isUserLastAdminAtScope(String userId, Scope scope);
+
+  boolean isAccountAdmin(String userId, String accountIdentifier);
 
   boolean updateUserMetadata(UserMetadataDTO user);
 

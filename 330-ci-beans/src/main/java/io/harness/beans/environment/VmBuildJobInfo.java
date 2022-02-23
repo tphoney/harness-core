@@ -7,6 +7,7 @@
 
 package io.harness.beans.environment;
 
+import io.harness.beans.dependencies.DependencyElement;
 import io.harness.beans.executionargs.CIExecutionArgs;
 import io.harness.yaml.core.variables.NGVariable;
 
@@ -33,6 +34,7 @@ public class VmBuildJobInfo implements BuildJobEnvInfo {
   ArrayList<String> connectorRefs;
   List<NGVariable> stageVars;
   Map<String, String> volToMountPath;
+  List<DependencyElement> serviceDependencies;
 
   @Override
   public Type getType() {

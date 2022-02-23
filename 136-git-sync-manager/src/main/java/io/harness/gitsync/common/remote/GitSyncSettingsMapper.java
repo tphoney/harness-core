@@ -21,12 +21,15 @@ import lombok.experimental.UtilityClass;
 @OwnedBy(HarnessTeam.DX)
 @UtilityClass
 public class GitSyncSettingsMapper {
-  public GitSyncSettingsDTO getDTOFromGitSyncSettings(GitSyncSettings savedGitSyncSettings) {
+  public GitSyncSettingsDTO getDTOFromGitSyncSettings(GitSyncSettings gitSyncSettings) {
+    if (gitSyncSettings == null) {
+      return null;
+    }
     return GitSyncSettingsDTO.builder()
-        .accountIdentifier(savedGitSyncSettings.getAccountIdentifier())
-        .organizationIdentifier(savedGitSyncSettings.getOrgIdentifier())
-        .projectIdentifier(savedGitSyncSettings.getProjectIdentifier())
-        .executeOnDelegate(savedGitSyncSettings.getSettings().get(IS_EXECUTE_ON_DELEGATE).equals(String.valueOf(true)))
+        .accountIdentifier(gitSyncSettings.getAccountIdentifier())
+        .orgIdentifier(gitSyncSettings.getOrgIdentifier())
+        .projectIdentifier(gitSyncSettings.getProjectIdentifier())
+        .executeOnDelegate(gitSyncSettings.getSettings().get(IS_EXECUTE_ON_DELEGATE).equals(String.valueOf(true)))
         .build();
   }
 
@@ -36,7 +39,7 @@ public class GitSyncSettingsMapper {
         (gitSyncSettingsDTO.isExecuteOnDelegate()) ? String.valueOf(true) : String.valueOf(false));
     return GitSyncSettings.builder()
         .accountIdentifier(gitSyncSettingsDTO.getAccountIdentifier())
-        .orgIdentifier(gitSyncSettingsDTO.getOrganizationIdentifier())
+        .orgIdentifier(gitSyncSettingsDTO.getOrgIdentifier())
         .projectIdentifier(gitSyncSettingsDTO.getProjectIdentifier())
         .settings(settings)
         .build();

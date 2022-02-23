@@ -10,6 +10,7 @@ package io.harness.pms.dashboards;
 import static io.harness.rule.OwnerRule.PRASHANTSHARMA;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 
@@ -23,9 +24,9 @@ import io.harness.pms.Dashboard.PipelineCountInfo;
 import io.harness.pms.Dashboard.PipelineExecutionInfo;
 import io.harness.pms.Dashboard.StatusAndTime;
 import io.harness.pms.execution.ExecutionStatus;
+import io.harness.pms.pipeline.service.PipelineDashboardQueryService;
 import io.harness.pms.pipeline.service.PipelineDashboardServiceImpl;
 import io.harness.rule.Owner;
-import io.harness.timescaledb.TimeScaleDBService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,14 +35,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
 @OwnedBy(HarnessTeam.PIPELINE)
 public class DashboardPipelineHealthAndExecutionInfoTest extends CategoryTest {
-  @Mock TimeScaleDBService timeScaleDBService;
   @InjectMocks @Spy private PipelineDashboardServiceImpl pipelineDashboardService;
+  @InjectMocks @Spy private PipelineDashboardQueryService pipelineDashboardQueryService;
 
   @Before
   public void setup() {
@@ -59,16 +59,27 @@ public class DashboardPipelineHealthAndExecutionInfoTest extends CategoryTest {
     long endInterval = 1619740800000L;
     long previousStartInterval = 1614556800000L;
 
-    List<String> status = Arrays.asList(ExecutionStatus.SUCCESS.name(), ExecutionStatus.FAILED.name(),
-        ExecutionStatus.SUCCESS.name(), ExecutionStatus.SUCCESS.name(), ExecutionStatus.SUCCESS.name(),
-        ExecutionStatus.ABORTED.name(), ExecutionStatus.SUCCESS.name());
-    List<Long> time = Arrays.asList(
-        1617624465000L, 1619006865000L, 1619721000000L, 1617129000000L, 1617235200000L, 1616610600000L, 1616697939000L);
-    StatusAndTime statusAndTime = StatusAndTime.builder().status(status).time(time).build();
+    List<StatusAndTime> statusAndTime = Arrays.asList(new StatusAndTime(ExecutionStatus.SUCCESS.name(), 1617624465000L),
+        new StatusAndTime(ExecutionStatus.FAILED.name(), 1619006865000L),
+        new StatusAndTime(ExecutionStatus.SUCCESS.name(), 1619721000000L),
+        new StatusAndTime(ExecutionStatus.SUCCESS.name(), 1617129000000L),
+        new StatusAndTime(ExecutionStatus.SUCCESS.name(), 1617235200000L),
+        new StatusAndTime(ExecutionStatus.ABORTED.name(), 1616610600000L),
+        new StatusAndTime(ExecutionStatus.SUCCESS.name(), 1616697939000L));
 
-    doReturn(statusAndTime).when(pipelineDashboardService).queryCalculatorForStatusAndTime(anyString());
-    doReturn(0L).when(pipelineDashboardService).queryCalculatorMean(anyString());
-    doReturn(0L).when(pipelineDashboardService).queryCalculatorMedian(anyString());
+    doReturn(statusAndTime)
+        .when(pipelineDashboardQueryService)
+        .getPipelineExecutionStatusAndTime(
+            anyString(), anyString(), anyString(), anyString(), anyLong(), anyLong(), anyString());
+    doReturn(0L)
+        .when(pipelineDashboardQueryService)
+        .getPipelineExecutionMeanDuration(
+            anyString(), anyString(), anyString(), anyString(), anyLong(), anyLong(), anyString());
+
+    doReturn(0L)
+        .when(pipelineDashboardQueryService)
+        .getPipelineExecutionMedianDuration(
+            anyString(), anyString(), anyString(), anyString(), anyLong(), anyLong(), anyString());
 
     DashboardPipelineHealthInfo dashboardPipelineHealthInfo = pipelineDashboardService.getDashboardPipelineHealthInfo(
         "ac", "or", "pr", "pip", startInterval, endInterval, previousStartInterval, "CI");
@@ -81,11 +92,10 @@ public class DashboardPipelineHealthAndExecutionInfoTest extends CategoryTest {
         .isEqualTo(((3 - 2) / (double) 2) * 100);
 
     // test for empty status and time
-    List<String> emptyStatus = new ArrayList<>();
-    List<Long> emptyTime = new ArrayList<>();
-    doReturn(StatusAndTime.builder().time(emptyTime).status(emptyStatus).build())
-        .when(pipelineDashboardService)
-        .queryCalculatorForStatusAndTime(anyString());
+    doReturn(Arrays.asList(new StatusAndTime(null, 0)))
+        .when(pipelineDashboardQueryService)
+        .getPipelineExecutionStatusAndTime(
+            anyString(), anyString(), anyString(), anyString(), anyLong(), anyLong(), anyString());
 
     DashboardPipelineHealthInfo dashboardPipelineHealthInfoEmptyList =
         pipelineDashboardService.getDashboardPipelineHealthInfo(
@@ -99,24 +109,24 @@ public class DashboardPipelineHealthAndExecutionInfoTest extends CategoryTest {
     String table = "pipeline_execution_summary_ci";
 
     // currentMean
-    String queryCurrentMean =
-        pipelineDashboardService.queryBuilderMean("ac", "or", "pr", "pip", startInterval, 1619827200000L, table);
-    doReturn(100L).when(pipelineDashboardService).queryCalculatorMean(queryCurrentMean);
+    doReturn(100L)
+        .when(pipelineDashboardQueryService)
+        .getPipelineExecutionMeanDuration("ac", "or", "pr", "pip", startInterval, 1619827200000L, table);
 
     // currentMedian
-    String queryCurrentMedian =
-        pipelineDashboardService.queryBuilderMedian("ac", "or", "pr", "pip", startInterval, 1619827200000L, table);
-    doReturn(150L).when(pipelineDashboardService).queryCalculatorMedian(queryCurrentMedian);
+    doReturn(150L)
+        .when(pipelineDashboardQueryService)
+        .getPipelineExecutionMedianDuration("ac", "or", "pr", "pip", startInterval, 1619827200000L, table);
 
     // PreviousMean
-    String queryPreviousMean =
-        pipelineDashboardService.queryBuilderMean("ac", "or", "pr", "pip", previousStartInterval, startInterval, table);
-    doReturn(40L).when(pipelineDashboardService).queryCalculatorMean(queryPreviousMean);
+    doReturn(40L)
+        .when(pipelineDashboardQueryService)
+        .getPipelineExecutionMeanDuration("ac", "or", "pr", "pip", previousStartInterval, startInterval, table);
 
     // previousMedian
-    String queryPreviousMedian = pipelineDashboardService.queryBuilderMedian(
-        "ac", "or", "pr", "pip", previousStartInterval, startInterval, table);
-    doReturn(180L).when(pipelineDashboardService).queryCalculatorMedian(queryPreviousMedian);
+    doReturn(180L)
+        .when(pipelineDashboardQueryService)
+        .getPipelineExecutionMedianDuration("ac", "or", "pr", "pip", previousStartInterval, startInterval, table);
 
     DashboardPipelineHealthInfo dashboardPipelineHealthInfoMeanMedian =
         pipelineDashboardService.getDashboardPipelineHealthInfo(
@@ -134,14 +144,18 @@ public class DashboardPipelineHealthAndExecutionInfoTest extends CategoryTest {
     long startInterval = 1617235200000L;
     long endInterval = 1617580800000L;
 
-    List<String> status = Arrays.asList(ExecutionStatus.SUCCESS.name(), ExecutionStatus.FAILED.name(),
-        ExecutionStatus.ABORTED.name(), ExecutionStatus.RUNNING.name(), ExecutionStatus.FAILED.name(),
-        ExecutionStatus.ABORTED.name(), ExecutionStatus.EXPIRED.name());
-    List<Long> time = Arrays.asList(
-        1617365265000L, 1617365265000L, 1617321600000L, 1617580800000L, 1617408000000L, 1617235200000L, 1617302739000L);
-    StatusAndTime statusAndTime = StatusAndTime.builder().status(status).time(time).build();
+    List<StatusAndTime> statusAndTime = Arrays.asList(new StatusAndTime(ExecutionStatus.SUCCESS.name(), 1617365265000L),
+        new StatusAndTime(ExecutionStatus.FAILED.name(), 1617365265000L),
+        new StatusAndTime(ExecutionStatus.ABORTED.name(), 1617321600000L),
+        new StatusAndTime(ExecutionStatus.RUNNING.name(), 1617580800000L),
+        new StatusAndTime(ExecutionStatus.FAILED.name(), 1617408000000L),
+        new StatusAndTime(ExecutionStatus.ABORTED.name(), 1617235200000L),
+        new StatusAndTime(ExecutionStatus.EXPIRED.name(), 1617302739000L));
 
-    doReturn(statusAndTime).when(pipelineDashboardService).queryCalculatorForStatusAndTime(anyString());
+    doReturn(statusAndTime)
+        .when(pipelineDashboardQueryService)
+        .getPipelineExecutionStatusAndTime(
+            anyString(), anyString(), anyString(), anyString(), anyLong(), anyLong(), anyString());
 
     DashboardPipelineExecutionInfo dashboardPipelineExecutionInfo =
         pipelineDashboardService.getDashboardPipelineExecutionInfo(

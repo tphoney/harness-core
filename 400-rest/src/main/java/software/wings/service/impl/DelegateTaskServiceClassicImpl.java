@@ -32,6 +32,8 @@ import static io.harness.metrics.impl.DelegateMetricsServiceImpl.DELEGATE_TASK_A
 import static io.harness.metrics.impl.DelegateMetricsServiceImpl.DELEGATE_TASK_CREATION;
 import static io.harness.metrics.impl.DelegateMetricsServiceImpl.DELEGATE_TASK_EXPIRED;
 import static io.harness.metrics.impl.DelegateMetricsServiceImpl.DELEGATE_TASK_NO_ELIGIBLE_DELEGATES;
+import static io.harness.metrics.impl.DelegateMetricsServiceImpl.DELEGATE_TASK_NO_FIRST_WHITELISTED;
+import static io.harness.metrics.impl.DelegateMetricsServiceImpl.DELEGATE_TASK_VALIDATION;
 import static io.harness.mongo.MongoUtils.setUnset;
 import static io.harness.persistence.HQuery.excludeAuthority;
 
@@ -519,6 +521,7 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
         return delegateId;
       }
     }
+    delegateMetricsService.recordDelegateTaskMetrics(delegateTask, DELEGATE_TASK_NO_FIRST_WHITELISTED);
     printCriteriaNoMatch(delegateTask);
     return eligibleListOfDelegates.get(random.nextInt(eligibleListOfDelegates.size()));
   }
@@ -836,7 +839,6 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
         } else if (assignDelegateService.isWhitelisted(delegateTask, delegateId)) {
           return assignTask(delegateId, taskId, delegateTask, delegateInstanceId);
         }
-
         log.info("Delegate {} is blacklisted for task {}", delegateId, taskId);
         return null;
       }
@@ -959,6 +961,7 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
 
   @VisibleForTesting
   void setValidationStarted(String delegateId, DelegateTask delegateTask) {
+    delegateMetricsService.recordDelegateTaskMetrics(delegateTask, DELEGATE_TASK_VALIDATION);
     log.info("Delegate to validate {} task", delegateTask.getData().isAsync() ? ASYNC : SYNC);
     UpdateOperations<DelegateTask> updateOperations = persistence.createUpdateOperations(DelegateTask.class)
                                                           .addToSet(DelegateTaskKeys.validatingDelegateIds, delegateId);
@@ -1197,7 +1200,6 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
       String delegateId, String taskId, DelegateTask delegateTask, String delegateInstanceId) {
     // Clear pending validations. No longer need to track since we're assigning.
     clearFromValidationCache(delegateTask);
-    delegateMetricsService.recordDelegateTaskMetrics(delegateTask, DELEGATE_TASK_ACQUIRE);
     log.info("Assigning {} task to delegate", delegateTask.getData().isAsync() ? ASYNC : SYNC);
     Query<DelegateTask> query = persistence.createQuery(DelegateTask.class)
                                     .filter(DelegateTaskKeys.accountId, delegateTask.getAccountId())
@@ -1233,6 +1235,7 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
 
       delegateTaskStatusObserverSubject.fireInform(DelegateTaskStatusObserver::onTaskAssigned,
           delegateTask.getAccountId(), taskId, delegateId, task.getData().getTimeout());
+      delegateMetricsService.recordDelegateTaskMetrics(delegateTask, DELEGATE_TASK_ACQUIRE);
 
       return resolvePreAssignmentExpressions(task, SecretManagerMode.APPLY);
     }
@@ -1286,8 +1289,8 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
           log.info("Marking task as expired: {}", errorMessage);
 
           if (isNotBlank(delegateTask.getWaitId())) {
-            waitNotifyEngine.doneWith(
-                delegateTask.getWaitId(), ErrorNotifyResponseData.builder().errorMessage(errorMessage).build());
+            waitNotifyEngine.doneWith(delegateTask.getWaitId(),
+                ErrorNotifyResponseData.builder().errorMessage(errorMessage).expired(true).build());
           }
         }
       }

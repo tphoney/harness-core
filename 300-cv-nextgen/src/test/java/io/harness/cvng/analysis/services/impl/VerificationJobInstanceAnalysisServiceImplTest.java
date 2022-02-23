@@ -810,6 +810,8 @@ public class VerificationJobInstanceAnalysisServiceImplTest extends CvNextGenTes
           Resources.toString(this.getClass().getResource(verificationJobInstanceAnalysisService.getDemoTemplatePath(
                                  ActivityVerificationStatus.VERIFICATION_PASSED, dataSourceType)),
               Charsets.UTF_8);
+      // use existing demo data (One of splunk, prometheus or appdynamics based on similarity with the new provider.
+      // creating a new file should be rare.
       assertThat(demoData).isNotNull();
     }
   }

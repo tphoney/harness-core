@@ -7,6 +7,9 @@
 
 package io.harness.delegate.beans.connector.customhealthconnector;
 
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DecryptableEntity;
@@ -65,6 +68,10 @@ public class CustomHealthConnectorDTO extends ConnectorConfigDTO implements Decr
   }
 
   public String getBaseURL() {
-    return baseURL.endsWith("/") ? baseURL : baseURL + "/";
+    return isEmpty(baseURL) || baseURL.endsWith("/") ? baseURL : baseURL + "/";
+  }
+
+  public String getValidationPath() {
+    return isNotEmpty(validationPath) && validationPath.charAt(0) == '/' ? validationPath.substring(1) : validationPath;
   }
 }

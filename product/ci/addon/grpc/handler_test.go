@@ -13,11 +13,11 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/wings-software/portal/commons/go/lib/logs"
-	addonpb "github.com/wings-software/portal/product/ci/addon/proto"
-	"github.com/wings-software/portal/product/ci/addon/tasks"
-	mtasks "github.com/wings-software/portal/product/ci/addon/tasks/mocks"
-	pb "github.com/wings-software/portal/product/ci/engine/proto"
+	"github.com/harness/harness-core/commons/go/lib/logs"
+	addonpb "github.com/harness/harness-core/product/ci/addon/proto"
+	"github.com/harness/harness-core/product/ci/addon/tasks"
+	mtasks "github.com/harness/harness-core/product/ci/addon/tasks/mocks"
+	pb "github.com/harness/harness-core/product/ci/engine/proto"
 	"go.uber.org/zap"
 )
 
@@ -130,11 +130,11 @@ func TestExecutePluginStep(t *testing.T) {
 
 	oldPluginTask := newPluginTask
 	defer func() { newPluginTask = oldPluginTask }()
-	newPluginTask = func(step *pb.UnitStep, so map[string]*pb.StepOutput, log *zap.SugaredLogger, w io.Writer, logMetrics bool, addonLogger *zap.SugaredLogger) tasks.PluginTask {
+	newPluginTask = func(step *pb.UnitStep, so map[string]*pb.StepOutput, tmpFilePath string, log *zap.SugaredLogger, w io.Writer, logMetrics bool, addonLogger *zap.SugaredLogger) tasks.PluginTask {
 		return mockStep
 	}
 
-	mockStep.EXPECT().Run(ctx).Return(nil, int32(1), nil)
+	mockStep.EXPECT().Run(ctx).Return(nil, nil, int32(1), nil)
 	h := NewAddonHandler(stopCh, false, log.Sugar())
 	_, err := h.ExecuteStep(ctx, in)
 	assert.Nil(t, err)

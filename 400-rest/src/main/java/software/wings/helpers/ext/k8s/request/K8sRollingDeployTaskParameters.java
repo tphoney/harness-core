@@ -43,6 +43,7 @@ public class K8sRollingDeployTaskParameters extends K8sTaskParameters implements
   private boolean isPruningEnabled;
   private boolean exportManifests;
   private boolean inheritManifests;
+  private boolean skipAddingTrackSelectorToDeployment;
   private List<KubernetesResource> kubernetesResources;
 
   @Builder
@@ -52,10 +53,11 @@ public class K8sRollingDeployTaskParameters extends K8sTaskParameters implements
       boolean isInCanaryWorkflow, boolean skipDryRun, HelmVersion helmVersion, boolean localOverrideFeatureFlag,
       Boolean skipVersioningForAllK8sObjects, Set<String> delegateSelectors, boolean isPruningEnabled,
       boolean exportManifests, boolean inheritManifests, List<KubernetesResource> kubernetesResources,
-      boolean useLatestChartMuseumVersion, boolean useVarSupportForKustomize, boolean useNewKubectlVersion) {
+      boolean useLatestChartMuseumVersion, boolean useLatestKustomizeVersion, boolean useNewKubectlVersion,
+      boolean skipAddingSelectorToDeployment) {
     super(accountId, appId, commandName, activityId, k8sClusterConfig, workflowExecutionId, releaseName,
         timeoutIntervalInMin, k8sTaskType, helmVersion, delegateSelectors, useLatestChartMuseumVersion,
-        useVarSupportForKustomize, useNewKubectlVersion);
+        useLatestKustomizeVersion, useNewKubectlVersion);
     this.k8sDelegateManifestConfig = k8sDelegateManifestConfig;
     this.valuesYamlList = valuesYamlList;
     this.isInCanaryWorkflow = isInCanaryWorkflow;
@@ -66,6 +68,7 @@ public class K8sRollingDeployTaskParameters extends K8sTaskParameters implements
     this.exportManifests = exportManifests;
     this.inheritManifests = inheritManifests;
     this.kubernetesResources = kubernetesResources;
+    this.skipAddingTrackSelectorToDeployment = skipAddingSelectorToDeployment;
   }
 
   @Override

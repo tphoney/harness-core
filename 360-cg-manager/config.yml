@@ -322,7 +322,6 @@ deployMode: KUBERNETES
 deployVariant: SAAS
 envPath: ""
 
-kubectlVersion: v1.13.2
 scmVersion: 3ac4cefa
 
 ngAuthUIEnabled: false
@@ -685,6 +684,10 @@ iteratorsConfig:
     threadPoolSize: ${PERPETUAL_TASK_REBALANCE_ITERATOR_THREAD_COUNT:-5}
   perpetualTaskAssignmentIteratorConfig:
     threadPoolSize: ${PERPETUAL_TASK_ASSIGNMENT_ITERATOR_THREAD_COUNT:-5}
+  delegateTaskRebroadcastIteratorConfig:
+    threadPoolSize: ${DELEGATE_TASK_REBROADCAST_ITERATOR_THREAD_COUNT:-5}
+  failDelegateTaskIteratorConfig:
+      threadPoolSize: ${FAIL_DELEGATE_TASK_ITERATOR_THREAD_COUNT:-5}
 
 disableDelegateMgmtInManager: false
 

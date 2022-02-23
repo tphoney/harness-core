@@ -9,6 +9,12 @@
     "description": {
       "type": "string"
     },
+    "failureStrategies": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/FailureStrategyConfig"
+      }
+    },
     "identifier": {
       "type": "string",
       "pattern": "^[a-zA-Z_][0-9a-zA-Z_$]{0,63}$"
@@ -263,6 +269,12 @@
       "properties": {
         "description": {
           "type": "string"
+        },
+        "failureStrategies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FailureStrategyConfig"
+          }
         },
         "identifier": {
           "type": "string",
@@ -537,6 +549,22 @@
           }
         }
       ]
+    },
+    "CustomPolicyStepSpec": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/PolicySpec"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "payload": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "Distribution": {
       "type": "object",
@@ -1353,6 +1381,57 @@
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "PolicySpec": {
+      "type": "object",
+      "discriminator": "type",
+      "properties": {
+        "type": {
+          "type": "string"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "PolicyStepInfo": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/StepSpecType"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "metadata": {
+              "type": "string"
+            },
+            "policySets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "type": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Custom"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "policySpec": {
+                "$ref": "#/definitions/CustomPolicyStepSpec"
+              }
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "RemoveSegmentToVariationTargetMapYaml": {
       "allOf": [
         {
@@ -2145,6 +2224,22 @@
             "properties": {
               "spec": {
                 "$ref": "#/definitions/JiraUpdateStepInfo"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Policy"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/PolicyStepInfo"
               }
             }
           }

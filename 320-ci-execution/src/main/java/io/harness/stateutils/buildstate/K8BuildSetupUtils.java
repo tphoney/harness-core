@@ -147,7 +147,7 @@ public class K8BuildSetupUtils {
 
     K8sDirectInfraYaml k8sDirectInfraYaml = (K8sDirectInfraYaml) infrastructure;
 
-    final String clusterName = k8sDirectInfraYaml.getSpec().getConnectorRef();
+    final String clusterName = k8sDirectInfraYaml.getSpec().getConnectorRef().getValue();
     Map<String, String> annotations = resolveMapParameter(
         "annotations", "K8BuildInfra", "stageSetup", k8sDirectInfraYaml.getSpec().getAnnotations(), false);
     Map<String, String> labels = resolveMapParameter(
@@ -264,7 +264,7 @@ public class K8BuildSetupUtils {
 
     return CIK8PodParams.<CIK8ContainerParams>builder()
         .name(podSetupInfo.getName())
-        .namespace(k8sDirectInfraYaml.getSpec().getNamespace())
+        .namespace((String) k8sDirectInfraYaml.getSpec().getNamespace().fetchFinalValue())
         .labels(buildLabels)
         .serviceAccountName(serviceAccountName)
         .annotations(annotations)
@@ -401,11 +401,16 @@ public class K8BuildSetupUtils {
       connectorDetails = connectorUtils.getConnectorDetails(
           ngAccess, containerDefinitionInfo.getContainerImageDetails().getConnectorIdentifier());
     }
-    String fullyQualifiedImageName = getFullyQualifiedImageName(connectorDetails, harnessInternalImageConnector,
-        containerDefinitionInfo.isHarnessManagedImage(), imageDetails.getName());
+
+    ConnectorDetails imgConnector = connectorDetails;
+    if (containerDefinitionInfo.isHarnessManagedImage()) {
+      imgConnector = harnessInternalImageConnector;
+    }
+    String fullyQualifiedImageName =
+        IntegrationStageUtils.getFullyQualifiedImageName(imageDetails.getName(), imgConnector);
     imageDetails.setName(fullyQualifiedImageName);
     ImageDetailsWithConnector imageDetailsWithConnector =
-        ImageDetailsWithConnector.builder().imageConnectorDetails(connectorDetails).imageDetails(imageDetails).build();
+        ImageDetailsWithConnector.builder().imageConnectorDetails(imgConnector).imageDetails(imageDetails).build();
 
     List<SecretVariableDetails> containerSecretVariableDetails =
         getSecretVariableDetails(ngAccess, containerDefinitionInfo, secretVariableDetails);
@@ -454,16 +459,6 @@ public class K8BuildSetupUtils {
     envVars.entrySet().removeAll(secretEnvVariables.entrySet());
 
     return secretEnvVariables;
-  }
-
-  private String getFullyQualifiedImageName(ConnectorDetails connectorDetails,
-      ConnectorDetails harnessInternalImageConnector, boolean isHarnessManagedImage, String imageName) {
-    ConnectorDetails imgConnector = connectorDetails;
-    if (isHarnessManagedImage) {
-      imgConnector = harnessInternalImageConnector;
-    }
-
-    return IntegrationStageUtils.getFullyQualifiedImageName(imageName, imgConnector);
   }
 
   private CIK8ContainerParams createLiteEngineContainerParams(ConnectorDetails connectorDetails,

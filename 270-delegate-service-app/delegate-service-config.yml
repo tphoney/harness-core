@@ -200,7 +200,6 @@ deployMode: KUBERNETES
 deployVariant: SAAS
 envPath: ""
 
-kubectlVersion: v1.13.2
 scmVersion: 0e23b6f1
 
 portal:
@@ -370,6 +369,11 @@ iteratorsConfig:
     threadPoolSize: ${PERPETUAL_TASK_REBALANCE_ITERATOR_THREAD_COUNT:-5}
   perpetualTaskAssignmentIteratorConfig:
     threadPoolSize: ${PERPETUAL_TASK_ASSIGNMENT_ITERATOR_THREAD_COUNT:-5}
+  delegateTaskRebroadcastIteratorConfig:
+    threadPoolSize: ${DELEGATE_TASK_REBROADCAST_ITERATOR_THREAD_COUNT:-5}
+  failDelegateTaskIteratorConfig:
+    threadPoolSize: ${FAIL_DELEGATE_TASK_ITERATOR_THREAD_COUNT:-5}
+
 
 ldapSyncJobConfig:
   poolSize: 3

@@ -27,12 +27,15 @@ import io.harness.cvng.core.beans.change.ChangeSummaryDTO.CategoryCountDetails;
 import io.harness.cvng.core.beans.change.ChangeTimeline;
 import io.harness.cvng.core.beans.change.ChangeTimeline.ChangeTimelineBuilder;
 import io.harness.cvng.core.beans.change.ChangeTimeline.TimeRangeDetail;
-import io.harness.cvng.core.beans.monitoredService.ChangeSourceDTO;
+import io.harness.cvng.core.beans.monitoredService.DurationDTO;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
+import io.harness.cvng.core.entities.changeSource.ChangeSource;
+import io.harness.cvng.core.services.CVNextGenConstants;
 import io.harness.cvng.core.services.api.ChangeEventService;
 import io.harness.cvng.core.services.api.monitoredService.ChangeSourceService;
 import io.harness.cvng.core.transformer.changeEvent.ChangeEventEntityAndDTOTransformer;
+import io.harness.cvng.dashboard.entities.HeatMap.HeatMapResolution;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.ng.beans.PageRequest;
 import io.harness.ng.beans.PageResponse;
@@ -79,16 +82,19 @@ public class ChangeEventServiceImpl implements ChangeEventService {
                                                             .serviceIdentifier(changeEventDTO.getServiceIdentifier())
                                                             .environmentIdentifier(changeEventDTO.getEnvIdentifier())
                                                             .build();
-    Optional<ChangeSourceDTO> changeSourceDTOOptional =
-        changeSourceService.getByType(serviceEnvironmentParams, changeEventDTO.getType())
+    Optional<ChangeSource> changeSourceOptional =
+        changeSourceService.getEntityByType(serviceEnvironmentParams, changeEventDTO.getType())
             .stream()
             .filter(source -> source.isEnabled())
             .findAny();
-    if (!changeSourceDTOOptional.isPresent()) {
+    if (!changeSourceOptional.isPresent()) {
       return false;
     }
     if (StringUtils.isEmpty(changeEventDTO.getChangeSourceIdentifier())) {
-      changeEventDTO.setChangeSourceIdentifier(changeSourceDTOOptional.get().getIdentifier());
+      changeEventDTO.setChangeSourceIdentifier(changeSourceOptional.get().getIdentifier());
+    }
+    if (StringUtils.isEmpty(changeEventDTO.getMonitoredServiceIdentifier())) {
+      changeEventDTO.setMonitoredServiceIdentifier(changeSourceOptional.get().getMonitoredServiceIdentifier());
     }
     activityService.upsert(transformer.getEntity(changeEventDTO));
     return true;
@@ -173,6 +179,17 @@ public class ChangeEventServiceImpl implements ChangeEventService {
     categoryMilliSecondFromStartDetailMap.forEach(
         (key, value) -> changeTimelineBuilder.categoryTimeline(key, new ArrayList<>(value.values())));
     return changeTimelineBuilder.build();
+  }
+
+  @Override
+  public ChangeTimeline getMonitoredServiceChangeTimeline(ServiceEnvironmentParams serviceEnvironmentParams,
+      String searchText, List<ChangeSourceType> changeSourceTypes, DurationDTO duration, Instant endTime) {
+    HeatMapResolution resolution = HeatMapResolution.resolutionForDurationDTO(duration);
+    Instant trendEndTime = resolution.getNextResolutionEndTime(endTime);
+    Instant trendStartTime = trendEndTime.minus(duration.getDuration());
+    return getTimeline(serviceEnvironmentParams, Arrays.asList(serviceEnvironmentParams.getServiceIdentifier()),
+        Arrays.asList(serviceEnvironmentParams.getEnvironmentIdentifier()), searchText, null, changeSourceTypes,
+        trendStartTime, trendEndTime, CVNextGenConstants.CVNG_TIMELINE_BUCKET_COUNT);
   }
 
   @VisibleForTesting

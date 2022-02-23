@@ -99,7 +99,7 @@ public class CEViewServiceImpl implements CEViewService {
   private static final String DEFAULT_CLUSTER_FIELD_ID = "clusterName";
   private static final String DEFAULT_CLUSTER_FIELD_NAME = "Cluster Name";
 
-  private static final int VIEW_COUNT = 100;
+  private static final int VIEW_COUNT = 250;
   @Override
   public CEView save(CEView ceView) {
     validateView(ceView);
@@ -107,6 +107,17 @@ public class CEViewServiceImpl implements CEViewService {
     ceView.setUuid(null);
     ceViewDao.save(ceView);
     return ceView;
+  }
+
+  @Override
+  public CEView clone(String accountId, String perspectiveId, String clonePerspectiveName) {
+    CEView view = get(perspectiveId);
+    view.setName(clonePerspectiveName);
+    view.setCreatedBy(null);
+    view.setCreatedAt(0);
+    view.setUuid(null);
+    view.setViewType(ViewType.CUSTOMER);
+    return save(view);
   }
 
   @Override

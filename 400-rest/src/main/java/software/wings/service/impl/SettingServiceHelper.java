@@ -15,6 +15,7 @@ import static software.wings.beans.CGConstants.GLOBAL_APP_ID;
 import static software.wings.beans.SettingAttribute.SettingCategory.AZURE_ARTIFACTS;
 import static software.wings.beans.SettingAttribute.SettingCategory.CONNECTOR;
 import static software.wings.beans.SettingAttribute.SettingCategory.HELM_REPO;
+import static software.wings.beans.SettingAttribute.SettingCategory.SETTING;
 import static software.wings.security.PermissionAttribute.PermissionType;
 import static software.wings.security.PermissionAttribute.PermissionType.ACCOUNT_MANAGEMENT;
 import static software.wings.security.PermissionAttribute.PermissionType.MANAGE_ACCOUNT_DEFAULTS;
@@ -52,6 +53,7 @@ import static software.wings.settings.SettingVariableTypes.NEW_RELIC;
 import static software.wings.settings.SettingVariableTypes.NEXUS;
 import static software.wings.settings.SettingVariableTypes.PCF;
 import static software.wings.settings.SettingVariableTypes.PROMETHEUS;
+import static software.wings.settings.SettingVariableTypes.RANCHER;
 import static software.wings.settings.SettingVariableTypes.SERVICENOW;
 import static software.wings.settings.SettingVariableTypes.SFTP;
 import static software.wings.settings.SettingVariableTypes.SMB;
@@ -82,6 +84,7 @@ import software.wings.service.intfc.security.SecretManager;
 import software.wings.settings.SettingValue;
 import software.wings.settings.SettingVariableTypes;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -100,7 +103,7 @@ public class SettingServiceHelper {
       KUBERNETES_CLUSTER, PCF, SPOT_INST, APP_DYNAMICS, NEW_RELIC, INSTANA, PROMETHEUS, DATA_DOG, DYNA_TRACE,
       CLOUD_WATCH, DATA_DOG_LOG, BUG_SNAG, ELK, SPLUNK, SUMO, LOGZ, APM_VERIFICATION, JENKINS, BAMBOO, DOCKER, NEXUS,
       ARTIFACTORY, SMB, SFTP, AMAZON_S3_HELM_REPO, GCS_HELM_REPO, HTTP_HELM_REPO, AZURE_ARTIFACTS_PAT, GIT, SMTP, JIRA,
-      SERVICENOW, WINRM_CONNECTION_ATTRIBUTES, HOST_CONNECTION_ATTRIBUTES, CE_AZURE);
+      SERVICENOW, WINRM_CONNECTION_ATTRIBUTES, HOST_CONNECTION_ATTRIBUTES, CE_AZURE, RANCHER);
 
   @Inject private SecretManager secretManager;
   @Inject private ManagerDecryptionService managerDecryptionService;
@@ -287,13 +290,16 @@ public class SettingServiceHelper {
     return settingAttribute.getUsageRestrictions();
   }
 
-  public void validateUsageRestrictionsOnEntitySave(
-      SettingAttribute settingAttribute, String accountId, UsageRestrictions newUsageRestrictions) {
+  public void validateUsageRestrictionsOnEntitySave(SettingAttribute settingAttribute, String accountId,
+      UsageRestrictions newUsageRestrictions, boolean isAccountAdmin) {
     Set<String> usedSecretIds = getUsedSecretIds(settingAttribute);
     if (isNotEmpty(usedSecretIds)) {
       if (!secretManager.hasUpdateAccessToSecrets(usedSecretIds, accountId)) {
         throw new UnauthorizedUsageRestrictionsException(WingsException.USER);
       }
+      return;
+    }
+    if (skipUsageRestrictionsValidation(isAccountAdmin, settingAttribute)) {
       return;
     }
     PermissionType permissionType = getPermissionType(settingAttribute);
@@ -301,8 +307,20 @@ public class SettingServiceHelper {
         accountId, permissionType, newUsageRestrictions, false);
   }
 
+  @VisibleForTesting
+  protected boolean skipUsageRestrictionsValidation(boolean isAccountAdmin, SettingAttribute settingAttribute) {
+    if (!isAccountAdmin || settingAttribute == null || settingAttribute.getValue() == null
+        || settingAttribute.getValue().getType() == null) {
+      return false;
+    }
+    return SETTING.equals(SettingAttribute.SettingCategory.getCategory(
+               SettingVariableTypes.valueOf(settingAttribute.getValue().getType())))
+        && SettingVariableTypes.STRING.equals(SettingVariableTypes.valueOf(settingAttribute.getValue().getType()))
+        && GLOBAL_APP_ID.equals(settingAttribute.getAppId());
+  }
+
   public void validateUsageRestrictionsOnEntityUpdate(SettingAttribute settingAttribute, String accountId,
-      UsageRestrictions oldUsageRestrictions, UsageRestrictions newUsageRestrictions) {
+      UsageRestrictions oldUsageRestrictions, UsageRestrictions newUsageRestrictions, boolean isAccountAdmin) {
     Set<String> usedSecretIds = getUsedSecretIds(settingAttribute);
     if (isNotEmpty(usedSecretIds)) {
       if (!secretManager.hasUpdateAccessToSecrets(usedSecretIds, accountId)) {
@@ -310,18 +328,24 @@ public class SettingServiceHelper {
       }
       return;
     }
+    if (skipUsageRestrictionsValidation(isAccountAdmin, settingAttribute)) {
+      return;
+    }
     PermissionType permissionType = getPermissionType(settingAttribute);
     usageRestrictionsService.validateUsageRestrictionsOnEntityUpdate(
         accountId, permissionType, oldUsageRestrictions, newUsageRestrictions, false);
   }
 
-  public boolean userHasPermissionsToChangeEntity(
-      SettingAttribute settingAttribute, String accountId, UsageRestrictions entityUsageRestrictions) {
+  public boolean userHasPermissionsToChangeEntity(SettingAttribute settingAttribute, String accountId,
+      UsageRestrictions entityUsageRestrictions, boolean isAccountAdmin) {
     Set<String> usedSecretIds = getUsedSecretIds(settingAttribute);
     if (isNotEmpty(usedSecretIds)) {
       return secretManager.hasUpdateAccessToSecrets(usedSecretIds, accountId);
     }
 
+    if (skipUsageRestrictionsValidation(isAccountAdmin, settingAttribute)) {
+      return true;
+    }
     PermissionType permissionType = getPermissionType(settingAttribute);
     return usageRestrictionsService.userHasPermissionsToChangeEntity(
         accountId, permissionType, entityUsageRestrictions, false);

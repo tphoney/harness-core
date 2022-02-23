@@ -8,7 +8,6 @@
 package io.harness.delegate.task.citasks.vm;
 
 import static io.harness.data.encoding.EncodingUtils.decodeBase64;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.delegate.task.citasks.vm.helper.CIVMConstants.RUNTEST_STEP_KIND;
 import static io.harness.delegate.task.citasks.vm.helper.CIVMConstants.RUN_STEP_KIND;
@@ -18,8 +17,6 @@ import static org.apache.commons.lang3.CharUtils.isAsciiAlphanumeric;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.ci.CIExecuteStepTaskParams;
-import io.harness.delegate.beans.ci.pod.ConnectorDetails;
-import io.harness.delegate.beans.ci.pod.ImageDetailsWithConnector;
 import io.harness.delegate.beans.ci.pod.SecretParams;
 import io.harness.delegate.beans.ci.vm.CIVmExecuteStepTaskParams;
 import io.harness.delegate.beans.ci.vm.VmTaskExecutionResponse;
@@ -28,7 +25,6 @@ import io.harness.delegate.beans.ci.vm.runner.ExecuteStepRequest.Config.ConfigBu
 import io.harness.delegate.beans.ci.vm.runner.ExecuteStepRequest.ImageAuth;
 import io.harness.delegate.beans.ci.vm.runner.ExecuteStepRequest.JunitReport;
 import io.harness.delegate.beans.ci.vm.runner.ExecuteStepRequest.TestReport;
-import io.harness.delegate.beans.ci.vm.runner.ExecuteStepResponse;
 import io.harness.delegate.beans.ci.vm.steps.VmJunitTestReport;
 import io.harness.delegate.beans.ci.vm.steps.VmPluginStep;
 import io.harness.delegate.beans.ci.vm.steps.VmRunStep;
@@ -36,34 +32,25 @@ import io.harness.delegate.beans.ci.vm.steps.VmRunTestStep;
 import io.harness.delegate.beans.ci.vm.steps.VmStepInfo;
 import io.harness.delegate.beans.ci.vm.steps.VmUnitTestReport;
 import io.harness.delegate.task.citasks.CIExecuteStepTaskHandler;
-import io.harness.delegate.task.citasks.cik8handler.ImageCredentials;
-import io.harness.delegate.task.citasks.cik8handler.ImageSecretBuilder;
 import io.harness.delegate.task.citasks.cik8handler.SecretSpecBuilder;
 import io.harness.delegate.task.citasks.vm.helper.CIVMConstants;
-import io.harness.delegate.task.citasks.vm.helper.HttpHelper;
-import io.harness.k8s.model.ImageDetails;
-import io.harness.logging.CommandExecutionStatus;
+import io.harness.delegate.task.citasks.vm.helper.StepExecutionHelper;
 
 import com.google.inject.Inject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import retrofit2.Response;
 
 @Slf4j
 @OwnedBy(HarnessTeam.CI)
 public class CIVMExecuteStepTaskHandler implements CIExecuteStepTaskHandler {
-  public static final String IMAGE_PATH_SPLIT_REGEX = ":";
-  @Inject private ImageSecretBuilder imageSecretBuilder;
-  @Inject private HttpHelper httpHelper;
   @Inject private SecretSpecBuilder secretSpecBuilder;
   @NotNull private Type type = Type.VM;
+  @Inject private StepExecutionHelper stepExecutionHelper;
 
   private static final String DOCKER_REGISTRY_ENV = "PLUGIN_REGISTRY";
 
@@ -74,37 +61,10 @@ public class CIVMExecuteStepTaskHandler implements CIExecuteStepTaskHandler {
 
   @Override
   public VmTaskExecutionResponse executeTaskInternal(CIExecuteStepTaskParams ciExecuteStepTaskParams, String taskId) {
-    CIVmExecuteStepTaskParams CIVmExecuteStepTaskParams = (CIVmExecuteStepTaskParams) ciExecuteStepTaskParams;
+    CIVmExecuteStepTaskParams ciVmExecuteStepTaskParams = (CIVmExecuteStepTaskParams) ciExecuteStepTaskParams;
     log.info(
-        "Received request to execute step with stage runtime ID {}", CIVmExecuteStepTaskParams.getStageRuntimeId());
-    return callRunnerForStepExecution(CIVmExecuteStepTaskParams, taskId);
-  }
-
-  private VmTaskExecutionResponse callRunnerForStepExecution(CIVmExecuteStepTaskParams params, String taskId) {
-    try {
-      Response<ExecuteStepResponse> response = httpHelper.executeStepWithRetries(convert(params, taskId));
-      if (!response.isSuccessful()) {
-        return VmTaskExecutionResponse.builder().commandExecutionStatus(CommandExecutionStatus.FAILURE).build();
-      }
-
-      if (isEmpty(response.body().getError())) {
-        return VmTaskExecutionResponse.builder()
-            .commandExecutionStatus(CommandExecutionStatus.SUCCESS)
-            .outputVars(response.body().getOutputs())
-            .build();
-      } else {
-        return VmTaskExecutionResponse.builder()
-            .commandExecutionStatus(CommandExecutionStatus.FAILURE)
-            .errorMessage(response.body().getError())
-            .build();
-      }
-    } catch (Exception e) {
-      log.error("Failed to execute step in runner", e);
-      return VmTaskExecutionResponse.builder()
-          .commandExecutionStatus(CommandExecutionStatus.FAILURE)
-          .errorMessage(e.toString())
-          .build();
-    }
+        "Received request to execute step with stage runtime ID {}", ciVmExecuteStepTaskParams.getStageRuntimeId());
+    return stepExecutionHelper.callRunnerForStepExecution(convert(ciVmExecuteStepTaskParams, taskId));
   }
 
   private ExecuteStepRequest convert(CIVmExecuteStepTaskParams params, String taskId) {
@@ -113,7 +73,7 @@ public class CIVMExecuteStepTaskHandler implements CIExecuteStepTaskHandler {
                                       .name(params.getStepId())
                                       .logKey(params.getLogKey())
                                       .workingDir(params.getWorkingDir())
-                                      .volumeMounts(getVolumeMounts(params.getVolToMountPath()));
+                                      .volumeMounts(stepExecutionHelper.getVolumeMounts(params.getVolToMountPath()));
     if (params.getStepInfo().getType() == VmStepInfo.Type.RUN) {
       VmRunStep runStep = (VmRunStep) params.getStepInfo();
       setRunConfig(runStep, configBuilder);
@@ -135,21 +95,9 @@ public class CIVMExecuteStepTaskHandler implements CIExecuteStepTaskHandler {
         .build();
   }
 
-  private List<ExecuteStepRequest.VolumeMount> getVolumeMounts(Map<String, String> volToMountPath) {
-    List<ExecuteStepRequest.VolumeMount> volumeMounts = new ArrayList<>();
-    if (isEmpty(volToMountPath)) {
-      return volumeMounts;
-    }
-
-    for (Map.Entry<String, String> entry : volToMountPath.entrySet()) {
-      volumeMounts.add(ExecuteStepRequest.VolumeMount.builder().name(entry.getKey()).path(entry.getValue()).build());
-    }
-    return volumeMounts;
-  }
-
   private void setRunConfig(VmRunStep runStep, ConfigBuilder configBuilder) {
     List<String> secrets = new ArrayList<>();
-    ImageAuth imageAuth = getImageAuth(runStep.getImage(), runStep.getImageConnector());
+    ImageAuth imageAuth = stepExecutionHelper.getImageAuth(runStep.getImage(), runStep.getImageConnector());
     if (imageAuth != null) {
       configBuilder.imageAuth(imageAuth);
       secrets.add(imageAuth.getPassword());
@@ -168,39 +116,6 @@ public class CIVMExecuteStepTaskHandler implements CIExecuteStepTaskHandler {
         .testReport(convertTestReport(runStep.getUnitTestReport()))
         .secrets(secrets)
         .timeout(runStep.getTimeoutSecs());
-  }
-
-  private ImageAuth getImageAuth(String image, ConnectorDetails imageConnector) {
-    if (!StringUtils.isEmpty(image)) {
-      ImageDetails imageInfo = getImageInfo(image);
-      ImageDetailsWithConnector.builder().imageDetails(imageInfo).imageConnectorDetails(imageConnector).build();
-      ImageCredentials imageCredentials = imageSecretBuilder.getImageCredentials(
-          ImageDetailsWithConnector.builder().imageConnectorDetails(imageConnector).imageDetails(imageInfo).build());
-      if (imageCredentials != null) {
-        return ImageAuth.builder()
-            .address(imageCredentials.getRegistryUrl())
-            .password(imageCredentials.getPassword())
-            .username(imageCredentials.getUserName())
-            .build();
-      }
-    }
-    return null;
-  }
-
-  private ImageDetails getImageInfo(String image) {
-    String tag = "";
-    String name = image;
-
-    if (image.contains(IMAGE_PATH_SPLIT_REGEX)) {
-      String[] subTokens = image.split(IMAGE_PATH_SPLIT_REGEX);
-      if (subTokens.length > 1) {
-        tag = subTokens[subTokens.length - 1];
-        String[] nameparts = Arrays.copyOf(subTokens, subTokens.length - 1);
-        name = String.join(IMAGE_PATH_SPLIT_REGEX, nameparts);
-      }
-    }
-
-    return ImageDetails.builder().name(name).tag(tag).build();
   }
 
   private void setPluginConfig(VmPluginStep pluginStep, ConfigBuilder configBuilder) {
@@ -225,7 +140,7 @@ public class CIVMExecuteStepTaskHandler implements CIExecuteStepTaskHandler {
       }
     }
 
-    ImageAuth imageAuth = getImageAuth(pluginStep.getImage(), pluginStep.getImageConnector());
+    ImageAuth imageAuth = stepExecutionHelper.getImageAuth(pluginStep.getImage(), pluginStep.getImageConnector());
     if (imageAuth != null) {
       configBuilder.imageAuth(imageAuth);
       secrets.add(imageAuth.getPassword());
@@ -244,7 +159,7 @@ public class CIVMExecuteStepTaskHandler implements CIExecuteStepTaskHandler {
 
   private void setRunTestConfig(VmRunTestStep runTestStep, ConfigBuilder configBuilder) {
     List<String> secrets = new ArrayList<>();
-    ImageAuth imageAuth = getImageAuth(runTestStep.getImage(), runTestStep.getConnector());
+    ImageAuth imageAuth = stepExecutionHelper.getImageAuth(runTestStep.getImage(), runTestStep.getConnector());
     if (imageAuth != null) {
       secrets.add(imageAuth.getPassword());
       configBuilder.imageAuth(imageAuth);

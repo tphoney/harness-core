@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -34,6 +35,7 @@ import org.springframework.data.mongodb.core.query.Update;
 
 @OwnedBy(HarnessTeam.PIPELINE)
 @Singleton
+@Slf4j
 public class PmsGraphStepDetailsServiceImpl implements PmsGraphStepDetailsService {
   @Inject NodeExecutionsInfoRepository nodeExecutionsInfoRepository;
   @Inject @Getter private final Subject<StepDetailsUpdateObserver> stepDetailsUpdateObserverSubject = new Subject<>();
@@ -49,12 +51,13 @@ public class PmsGraphStepDetailsServiceImpl implements PmsGraphStepDetailsServic
         StepDetailsUpdateInfo.builder().nodeExecutionId(nodeExecutionId).planExecutionId(planExecutionId).build());
   }
 
+  // TODO: Make this better this should be called from no where else
   @Override
-  public void addStepInputs(String nodeExecutionId, String planExecutionId, PmsStepParameters stepParameters) {
+  public void addStepInputs(String nodeExecutionId, String planExecutionId, PmsStepParameters resolvedInputs) {
     NodeExecutionsInfo nodeExecutionsInfo = NodeExecutionsInfo.builder()
                                                 .nodeExecutionId(nodeExecutionId)
                                                 .planExecutionId(planExecutionId)
-                                                .resolvedInputs(stepParameters)
+                                                .resolvedInputs(resolvedInputs)
                                                 .build();
     nodeExecutionsInfoRepository.save(nodeExecutionsInfo);
     stepDetailsUpdateObserverSubject.fireInform(StepDetailsUpdateObserver::onStepInputsAdd,
@@ -65,7 +68,12 @@ public class PmsGraphStepDetailsServiceImpl implements PmsGraphStepDetailsServic
   public PmsStepParameters getStepInputs(String planExecutionId, String nodeExecutionId) {
     Optional<NodeExecutionsInfo> nodeExecutionsInfo =
         nodeExecutionsInfoRepository.findByNodeExecutionId(nodeExecutionId);
-    return nodeExecutionsInfo.get().getResolvedInputs();
+    if (nodeExecutionsInfo.isPresent()) {
+      return nodeExecutionsInfo.get().getResolvedInputs();
+    } else {
+      log.warn("Could not find nodeExecutionsInfo with the given nodeExecutionId: " + nodeExecutionId);
+      return new PmsStepParameters(new HashMap<>());
+    }
   }
 
   @Override
@@ -89,8 +97,8 @@ public class PmsGraphStepDetailsServiceImpl implements PmsGraphStepDetailsServic
       NodeExecutionsInfo newNodeExecutionsInfo =
           NodeExecutionsInfo.builder()
               .nodeExecutionDetailsInfoList(originalExecutionInfo.getNodeExecutionDetailsInfoList())
-              .nodeExecutionId(originalExecutionInfo.getNodeExecutionId())
-              .planExecutionId(originalExecutionInfo.getPlanExecutionId())
+              .nodeExecutionId(newNodeExecutionId)
+              .planExecutionId(planExecutionId)
               .resolvedInputs(originalExecutionInfo.getResolvedInputs())
               .build();
       nodeExecutionsInfoRepository.save(newNodeExecutionsInfo);

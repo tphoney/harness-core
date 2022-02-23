@@ -38,6 +38,7 @@ import io.harness.eventsframework.schemas.entity.EntityScopeInfo;
 import io.harness.eventsframework.schemas.entity.EntityTypeProtoEnum;
 import io.harness.eventsframework.schemas.entity.IdentifierRefProtoDTO;
 import io.harness.eventsframework.schemas.entitysetupusage.EntitySetupUsageCreateV2DTO;
+import io.harness.exception.DuplicateEntityException;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.gitsync.common.beans.YamlGitConfig;
@@ -46,6 +47,7 @@ import io.harness.gitsync.common.events.GitSyncConfigChangeEventConstants;
 import io.harness.gitsync.common.events.GitSyncConfigChangeEventType;
 import io.harness.gitsync.common.events.GitSyncConfigSwitchType;
 import io.harness.gitsync.common.helper.GitSyncConnectorHelper;
+import io.harness.gitsync.common.helper.UserProfileHelper;
 import io.harness.gitsync.common.remote.YamlGitConfigMapper;
 import io.harness.gitsync.common.service.GitBranchService;
 import io.harness.gitsync.common.service.GitSyncSettingsService;
@@ -100,6 +102,7 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
   private final IdentifierRefProtoDTOHelper identifierRefProtoDTOHelper;
   private final Producer setupUsageEventProducer;
   private final GitSyncSettingsService gitSyncSettingsService;
+  private final UserProfileHelper userProfileHelper;
 
   @Inject
   public YamlGitConfigServiceImpl(YamlGitConfigRepository yamlGitConfigRepository,
@@ -109,7 +112,7 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
       WebhookEventService webhookEventService, PersistentLocker persistentLocker,
       IdentifierRefProtoDTOHelper identifierRefProtoDTOHelper,
       @Named(EventsFrameworkConstants.SETUP_USAGE) Producer setupUsageEventProducer,
-      GitSyncSettingsService gitSyncSettingsService) {
+      GitSyncSettingsService gitSyncSettingsService, UserProfileHelper userProfileHelper) {
     this.yamlGitConfigRepository = yamlGitConfigRepository;
     this.connectorService = connectorService;
     this.gitSyncConfigEventProducer = gitSyncConfigEventProducer;
@@ -121,6 +124,7 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
     this.identifierRefProtoDTOHelper = identifierRefProtoDTOHelper;
     this.setupUsageEventProducer = setupUsageEventProducer;
     this.gitSyncSettingsService = gitSyncSettingsService;
+    this.userProfileHelper = userProfileHelper;
   }
 
   @Override
@@ -190,6 +194,7 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
 
   @Override
   public YamlGitConfigDTO save(YamlGitConfigDTO ygs) {
+    userProfileHelper.validateIfScmUserProfileIsSet(ygs.getAccountIdentifier());
     return saveInternal(ygs, ygs.getAccountIdentifier());
   }
 
@@ -256,9 +261,8 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
     } catch (DuplicateKeyException ex) {
       log.error("A git sync config with this identifier or repo %s and branch %s already exists",
           gitSyncConfigDTO.getRepo(), gitSyncConfigDTO.getBranch());
-      throw new InvalidRequestException(
-          String.format("A git sync config with this identifier or repo %s and branch %s already exists",
-              gitSyncConfigDTO.getRepo(), gitSyncConfigDTO.getBranch()));
+      throw new DuplicateEntityException(String.format(
+          "A git sync config with this identifier or repo %s already exists", gitSyncConfigDTO.getRepo()));
     }
 
     executorService.submit(() -> {
@@ -341,24 +345,33 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
     validateFolderPathIsUnique(ygs);
     validateFoldersAreIndependant(ygs);
     validateAPIAccessFieldPresence(ygs);
-    validateThatHarnessStringComesOnce(ygs);
+    validateThatHarnessStringShouldNotComeMoreThanOnce(ygs);
   }
 
   @VisibleForTesting
-  void validateThatHarnessStringComesOnce(YamlGitConfigDTO ygs) {
+  void validateThatHarnessStringShouldNotComeMoreThanOnce(YamlGitConfigDTO ygs) {
     if (ygs.getRootFolders() == null) {
       return;
     }
     for (YamlGitConfigDTO.RootFolder folder : ygs.getRootFolders()) {
-      int harnessStringCount = getHarnessStringCount(folder.getRootFolder());
-      if (harnessStringCount > 1) {
+      if (checkIfHarnessDirComesMoreThanOnce(folder.getRootFolder())) {
         throw new InvalidRequestException("The .harness should come only once in the folder path");
       }
     }
   }
 
-  private int getHarnessStringCount(String folderPath) {
-    return folderPath.split(".harness", -1).length - 1;
+  private boolean checkIfHarnessDirComesMoreThanOnce(String folderPath) {
+    String[] directoryList = folderPath.split(PATH_DELIMITER);
+    boolean harnessDirAlreadyFound = false;
+    for (String directory : directoryList) {
+      if (HARNESS_FOLDER_EXTENSION.equals(directory)) {
+        if (harnessDirAlreadyFound) {
+          return true;
+        }
+        harnessDirAlreadyFound = true;
+      }
+    }
+    return false;
   }
 
   private void validateAPIAccessFieldPresence(YamlGitConfigDTO ygs) {

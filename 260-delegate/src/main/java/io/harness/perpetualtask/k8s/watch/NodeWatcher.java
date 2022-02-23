@@ -83,7 +83,7 @@ public class NodeWatcher implements ResourceEventHandler<V1Node> {
                 -> {
               try {
                 return coreV1Api.listNodeCall(null, null, null, null, null, null, callGeneratorParams.resourceVersion,
-                    callGeneratorParams.timeoutSeconds, callGeneratorParams.watch, null);
+                    null, callGeneratorParams.timeoutSeconds, callGeneratorParams.watch, null);
               } catch (ApiException e) {
                 log.error("Unknown exception occurred", e);
                 throw e;

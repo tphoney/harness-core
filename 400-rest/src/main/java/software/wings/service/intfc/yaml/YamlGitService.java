@@ -25,6 +25,7 @@ import software.wings.beans.GitCommit;
 import software.wings.beans.GitConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.alert.AlertType;
+import software.wings.beans.yaml.FullSyncChangeset;
 import software.wings.beans.yaml.GitFileChange;
 import software.wings.exception.YamlProcessingException.ChangeWithErrorMsg;
 import software.wings.service.impl.yaml.sync.GitSyncFailureAlertDetails;
@@ -215,7 +216,7 @@ public interface YamlGitService {
 
   void syncForTemplates(String accountId, String appId);
 
-  List<GitFileChange> obtainApplicationYamlGitFileChanges(String accountId, Application app);
+  FullSyncChangeset obtainApplicationYamlGitFileChanges(String accountId, Application app);
 
   boolean retainYamlGitConfigsOfSelectedGitConnectorsAndDeleteRest(
       String accountId, List<String> gitConnectorsToRetain);

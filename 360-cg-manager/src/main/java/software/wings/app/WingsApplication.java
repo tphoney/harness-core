@@ -63,6 +63,7 @@ import io.harness.delegate.beans.StartupMode;
 import io.harness.delegate.event.handler.DelegateProfileEventHandler;
 import io.harness.delegate.eventstream.EntityCRUDConsumer;
 import io.harness.delegate.resources.DelegateTaskResource;
+import io.harness.delegate.service.intfc.DelegateNgTokenService;
 import io.harness.delegate.telemetry.DelegateTelemetryPublisher;
 import io.harness.dms.DmsModule;
 import io.harness.event.EventsModule;
@@ -87,6 +88,8 @@ import io.harness.health.HealthMonitor;
 import io.harness.health.HealthService;
 import io.harness.insights.DelegateInsightsSummaryJob;
 import io.harness.iterator.DelegateTaskExpiryCheckIterator;
+import io.harness.iterator.DelegateTaskRebroadcastIterator;
+import io.harness.iterator.FailDelegateTaskIterator;
 import io.harness.lock.AcquiredLock;
 import io.harness.lock.DistributedLockImplementation;
 import io.harness.lock.PersistentLocker;
@@ -147,6 +150,7 @@ import io.harness.serializer.CurrentGenRegistrars;
 import io.harness.serializer.KryoRegistrar;
 import io.harness.service.DelegateServiceModule;
 import io.harness.service.impl.DelegateInsightsServiceImpl;
+import io.harness.service.impl.DelegateNgTokenServiceImpl;
 import io.harness.service.impl.DelegateSyncServiceImpl;
 import io.harness.service.impl.DelegateTaskServiceImpl;
 import io.harness.service.impl.DelegateTokenServiceImpl;
@@ -231,6 +235,7 @@ import software.wings.security.authentication.totp.TotpModule;
 import software.wings.security.encryption.migration.EncryptedDataLocalToGcpKmsMigrationHandler;
 import software.wings.security.encryption.migration.SettingAttributesSecretsMigrationHandler;
 import software.wings.service.impl.AccountServiceImpl;
+import software.wings.service.impl.AppManifestCloudProviderPTaskManager;
 import software.wings.service.impl.ApplicationManifestServiceImpl;
 import software.wings.service.impl.ArtifactStreamServiceImpl;
 import software.wings.service.impl.AuditServiceHelper;
@@ -247,6 +252,7 @@ import software.wings.service.impl.InfrastructureMappingServiceImpl;
 import software.wings.service.impl.SettingAttributeObserver;
 import software.wings.service.impl.SettingsServiceImpl;
 import software.wings.service.impl.WorkflowExecutionServiceImpl;
+import software.wings.service.impl.applicationmanifest.AppManifestSettingAttributePTaskManager;
 import software.wings.service.impl.applicationmanifest.ManifestPerpetualTaskManger;
 import software.wings.service.impl.artifact.ArtifactStreamPTaskManager;
 import software.wings.service.impl.artifact.ArtifactStreamPTaskMigrationJob;
@@ -324,6 +330,7 @@ import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -491,11 +498,17 @@ public class WingsApplication extends Application<MainConfiguration> {
                                     .subjectCLass(SettingsServiceImpl.class)
                                     .observerClass(CloudProviderObserver.class)
                                     .observer(ClusterRecordHandler.class)
+                                    .observer(AppManifestCloudProviderPTaskManager.class)
                                     .build());
             remoteObservers.add(RemoteObserver.builder()
                                     .subjectCLass(SettingsServiceImpl.class)
                                     .observerClass(SettingAttributeObserver.class)
                                     .observer(ArtifactStreamSettingAttributePTaskManager.class)
+                                    .build());
+            remoteObservers.add(RemoteObserver.builder()
+                                    .subjectCLass(SettingsServiceImpl.class)
+                                    .observerClass(SettingAttributeObserver.class)
+                                    .observer(AppManifestSettingAttributePTaskManager.class)
                                     .build());
             remoteObservers.add(RemoteObserver.builder()
                                     .subjectCLass(InfrastructureDefinitionServiceImpl.class)
@@ -591,11 +604,12 @@ public class WingsApplication extends Application<MainConfiguration> {
                                     .observerClass(PerpetualTaskStateObserver.class)
                                     .observer(DelegateInsightsServiceImpl.class)
                                     .build());
-            remoteObservers.add(RemoteObserver.builder()
-                                    .subjectCLass(AccountServiceImpl.class)
-                                    .observerClass(AccountCrudObserver.class)
-                                    .observer(DelegateTokenServiceImpl.class)
-                                    .build());
+            remoteObservers.add(
+                RemoteObserver.builder()
+                    .subjectCLass(AccountServiceImpl.class)
+                    .observerClass(AccountCrudObserver.class)
+                    .observers(Arrays.asList(DelegateTokenServiceImpl.class, DelegateNgTokenServiceImpl.class))
+                    .build());
           }
           return remoteObservers;
         }
@@ -1254,7 +1268,6 @@ public class WingsApplication extends Application<MainConfiguration> {
     // delegate task broadcasting schedule job
     injector.getInstance(Key.get(ScheduledExecutorService.class, Names.named("delegateTaskNotifier")))
         .scheduleWithFixedDelay(injector.getInstance(DelegateQueueTask.class), random.nextInt(5), 5L, TimeUnit.SECONDS);
-
     delegateExecutor.scheduleWithFixedDelay(new Schedulable("Failed while monitoring task progress updates",
                                                 injector.getInstance(ProgressUpdateService.class)),
         0L, 5L, TimeUnit.SECONDS);
@@ -1358,10 +1371,15 @@ public class WingsApplication extends Application<MainConfiguration> {
     yamlPushService.getEntityCrudSubject().register(auditService);
 
     ClusterRecordHandler clusterRecordHandler = injector.getInstance(Key.get(ClusterRecordHandler.class));
+    AppManifestCloudProviderPTaskManager appManifestCloudProviderPTaskManager =
+        injector.getInstance(Key.get(AppManifestCloudProviderPTaskManager.class));
     SettingsServiceImpl settingsService = (SettingsServiceImpl) injector.getInstance(Key.get(SettingsService.class));
     settingsService.getSubject().register(clusterRecordHandler);
+    settingsService.getSubject().register(appManifestCloudProviderPTaskManager);
     settingsService.getArtifactStreamSubject().register(
         injector.getInstance(Key.get(ArtifactStreamSettingAttributePTaskManager.class)));
+    settingsService.getAppManifestSubject().register(
+        injector.getInstance(Key.get(AppManifestSettingAttributePTaskManager.class)));
 
     InfrastructureDefinitionServiceImpl infrastructureDefinitionService =
         (InfrastructureDefinitionServiceImpl) injector.getInstance(Key.get(InfrastructureDefinitionService.class));
@@ -1387,6 +1405,9 @@ public class WingsApplication extends Application<MainConfiguration> {
     accountService.getAccountCrudSubject().register(
         (DelegateTokenServiceImpl) injector.getInstance(Key.get(DelegateTokenService.class)));
 
+    accountService.getAccountCrudSubject().register(
+        (DelegateNgTokenServiceImpl) injector.getInstance(Key.get(DelegateNgTokenService.class)));
+
     ApplicationManifestServiceImpl applicationManifestService =
         (ApplicationManifestServiceImpl) injector.getInstance(Key.get(ApplicationManifestService.class));
     applicationManifestService.getSubject().register(injector.getInstance(Key.get(ManifestPerpetualTaskManger.class)));
@@ -1400,6 +1421,10 @@ public class WingsApplication extends Application<MainConfiguration> {
             iteratorsConfig.getPerpetualTaskRebalanceIteratorConfig().getThreadPoolSize());
     injector.getInstance(DelegateTaskExpiryCheckIterator.class)
         .registerIterators(iteratorsConfig.getDelegateTaskExpiryCheckIteratorConfig().getThreadPoolSize());
+    injector.getInstance(DelegateTaskRebroadcastIterator.class)
+        .registerIterators(iteratorsConfig.getDelegateTaskRebroadcastIteratorConfig().getThreadPoolSize());
+    injector.getInstance(FailDelegateTaskIterator.class)
+        .registerIterators(iteratorsConfig.getFailDelegateTaskIteratorConfig().getThreadPoolSize());
     injector.getInstance(DelegateTelemetryPublisher.class).registerIterators();
   }
 

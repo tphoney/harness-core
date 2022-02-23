@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.validation.Valid;
 import javax.ws.rs.core.MediaType;
@@ -69,6 +70,8 @@ public interface DelegateService extends OwnedByAccount {
   List<String> getAvailableVersions(String accountId);
 
   Double getConnectedRatioWithPrimary(String targetVersion);
+
+  Map<String, List<String>> getActiveDelegatesPerAccount(String targetVersion);
 
   DelegateSetupDetails validateKubernetesYaml(String accountId, DelegateSetupDetails delegateSetupDetails);
 
@@ -195,11 +198,6 @@ public interface DelegateService extends OwnedByAccount {
       DelegateSetupDetails delegateSetupDetails) throws IOException;
 
   String createDelegateGroup(String accountId, DelegateSetupDetails delegateSetupDetails);
-
-  void validateDockerSetupDetailsNg(String accountId, DelegateSetupDetails delegateSetupDetails, String delegateType);
-
-  File generateKubernetesYamlNg(String accountId, DelegateSetupDetails delegateSetupDetails, String managerHost,
-      String verificationServiceUrl, MediaType fileFormat) throws IOException;
 
   DelegateSetupDetails validateKubernetesYamlNg(String accountId, DelegateSetupDetails delegateSetupDetails);
 

@@ -52,6 +52,7 @@ import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.helper.GitApiAccessDecryptionHelper;
 import io.harness.connector.services.ConnectorService;
 import io.harness.connector.validator.scmValidators.GitConfigAuthenticationInfoHelper;
+import io.harness.delegate.beans.connector.artifactoryconnector.ArtifactoryConnectorDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
 import io.harness.delegate.beans.connector.gcpconnector.GcpConnectorDTO;
 import io.harness.delegate.beans.connector.helm.HttpHelmConnectorDTO;
@@ -445,6 +446,12 @@ public class CDStepHelper {
               format("Invalid connector selected in %s. Select Amazon Web Services connector", message));
         }
         break;
+      case ManifestStoreType.ARTIFACTORY:
+        if (!((connectorInfoDTO.getConnectorConfig()) instanceof ArtifactoryConnectorDTO)) {
+          throw new InvalidRequestException(
+              format("Invalid connector selected in %s. Select Artifactory connector", message));
+        }
+        break;
 
       case ManifestStoreType.GCS:
         if (!(connectorInfoDTO.getConnectorConfig() instanceof GcpConnectorDTO)) {
@@ -549,8 +556,8 @@ public class CDStepHelper {
     return k8sEntityHelper.getK8sInfraDelegateConfig(infrastructure, ngAccess);
   }
 
-  public boolean isUseVarSupportForKustomize(String accountId) {
-    return cdFeatureFlagHelper.isEnabled(accountId, FeatureName.VARIABLE_SUPPORT_FOR_KUSTOMIZE);
+  public boolean isUseLatestKustomizeVersion(String accountId) {
+    return cdFeatureFlagHelper.isEnabled(accountId, FeatureName.NEW_KUSTOMIZE_BINARY);
   }
 
   public boolean isUseNewKubectlVersion(String accountId) {

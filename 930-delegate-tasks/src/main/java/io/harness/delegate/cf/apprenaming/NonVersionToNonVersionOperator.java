@@ -7,6 +7,8 @@
 
 package io.harness.delegate.cf.apprenaming;
 
+import io.harness.delegate.beans.pcf.CfInBuiltVariablesUpdateValues;
+import io.harness.delegate.beans.pcf.CfInBuiltVariablesUpdateValues.CfInBuiltVariablesUpdateValuesBuilder;
 import io.harness.delegate.beans.pcf.CfRouteUpdateRequestConfigData;
 import io.harness.delegate.cf.PcfCommandTaskBaseHelper;
 import io.harness.logging.LogCallback;
@@ -17,6 +19,7 @@ import io.harness.pcf.model.PcfConstants;
 
 import java.util.List;
 import java.util.TreeMap;
+import lombok.extern.slf4j.Slf4j;
 import org.cloudfoundry.operations.applications.ApplicationSummary;
 
 /**
@@ -38,11 +41,13 @@ import org.cloudfoundry.operations.applications.ApplicationSummary;
  * OrderService_INACTIVE    --> OrderService
  * OrderService_interim     --> OrderService_INACTIVE
  */
+@Slf4j
 public class NonVersionToNonVersionOperator implements AppRenamingOperator {
   @Override
-  public void renameApp(CfRouteUpdateRequestConfigData cfRouteUpdateConfigData, CfRequestConfig cfRequestConfig,
-      LogCallback executionLogCallback, CfDeploymentManager pcfDeploymentManager,
+  public CfInBuiltVariablesUpdateValues renameApp(CfRouteUpdateRequestConfigData cfRouteUpdateConfigData,
+      CfRequestConfig cfRequestConfig, LogCallback executionLogCallback, CfDeploymentManager pcfDeploymentManager,
       PcfCommandTaskBaseHelper pcfCommandTaskBaseHelper) throws PivotalClientApiException {
+    CfInBuiltVariablesUpdateValuesBuilder updateValuesBuilder = CfInBuiltVariablesUpdateValues.builder();
     String cfAppNamePrefix = cfRouteUpdateConfigData.getCfAppNamePrefix();
     List<ApplicationSummary> allReleases = pcfDeploymentManager.getPreviousReleases(cfRequestConfig, cfAppNamePrefix);
 
@@ -52,21 +57,32 @@ public class NonVersionToNonVersionOperator implements AppRenamingOperator {
     if (!appTypeApplicationSummaryMap.containsKey(AppType.ACTIVE)) {
       // first deployment in non-version -> non-version
       ApplicationSummary applicationSummary = appTypeApplicationSummaryMap.get(AppType.NEW).getAppSummary();
-      pcfCommandTaskBaseHelper.renameApp(applicationSummary, cfRequestConfig, executionLogCallback, cfAppNamePrefix);
-      return;
+      renameApp(
+          applicationSummary, pcfCommandTaskBaseHelper, cfRequestConfig, executionLogCallback, cfAppNamePrefix, log);
+      updateValuesBuilder.newAppGuid(applicationSummary.getId());
+      updateValuesBuilder.newAppName(cfAppNamePrefix);
+      return updateValuesBuilder.build();
     }
 
     ApplicationSummary currentActiveApplicationSummary =
         appTypeApplicationSummaryMap.get(AppType.ACTIVE).getAppSummary();
     String intermediateName = PcfConstants.generateInterimAppName(cfAppNamePrefix);
-    pcfCommandTaskBaseHelper.renameApp(
-        currentActiveApplicationSummary, cfRequestConfig, executionLogCallback, intermediateName);
+    renameApp(currentActiveApplicationSummary, pcfCommandTaskBaseHelper, cfRequestConfig, executionLogCallback,
+        intermediateName, log);
 
     ApplicationSummary newApplicationSummary = appTypeApplicationSummaryMap.get(AppType.NEW).getAppSummary();
-    pcfCommandTaskBaseHelper.renameApp(newApplicationSummary, cfRequestConfig, executionLogCallback, cfAppNamePrefix);
+    renameApp(
+        newApplicationSummary, pcfCommandTaskBaseHelper, cfRequestConfig, executionLogCallback, cfAppNamePrefix, log);
 
     String inActiveName = cfAppNamePrefix + PcfConstants.INACTIVE_APP_NAME_SUFFIX;
-    pcfCommandTaskBaseHelper.renameApp(
-        currentActiveApplicationSummary, cfRequestConfig, executionLogCallback, inActiveName, intermediateName);
+    renameApp(currentActiveApplicationSummary, pcfCommandTaskBaseHelper, cfRequestConfig, executionLogCallback,
+        inActiveName, intermediateName, log);
+
+    updateValuesBuilder.newAppGuid(newApplicationSummary.getId());
+    updateValuesBuilder.newAppName(cfAppNamePrefix);
+    updateValuesBuilder.oldAppGuid(currentActiveApplicationSummary.getId());
+    updateValuesBuilder.oldAppName(inActiveName);
+
+    return updateValuesBuilder.build();
   }
 }

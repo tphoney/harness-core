@@ -60,6 +60,9 @@ public abstract class GenericStepPMSFilterJsonCreatorV2 implements FilterJsonCre
           ((WithConnectorRef) yamlField.getStepSpecType()).extractConnectorRefs();
       List<EntityDetailProtoDTO> result = new ArrayList<>();
       for (Map.Entry<String, ParameterField<String>> entry : connectorRefs.entrySet()) {
+        if (ParameterField.isNull(entry.getValue())) {
+          continue;
+        }
         String fullQualifiedDomainNameFromNode =
             YamlUtils.getFullyQualifiedName(filterCreationContext.getCurrentField().getNode());
         String fullQualifiedDomainName = fullQualifiedDomainNameFromNode

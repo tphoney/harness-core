@@ -3,6 +3,10 @@ on:
   pull_request:
     branches:
       - master
+      - develop
+
+env:
+  BUILD_PURPOSE: RELEASE
 
 jobs:
   gobuild:

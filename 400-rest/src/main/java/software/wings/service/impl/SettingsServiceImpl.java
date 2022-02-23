@@ -257,6 +257,9 @@ public class SettingsServiceImpl implements SettingsService {
   @Inject
   @Getter(onMethod = @__(@SuppressValidation))
   private Subject<SettingAttributeObserver> artifactStreamSubject = new Subject<>();
+  @Inject
+  @Getter(onMethod = @__(@SuppressValidation))
+  private Subject<SettingAttributeObserver> appManifestSubject = new Subject<>();
   @Inject private SettingAttributeDao settingAttributeDao;
   @Inject private CEMetadataRecordDao ceMetadataRecordDao;
   @Inject private RemoteObserverInformer remoteObserverInformer;
@@ -644,8 +647,11 @@ public class SettingsServiceImpl implements SettingsService {
       settingServiceHelper.resetEncryptedFields((EncryptableSetting) settingAttribute.getValue());
     }
 
+    PermissionAttribute.PermissionType permissionType = settingServiceHelper.getPermissionType(settingAttribute);
+    boolean isAccountAdmin = userService.hasPermission(accountId, permissionType);
+
     settingServiceHelper.validateUsageRestrictionsOnEntitySave(
-        settingAttribute, accountId, getUsageRestrictions(settingAttribute));
+        settingAttribute, accountId, getUsageRestrictions(settingAttribute), isAccountAdmin);
 
     if (settingAttribute.getValue() != null) {
       if (settingAttribute.getValue() instanceof EncryptableSetting) {
@@ -733,6 +739,16 @@ public class SettingsServiceImpl implements SettingsService {
     }
     return isEmpty(selectors) ? new ArrayList<>()
                               : selectors.stream().filter(StringUtils::isNotBlank).distinct().collect(toList());
+  }
+
+  @Override
+  public List<SettingAttribute> getSettingAttributeByReferencedConnector(
+      String accountId, String settingAttributeUuid) {
+    return wingsPersistence.createQuery(SettingAttribute.class)
+        .disableValidation()
+        .filter(SettingAttributeKeys.accountId, accountId)
+        .filter(SettingAttributeKeys.referencedConnector, settingAttributeUuid)
+        .asList();
   }
 
   @Override
@@ -860,6 +876,7 @@ public class SettingsServiceImpl implements SettingsService {
 
     syncCEInfra(settingAttribute);
     artifactStreamSubject.fireInform(SettingAttributeObserver::onSaved, newSettingAttribute);
+    appManifestSubject.fireInform(SettingAttributeObserver::onSaved, newSettingAttribute);
     remoteObserverInformer.sendEvent(
         ReflectionUtils.getMethod(SettingAttributeObserver.class, "onSaved", SettingAttribute.class),
         SettingsServiceImpl.class, newSettingAttribute);
@@ -1146,8 +1163,11 @@ public class SettingsServiceImpl implements SettingsService {
     } else {
       resetUnchangedEncryptedFields(existingSetting, settingAttribute);
     }
+    PermissionAttribute.PermissionType permissionType = settingServiceHelper.getPermissionType(settingAttribute);
+    boolean isAccountAdmin = userService.hasPermission(settingAttribute.getAccountId(), permissionType);
+
     settingServiceHelper.validateUsageRestrictionsOnEntityUpdate(settingAttribute, settingAttribute.getAccountId(),
-        existingSetting.getUsageRestrictions(), getUsageRestrictions(settingAttribute));
+        existingSetting.getUsageRestrictions(), getUsageRestrictions(settingAttribute), isAccountAdmin);
     validateSettingAttribute(settingAttribute, existingSetting);
     autoGenerateFieldsIfRequired(settingAttribute);
 
@@ -1245,6 +1265,7 @@ public class SettingsServiceImpl implements SettingsService {
     }
 
     artifactStreamSubject.fireInform(SettingAttributeObserver::onUpdated, prevSettingAttribute, settingAttribute);
+    appManifestSubject.fireInform(SettingAttributeObserver::onUpdated, prevSettingAttribute, settingAttribute);
     remoteObserverInformer.sendEvent(ReflectionUtils.getMethod(SettingAttributeObserver.class, "onUpdated",
                                          SettingAttribute.class, SettingAttribute.class),
         SettingsServiceImpl.class, prevSettingAttribute, settingAttribute);
@@ -1324,8 +1345,11 @@ public class SettingsServiceImpl implements SettingsService {
     SettingAttribute settingAttribute = getById(varId);
     notNullCheck("Setting Value", settingAttribute, USER);
     String accountId = settingAttribute.getAccountId();
+    PermissionAttribute.PermissionType permissionType = settingServiceHelper.getPermissionType(settingAttribute);
+    boolean isAccountAdmin = userService.hasPermission(settingAttribute.getAccountId(), permissionType);
+
     if (!settingServiceHelper.userHasPermissionsToChangeEntity(
-            settingAttribute, accountId, settingAttribute.getUsageRestrictions())) {
+            settingAttribute, accountId, settingAttribute.getUsageRestrictions(), isAccountAdmin)) {
       throw new UnauthorizedUsageRestrictionsException(USER);
     }
 
@@ -1358,6 +1382,7 @@ public class SettingsServiceImpl implements SettingsService {
     }
 
     artifactStreamSubject.fireInform(SettingAttributeObserver::onDeleted, settingAttribute);
+    appManifestSubject.fireInform(SettingAttributeObserver::onDeleted, settingAttribute);
     remoteObserverInformer.sendEvent(
         ReflectionUtils.getMethod(SettingAttributeObserver.class, "onDeleted", SettingAttribute.class),
         SettingsServiceImpl.class, settingAttribute);

@@ -15,8 +15,7 @@ import static org.apache.commons.codec.binary.Base64.encodeBase64String;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
-
-import software.wings.core.winrm.executors.WinRmSession;
+import io.harness.delegate.task.winrm.WinRmSession;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;

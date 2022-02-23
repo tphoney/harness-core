@@ -28,9 +28,11 @@ Ankush Shaw ankush.shaw@harness.io
 Anshul Anshul anshul@harness.io
 Anubhaw Srivastava anubhaw@harness.io
 Archit Singla archit.singla@harness.io
+arpit-harness arpit.jain@harness.io
 Arpit Tiwari arpit.tiwari@harness.io
 Arvind Choudhary arvind.choudhary@harness.io
 Ashish Sanodia ashish.sanodia@harness.io
+Atharva Trivedi atharva.trivedi@harness.io
 Bharat Goel bharat.goel@harness.io
 Bogdan Azaric bogdan.azaric@harness.io
 Bojan Micovic bojan.micovic@harness.io
@@ -73,6 +75,8 @@ Munish Jalota munish.jalota@harness.io
 Jatin Shridhar jatin@harness.io
 Jelena Arsenijevic jelena.arsenijevic@harness.io
 Jenny James jenny.james@harness.io
+Johannes Batzill johannes@harness.io
+Johannes Batzill johannes.batzill@harness.io
 Johnny Liu johnny.liu@harness.io
 Juhi Agrawal juhi.agrawal@harness.io
 K Rohit Reddy rohit.reddy@harness.io
@@ -83,6 +87,7 @@ Kapil Kumawat kapil.kumawat@harness.io
 Karan Siwach karan.siwach@harness.io
 Lazar Matovic lazar.matovic@harness.io
 Lucas Mari lucas.mari@harness.io
+Mankrit Singh mankrit.singh@harness.io
 Magdalene Lee magdalene.lee@harness.io
 Mark Lu mark.lu@harness.io
 Marko Barjaktarovic marko.barjaktarovic@harness.io
@@ -135,6 +140,7 @@ Rama Tummala rama@harness.io
 Rathnakara Malatesha rathna@harness.io
 Raunak Agrawal raunak.agrawal@harness.io
 Reetika mallavarapu.reetika@harness.io
+Richa Jajoo richa.jajoo@harness.io
 Rihaz Zahir rihaz.zahir@harness.io
 Rishi Singh rishi@harness.io
 Riyas P riyas.yash@harness.io
@@ -152,6 +158,7 @@ Sanja Jokic sanja.jokic@harness.io
 Sanyasi Naidu Annepu sanyasi.naidu@harness.io
 Satyam Shanker satyam.shanker@harness.io
 Seán Dunne sean.dunne@harness.io
+Shalini Agrawal shalini.agarwal@harness.io
 Shashank Singh shashank.singh@harness.io
 Shaswat Deep shaswat.deep@harness.io
 Shivakumar Ningappa shivakumar.ningappa@harness.io
@@ -224,4 +231,17 @@ Trunapushpa trunapushpa.surkar@harness.io
 David Warren david.warren@harness.io
 Shivam Negi shivam.negi@harness.io
 Vitalie Safronovici vitalie.safronovici@harness.io
+Anders Hokinson anders.hokinson@harness.io
+Andrew Mollohan andrew.mollohan@harness.io
+Aubrey Klaft aubrey.klaft@harness.io
+Chris Hamper christopher.hamper@harness.io
+David McNamara david.mcnamara@harness.io
+Gabriel Aboy gabriel.aboy@harness.io
+Joseph Sentongo joseph.sentongo@harness.io
+Sergey Bobrov sergey.bobrov@harness.io
+William Wissemann william.wissemann@harness.io
 Shubham Maheshwari shubham.maheshwari@harness.io
+Scott Walker scott.walker@harness.io
+Dev Mittal devki.mittal@harness.io
+Lalit Kumar lalit.kumar@harness.io
+Naman Goenka naman.goenka@harness.io

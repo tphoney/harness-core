@@ -44,6 +44,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.beans.pcf.CfAppRenameInfo;
 import io.harness.delegate.beans.pcf.CfAppSetupTimeDetails;
+import io.harness.delegate.beans.pcf.CfInBuiltVariablesUpdateValues;
 import io.harness.delegate.beans.pcf.CfInternalInstanceElement;
 import io.harness.delegate.beans.pcf.CfServiceData;
 import io.harness.delegate.cf.apprenaming.AppNamingStrategy;
@@ -713,23 +714,23 @@ public class PcfCommandTaskBaseHelperTest extends CategoryTest {
     ApplicationSummary prevInactive = getApplicationSummary("app__1", "1");
     ApplicationSummary inactive = getApplicationSummary("app__2", "2");
     ApplicationSummary active = getApplicationSummary("app__3", "3");
-
+    CfInBuiltVariablesUpdateValues updateValues = CfInBuiltVariablesUpdateValues.builder().build();
     List<ApplicationSummary> summaries = new ArrayList<>();
     CfRequestConfig cfRequestConfig = Mockito.mock(CfRequestConfig.class);
     pcfCommandTaskHelper.resetState(
-        summaries, null, null, "app", cfRequestConfig, true, null, -1, executionLogCallback);
+        summaries, null, null, "app", cfRequestConfig, true, null, -1, executionLogCallback, updateValues);
     verify(pcfDeploymentManager, times(0)).renameApplication(any(), any());
 
     summaries.add(active);
     pcfCommandTaskHelper.resetState(
-        summaries, active, null, "app", cfRequestConfig, true, null, -1, executionLogCallback);
+        summaries, active, null, "app", cfRequestConfig, true, null, -1, executionLogCallback, updateValues);
     verify(pcfDeploymentManager, times(1)).renameApplication(any(), any());
 
     Mockito.reset(pcfDeploymentManager);
     summaries.add(inactive);
     summaries.add(prevInactive);
     pcfCommandTaskHelper.resetState(
-        summaries, active, inactive, "app", cfRequestConfig, true, null, -1, executionLogCallback);
+        summaries, active, inactive, "app", cfRequestConfig, true, null, -1, executionLogCallback, updateValues);
     verify(pcfDeploymentManager, times(2)).renameApplication(any(), any());
   }
 
@@ -740,23 +741,23 @@ public class PcfCommandTaskBaseHelperTest extends CategoryTest {
     ApplicationSummary prevInactive = getApplicationSummary("app__1", "1");
     ApplicationSummary inactive = getApplicationSummary("app__INACTIVE", "2");
     ApplicationSummary active = getApplicationSummary("app", "3");
-
+    CfInBuiltVariablesUpdateValues updateValues = CfInBuiltVariablesUpdateValues.builder().build();
     List<ApplicationSummary> summaries = new ArrayList<>();
     CfRequestConfig cfRequestConfig = Mockito.mock(CfRequestConfig.class);
     pcfCommandTaskHelper.resetState(
-        summaries, null, null, "app", cfRequestConfig, false, null, -1, executionLogCallback);
+        summaries, null, null, "app", cfRequestConfig, false, null, -1, executionLogCallback, updateValues);
     verify(pcfDeploymentManager, times(0)).renameApplication(any(), any());
 
     summaries.add(active);
     pcfCommandTaskHelper.resetState(
-        summaries, active, null, "app", cfRequestConfig, false, null, -1, executionLogCallback);
+        summaries, active, null, "app", cfRequestConfig, false, null, -1, executionLogCallback, updateValues);
     verify(pcfDeploymentManager, times(1)).renameApplication(any(), any());
 
     Mockito.reset(pcfDeploymentManager);
     summaries.add(inactive);
     summaries.add(prevInactive);
     pcfCommandTaskHelper.resetState(
-        summaries, active, inactive, "app", cfRequestConfig, false, null, -1, executionLogCallback);
+        summaries, active, inactive, "app", cfRequestConfig, false, null, -1, executionLogCallback, updateValues);
     verify(pcfDeploymentManager, times(2)).renameApplication(any(), any());
   }
 
@@ -800,8 +801,9 @@ public class PcfCommandTaskBaseHelperTest extends CategoryTest {
       List<ApplicationSummary> summaries, CfRequestConfig cfRequestConfig, int renames, String activeAppName,
       String inactiveAppName, int activeAppRevision) throws PivotalClientApiException {
     ArgumentCaptor<CfRenameRequest> captor = ArgumentCaptor.forClass(CfRenameRequest.class);
-    pcfCommandTaskHelper.resetState(
-        summaries, active, inactiveApp, "app", cfRequestConfig, false, null, activeAppRevision, executionLogCallback);
+    CfInBuiltVariablesUpdateValues updateValues = CfInBuiltVariablesUpdateValues.builder().build();
+    pcfCommandTaskHelper.resetState(summaries, active, inactiveApp, "app", cfRequestConfig, false, null,
+        activeAppRevision, executionLogCallback, updateValues);
     verify(pcfDeploymentManager, times(renames)).renameApplication(captor.capture(), eq(executionLogCallback));
     List<CfRenameRequest> values = captor.getAllValues();
     assertThat(values.size()).isEqualTo(renames);
@@ -1022,9 +1024,10 @@ public class PcfCommandTaskBaseHelperTest extends CategoryTest {
     CfRequestConfig cfRequestConfig = CfRequestConfig.builder().build();
     Deque<CfAppRenameInfo> renames = new ArrayDeque<>();
 
-    Optional<String> inActiveAppOldName = pcfCommandTaskHelper.renameInActiveAppDuringBGDeployment(previousReleases,
-        cfRequestConfig, releaseName, executionLogCallback, AppNamingStrategy.VERSIONING.name(), renames);
-    assertThat(inActiveAppOldName.isPresent()).isFalse();
+    CfAppSetupTimeDetails cfAppSetupTimeDetails =
+        pcfCommandTaskHelper.renameInActiveAppDuringBGDeployment(previousReleases, cfRequestConfig, releaseName,
+            executionLogCallback, AppNamingStrategy.VERSIONING.name(), renames);
+    assertThat(cfAppSetupTimeDetails.getOldName()).isNull();
   }
 
   @Test
@@ -1041,20 +1044,20 @@ public class PcfCommandTaskBaseHelperTest extends CategoryTest {
     CfRequestConfig cfRequestConfig = CfRequestConfig.builder().build();
     Deque<CfAppRenameInfo> renames = new ArrayDeque<>();
 
-    Optional<String> inActiveAppOldName = pcfCommandTaskHelper.renameInActiveAppDuringBGDeployment(previousReleases,
-        cfRequestConfig, releaseName, executionLogCallback, AppNamingStrategy.VERSIONING.name(), renames);
-    assertThat(inActiveAppOldName.isPresent()).isFalse();
+    CfAppSetupTimeDetails cfAppSetupTimeDetails =
+        pcfCommandTaskHelper.renameInActiveAppDuringBGDeployment(previousReleases, cfRequestConfig, releaseName,
+            executionLogCallback, AppNamingStrategy.VERSIONING.name(), renames);
+    assertThat(cfAppSetupTimeDetails.getOldName()).isNull();
 
     previousReleases.remove(0);
-    previousReleases.remove(0);
-    inActiveAppOldName = pcfCommandTaskHelper.renameInActiveAppDuringBGDeployment(previousReleases, cfRequestConfig,
+    cfAppSetupTimeDetails = pcfCommandTaskHelper.renameInActiveAppDuringBGDeployment(previousReleases, cfRequestConfig,
         releaseName, executionLogCallback, AppNamingStrategy.VERSIONING.name(), renames);
-    assertThat(inActiveAppOldName.isPresent()).isFalse();
+    assertThat(cfAppSetupTimeDetails.getOldName()).isNull();
 
     previousReleases = Collections.emptyList(); // no apps, i.e. first deployment in non-version mode
-    inActiveAppOldName = pcfCommandTaskHelper.renameInActiveAppDuringBGDeployment(previousReleases, cfRequestConfig,
+    cfAppSetupTimeDetails = pcfCommandTaskHelper.renameInActiveAppDuringBGDeployment(previousReleases, cfRequestConfig,
         releaseName, executionLogCallback, AppNamingStrategy.VERSIONING.name(), renames);
-    assertThat(inActiveAppOldName.isPresent()).isFalse();
+    assertThat(cfAppSetupTimeDetails.getOldName()).isNull();
   }
 
   @Test
@@ -1083,9 +1086,10 @@ public class PcfCommandTaskBaseHelperTest extends CategoryTest {
       return requestConfig.getApplicationName().equals(inActiveAppCurrentName);
     });
 
-    Optional<String> inActiveAppOldName = pcfCommandTaskHelper.renameInActiveAppDuringBGDeployment(previousReleases,
-        cfRequestConfig, releaseName, executionLogCallback, AppNamingStrategy.APP_NAME_WITH_VERSIONING.name(), renames);
-    assertThat(inActiveAppOldName.get()).isEqualTo(inActiveAppCurrentName);
+    CfAppSetupTimeDetails inActiveAppDetails =
+        pcfCommandTaskHelper.renameInActiveAppDuringBGDeployment(previousReleases, cfRequestConfig, releaseName,
+            executionLogCallback, AppNamingStrategy.APP_NAME_WITH_VERSIONING.name(), renames);
+    assertThat(inActiveAppDetails.getOldName()).isEqualTo(inActiveAppCurrentName);
 
     ArgumentCaptor<CfRenameRequest> renamingAppCaptor = ArgumentCaptor.forClass(CfRenameRequest.class);
     ApplicationSummary inActiveAppSummary = previousReleases.get(1);

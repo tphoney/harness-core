@@ -16,7 +16,6 @@ import static io.harness.pms.yaml.YAMLFieldNameConstants.STEP_GROUP;
 import io.harness.advisers.nextstep.NextStepAdviserParameters;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.EmptyPredicate;
-import io.harness.plancreator.utils.CommonPlanCreatorUtils;
 import io.harness.pms.contracts.advisers.AdviserObtainment;
 import io.harness.pms.contracts.advisers.AdviserType;
 import io.harness.pms.contracts.facilitators.FacilitatorObtainment;
@@ -35,7 +34,6 @@ import io.harness.pms.sdk.core.steps.io.StepParameters;
 import io.harness.pms.yaml.DependenciesUtils;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
-import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.serializer.KryoSerializer;
 import io.harness.steps.common.steps.stepgroup.StepGroupStep;
@@ -50,10 +48,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 @OwnedBy(PIPELINE)
@@ -63,23 +59,20 @@ public class StepGroupPMSPlanCreator extends ChildrenPlanCreator<StepGroupElemen
   @Override
   public LinkedHashMap<String, PlanCreationResponse> createPlanForChildrenNodes(
       PlanCreationContext ctx, StepGroupElementConfig config) {
-    List<YamlField> dependencyNodeIdsList = getDependencyNodeIdsList(ctx);
+    List<YamlField> dependencyNodeIdsList = ctx.getStepYamlFields();
 
     LinkedHashMap<String, PlanCreationResponse> responseMap = new LinkedHashMap<>();
-    for (YamlField yamlField : dependencyNodeIdsList) {
-      Map<String, YamlField> yamlFieldMap = new HashMap<>();
-      yamlFieldMap.put(yamlField.getNode().getUuid(), yamlField);
-      responseMap.put(yamlField.getNode().getUuid(),
-          PlanCreationResponse.builder().dependencies(DependenciesUtils.toDependenciesProto(yamlFieldMap)).build());
-    }
-
     // Add Steps Node
     if (EmptyPredicate.isNotEmpty(dependencyNodeIdsList)) {
       YamlField stepsField =
           Preconditions.checkNotNull(ctx.getCurrentField().getNode().getField(YAMLFieldNameConstants.STEPS));
-      PlanNode stepsNode = CommonPlanCreatorUtils.getStepsPlanNode(
-          stepsField.getNode().getUuid(), dependencyNodeIdsList.get(0).getNode().getUuid(), "Steps Element");
-      responseMap.put(stepsNode.getUuid(), PlanCreationResponse.builder().node(stepsNode.getUuid(), stepsNode).build());
+      String stepsNodeId = stepsField.getNode().getUuid();
+      Map<String, YamlField> stepsYamlFieldMap = new HashMap<>();
+      stepsYamlFieldMap.put(stepsNodeId, stepsField);
+      responseMap.put(stepsNodeId,
+          PlanCreationResponse.builder()
+              .dependencies(DependenciesUtils.toDependenciesProto(stepsYamlFieldMap))
+              .build());
     }
 
     return responseMap;
@@ -176,25 +169,5 @@ public class StepGroupPMSPlanCreator extends ChildrenPlanCreator<StepGroupElemen
                   OnSuccessAdviserParameters.builder().nextNodeId(siblingField.getNode().getUuid()).build())))
               .build());
     }
-  }
-
-  List<YamlField> getDependencyNodeIdsList(PlanCreationContext planCreationContext) {
-    List<YamlField> childYamlFields = new LinkedList<>();
-    List<YamlNode> yamlNodes =
-        Optional
-            .of(Preconditions.checkNotNull(planCreationContext.getCurrentField().getNode().getField("steps"))
-                    .getNode()
-                    .asArray())
-            .orElse(Collections.emptyList());
-    yamlNodes.forEach(yamlNode -> {
-      YamlField stepField = yamlNode.getField(YAMLFieldNameConstants.STEP);
-      YamlField parallelStepField = yamlNode.getField(YAMLFieldNameConstants.PARALLEL);
-      if (stepField != null) {
-        childYamlFields.add(stepField);
-      } else if (parallelStepField != null) {
-        childYamlFields.add(parallelStepField);
-      }
-    });
-    return childYamlFields;
   }
 }

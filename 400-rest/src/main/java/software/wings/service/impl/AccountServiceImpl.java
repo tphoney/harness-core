@@ -10,6 +10,7 @@ package software.wings.service.impl;
 import static io.harness.annotations.dev.HarnessModule._955_ACCOUNT_MGMT;
 import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.beans.FeatureName.AUTO_ACCEPT_SAML_ACCOUNT_INVITES;
+import static io.harness.beans.FeatureName.CG_LICENSE_USAGE;
 import static io.harness.beans.PageRequest.PageRequestBuilder.aPageRequest;
 import static io.harness.beans.SearchFilter.Operator.EQ;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
@@ -62,6 +63,7 @@ import io.harness.beans.PageResponse;
 import io.harness.beans.PageResponse.PageResponseBuilder;
 import io.harness.cache.HarnessCacheManager;
 import io.harness.ccm.license.CeLicenseInfo;
+import io.harness.cdlicense.impl.CgCdLicenseUsageService;
 import io.harness.cvng.beans.ServiceGuardLimitDTO;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.data.structure.UUIDGenerator;
@@ -105,7 +107,6 @@ import io.harness.persistence.HPersistence;
 import io.harness.reflection.ReflectionUtils;
 import io.harness.scheduler.PersistentScheduler;
 import io.harness.seeddata.SampleDataProviderService;
-import io.harness.service.intfc.DelegateNgTokenService;
 import io.harness.validation.SuppressValidation;
 import io.harness.version.VersionInfoManager;
 
@@ -298,8 +299,8 @@ public class AccountServiceImpl implements AccountService {
   @Inject private DelegateService delegateService;
   @Inject @Named(EventsFrameworkConstants.ENTITY_CRUD) private Producer eventProducer;
   @Inject private RemoteObserverInformer remoteObserverInformer;
-  @Inject private DelegateNgTokenService delegateNgTokenService;
   @Inject private HPersistence persistence;
+  @Inject private CgCdLicenseUsageService cgCdLicenseUsageService;
 
   @Inject @Named("BackgroundJobScheduler") private PersistentScheduler jobScheduler;
   @Inject private GovernanceFeature governanceFeature;
@@ -489,8 +490,6 @@ public class AccountServiceImpl implements AccountService {
         sampleDataProviderService.createK8sV2SampleApp(account);
       }
     }
-
-    delegateNgTokenService.upsertDefaultToken(account.getUuid(), null, false);
   }
 
   private void enableFeatureFlags(@NotNull Account account, boolean fromDataGen) {
@@ -581,6 +580,11 @@ public class AccountServiceImpl implements AccountService {
     accountDetails.setDefaultExperience(account.getDefaultExperience());
     accountDetails.setCreatedFromNG(account.isCreatedFromNG());
     accountDetails.setActiveServiceCount(workflowExecutionService.getActiveServiceCount(accountId));
+    if (featureFlagService.isEnabled(CG_LICENSE_USAGE, accountId)) {
+      accountDetails.setActiveServicesUsageInfo(cgCdLicenseUsageService.getActiveServiceLicenseUsage(accountId));
+    }
+    // Todo: requires input LicenseModel from api request
+    //    accountDetails.setLicenseModel(CgLicenseModel.SERVICES);
     return accountDetails;
   }
 
@@ -1165,7 +1169,6 @@ public class AccountServiceImpl implements AccountService {
     updateMigratedToClusterUrl(account, migratedToClusterUrl);
     // Also need to prevent all existing users in the migration account from logging in after completion of migration.
     setUserStatusInAccount(accountId, false);
-    delegateNgTokenService.revokeDelegateToken(accountId, null, delegateNgTokenService.DEFAULT_TOKEN_NAME);
     return setAccountStatusInternal(account, AccountStatus.INACTIVE);
   }
 
@@ -1173,7 +1176,6 @@ public class AccountServiceImpl implements AccountService {
   public boolean enableAccount(String accountId) {
     Account account = get(accountId);
     setUserStatusInAccount(accountId, true);
-    delegateNgTokenService.upsertDefaultToken(accountId, null, true);
     return setAccountStatusInternal(account, AccountStatus.ACTIVE);
   }
 

@@ -129,6 +129,9 @@ public class AmbianceUtils {
       logContext.put("setupId", level.getSetupId());
       logContext.put("stepType", level.getStepType().getType());
     }
+    if (ambiance.getMetadata() != null && ambiance.getMetadata().getPipelineIdentifier() != null) {
+      logContext.put("pipelineIdentifier", ambiance.getMetadata().getPipelineIdentifier());
+    }
     return logContext;
   }
 
@@ -183,5 +186,12 @@ public class AmbianceUtils {
   public static boolean isRetry(Ambiance ambiance) {
     Level level = Objects.requireNonNull(obtainCurrentLevel(ambiance));
     return level.getRetryIndex() != 0;
+  }
+
+  public static String obtainParentRuntimeId(Ambiance ambiance) {
+    if (ambiance.getLevelsCount() < 2) {
+      return null;
+    }
+    return ambiance.getLevels(ambiance.getLevelsCount() - 2).getRuntimeId();
   }
 }

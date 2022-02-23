@@ -9,6 +9,7 @@ package software.wings.service.impl;
 
 import static io.harness.annotations.dev.HarnessModule._870_CG_ORCHESTRATION;
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.beans.FeatureName.DEPLOY_TO_INLINE_HOSTS;
 import static io.harness.beans.PageRequest.PageRequestBuilder.aPageRequest;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -126,6 +127,8 @@ import software.wings.beans.PcfInfrastructureMapping;
 import software.wings.beans.PhysicalInfrastructureMapping;
 import software.wings.beans.PhysicalInfrastructureMappingBase;
 import software.wings.beans.PhysicalInfrastructureMappingWinRm;
+import software.wings.beans.RancherConfig;
+import software.wings.beans.RancherKubernetesInfrastructureMapping;
 import software.wings.beans.SSHVaultConfig;
 import software.wings.beans.Service;
 import software.wings.beans.ServiceInstance;
@@ -272,6 +275,7 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
   @Inject private SSHVaultService sshVaultService;
   @Inject private QueuePublisher<PruneEvent> pruneQueue;
   @Inject private RemoteObserverInformer remoteObserverInformer;
+  @Inject private RancherHelperService rancherHelperService;
 
   @Override
   public PageResponse<InfrastructureMapping> list(PageRequest<InfrastructureMapping> pageRequest) {
@@ -351,6 +355,13 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
                   : HostConnectionType.PRIVATE_DNS.name());
         }
         break;
+      case InfrastructureType.RANCHER_KUBERNETES:
+        RancherKubernetesInfrastructureMapping rancherKubernetesInfrastructureMapping =
+            (RancherKubernetesInfrastructureMapping) infraMapping;
+        if (isBlank(rancherKubernetesInfrastructureMapping.getNamespace())) {
+          rancherKubernetesInfrastructureMapping.setNamespace(DEFAULT);
+        }
+        break;
       default:
     }
   }
@@ -409,6 +420,12 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
       validateDirectKubernetesInfraMapping(directKubernetesInfrastructureMapping, null);
     }
 
+    if (infraMapping instanceof RancherKubernetesInfrastructureMapping) {
+      RancherKubernetesInfrastructureMapping rancherKubernetesInfrastructureMapping =
+          (RancherKubernetesInfrastructureMapping) infraMapping;
+      validateRancherKubernetesInfraMapping(rancherKubernetesInfrastructureMapping, null);
+    }
+
     if (infraMapping instanceof PhysicalInfrastructureMapping) {
       PhysicalInfrastructureMapping physicalInfrastructureMapping = (PhysicalInfrastructureMapping) infraMapping;
       validatePhysicalInfrastructureMapping(physicalInfrastructureMapping);
@@ -465,7 +482,8 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
 
     if (infraMapping instanceof AzureKubernetesInfrastructureMapping
         || infraMapping instanceof DirectKubernetesInfrastructureMapping
-        || infraMapping instanceof GcpKubernetesInfrastructureMapping) {
+        || infraMapping instanceof GcpKubernetesInfrastructureMapping
+        || infraMapping instanceof RancherKubernetesInfrastructureMapping) {
       releaseName = ((ContainerInfrastructureMapping) infraMapping).getReleaseName();
 
       if (isBlank(releaseName)) {
@@ -601,6 +619,21 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
       }
       if (directKubernetesInfrastructureMapping.getClusterName() != null) {
         keyValuePairs.put("clusterName", directKubernetesInfrastructureMapping.getClusterName());
+      } else {
+        fieldsToRemove.add("clusterName");
+      }
+    } else if (infrastructureMapping instanceof RancherKubernetesInfrastructureMapping) {
+      RancherKubernetesInfrastructureMapping rancherKubernetesInfrastructureMapping =
+          (RancherKubernetesInfrastructureMapping) infrastructureMapping;
+      validateInfraMapping(rancherKubernetesInfrastructureMapping, skipValidation, null);
+      if (isNotBlank(rancherKubernetesInfrastructureMapping.getNamespace())) {
+        keyValuePairs.put("namespace", rancherKubernetesInfrastructureMapping.getNamespace());
+      } else {
+        rancherKubernetesInfrastructureMapping.setNamespace(DEFAULT);
+        keyValuePairs.put("namespace", DEFAULT);
+      }
+      if (rancherKubernetesInfrastructureMapping.getClusterName() != null) {
+        keyValuePairs.put("clusterName", rancherKubernetesInfrastructureMapping.getClusterName());
       } else {
         fieldsToRemove.add("clusterName");
       }
@@ -1170,6 +1203,26 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
     }
   }
 
+  private void validateRancherKubernetesInfraMapping(
+      RancherKubernetesInfrastructureMapping infraMapping, String workflowExecutionId) {
+    SettingAttribute settingAttribute = settingsService.get(infraMapping.getComputeProviderSettingId());
+    String namespace = infraMapping.getNamespace();
+
+    if (isNotEmpty(infraMapping.getProvisionerId())) {
+      return;
+    }
+
+    KubernetesHelperService.validateNamespace(namespace);
+
+    try {
+      RancherConfig rancherConfig = (RancherConfig) settingAttribute.getValue();
+      rancherHelperService.validateRancherConfig(rancherConfig);
+    } catch (Exception e) {
+      log.warn(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(e), USER);
+    }
+  }
+
   @Override
   public InfrastructureMapping get(String appId, String infraMappingId) {
     return wingsPersistence.getWithAppId(InfrastructureMapping.class, appId, infraMappingId);
@@ -1449,7 +1502,7 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
         && ((AwsInfrastructureMapping) infrastructureMapping).isProvisionInstances()) {
       hosts = getAutoScaleGroupNodes(appId, infraMappingId, workflowExecutionId);
     } else {
-      hosts = listHosts(infrastructureMapping, workflowExecutionId)
+      hosts = listHosts(infrastructureMapping, workflowExecutionId, selectionParams)
                   .stream()
                   .filter(host
                       -> !selectionParams.isSelectSpecificHosts()
@@ -1471,14 +1524,22 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
   public List<Host> listHosts(String appId, String infrastructureMappingId) {
     InfrastructureMapping infrastructureMapping = get(appId, infrastructureMappingId);
     notNullCheck("Infra Mapping", infrastructureMapping);
-    return listHosts(infrastructureMapping, null);
+    return listHosts(infrastructureMapping, null, null);
   }
 
-  private List<Host> listHosts(InfrastructureMapping infrastructureMapping, String workflowExecutionId) {
+  private List<Host> listHosts(InfrastructureMapping infrastructureMapping, String workflowExecutionId,
+      ServiceInstanceSelectionParams selectionParams) {
     if (infrastructureMapping instanceof PhysicalInfrastructureMapping) {
       PhysicalInfrastructureMapping pyInfraMapping = (PhysicalInfrastructureMapping) infrastructureMapping;
       if (isNotEmpty(pyInfraMapping.getProvisionerId())) {
         if (isNotEmpty(pyInfraMapping.hosts())) {
+          if (featureFlagService.isEnabled(DEPLOY_TO_INLINE_HOSTS, infrastructureMapping.getAccountId())
+              && isNotEmpty(selectionParams.getHostNames())) {
+            return selectionParams.getHostNames()
+                .stream()
+                .map(hostName -> buildHost(pyInfraMapping, hostName))
+                .collect(toList());
+          }
           return pyInfraMapping.hosts();
         } else {
           throw new InvalidRequestException(
@@ -1491,19 +1552,10 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
                                    .filter(StringUtils::isNotEmpty)
                                    .distinct()
                                    .collect(toList());
-      return hostNames.stream()
-          .map(hostName
-              -> aHost()
-                     .withHostName(hostName)
-                     .withPublicDns(hostName)
-                     .withAppId(pyInfraMapping.getAppId())
-                     .withEnvId(pyInfraMapping.getEnvId())
-                     .withInfraMappingId(pyInfraMapping.getUuid())
-                     .withInfraDefinitionId(pyInfraMapping.getInfrastructureDefinitionId())
-                     .withHostConnAttr(pyInfraMapping.getHostConnectionAttrs())
-                     .withServiceTemplateId(serviceTemplateHelper.fetchServiceTemplateId(pyInfraMapping))
-                     .build())
-          .collect(toList());
+      if (featureFlagService.isEnabled(DEPLOY_TO_INLINE_HOSTS, infrastructureMapping.getAccountId())) {
+        addSpecificHosts(selectionParams, hostNames);
+      }
+      return hostNames.stream().map(hostName -> buildHost(pyInfraMapping, hostName)).collect(toList());
     } else if (infrastructureMapping instanceof PhysicalInfrastructureMappingWinRm) {
       PhysicalInfrastructureMappingWinRm pyInfraMappingWinRm =
           (PhysicalInfrastructureMappingWinRm) infrastructureMapping;
@@ -1513,6 +1565,9 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
                                    .filter(StringUtils::isNotEmpty)
                                    .distinct()
                                    .collect(toList());
+      if (featureFlagService.isEnabled(DEPLOY_TO_INLINE_HOSTS, infrastructureMapping.getAccountId())) {
+        addSpecificHosts(selectionParams, hostNames);
+      }
       return hostNames.stream()
           .map(hostName
               -> aHost()
@@ -1553,6 +1608,25 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
       throw new InvalidRequestException(
           "Unsupported infrastructure mapping: " + infrastructureMapping.getClass().getName());
     }
+  }
+
+  private Host buildHost(PhysicalInfrastructureMapping pyInfraMapping, String hostName) {
+    return aHost()
+        .withHostName(hostName)
+        .withPublicDns(hostName)
+        .withAppId(pyInfraMapping.getAppId())
+        .withEnvId(pyInfraMapping.getEnvId())
+        .withInfraMappingId(pyInfraMapping.getUuid())
+        .withInfraDefinitionId(pyInfraMapping.getInfrastructureDefinitionId())
+        .withHostConnAttr(pyInfraMapping.getHostConnectionAttrs())
+        .withServiceTemplateId(serviceTemplateHelper.fetchServiceTemplateId(pyInfraMapping))
+        .build();
+  }
+
+  private void addSpecificHosts(ServiceInstanceSelectionParams selectionParams, List<String> hostNames) {
+    List<String> specificHosts =
+        selectionParams.getHostNames().stream().filter(s -> !hostNames.contains(s)).collect(toList());
+    hostNames.addAll(specificHosts);
   }
 
   private List<ServiceInstance> syncHostsAndUpdateInstances(
@@ -2444,7 +2518,8 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
       switch (service.getDeploymentType()) {
         case KUBERNETES:
           infraTypes.put(KUBERNETES,
-              asList(SettingVariableTypes.GCP, SettingVariableTypes.AZURE, SettingVariableTypes.KUBERNETES_CLUSTER));
+              asList(SettingVariableTypes.GCP, SettingVariableTypes.AZURE, SettingVariableTypes.KUBERNETES_CLUSTER,
+                  SettingVariableTypes.RANCHER));
           break;
         case HELM:
           infraTypes.put(HELM,
@@ -2495,7 +2570,8 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
     if (artifactType == ArtifactType.DOCKER) {
       infraTypes.put(ECS, asList(SettingVariableTypes.AWS));
       infraTypes.put(KUBERNETES,
-          asList(SettingVariableTypes.GCP, SettingVariableTypes.AZURE, SettingVariableTypes.KUBERNETES_CLUSTER));
+          asList(SettingVariableTypes.GCP, SettingVariableTypes.AZURE, SettingVariableTypes.KUBERNETES_CLUSTER,
+              SettingVariableTypes.RANCHER));
       infraTypes.put(
           HELM, asList(SettingVariableTypes.GCP, SettingVariableTypes.AZURE, SettingVariableTypes.KUBERNETES_CLUSTER));
       infraTypes.put(SSH, asList(SettingVariableTypes.PHYSICAL_DATA_CENTER, SettingVariableTypes.AWS));

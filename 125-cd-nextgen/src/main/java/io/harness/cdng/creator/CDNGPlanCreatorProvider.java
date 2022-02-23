@@ -10,8 +10,8 @@ package io.harness.cdng.creator;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FeatureName;
-import io.harness.cdng.creator.filters.DeploymentStageFilterJsonCreator;
-import io.harness.cdng.creator.plan.StepsPlanCreator;
+import io.harness.cdng.creator.filters.DeploymentStageFilterJsonCreatorV2;
+import io.harness.cdng.creator.plan.CDStepsPlanCreator;
 import io.harness.cdng.creator.plan.artifact.ArtifactsPlanCreator;
 import io.harness.cdng.creator.plan.artifact.PrimaryArtifactPlanCreator;
 import io.harness.cdng.creator.plan.artifact.SideCarArtifactPlanCreator;
@@ -21,15 +21,25 @@ import io.harness.cdng.creator.plan.manifest.IndividualManifestPlanCreator;
 import io.harness.cdng.creator.plan.manifest.ManifestsPlanCreator;
 import io.harness.cdng.creator.plan.rollback.ExecutionStepsRollbackPMSPlanCreator;
 import io.harness.cdng.creator.plan.service.ServicePlanCreator;
-import io.harness.cdng.creator.plan.stage.DeploymentStagePMSPlanCreator;
+import io.harness.cdng.creator.plan.stage.DeploymentStagePMSPlanCreatorV2;
 import io.harness.cdng.creator.plan.steps.CDPMSStepFilterJsonCreator;
 import io.harness.cdng.creator.plan.steps.CDPMSStepFilterJsonCreatorV2;
 import io.harness.cdng.creator.plan.steps.CDPMSStepPlanCreator;
-import io.harness.cdng.creator.plan.steps.K8sBGSwapServicesPMSStepPlanCreator;
-import io.harness.cdng.creator.plan.steps.K8sCanaryDeletePMSStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.HelmDeployStepPlanCreatorV2;
+import io.harness.cdng.creator.plan.steps.HelmRollbackStepPlanCreatorV2;
+import io.harness.cdng.creator.plan.steps.K8sApplyStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.K8sBGSwapServicesStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.K8sBlueGreenStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.K8sCanaryDeleteStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.K8sCanaryStepPlanCreator;
-import io.harness.cdng.creator.plan.steps.K8sRollingDeployPMSStepPlanCreator;
-import io.harness.cdng.creator.plan.steps.K8sRollingRollbackPMSStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.K8sDeleteStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.K8sRollingRollbackStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.K8sRollingStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.K8sScaleStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.TerraformApplyStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.TerraformDestroyStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.TerraformPlanStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.TerraformRollbackStepPlanCreator;
 import io.harness.cdng.creator.variables.DeploymentStageVariableCreator;
 import io.harness.cdng.creator.variables.HelmStepVariableCreator;
 import io.harness.cdng.creator.variables.K8sStepVariableCreator;
@@ -62,13 +72,23 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
   @Override
   public List<PartialPlanCreator<?>> getPlanCreators() {
     List<PartialPlanCreator<?>> planCreators = new LinkedList<>();
-    planCreators.add(new DeploymentStagePMSPlanCreator());
+    planCreators.add(new DeploymentStagePMSPlanCreatorV2());
     planCreators.add(new CDPMSStepPlanCreator());
     planCreators.add(new K8sCanaryStepPlanCreator());
-    planCreators.add(new K8sRollingRollbackPMSStepPlanCreator());
-    planCreators.add(new K8sCanaryDeletePMSStepPlanCreator());
-    planCreators.add(new K8sRollingDeployPMSStepPlanCreator());
-    planCreators.add(new K8sBGSwapServicesPMSStepPlanCreator());
+    planCreators.add(new K8sApplyStepPlanCreator());
+    planCreators.add(new K8sBlueGreenStepPlanCreator());
+    planCreators.add(new K8sRollingStepPlanCreator());
+    planCreators.add(new K8sRollingRollbackStepPlanCreator());
+    planCreators.add(new K8sScaleStepPlanCreator());
+    planCreators.add(new K8sDeleteStepPlanCreator());
+    planCreators.add(new K8sBGSwapServicesStepPlanCreator());
+    planCreators.add(new K8sCanaryDeleteStepPlanCreator());
+    planCreators.add(new TerraformApplyStepPlanCreator());
+    planCreators.add(new TerraformPlanStepPlanCreator());
+    planCreators.add(new TerraformDestroyStepPlanCreator());
+    planCreators.add(new TerraformRollbackStepPlanCreator());
+    planCreators.add(new HelmDeployStepPlanCreatorV2());
+    planCreators.add(new HelmRollbackStepPlanCreatorV2());
     planCreators.add(new HelmRollbackStepPlanCreator());
     planCreators.add(new CDExecutionPMSPlanCreator());
     planCreators.add(new ExecutionStepsRollbackPMSPlanCreator());
@@ -79,7 +99,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     planCreators.add(new SideCarArtifactPlanCreator());
     planCreators.add(new ManifestsPlanCreator());
     planCreators.add(new IndividualManifestPlanCreator());
-    planCreators.add(new StepsPlanCreator());
+    planCreators.add(new CDStepsPlanCreator());
     injectorUtils.injectMembers(planCreators);
     return planCreators;
   }
@@ -87,7 +107,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
   @Override
   public List<FilterJsonCreator> getFilterJsonCreators() {
     List<FilterJsonCreator> filterJsonCreators = new ArrayList<>();
-    filterJsonCreators.add(new DeploymentStageFilterJsonCreator());
+    filterJsonCreators.add(new DeploymentStageFilterJsonCreatorV2());
     filterJsonCreators.add(new CDPMSStepFilterJsonCreator());
     filterJsonCreators.add(new CDPMSStepFilterJsonCreatorV2());
     injectorUtils.injectMembers(filterJsonCreators);

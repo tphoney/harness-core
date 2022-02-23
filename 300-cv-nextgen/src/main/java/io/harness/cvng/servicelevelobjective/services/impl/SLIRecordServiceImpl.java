@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.mongodb.morphia.query.FindOptions;
 import org.mongodb.morphia.query.Sort;
 
 public class SLIRecordServiceImpl implements SLIRecordService {
@@ -175,6 +176,14 @@ public class SLIRecordServiceImpl implements SLIRecordService {
         .build();
   }
 
+  @Override
+  public List<SLIRecord> getLatestCountSLIRecords(String sliId, int count) {
+    return hPersistence.createQuery(SLIRecord.class, excludeAuthority)
+        .filter(SLIRecordKeys.sliId, sliId)
+        .order(Sort.descending(SLIRecordKeys.timestamp))
+        .asList(new FindOptions().limit(count));
+  }
+
   private List<SLIRecord> sliRecords(String sliId, Instant startTime, Instant endTime) {
     SLIRecord firstRecordInRange = getFirstSLIRecord(sliId, startTime);
     SLIRecord lastRecordInRange = getLastSLIRecord(sliId, endTime);
@@ -216,6 +225,11 @@ public class SLIRecordServiceImpl implements SLIRecordService {
         .lessThan(endTimeStamp)
         .order(Sort.ascending(SLIRecordKeys.timestamp))
         .asList();
+  }
+
+  @Override
+  public void delete(List<String> sliIds) {
+    hPersistence.delete(hPersistence.createQuery(SLIRecord.class).field(SLIRecordKeys.sliId).in(sliIds));
   }
 
   private SLIRecord getLastSLIRecord(String sliId, Instant startTimeStamp) {

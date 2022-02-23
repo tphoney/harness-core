@@ -123,6 +123,7 @@ public abstract class AbstractAnalysisState extends State {
   public static final String HOST_NAME_PLACE_HOLDER = "$hostName";
   public static final int MAX_SAMPLING_SIZE_PER_GROUP = 10;
 
+  protected boolean failOnEmptyNodes;
   protected String timeDuration;
   protected String comparisonStrategy;
   protected String tolerance;
@@ -754,6 +755,13 @@ public abstract class AbstractAnalysisState extends State {
   }
 
   protected boolean isEmptyTestNodesAllowed() {
+    return false;
+  }
+
+  protected boolean shouldFailOnEmptyNodes(String accountId) {
+    if (failOnEmptyNodes && featureFlagService.isEnabled(FeatureName.CV_FAIL_ON_EMPTY_NODES, accountId)) {
+      return true;
+    }
     return false;
   }
 }

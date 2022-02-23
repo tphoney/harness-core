@@ -212,6 +212,7 @@ public abstract class AbstractMetricAnalysisState extends AbstractAnalysisState 
         if (analysisContext.isSkipVerification()) {
           getLogger().warn(
               "id: {}, Could not find test nodes to compare the data", context.getStateExecutionInstanceId());
+
           if (shouldFailOnEmptyNodes(analysisContext.getAccountId())) {
             getLogger().info("Could not find newly deployed instances. failOnEmptyNodes is true. Failing execution");
             return generateAnalysisResponse(analysisContext, ExecutionStatus.FAILED, false,
@@ -226,6 +227,7 @@ public abstract class AbstractMetricAnalysisState extends AbstractAnalysisState 
         if (isEmpty(lastExecutionNodes) && !isAwsLambdaState(context)) {
           if (getComparisonStrategy() == AnalysisComparisonStrategy.COMPARE_WITH_CURRENT) {
             getLogger().info("No nodes with older version found to compare the logs. Skipping analysis");
+
             if (shouldFailOnEmptyNodes(analysisContext.getAccountId())) {
               getLogger().info(
                   "No nodes with older version found to compare the logs. failOnEmptyNodes is true. Failing execution");

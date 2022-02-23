@@ -219,6 +219,14 @@ public abstract class AbstractAnalysisState extends State {
     this.predictiveHistoryMinutes = predictiveHistoryMinutes;
   }
 
+  public void setFailOnEmptyNodes(boolean failOnEmptyNodes) {
+    this.failOnEmptyNodes = failOnEmptyNodes;
+  }
+
+  public boolean isFailOnEmptyNodes() {
+    return failOnEmptyNodes;
+  }
+
   public AbstractAnalysisState(String name, String stateType) {
     super(name, stateType);
   }

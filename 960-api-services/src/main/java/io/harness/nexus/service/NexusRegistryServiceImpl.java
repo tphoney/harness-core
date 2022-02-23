@@ -40,10 +40,11 @@ public class NexusRegistryServiceImpl implements NexusRegistryService {
 
   @Override
   public List<BuildDetailsInternal> getBuilds(NexusRequest nexusConfig, String repositoryName, String port,
-      String imageName, String repositoryFormat, int maxNumberOfBuilds) {
+      String artifactName, String repositoryFormat, int maxNumberOfBuilds) {
     if (RepositoryFormat.docker.name().equalsIgnoreCase(repositoryFormat)) {
       List<BuildDetailsInternal> buildDetails;
-      buildDetails = nexusClient.getArtifactsVersions(nexusConfig, repositoryName, port, imageName, repositoryFormat);
+      buildDetails =
+          nexusClient.getArtifactsVersions(nexusConfig, repositoryName, port, artifactName, repositoryFormat);
       buildDetails.sort(new BuildDetailsInternalComparatorAscending());
       return buildDetails;
     }
@@ -54,11 +55,11 @@ public class NexusRegistryServiceImpl implements NexusRegistryService {
             "Invalid value for repositoryFormat field. Currently only 'docker' repository format is supported."));
   }
 
-  private List<BuildDetailsInternal> getBuildDetails(
-      NexusRequest nexusConfig, String repository, String port, String imageName, String repositoryFormat, String tag) {
+  private List<BuildDetailsInternal> getBuildDetails(NexusRequest nexusConfig, String repository, String port,
+      String artifactName, String repositoryFormat, String tag) {
     if (RepositoryFormat.docker.name().equalsIgnoreCase(repositoryFormat)) {
       List<BuildDetailsInternal> buildDetails;
-      buildDetails = nexusClient.getBuildDetails(nexusConfig, repository, port, imageName, repositoryFormat, tag);
+      buildDetails = nexusClient.getBuildDetails(nexusConfig, repository, port, artifactName, repositoryFormat, tag);
       buildDetails.sort(new BuildDetailsInternalComparatorAscending());
       return buildDetails;
     }
@@ -71,7 +72,7 @@ public class NexusRegistryServiceImpl implements NexusRegistryService {
 
   @Override
   public BuildDetailsInternal getLastSuccessfulBuildFromRegex(NexusRequest nexusConfig, String repository, String port,
-      String imageName, String repositoryFormat, String tagRegex) {
+      String artifactName, String repositoryFormat, String tagRegex) {
     try {
       Pattern.compile(tagRegex);
     } catch (PatternSyntaxException e) {
@@ -82,7 +83,7 @@ public class NexusRegistryServiceImpl implements NexusRegistryService {
     }
 
     List<BuildDetailsInternal> builds =
-        getBuilds(nexusConfig, repository, port, imageName, repositoryFormat, MAX_NUMBER_OF_BUILDS);
+        getBuilds(nexusConfig, repository, port, artifactName, repositoryFormat, MAX_NUMBER_OF_BUILDS);
     builds = builds.stream()
                  .filter(build -> new RegexFunctor().match(tagRegex, build.getNumber()))
                  .sorted(new BuildDetailsInternalComparatorDescending())
@@ -92,18 +93,18 @@ public class NexusRegistryServiceImpl implements NexusRegistryService {
       throw NestedExceptionUtils.hintWithExplanationException(
           "Please check tagRegex field in Nexus artifact configuration.",
           String.format(
-              "Could not find any tags that match regex '%s' for Nexus repository [%s] for %s artifact image [%s] in registry [%s].",
-              tagRegex, repository, repositoryFormat, imageName, nexusConfig.getNexusUrl()),
+              "Could not find any tags that match regex '%s' for Nexus repository [%s] for %s artifact [%s] in registry [%s].",
+              tagRegex, repository, repositoryFormat, artifactName, nexusConfig.getNexusUrl()),
           new NexusRegistryException(
-              String.format("Could not find an artifact image tag that matches tagRegex '%s'", tagRegex)));
+              String.format("Could not find an artifact tag that matches tagRegex '%s'", tagRegex)));
     }
     return builds.get(0);
   }
 
   @Override
-  public BuildDetailsInternal verifyBuildNumber(
-      NexusRequest nexusConfig, String repository, String port, String imageName, String repositoryFormat, String tag) {
-    return getBuildNumber(nexusConfig, repository, port, imageName, repositoryFormat, tag);
+  public BuildDetailsInternal verifyBuildNumber(NexusRequest nexusConfig, String repository, String port,
+      String artifactName, String repositoryFormat, String tag) {
+    return getBuildNumber(nexusConfig, repository, port, artifactName, repositoryFormat, tag);
   }
 
   @Override
@@ -111,10 +112,10 @@ public class NexusRegistryServiceImpl implements NexusRegistryService {
     return nexusClient.isRunning(nexusConfig);
   }
 
-  private BuildDetailsInternal getBuildNumber(
-      NexusRequest nexusConfig, String repository, String port, String imageName, String repositoryFormat, String tag) {
+  private BuildDetailsInternal getBuildNumber(NexusRequest nexusConfig, String repository, String port,
+      String artifactName, String repositoryFormat, String tag) {
     List<BuildDetailsInternal> builds =
-        getBuildDetails(nexusConfig, repository, port, imageName, repositoryFormat, tag);
+        getBuildDetails(nexusConfig, repository, port, artifactName, repositoryFormat, tag);
     builds = builds.stream().filter(build -> build.getNumber().equals(tag)).collect(Collectors.toList());
 
     if (builds.size() == 1) {
@@ -122,12 +123,11 @@ public class NexusRegistryServiceImpl implements NexusRegistryService {
     }
 
     throw NestedExceptionUtils.hintWithExplanationException(
-        "Please check your Nexus repository for images with same tag.",
+        "Please check your Nexus repository for artifacts with same tag.",
         String.format(
-            "Found multiple artifact images for tag [%s] in Nexus repository [%s] for %s artifact image [%s] in registry [%s].",
-            tag, repository, repositoryFormat, imageName, nexusConfig.getNexusUrl()),
-        new NexusRegistryException(
-            String.format("Found multiple same image tags ('%s'), but expected only one.", tag)));
+            "Found multiple artifacts for tag [%s] in Nexus repository [%s] for %s artifact [%s] in registry [%s].",
+            tag, repository, repositoryFormat, artifactName, nexusConfig.getNexusUrl()),
+        new NexusRegistryException(String.format("Found multiple artifact tags ('%s'), but expected only one.", tag)));
   }
 
   @Override

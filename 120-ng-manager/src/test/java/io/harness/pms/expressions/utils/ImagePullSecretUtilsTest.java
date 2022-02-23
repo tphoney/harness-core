@@ -210,8 +210,8 @@ public class ImagePullSecretUtilsTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testNexusDockerImagePullSecret() throws IOException {
     ArtifactOutcome artifactOutcome = NexusArtifactOutcome.builder()
-                                          .imagePath("test-image")
-                                          .type(ArtifactSourceConstants.NEXUS_REGISTRY_NAME)
+                                          .artifactPath("test-image")
+                                          .type(ArtifactSourceConstants.NEXUS3_REGISTRY_NAME)
                                           .connectorRef("account")
                                           .build();
     Ambiance ambiance = Ambiance.newBuilder()
@@ -248,7 +248,7 @@ public class ImagePullSecretUtilsTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testArtifactoryDockerImagePullSecret() throws IOException {
     ArtifactOutcome artifactOutcome = ArtifactoryArtifactOutcome.builder()
-                                          .imagePath("test-image")
+                                          .artifactPath("test-image")
                                           .type(ArtifactSourceConstants.ARTIFACTORY_REGISTRY_NAME)
                                           .connectorRef("account")
                                           .build();

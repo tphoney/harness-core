@@ -35,7 +35,7 @@ public class NexusResourceMapperTest extends CategoryTest {
     List<NexusArtifactDelegateResponse> nexusArtifactDelegateResponses =
         Lists.newArrayList(NexusArtifactDelegateResponse.builder()
                                .buildDetails(ArtifactBuildDetailsNG.builder().build())
-                               .imagePath("/")
+                               .artifactPath("/")
                                .build());
     NexusResponseDTO nexusResponseDTO = NexusResourceMapper.toNexusResponse(nexusArtifactDelegateResponses);
     assertThat(nexusResponseDTO).isNotNull();

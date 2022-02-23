@@ -17,36 +17,36 @@ import java.util.List;
 
 @OwnedBy(CDP)
 public interface NexusRegistryService {
-  int MAX_NO_OF_TAGS_PER_IMAGE = 10000;
+  int MAX_NO_OF_TAGS_PER_ARTIFACT = 10000;
 
   /**
    * Gets builds.
    *
    * @param nexusConfig      the nexus config
-   * @param imageName         the image name
+   * @param artifactName         the artifact name
    * @param maxNumberOfBuilds the max number of builds
    * @return the builds
    */
-  List<BuildDetailsInternal> getBuilds(NexusRequest nexusConfig, String repositoryName, String port, String imageName,
-      String repoFormat, int maxNumberOfBuilds);
+  List<BuildDetailsInternal> getBuilds(NexusRequest nexusConfig, String repositoryName, String port,
+      String artifactName, String repoFormat, int maxNumberOfBuilds);
 
   /**
    * Gets the last successful build with input as tag regex.
    * @param nexusConfig the nexus config
-   * @param imageName the image name
+   * @param artifactName the artifact name
    * @param tagRegex tag regex
    * @return the last successful build
    */
   BuildDetailsInternal getLastSuccessfulBuildFromRegex(NexusRequest nexusConfig, String repository, String port,
-      String imageName, String repositoryFormat, String tagRegex);
+      String artifactName, String repositoryFormat, String tagRegex);
 
   /**
-   * Validates the Image Tag
+   * Validates the Artifact Tag
    * @param nexusConfig the nexus config
-   * @param imageName the image name
+   * @param artifactName the artifact name
    */
-  BuildDetailsInternal verifyBuildNumber(
-      NexusRequest nexusConfig, String repository, String port, String imageName, String repositoryFormat, String tag);
+  BuildDetailsInternal verifyBuildNumber(NexusRequest nexusConfig, String repository, String port, String artifactName,
+      String repositoryFormat, String tag);
 
   /**
    * Validate the credentials
@@ -57,8 +57,8 @@ public interface NexusRegistryService {
   boolean validateCredentials(NexusRequest nexusConfig);
 
   /**
-   * Verifies the Image Tag Manifest exists
-   * @param lastSuccessfulBuild       image build details
+   * Verifies the Artifact Tag Manifest exists
+   * @param lastSuccessfulBuild       artifact build details
    * @param nexusConfig         the artifactory config
    */
   boolean verifyArtifactManifestUrl(BuildDetailsInternal lastSuccessfulBuild, NexusRequest nexusConfig);

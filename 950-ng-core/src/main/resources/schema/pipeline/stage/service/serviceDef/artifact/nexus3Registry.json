@@ -9,12 +9,12 @@
 					"type": "string"
 				},
 				"repositoryPort": {
-					"type": "integer"
+					"type": ["integer", "string"]
 				},
 				"imagePath": {
 					"type": "string"
 				},
-				"artifactRepositoryUrl": {
+				"repositoryUrl": {
 					"type": "string"
 				},
 				"repositoryFormat": {

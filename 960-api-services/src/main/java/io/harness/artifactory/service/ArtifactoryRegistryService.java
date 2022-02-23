@@ -17,42 +17,42 @@ import java.util.List;
 
 @OwnedBy(CDP)
 public interface ArtifactoryRegistryService {
-  int MAX_NO_OF_TAGS_PER_IMAGE = 10000;
+  int MAX_NO_OF_TAGS_PER_ARTIFACT = 10000;
 
   /**
    * Gets builds.
    *
    * @param artifactoryConfig      the artifactory config
    * @param repositoryName         the repository name
-   * @param imageName         the image name
+   * @param artifactName         the artifact name
    * @param repoFormat         the repositroy format (docker,....)
    * @param maxNumberOfBuilds the max number of builds
    * @return the builds
    */
   List<BuildDetailsInternal> getBuilds(ArtifactoryConfigRequest artifactoryConfig, String repositoryName,
-      String imageName, String repoFormat, int maxNumberOfBuilds);
+      String artifactName, String repoFormat, int maxNumberOfBuilds);
   /**
    * Gets last successful build.
    *
    * @param artifactoryConfig       the artifactory config
    * @param repositoryName          the repository name
-   * @param imageName               the image name
+   * @param artifactName               the artifact name
    * @param repoFormat              the repositroy format (docker,....)
    * @param tagRegex                the regular expression of tag value
    * @return the last successful build
    */
   BuildDetailsInternal getLastSuccessfulBuildFromRegex(ArtifactoryConfigRequest artifactoryConfig,
-      String repositoryName, String imageName, String repoFormat, String tagRegex);
+      String repositoryName, String artifactName, String repoFormat, String tagRegex);
   /**
-   * Validates the Image Tag
+   * Validates the Artifact Tag
    * @param artifactoryConfig       the artifactory config
    * @param repositoryName          the repository name
-   * @param imageName               the image name
+   * @param artifactName               the artifact name
    * @param repoFormat              the repositroy format (docker,....)
    * @param tag                     the repositroy iamge tag value
    */
   BuildDetailsInternal verifyBuildNumber(ArtifactoryConfigRequest artifactoryConfig, String repositoryName,
-      String imageName, String repoFormat, String tag);
+      String artifactName, String repoFormat, String tag);
 
   /**
    * Validate the credentials
@@ -63,8 +63,8 @@ public interface ArtifactoryRegistryService {
   boolean validateCredentials(ArtifactoryConfigRequest toArtifactoryInternalConfig);
 
   /**
-   * Verifies the Image Tag Manifest exists
-   * @param lastSuccessfulBuild       image build details
+   * Verifies the Artifact Tag Manifest exists
+   * @param lastSuccessfulBuild       artifact build details
    * @param artifactoryConfig         the artifactory config
    */
   boolean verifyArtifactManifestUrl(

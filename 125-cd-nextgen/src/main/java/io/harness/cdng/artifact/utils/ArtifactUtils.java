@@ -118,9 +118,9 @@ public class ArtifactUtils {
             ecrArtifactConfig.getTag().getValue() != null ? ecrArtifactConfig.getTag().getValue()
                                                           : ecrArtifactConfig.getTagRegex().getValue(),
             ecrArtifactConfig.getConnectorRef().getValue());
-      case NEXUS_REGISTRY:
+      case NEXUS3_REGISTRY:
         NexusRegistryArtifactConfig nexusRegistryArtifactConfig = (NexusRegistryArtifactConfig) artifactConfig;
-        return String.format(placeholder, sourceType, nexusRegistryArtifactConfig.getImagePath().getValue(),
+        return String.format(placeholder, sourceType, nexusRegistryArtifactConfig.getArtifactPath().getValue(),
             ParameterField.isNull(nexusRegistryArtifactConfig.getTag())
                 ? nexusRegistryArtifactConfig.getTagRegex().getValue()
                 : nexusRegistryArtifactConfig.getTag().getValue(),
@@ -128,7 +128,7 @@ public class ArtifactUtils {
       case ARTIFACTORY_REGISTRY:
         ArtifactoryRegistryArtifactConfig artifactoryRegistryArtifactConfig =
             (ArtifactoryRegistryArtifactConfig) artifactConfig;
-        return String.format(placeholder, sourceType, artifactoryRegistryArtifactConfig.getImagePath().getValue(),
+        return String.format(placeholder, sourceType, artifactoryRegistryArtifactConfig.getArtifactPath().getValue(),
             ParameterField.isNull(artifactoryRegistryArtifactConfig.getTag())
                 ? artifactoryRegistryArtifactConfig.getTagRegex().getValue()
                 : artifactoryRegistryArtifactConfig.getTag().getValue(),

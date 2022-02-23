@@ -87,7 +87,7 @@ public class ImagePullSecretUtils {
       case ArtifactSourceConstants.ECR_NAME:
         getImageDetailsFromEcr((EcrArtifactOutcome) artifactOutcome, imageDetailsBuilder, ambiance);
         break;
-      case ArtifactSourceConstants.NEXUS_REGISTRY_NAME:
+      case ArtifactSourceConstants.NEXUS3_REGISTRY_NAME:
         getImageDetailsFromNexus((NexusArtifactOutcome) artifactOutcome, imageDetailsBuilder, ambiance);
         break;
       case ArtifactSourceConstants.ARTIFACTORY_REGISTRY_NAME:

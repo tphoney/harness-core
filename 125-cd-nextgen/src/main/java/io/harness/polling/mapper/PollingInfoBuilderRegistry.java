@@ -41,7 +41,7 @@ public class PollingInfoBuilderRegistry {
     registeredPollingInfoBuilders.put(Type.ECR, EcrArtifactInfoBuilder.class);
     registeredPollingInfoBuilders.put(Type.DOCKER_HUB, DockerHubArtifactInfoBuilder.class);
     registeredPollingInfoBuilders.put(Type.GCR, GcrArtifactInfoBuilder.class);
-    registeredPollingInfoBuilders.put(Type.NEXUS, NexusRegistryArtifactInfoBuilder.class);
+    registeredPollingInfoBuilders.put(Type.NEXUS3, NexusRegistryArtifactInfoBuilder.class);
     registeredPollingInfoBuilders.put(Type.ARTIFACTORY, ArtifactoryRegistryArtifactInfoBuilder.class);
   }
 

@@ -64,8 +64,8 @@ public class NexusArtifactTaskHelper {
             "Fetched Artifact details"
                 + "\ntype: Nexus Artifact"
                 + "\nbuild metadata url: " + buildMetadataUrl
-                + "\nrepository: " + nexusArtifactDelegateResponse.getRepositoryName() + "\nimagePath: "
-                + nexusArtifactDelegateResponse.getImagePath() + "\ntag: " + nexusArtifactDelegateResponse.getTag()
+                + "\nrepository: " + nexusArtifactDelegateResponse.getRepositoryName() + "\nartifactPath: "
+                + nexusArtifactDelegateResponse.getArtifactPath() + "\ntag: " + nexusArtifactDelegateResponse.getTag()
                 + "\nrepository type: " + nexusArtifactDelegateResponse.getRepositoryFormat()
                 + (EmptyPredicate.isNotEmpty(dockerPullCommand) ? dockerPullCommand : ""));
         break;

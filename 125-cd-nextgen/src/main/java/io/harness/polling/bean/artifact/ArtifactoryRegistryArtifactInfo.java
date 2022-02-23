@@ -22,7 +22,7 @@ import lombok.Value;
 @Builder
 public class ArtifactoryRegistryArtifactInfo implements ArtifactInfo {
   String connectorRef;
-  String imagePath;
+  String artifactPath;
 
   @Override
   public ArtifactSourceType getType() {
@@ -33,7 +33,7 @@ public class ArtifactoryRegistryArtifactInfo implements ArtifactInfo {
   public ArtifactConfig toArtifactConfig() {
     return ArtifactoryRegistryArtifactConfig.builder()
         .connectorRef(ParameterField.<String>builder().value(connectorRef).build())
-        .imagePath(ParameterField.<String>builder().value(imagePath).build())
+        .artifactPath(ParameterField.<String>builder().value(artifactPath).build())
         .build();
   }
 }

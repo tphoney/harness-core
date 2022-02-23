@@ -81,7 +81,7 @@ public class NexusArtifactTaskHandlerTest extends CategoryTest {
         .isInstanceOf(NexusArtifactDelegateResponse.class);
     NexusArtifactDelegateResponse attributes =
         (NexusArtifactDelegateResponse) lastSuccessfulBuild.getArtifactDelegateResponses().get(0);
-    assertThat(attributes.getImagePath()).isEqualTo(IMAGE_NAME);
+    assertThat(attributes.getArtifactPath()).isEqualTo(IMAGE_NAME);
     assertThat(attributes.getTag()).isEqualTo(sourceAttributes.getTag());
     assertThat(attributes.getBuildDetails().getMetadata().get(ArtifactMetadataKeys.IMAGE))
         .isEqualTo(DOCKER_REPO_URL + "/" + IMAGE_NAME + ":" + IMAGE_TAG);
@@ -110,7 +110,7 @@ public class NexusArtifactTaskHandlerTest extends CategoryTest {
         .isInstanceOf(NexusArtifactDelegateResponse.class);
     NexusArtifactDelegateResponse attributes =
         (NexusArtifactDelegateResponse) lastSuccessfulBuild.getArtifactDelegateResponses().get(0);
-    assertThat(attributes.getImagePath()).isEqualTo(IMAGE_NAME);
+    assertThat(attributes.getArtifactPath()).isEqualTo(IMAGE_NAME);
     assertThat(attributes.getTag()).isEqualTo(IMAGE_TAG);
     assertThat(attributes.getBuildDetails().getMetadata().get(ArtifactMetadataKeys.IMAGE))
         .isEqualTo(DOCKER_REPO_URL + "/" + IMAGE_NAME + ":" + IMAGE_TAG);
@@ -139,7 +139,7 @@ public class NexusArtifactTaskHandlerTest extends CategoryTest {
         .isInstanceOf(NexusArtifactDelegateResponse.class);
     NexusArtifactDelegateResponse attributes =
         (NexusArtifactDelegateResponse) lastSuccessfulBuild.getArtifactDelegateResponses().get(0);
-    assertThat(attributes.getImagePath()).isEqualTo(IMAGE_NAME);
+    assertThat(attributes.getArtifactPath()).isEqualTo(IMAGE_NAME);
     assertThat(attributes.getTag()).isEqualTo(IMAGE_TAG);
     assertThat(attributes.getBuildDetails().getMetadata().get(ArtifactMetadataKeys.IMAGE))
         .isEqualTo(DOCKER_REPO_URL + "/" + IMAGE_NAME + ":" + IMAGE_TAG);
@@ -230,7 +230,7 @@ public class NexusArtifactTaskHandlerTest extends CategoryTest {
       NexusConnectorDTO nexusConnectorDTO, String tag, String tagRegex, String port, String dockerRepoServer) {
     return NexusArtifactDelegateRequest.builder()
         .repositoryName(REPO_NAME)
-        .imagePath(IMAGE_NAME)
+        .artifactPath(IMAGE_NAME)
         .repositoryFormat(RepositoryFormat.docker.name())
         .tag(tag)
         .tagRegex(tagRegex)

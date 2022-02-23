@@ -77,7 +77,7 @@ public class ArtifactoryArtifactTaskHandlerTest extends CategoryTest {
 
     ArtifactoryArtifactDelegateRequest sourceAttributes = ArtifactoryArtifactDelegateRequest.builder()
                                                               .repositoryName(REPO_NAME)
-                                                              .imagePath(IMAGE_NAME)
+                                                              .artifactPath(IMAGE_NAME)
                                                               .repositoryFormat(RepositoryFormat.docker.name())
                                                               .tag(IMAGE_TAG)
                                                               .artifactRepositoryUrl(ARTIFACT_REPO_URL)
@@ -96,7 +96,7 @@ public class ArtifactoryArtifactTaskHandlerTest extends CategoryTest {
         .isInstanceOf(ArtifactoryArtifactDelegateResponse.class);
     ArtifactoryArtifactDelegateResponse attributes =
         (ArtifactoryArtifactDelegateResponse) lastSuccessfulBuild.getArtifactDelegateResponses().get(0);
-    assertThat(attributes.getImagePath()).isEqualTo(IMAGE_NAME);
+    assertThat(attributes.getArtifactPath()).isEqualTo(IMAGE_NAME);
     assertThat(attributes.getTag()).isEqualTo(sourceAttributes.getTag());
   }
 
@@ -128,7 +128,7 @@ public class ArtifactoryArtifactTaskHandlerTest extends CategoryTest {
 
     ArtifactoryArtifactDelegateRequest sourceAttributes = ArtifactoryArtifactDelegateRequest.builder()
                                                               .repositoryName(REPO_NAME)
-                                                              .imagePath(IMAGE_NAME)
+                                                              .artifactPath(IMAGE_NAME)
                                                               .repositoryFormat(RepositoryFormat.docker.name())
                                                               .tagRegex(IMAGE_TAG_REGEX)
                                                               .artifactRepositoryUrl(ARTIFACT_REPO_URL)
@@ -148,7 +148,7 @@ public class ArtifactoryArtifactTaskHandlerTest extends CategoryTest {
         .isInstanceOf(ArtifactoryArtifactDelegateResponse.class);
     ArtifactoryArtifactDelegateResponse attributes =
         (ArtifactoryArtifactDelegateResponse) lastSuccessfulBuild.getArtifactDelegateResponses().get(0);
-    assertThat(attributes.getImagePath()).isEqualTo(IMAGE_NAME);
+    assertThat(attributes.getArtifactPath()).isEqualTo(IMAGE_NAME);
     assertThat(attributes.getTag()).isEqualTo(IMAGE_TAG);
   }
 
@@ -184,7 +184,7 @@ public class ArtifactoryArtifactTaskHandlerTest extends CategoryTest {
 
     ArtifactoryArtifactDelegateRequest sourceAttributes = ArtifactoryArtifactDelegateRequest.builder()
                                                               .repositoryName(REPO_NAME)
-                                                              .imagePath(IMAGE_NAME)
+                                                              .artifactPath(IMAGE_NAME)
                                                               .repositoryFormat(RepositoryFormat.docker.name())
                                                               .artifactRepositoryUrl(ARTIFACT_REPO_URL)
                                                               .artifactoryConnectorDTO(artifactoryConnectorDTO)
@@ -202,7 +202,7 @@ public class ArtifactoryArtifactTaskHandlerTest extends CategoryTest {
         .isInstanceOf(ArtifactoryArtifactDelegateResponse.class);
     ArtifactoryArtifactDelegateResponse attributes =
         (ArtifactoryArtifactDelegateResponse) lastSuccessfulBuild.getArtifactDelegateResponses().get(0);
-    assertThat(attributes.getImagePath()).isEqualTo(IMAGE_NAME);
+    assertThat(attributes.getArtifactPath()).isEqualTo(IMAGE_NAME);
     assertThat(attributes.getTag()).isEqualTo(IMAGE_TAG);
     assertThat(attributes.getBuildDetails().getMetadata().get(ArtifactMetadataKeys.IMAGE))
         .isEqualTo(ARTIFACT_REPO_URL + "/" + IMAGE_NAME + ":" + IMAGE_TAG);
@@ -235,7 +235,7 @@ public class ArtifactoryArtifactTaskHandlerTest extends CategoryTest {
 
     ArtifactoryArtifactDelegateRequest sourceAttributes = ArtifactoryArtifactDelegateRequest.builder()
                                                               .repositoryName(REPO_NAME)
-                                                              .imagePath(IMAGE_NAME)
+                                                              .artifactPath(IMAGE_NAME)
                                                               .repositoryFormat(RepositoryFormat.docker.name())
                                                               .tag(IMAGE_TAG)
                                                               .artifactRepositoryUrl(ARTIFACT_REPO_URL)
@@ -255,7 +255,7 @@ public class ArtifactoryArtifactTaskHandlerTest extends CategoryTest {
   public void testIsRegex() {
     ArtifactoryArtifactDelegateRequest sourceAttributes = ArtifactoryArtifactDelegateRequest.builder()
                                                               .repositoryName(REPO_NAME)
-                                                              .imagePath(IMAGE_NAME)
+                                                              .artifactPath(IMAGE_NAME)
                                                               .repositoryFormat(RepositoryFormat.docker.name())
                                                               .tag(IMAGE_TAG)
                                                               .tagRegex(IMAGE_TAG_REGEX)
@@ -265,7 +265,7 @@ public class ArtifactoryArtifactTaskHandlerTest extends CategoryTest {
 
     sourceAttributes = ArtifactoryArtifactDelegateRequest.builder()
                            .repositoryName(REPO_NAME)
-                           .imagePath(IMAGE_NAME)
+                           .artifactPath(IMAGE_NAME)
                            .repositoryFormat(RepositoryFormat.docker.name())
                            .tagRegex(IMAGE_TAG_REGEX)
                            .build();
@@ -274,7 +274,7 @@ public class ArtifactoryArtifactTaskHandlerTest extends CategoryTest {
 
     sourceAttributes = ArtifactoryArtifactDelegateRequest.builder()
                            .repositoryName(REPO_NAME)
-                           .imagePath(IMAGE_NAME)
+                           .artifactPath(IMAGE_NAME)
                            .repositoryFormat(RepositoryFormat.docker.name())
                            .tag(IMAGE_TAG)
                            .build();
@@ -318,7 +318,7 @@ public class ArtifactoryArtifactTaskHandlerTest extends CategoryTest {
       ArtifactoryConnectorDTO artifactoryConnectorDTO, String tag, String tagRegex, String artifactRepoUrl) {
     return ArtifactoryArtifactDelegateRequest.builder()
         .repositoryName(REPO_NAME)
-        .imagePath(IMAGE_NAME)
+        .artifactPath(IMAGE_NAME)
         .repositoryFormat(RepositoryFormat.docker.name())
         .tag(tag)
         .tagRegex(tagRegex)

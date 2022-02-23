@@ -17,11 +17,11 @@ import io.harness.cdng.artifact.resources.nexus.dtos.NexusResponseDTO;
 @OwnedBy(HarnessTeam.CDP)
 public interface NexusResourceService {
   NexusResponseDTO getBuildDetails(IdentifierRef nexusConnectorRef, String repositoryName, String repositoryPort,
-      String imagePath, String repositoryFormat, String artifactRepositoryUrl, String orgIdentifier,
+      String artifactPath, String repositoryFormat, String artifactRepositoryUrl, String orgIdentifier,
       String projectIdentifier);
 
   NexusBuildDetailsDTO getSuccessfulBuild(IdentifierRef nexusConnectorRef, String repositoryName, String repositoryPort,
-      String imagePath, String repositoryFormat, String artifactRepositoryUrl, NexusRequestDTO nexusRequestDTO,
+      String artifactPath, String repositoryFormat, String artifactRepositoryUrl, NexusRequestDTO nexusRequestDTO,
       String orgIdentifier, String projectIdentifier);
 
   boolean validateArtifactServer(IdentifierRef nexusConnectorRef, String orgIdentifier, String projectIdentifier);

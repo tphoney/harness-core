@@ -14,7 +14,7 @@
 				"repositoryFormat": {
 					"type": "string"
 				},
-				"artifactRepositoryUrl": {
+				"repositoryUrl": {
 					"type": "string"
 				},
 				"tag": {

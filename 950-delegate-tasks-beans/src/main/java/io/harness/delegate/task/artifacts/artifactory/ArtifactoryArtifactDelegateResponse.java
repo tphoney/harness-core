@@ -27,17 +27,17 @@ import lombok.Value;
 public class ArtifactoryArtifactDelegateResponse extends ArtifactDelegateResponse {
   String repositoryName;
   /** Images in repos need to be referenced via a path */
-  String imagePath;
+  String artifactPath;
   String repositoryFormat;
   /** Tag refers to exact tag number */
   String tag;
 
   @Builder
   public ArtifactoryArtifactDelegateResponse(ArtifactBuildDetailsNG buildDetails, ArtifactSourceType sourceType,
-      String repositoryName, String imagePath, String repositoryFormat, String tag) {
+      String repositoryName, String artifactPath, String repositoryFormat, String tag) {
     super(buildDetails, sourceType);
     this.repositoryName = repositoryName;
-    this.imagePath = imagePath;
+    this.artifactPath = artifactPath;
     this.repositoryFormat = repositoryFormat;
     this.tag = tag;
   }
@@ -51,7 +51,7 @@ public class ArtifactoryArtifactDelegateResponse extends ArtifactDelegateRespons
         : null;
     return "type: " + (getSourceType() != null ? getSourceType().getDisplayName() : null)
         + "\nbuild metadata url: " + buildMetadataUrl + "\nrepository: " + getRepositoryName()
-        + "\nimagePath: " + getImagePath() + "\ntag: " + getTag() + "\nrepository type: " + getRepositoryFormat()
+        + "\nimagePath: " + getArtifactPath() + "\ntag: " + getTag() + "\nrepository type: " + getRepositoryFormat()
         + (EmptyPredicate.isNotEmpty(dockerPullCommand) ? dockerPullCommand : "");
   }
 }

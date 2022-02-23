@@ -131,7 +131,7 @@ public class NexusThreeClientImpl {
   }
 
   public List<BuildDetailsInternal> getArtifactsVersions(
-      NexusRequest nexusConfig, String repository, String port, String imageName, String repositoryFormat) {
+      NexusRequest nexusConfig, String repository, String port, String artifactName, String repositoryFormat) {
     if (isNotEmpty(port) && !port.matches(REPO_PORT_REGEX)) {
       throw NestedExceptionUtils.hintWithExplanationException(
           "Check repository port field for Nexus artifact configuration.",
@@ -143,23 +143,23 @@ public class NexusThreeClientImpl {
     final Call<Nexus3ComponentResponse> request;
     if (nexusConfig.isHasCredentials()) {
       request = nexusThreeRestClient.search(
-          Credentials.basic(nexusConfig.getUsername(), new String(nexusConfig.getPassword())), repository, imageName,
+          Credentials.basic(nexusConfig.getUsername(), new String(nexusConfig.getPassword())), repository, artifactName,
           repositoryFormat, null);
     } else {
-      request = nexusThreeRestClient.search(repository, imageName, repositoryFormat, null);
+      request = nexusThreeRestClient.search(repository, artifactName, repositoryFormat, null);
     }
 
     Response<Nexus3ComponentResponse> response = executeRequest(request);
-    List<BuildDetailsInternal> result =
-        processComponentResponse(request, response, nexusConfig, repository, port, imageName, repositoryFormat, null);
+    List<BuildDetailsInternal> result = processComponentResponse(
+        request, response, nexusConfig, repository, port, artifactName, repositoryFormat, null);
 
     if (isEmpty(result)) {
       throw NestedExceptionUtils.hintWithExplanationException("Please check your artifact configuration.",
           String.format("Failed to retrieve artifact tags by API call '%s %s' and got response code '%s'",
               request.request().method(), request.request().url(), response.code()),
           new NexusRegistryException(
-              String.format("No tags found for artifact [repositoryFormat=%s, repository=%s, image=%s].",
-                  repositoryFormat, repository, imageName)));
+              String.format("No tags found for artifact [repositoryFormat=%s, repository=%s, artifact=%s].",
+                  repositoryFormat, repository, artifactName)));
     }
 
     return result;
@@ -173,7 +173,7 @@ public class NexusThreeClientImpl {
     for (Asset item : assets) {
       String url = item.getDownloadUrl();
       String artifactFileName = url.substring(url.lastIndexOf('/') + 1);
-      String imagePath = item.getPath();
+      String artifactPath = item.getPath();
       if (IGNORE_EXTENSIONS.stream().anyMatch(artifactFileName::endsWith)) {
         continue;
       }
@@ -181,7 +181,7 @@ public class NexusThreeClientImpl {
         url = url.replace(item.getRepository(), repoId);
       }
       artifactFileMetadataInternals.add(
-          ArtifactFileMetadataInternal.builder().fileName(artifactFileName).imagePath(imagePath).url(url).build());
+          ArtifactFileMetadataInternal.builder().fileName(artifactFileName).imagePath(artifactPath).url(url).build());
     }
     return artifactFileMetadataInternals;
   }
@@ -202,49 +202,50 @@ public class NexusThreeClientImpl {
 
   private String getArtifactImagePath(
       List<ArtifactFileMetadataInternal> artifactFileMetadataInternals, String extension, String classifier) {
-    String defaultImagePath = artifactFileMetadataInternals.get(0).getImagePath();
-    String imagePath = null;
+    String defaultArtifactPath = artifactFileMetadataInternals.get(0).getImagePath();
+    String artifactPath = null;
     if (StringUtils.isNoneBlank(extension, classifier)) {
-      imagePath = artifactFileMetadataInternals.stream()
-                      .filter(meta -> meta.getFileName().endsWith(extension) && meta.getFileName().contains(classifier))
-                      .map(ArtifactFileMetadataInternal::getImagePath)
-                      .findFirst()
-                      .orElse(null);
+      artifactPath =
+          artifactFileMetadataInternals.stream()
+              .filter(meta -> meta.getFileName().endsWith(extension) && meta.getFileName().contains(classifier))
+              .map(ArtifactFileMetadataInternal::getImagePath)
+              .findFirst()
+              .orElse(null);
     }
-    return StringUtils.isNotBlank(imagePath) ? imagePath : defaultImagePath;
+    return StringUtils.isNotBlank(artifactPath) ? artifactPath : defaultArtifactPath;
   }
 
-  public List<BuildDetailsInternal> getBuildDetails(
-      NexusRequest nexusConfig, String repository, String port, String imageName, String repositoryFormat, String tag) {
+  public List<BuildDetailsInternal> getBuildDetails(NexusRequest nexusConfig, String repository, String port,
+      String artifactName, String repositoryFormat, String tag) {
     if (isNotEmpty(port) && !port.matches(REPO_PORT_REGEX)) {
       throw NestedExceptionUtils.hintWithExplanationException(
           "Please check repository port field in your Nexus artifact configuration.",
           String.format("Repository port [%s] field must only contain numeric characters.", port),
           new NexusRegistryException(
-              String.format("Repository port has an invalid value.", repositoryFormat, repository, imageName, tag)));
+              String.format("Repository port has an invalid value.", repositoryFormat, repository, artifactName, tag)));
     }
     log.info("Retrieving artifact details");
     NexusThreeRestClient nexusThreeRestClient = getNexusThreeClient(nexusConfig);
     final Call<Nexus3ComponentResponse> request;
     if (nexusConfig.isHasCredentials()) {
       request = nexusThreeRestClient.getArtifact(
-          Credentials.basic(nexusConfig.getUsername(), new String(nexusConfig.getPassword())), repository, imageName,
+          Credentials.basic(nexusConfig.getUsername(), new String(nexusConfig.getPassword())), repository, artifactName,
           repositoryFormat, tag, null);
     } else {
-      request = nexusThreeRestClient.getArtifact(repository, imageName, repositoryFormat, tag, null, null);
+      request = nexusThreeRestClient.getArtifact(repository, artifactName, repositoryFormat, tag, null, null);
     }
 
     Response<Nexus3ComponentResponse> response = executeRequest(request);
     List<BuildDetailsInternal> result =
-        processComponentResponse(request, response, nexusConfig, repository, port, imageName, repositoryFormat, tag);
+        processComponentResponse(request, response, nexusConfig, repository, port, artifactName, repositoryFormat, tag);
 
     if (isEmpty(result)) {
       throw NestedExceptionUtils.hintWithExplanationException("Please check your artifact configuration.",
           String.format("Failed to retrieve artifact metadata with API call '%s %s' and got response code '%s'",
               request.request().method(), request.request().url(), response.code()),
           new NexusRegistryException(
-              String.format("Artifact [repositoryFormat=%s, repository=%s, image=%s, tag=%s] was not found.",
-                  repositoryFormat, repository, imageName, tag)));
+              String.format("Artifact [repositoryFormat=%s, repository=%s, artifact=%s, tag=%s] was not found.",
+                  repositoryFormat, repository, artifactName, tag)));
     }
 
     return result;
@@ -262,7 +263,8 @@ public class NexusThreeClientImpl {
   }
 
   private List<BuildDetailsInternal> processComponentResponse(Call request, Response<Nexus3ComponentResponse> response,
-      NexusRequest nexusConfig, String repository, String port, String imageName, String repositoryFormat, String tag) {
+      NexusRequest nexusConfig, String repository, String port, String artifactName, String repositoryFormat,
+      String tag) {
     List<BuildDetailsInternal> components = new ArrayList<>();
     if (isRequestSuccessful(request, response)) {
       if (isNotEmpty(response.body().getItems())) {
@@ -270,29 +272,30 @@ public class NexusThreeClientImpl {
           List<ArtifactFileMetadataInternal> artifactFileMetadataInternals =
               getArtifactMetadata(component.getAssets(), repository);
           String versionDownloadUrl = null;
-          String imagePath = null;
+          String artifactPath = null;
           String actualTag = isEmpty(tag) ? component.getVersion() : tag;
           if (isNotEmpty(artifactFileMetadataInternals)) {
             versionDownloadUrl = getArtifactDownloadUrl(artifactFileMetadataInternals, null, null);
-            imagePath = getArtifactImagePath(artifactFileMetadataInternals, null, null);
+            artifactPath = getArtifactImagePath(artifactFileMetadataInternals, null, null);
           }
 
-          String repoName = ArtifactUtilities.getNexusRepositoryName(
-              nexusConfig.getNexusUrl(), port, nexusConfig.getArtifactRepositoryUrl(), imageName);
-          log.info("Retrieving docker tags for repository {} imageName {} ", repository, imageName);
+          String repoName = ArtifactUtilities.getNexusRepositoryNameNG(
+              nexusConfig.getNexusUrl(), port, nexusConfig.getArtifactRepositoryUrl(), artifactName);
+          log.info("Retrieving docker tags for repository {} imageName {} ", repository, artifactName);
           Map<String, String> metadata = new HashMap<>();
           metadata.put(ArtifactMetadataKeys.IMAGE, repoName + ":" + actualTag);
           metadata.put(ArtifactMetadataKeys.TAG, actualTag);
           metadata.put(ArtifactMetadataKeys.ARTIFACT_MANIFEST_URL,
-              ArtifactUtilities.getNexusRegistryUrl(
+              ArtifactUtilities.getNexusRegistryUrlNG(
                   nexusConfig.getNexusUrl(), port, nexusConfig.getArtifactRepositoryUrl())
-                  + "/repository/" + repository + "/" + imagePath);
+                  + "/repository/" + ArtifactUtilities.trimSlashforwardChars(repository) + "/"
+                  + ArtifactUtilities.trimSlashforwardChars(artifactPath));
 
           BuildDetailsInternal buildDetailsInternal = BuildDetailsInternal.builder()
                                                           .number(component.getVersion())
                                                           .metadata(metadata)
                                                           .buildUrl(versionDownloadUrl)
-                                                          .artifactPath(imagePath)
+                                                          .artifactPath(artifactPath)
                                                           .build();
 
           components.add(buildDetailsInternal);

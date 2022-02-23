@@ -42,12 +42,12 @@ public class ArtifactoryArtifactTaskHandler extends DelegateArtifactTaskHandler<
 
     if (isRegex(attributesRequest)) {
       lastSuccessfulBuild = artifactoryRegistryService.getLastSuccessfulBuildFromRegex(artifactoryConfig,
-          attributesRequest.getRepositoryName(), attributesRequest.getImagePath(),
+          attributesRequest.getRepositoryName(), attributesRequest.getArtifactPath(),
           attributesRequest.getRepositoryFormat(), attributesRequest.getTagRegex());
     } else {
       lastSuccessfulBuild =
           artifactoryRegistryService.verifyBuildNumber(artifactoryConfig, attributesRequest.getRepositoryName(),
-              attributesRequest.getImagePath(), attributesRequest.getRepositoryFormat(), attributesRequest.getTag());
+              attributesRequest.getArtifactPath(), attributesRequest.getRepositoryFormat(), attributesRequest.getTag());
     }
 
     artifactoryRegistryService.verifyArtifactManifestUrl(lastSuccessfulBuild, artifactoryConfig);
@@ -62,8 +62,8 @@ public class ArtifactoryArtifactTaskHandler extends DelegateArtifactTaskHandler<
   public ArtifactTaskExecutionResponse getBuilds(ArtifactoryArtifactDelegateRequest attributesRequest) {
     List<BuildDetailsInternal> builds = artifactoryRegistryService.getBuilds(
         ArtifactoryRequestResponseMapper.toArtifactoryInternalConfig(attributesRequest),
-        attributesRequest.getRepositoryName(), attributesRequest.getImagePath(),
-        attributesRequest.getRepositoryFormat(), ArtifactoryRegistryService.MAX_NO_OF_TAGS_PER_IMAGE);
+        attributesRequest.getRepositoryName(), attributesRequest.getArtifactPath(),
+        attributesRequest.getRepositoryFormat(), ArtifactoryRegistryService.MAX_NO_OF_TAGS_PER_ARTIFACT);
     List<ArtifactoryArtifactDelegateResponse> artifactoryArtifactDelegateResponseList =
         builds.stream()
             .sorted(new BuildDetailsInternalComparatorDescending())

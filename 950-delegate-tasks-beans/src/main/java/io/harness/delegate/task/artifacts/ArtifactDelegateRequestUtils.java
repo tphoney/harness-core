@@ -78,7 +78,7 @@ public class ArtifactDelegateRequestUtils {
     return NexusArtifactDelegateRequest.builder()
         .repositoryName(repositoryName)
         .repositoryPort(repositoryPort)
-        .imagePath(trim(imagePath))
+        .artifactPath(trim(imagePath))
         .repositoryFormat(repositoryFormat)
         .tag(trim(tag))
         .tagRegex(trim(tagRegex))
@@ -95,7 +95,7 @@ public class ArtifactDelegateRequestUtils {
       List<EncryptedDataDetail> encryptedDataDetails, ArtifactSourceType sourceType) {
     return ArtifactoryArtifactDelegateRequest.builder()
         .repositoryName(repositoryName)
-        .imagePath(trim(imagePath))
+        .artifactPath(trim(imagePath))
         .repositoryFormat(repositoryFormat)
         .tag(trim(tag))
         .tagRegex(trim(tagRegex))

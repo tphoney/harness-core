@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   @JsonSubTypes.Type(value = DockerArtifactOutcome.class, name = "Dockerhub")
   , @JsonSubTypes.Type(value = GcrArtifactOutcome.class, name = "Gcr"),
       @JsonSubTypes.Type(value = EcrArtifactOutcome.class, name = "Ecr"),
-      @JsonSubTypes.Type(value = NexusArtifactOutcome.class, name = "NexusRegistry"),
+      @JsonSubTypes.Type(value = NexusArtifactOutcome.class, name = "Nexus3Registry"),
       @JsonSubTypes.Type(value = ArtifactoryArtifactOutcome.class, name = "ArtifactoryRegistry")
 })
 @OwnedBy(HarnessTeam.CDP)

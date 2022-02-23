@@ -38,10 +38,10 @@ public class ArtifactoryRegistryServiceImpl implements ArtifactoryRegistryServic
 
   @Override
   public List<BuildDetailsInternal> getBuilds(ArtifactoryConfigRequest artifactoryConfig, String repositoryName,
-      String imageName, String repositoryFormat, int maxNumberOfBuilds) {
+      String artifactName, String repositoryFormat, int maxNumberOfBuilds) {
     if (RepositoryFormat.docker.name().equals(repositoryFormat)) {
       return artifactoryClient.getArtifactsDetails(
-          artifactoryConfig, repositoryName, imageName, repositoryFormat, maxNumberOfBuilds);
+          artifactoryConfig, repositoryName, artifactName, repositoryFormat, maxNumberOfBuilds);
     }
     throw NestedExceptionUtils.hintWithExplanationException("Please check your artifact YAML configuration.",
         String.format("RepositoryFormat [%s] is an invalid value.", repositoryFormat),
@@ -51,7 +51,7 @@ public class ArtifactoryRegistryServiceImpl implements ArtifactoryRegistryServic
 
   @Override
   public BuildDetailsInternal getLastSuccessfulBuildFromRegex(ArtifactoryConfigRequest artifactoryConfig,
-      String repositoryName, String imageName, String repositoryFormat, String tagRegex) {
+      String repositoryName, String artifactName, String repositoryFormat, String tagRegex) {
     try {
       Pattern.compile(tagRegex);
     } catch (PatternSyntaxException e) {
@@ -62,7 +62,7 @@ public class ArtifactoryRegistryServiceImpl implements ArtifactoryRegistryServic
     }
 
     List<BuildDetailsInternal> builds =
-        getBuilds(artifactoryConfig, repositoryName, imageName, repositoryFormat, MAX_NO_OF_TAGS_PER_IMAGE);
+        getBuilds(artifactoryConfig, repositoryName, artifactName, repositoryFormat, MAX_NO_OF_TAGS_PER_ARTIFACT);
     builds = builds.stream()
                  .filter(build -> new RegexFunctor().match(tagRegex, build.getNumber()))
                  .sorted(new BuildDetailsInternalComparatorDescending())
@@ -72,44 +72,44 @@ public class ArtifactoryRegistryServiceImpl implements ArtifactoryRegistryServic
       throw NestedExceptionUtils.hintWithExplanationException(
           "Please check tagRegex field in Artifactory artifact configuration.",
           String.format(
-              "Could not find any tags that match regex [%s] for Artifactory repository [%s] for %s artifact image [%s] in registry [%s].",
-              tagRegex, repositoryName, repositoryFormat, imageName, artifactoryConfig.getArtifactoryUrl()),
+              "Could not find any tags that match regex [%s] for Artifactory repository [%s] for %s artifact [%s] in registry [%s].",
+              tagRegex, repositoryName, repositoryFormat, artifactName, artifactoryConfig.getArtifactoryUrl()),
           new ArtifactoryRegistryException(
-              String.format("Could not find an artifact image tag that matches tagRegex '%s'", tagRegex)));
+              String.format("Could not find an artifact tag that matches tagRegex '%s'", tagRegex)));
     }
     return builds.get(0);
   }
 
   @Override
   public BuildDetailsInternal verifyBuildNumber(ArtifactoryConfigRequest artifactoryConfig, String repositoryName,
-      String imageName, String repoFormat, String tag) {
-    return getBuildNumber(artifactoryConfig, repositoryName, imageName, repoFormat, tag);
+      String artifactName, String repoFormat, String tag) {
+    return getBuildNumber(artifactoryConfig, repositoryName, artifactName, repoFormat, tag);
   }
 
   private BuildDetailsInternal getBuildNumber(ArtifactoryConfigRequest artifactoryConfig, String repository,
-      String imageName, String repositoryFormat, String tag) {
+      String artifactName, String repositoryFormat, String tag) {
     List<BuildDetailsInternal> builds =
-        getBuilds(artifactoryConfig, repository, imageName, repositoryFormat, MAX_NO_OF_TAGS_PER_IMAGE);
+        getBuilds(artifactoryConfig, repository, artifactName, repositoryFormat, MAX_NO_OF_TAGS_PER_ARTIFACT);
     builds = builds.stream().filter(build -> build.getNumber().equals(tag)).collect(Collectors.toList());
 
     if (builds.size() == 0) {
       throw NestedExceptionUtils.hintWithExplanationException(
-          "Please check your Artifactory repository for image/tag existence.",
+          "Please check your Artifactory repository for artifact tag existence.",
           String.format(
-              "Did not find any images for tag [%s] in Artifactory repository [%s] for %s artifact image [%s] in registry [%s].",
-              tag, repository, repositoryFormat, imageName, artifactoryConfig.getArtifactoryUrl()),
-          new ArtifactoryRegistryException(String.format("Image tag ('%s') not found.", tag)));
+              "Did not find any artifacts for tag [%s] in Artifactory repository [%s] for %s artifact [%s] in registry [%s].",
+              tag, repository, repositoryFormat, artifactName, artifactoryConfig.getArtifactoryUrl()),
+          new ArtifactoryRegistryException(String.format("Artifact tag '%s' not found.", tag)));
     } else if (builds.size() == 1) {
       return builds.get(0);
     }
 
     throw NestedExceptionUtils.hintWithExplanationException(
-        "Please check your Artifactory repository for images with same tag.",
+        "Please check your Artifactory repository for artifacts with same tag.",
         String.format(
-            "Found multiple artifact images for tag [%s] in Artifactory repository [%s] for %s artifact image [%s] in registry [%s].",
-            tag, repository, repositoryFormat, imageName, artifactoryConfig.getArtifactoryUrl()),
+            "Found multiple artifacts for tag [%s] in Artifactory repository [%s] for %s artifact [%s] in registry [%s].",
+            tag, repository, repositoryFormat, artifactName, artifactoryConfig.getArtifactoryUrl()),
         new ArtifactoryRegistryException(
-            String.format("Found multiple image tags ('%s'), but expected only one.", tag)));
+            String.format("Found multiple artifact tags '%s', but expected only one.", tag)));
   }
 
   @Override

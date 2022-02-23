@@ -32,7 +32,7 @@ public class ArtifactoryResourceMapperTest extends CategoryTest {
     List<ArtifactoryArtifactDelegateResponse> artifactoryArtifactDelegateResponses =
         Lists.newArrayList(ArtifactoryArtifactDelegateResponse.builder()
                                .buildDetails(ArtifactBuildDetailsNG.builder().build())
-                               .imagePath("/")
+                               .artifactPath("/")
                                .build());
     ArtifactoryResponseDTO nexusResponseDTO =
         ArtifactoryResourceMapper.toArtifactoryResponse(artifactoryArtifactDelegateResponses);

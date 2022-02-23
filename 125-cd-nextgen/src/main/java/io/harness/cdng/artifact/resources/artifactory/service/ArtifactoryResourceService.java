@@ -28,11 +28,12 @@ public interface ArtifactoryResourceService {
       int maxVersions, @NonNull IdentifierRef connectorRef, @NonNull String orgIdentifier,
       @NonNull String projectIdentifier);
 
-  ArtifactoryResponseDTO getBuildDetails(IdentifierRef artifactoryConnectorRef, String repositoryName, String imagePath,
-      String repositoryFormat, String artifactRepositoryUrl, String orgIdentifier, String projectIdentifier);
+  ArtifactoryResponseDTO getBuildDetails(IdentifierRef artifactoryConnectorRef, String repositoryName,
+      String artifactPath, String repositoryFormat, String artifactRepositoryUrl, String orgIdentifier,
+      String projectIdentifier);
 
   ArtifactoryBuildDetailsDTO getSuccessfulBuild(IdentifierRef artifactoryConnectorRef, String repositoryName,
-      String imagePath, String repositoryFormat, String artifactRepositoryUrl,
+      String artifactPath, String repositoryFormat, String artifactRepositoryUrl,
       ArtifactoryRequestDTO artifactoryRequestDTO, String orgIdentifier, String projectIdentifier);
 
   boolean validateArtifactServer(IdentifierRef artifactoryConnectorRef, String orgIdentifier, String projectIdentifier);

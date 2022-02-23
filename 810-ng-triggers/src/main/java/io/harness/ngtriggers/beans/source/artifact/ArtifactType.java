@@ -18,7 +18,7 @@ public enum ArtifactType {
   @JsonProperty("Gcr") GCR("Gcr"),
   @JsonProperty("Ecr") ECR("Ecr"),
   @JsonProperty("DockerRegistry") DOCKER_REGISTRY("DockerRegistry"),
-  @JsonProperty("NexusRegistry") NEXUS_REGISTRY("NexusRegistry"),
+  @JsonProperty("Nexus3Registry") NEXUS3_REGISTRY("Nexus3Registry"),
   @JsonProperty("ArtifactoryRegistry") ARTIFACTORY_REGISTRY("ArtifactoryRegistry");
 
   private String value;

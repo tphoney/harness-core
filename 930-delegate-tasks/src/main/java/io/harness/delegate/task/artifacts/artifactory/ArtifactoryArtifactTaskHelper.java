@@ -67,7 +67,7 @@ public class ArtifactoryArtifactTaskHelper {
                 + "\ntype: Artifactory Artifact"
                 + "\nbuild metadata url: " + buildMetadataUrl
                 + "\nrepository: " + artifactoryArtifactDelegateResponse.getRepositoryName()
-                + "\nimagePath: " + artifactoryArtifactDelegateResponse.getImagePath()
+                + "\nartifactPath: " + artifactoryArtifactDelegateResponse.getArtifactPath()
                 + "\ntag: " + artifactoryArtifactDelegateResponse.getTag()
                 + "\nrepository type: " + artifactoryArtifactDelegateResponse.getRepositoryFormat()
                 + (EmptyPredicate.isNotEmpty(dockerPullCommand) ? dockerPullCommand : ""));

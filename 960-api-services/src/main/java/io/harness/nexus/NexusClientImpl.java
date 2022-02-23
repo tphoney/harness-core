@@ -112,7 +112,7 @@ public class NexusClientImpl {
   }
 
   public List<BuildDetailsInternal> getArtifactsVersions(
-      NexusRequest nexusConfig, String repositoryName, String port, String imageName, String repoFormat) {
+      NexusRequest nexusConfig, String repositoryName, String port, String artifactName, String repoFormat) {
     if (isNexusVersion2(nexusConfig)) {
       throw NestedExceptionUtils.hintWithExplanationException(
           "Please check your Nexus connector and/or artifact configuration. Please use the 3.x connector version.",
@@ -120,12 +120,12 @@ public class NexusClientImpl {
           new NexusRegistryException(
               String.format("Currently Nexus connector version [%s] is not allowed.", nexusConfig.getVersion())));
     } else {
-      return nexusThreeService.getArtifactsVersions(nexusConfig, repositoryName, port, imageName, repoFormat);
+      return nexusThreeService.getArtifactsVersions(nexusConfig, repositoryName, port, artifactName, repoFormat);
     }
   }
 
-  public List<BuildDetailsInternal> getBuildDetails(
-      NexusRequest nexusConfig, String repository, String port, String imageName, String repositoryFormat, String tag) {
+  public List<BuildDetailsInternal> getBuildDetails(NexusRequest nexusConfig, String repository, String port,
+      String artifactName, String repositoryFormat, String tag) {
     if (isNexusVersion2(nexusConfig)) {
       throw NestedExceptionUtils.hintWithExplanationException(
           "Please check your Nexus connector and/or artifact configuration. Please use the 3.x connector version.",
@@ -133,7 +133,7 @@ public class NexusClientImpl {
           new NexusRegistryException(
               String.format("Currently Nexus connector version [%s] is not allowed.", nexusConfig.getVersion())));
     } else {
-      return nexusThreeService.getBuildDetails(nexusConfig, repository, port, imageName, repositoryFormat, tag);
+      return nexusThreeService.getBuildDetails(nexusConfig, repository, port, artifactName, repositoryFormat, tag);
     }
   }
 

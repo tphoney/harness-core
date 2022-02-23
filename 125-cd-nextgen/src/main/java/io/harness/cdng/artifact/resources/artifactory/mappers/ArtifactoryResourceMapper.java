@@ -39,7 +39,7 @@ public class ArtifactoryResourceMapper {
       List<ArtifactoryArtifactDelegateResponse> artifactoryArtifactDelegateResponseList) {
     List<ArtifactoryBuildDetailsDTO> detailsDTOList =
         artifactoryArtifactDelegateResponseList.stream()
-            .map(response -> toArtifactoryBuildDetailsDTO(response.getBuildDetails(), response.getImagePath()))
+            .map(response -> toArtifactoryBuildDetailsDTO(response.getBuildDetails(), response.getArtifactPath()))
             .collect(Collectors.toList());
     return ArtifactoryResponseDTO.builder().buildDetailsList(detailsDTOList).build();
   }

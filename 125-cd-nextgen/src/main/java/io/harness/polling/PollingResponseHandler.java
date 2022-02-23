@@ -15,7 +15,7 @@ import static io.harness.polling.contracts.Type.ECR;
 import static io.harness.polling.contracts.Type.GCR;
 import static io.harness.polling.contracts.Type.GCS_HELM;
 import static io.harness.polling.contracts.Type.HTTP_HELM;
-import static io.harness.polling.contracts.Type.NEXUS;
+import static io.harness.polling.contracts.Type.NEXUS3;
 import static io.harness.polling.contracts.Type.S3_HELM;
 
 import io.harness.annotations.dev.HarnessTeam;
@@ -266,12 +266,12 @@ public class PollingResponseHandler {
         polledResponseResultBuilder.name(((EcrArtifactInfo) artifactInfo).getImagePath());
         polledResponseResultBuilder.type(ECR);
         break;
-      case NEXUS_REGISTRY:
-        polledResponseResultBuilder.name(((NexusRegistryArtifactInfo) artifactInfo).getImagePath());
-        polledResponseResultBuilder.type(NEXUS);
+      case NEXUS3_REGISTRY:
+        polledResponseResultBuilder.name(((NexusRegistryArtifactInfo) artifactInfo).getArtifactPath());
+        polledResponseResultBuilder.type(NEXUS3);
         break;
       case ARTIFACTORY_REGISTRY:
-        polledResponseResultBuilder.name(((ArtifactoryRegistryArtifactInfo) artifactInfo).getImagePath());
+        polledResponseResultBuilder.name(((ArtifactoryRegistryArtifactInfo) artifactInfo).getArtifactPath());
         polledResponseResultBuilder.type(ARTIFACTORY);
         break;
       default:

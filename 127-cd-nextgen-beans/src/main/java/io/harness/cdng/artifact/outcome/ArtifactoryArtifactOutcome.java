@@ -36,7 +36,7 @@ public class ArtifactoryArtifactOutcome implements ArtifactOutcome {
   /** Artifactory registry repository name. */
   String repositoryName;
   /** Images in repos need to be referenced via a path. */
-  String imagePath;
+  String artifactPath;
   /** Artifactory registry repository format. */
   String repositoryFormat;
   /** Tag refers to exact tag number. */
@@ -56,7 +56,7 @@ public class ArtifactoryArtifactOutcome implements ArtifactOutcome {
 
   @Override
   public ArtifactSummary getArtifactSummary() {
-    return ArtifactoryArtifactSummary.builder().imagePath(getImagePath()).tag(getTag()).build();
+    return ArtifactoryArtifactSummary.builder().artifactPath(getArtifactPath()).tag(getTag()).build();
   }
 
   @Override

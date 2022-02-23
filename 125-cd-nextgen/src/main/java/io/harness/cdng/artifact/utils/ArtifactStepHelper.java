@@ -109,7 +109,7 @@ public class ArtifactStepHelper {
         }
         return ArtifactConfigToDelegateReqMapper.getEcrDelegateRequest(
             ecrArtifactConfig, awsConnectorDTO, encryptedDataDetails, ecrArtifactConfig.getConnectorRef().getValue());
-      case NEXUS_REGISTRY:
+      case NEXUS3_REGISTRY:
         NexusRegistryArtifactConfig nexusRegistryArtifactConfig = (NexusRegistryArtifactConfig) artifactConfig;
         connectorDTO = getConnector(nexusRegistryArtifactConfig.getConnectorRef().getValue(), ambiance);
         if (!(connectorDTO.getConnectorConfig() instanceof NexusConnectorDTO)) {
@@ -171,7 +171,7 @@ public class ArtifactStepHelper {
         return TaskType.GCR_ARTIFACT_TASK_NG;
       case ECR:
         return TaskType.ECR_ARTIFACT_TASK_NG;
-      case NEXUS_REGISTRY:
+      case NEXUS3_REGISTRY:
         return TaskType.NEXUS_ARTIFACT_TASK_NG;
       case ARTIFACTORY_REGISTRY:
         return TaskType.ARTIFACTORY_ARTIFACT_TASK_NG;
@@ -208,7 +208,7 @@ public class ArtifactStepHelper {
                                                    .stream()
                                                    .map(TaskSelectorYaml::new)
                                                    .collect(Collectors.toList()));
-      case NEXUS_REGISTRY:
+      case NEXUS3_REGISTRY:
         NexusRegistryArtifactConfig nexusRegistryArtifactConfig = (NexusRegistryArtifactConfig) artifactConfig;
         connectorDTO = getConnector(nexusRegistryArtifactConfig.getConnectorRef().getValue(), ambiance);
         return TaskSelectorYaml.toTaskSelector(((NexusConnectorDTO) connectorDTO.getConnectorConfig())

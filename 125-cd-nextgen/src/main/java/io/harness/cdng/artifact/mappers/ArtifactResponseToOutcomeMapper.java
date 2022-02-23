@@ -57,7 +57,7 @@ public class ArtifactResponseToOutcomeMapper {
         EcrArtifactDelegateResponse ecrArtifactDelegateResponse =
             (EcrArtifactDelegateResponse) artifactDelegateResponse;
         return getEcrArtifactOutcome(ecrArtifactConfig, ecrArtifactDelegateResponse, useDelegateResponse);
-      case NEXUS_REGISTRY:
+      case NEXUS3_REGISTRY:
         NexusRegistryArtifactConfig nexusRegistryArtifactConfig = (NexusRegistryArtifactConfig) artifactConfig;
         NexusArtifactDelegateResponse nexusDelegateResponse = (NexusArtifactDelegateResponse) artifactDelegateResponse;
         return getNexusArtifactOutcome(nexusRegistryArtifactConfig, nexusDelegateResponse, useDelegateResponse);
@@ -130,13 +130,13 @@ public class ArtifactResponseToOutcomeMapper {
         .repositoryName(artifactConfig.getRepository().getValue())
         .image(getImageValue(artifactDelegateResponse))
         .connectorRef(artifactConfig.getConnectorRef().getValue())
-        .imagePath(artifactConfig.getImagePath().getValue())
+        .artifactPath(artifactConfig.getArtifactPath().getValue())
         .repositoryFormat(artifactConfig.getRepositoryFormat().getValue())
         .tag(useDelegateResponse ? artifactDelegateResponse.getTag()
                                  : (artifactConfig.getTag() != null ? artifactConfig.getTag().getValue() : null))
         .tagRegex(artifactConfig.getTagRegex() != null ? artifactConfig.getTagRegex().getValue() : null)
         .identifier(artifactConfig.getIdentifier())
-        .type(ArtifactSourceType.NEXUS_REGISTRY.getDisplayName())
+        .type(ArtifactSourceType.NEXUS3_REGISTRY.getDisplayName())
         .primaryArtifact(artifactConfig.isPrimaryArtifact())
         .imagePullSecret(IMAGE_PULL_SECRET + ArtifactUtils.getArtifactKey(artifactConfig) + ">")
         .build();
@@ -148,7 +148,7 @@ public class ArtifactResponseToOutcomeMapper {
         .repositoryName(artifactConfig.getRepository().getValue())
         .image(getImageValue(artifactDelegateResponse))
         .connectorRef(artifactConfig.getConnectorRef().getValue())
-        .imagePath(artifactConfig.getImagePath().getValue())
+        .artifactPath(artifactConfig.getArtifactPath().getValue())
         .repositoryFormat(artifactConfig.getRepositoryFormat().getValue())
         .tag(useDelegateResponse ? artifactDelegateResponse.getTag()
                                  : (artifactConfig.getTag() != null ? artifactConfig.getTag().getValue() : null))

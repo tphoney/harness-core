@@ -63,6 +63,23 @@ public class ArtifactUtilities {
     return format("http%s://%s", nexusUrl.startsWith("https") ? "s" : "", extractUrl(dockerRegistryUrl));
   }
 
+  public static String getNexusRegistryUrlNG(String nexusUrl, String dockerPort, String dockerRegistryUrl) {
+    if (isEmpty(dockerRegistryUrl)) {
+      String registryUrl = extractNexusDockerRegistryUrl(nexusUrl);
+      registryUrl = trimSlashforwardChars(registryUrl);
+      if (isNotEmpty(dockerPort)) {
+        registryUrl = registryUrl + ":" + dockerPort;
+      }
+      return registryUrl;
+    }
+    if (dockerRegistryUrl.startsWith("http") || dockerRegistryUrl.startsWith("https")) {
+      // User can input the docker registry with real http or https
+      return trimSlashforwardChars(dockerRegistryUrl);
+    }
+    return format(
+        "http%s://%s", nexusUrl.startsWith("https") ? "s" : "", trimSlashforwardChars(extractUrl(dockerRegistryUrl)));
+  }
+
   private static String extractNexusDockerRegistryUrl(String url) {
     int firstDotIndex = url.indexOf('.');
     int colonIndex = url.indexOf(':', firstDotIndex);
@@ -78,6 +95,17 @@ public class ArtifactUtilities {
       return namePrefix + "/" + imageName;
     } else {
       return extractUrl(dockerRegistryUrl) + "/" + imageName;
+    }
+  }
+
+  public static String getNexusRepositoryNameNG(
+      String nexusUrl, String repositoryPort, String artifactRepositoryUrl, String imageName) {
+    if (isEmpty(artifactRepositoryUrl)) {
+      String registryUrl = getNexusRegistryUrlNG(nexusUrl, repositoryPort, artifactRepositoryUrl);
+      String namePrefix = registryUrl.substring(registryUrl.indexOf("://") + 3);
+      return trimSlashforwardChars(namePrefix) + "/" + trimSlashforwardChars(imageName);
+    } else {
+      return trimSlashforwardChars(extractUrl(artifactRepositoryUrl)) + "/" + trimSlashforwardChars(imageName);
     }
   }
 

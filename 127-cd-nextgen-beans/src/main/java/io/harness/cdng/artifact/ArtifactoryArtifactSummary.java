@@ -23,12 +23,12 @@ import lombok.Data;
 @JsonTypeName(ArtifactSourceConstants.ARTIFACTORY_REGISTRY_NAME)
 @RecasterAlias("io.harness.cdng.artifact.ArtifactoryArtifactSummary")
 public class ArtifactoryArtifactSummary implements ArtifactSummary {
-  String imagePath;
+  String artifactPath;
   String tag;
 
   @Override
   public String getDisplayName() {
-    return imagePath + ":" + tag;
+    return artifactPath + ":" + tag;
   }
 
   @Override

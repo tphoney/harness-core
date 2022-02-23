@@ -9,14 +9,14 @@ package io.harness.polling;
 
 import static io.harness.delegate.task.artifacts.ArtifactSourceType.ARTIFACTORY_REGISTRY;
 import static io.harness.delegate.task.artifacts.ArtifactSourceType.DOCKER_REGISTRY;
-import static io.harness.delegate.task.artifacts.ArtifactSourceType.NEXUS_REGISTRY;
+import static io.harness.delegate.task.artifacts.ArtifactSourceType.NEXUS3_REGISTRY;
 import static io.harness.polling.contracts.Type.ARTIFACTORY;
 import static io.harness.polling.contracts.Type.DOCKER_HUB;
 import static io.harness.polling.contracts.Type.ECR;
 import static io.harness.polling.contracts.Type.GCR;
 import static io.harness.polling.contracts.Type.GCS_HELM;
 import static io.harness.polling.contracts.Type.HTTP_HELM;
-import static io.harness.polling.contracts.Type.NEXUS;
+import static io.harness.polling.contracts.Type.NEXUS3;
 import static io.harness.polling.contracts.Type.S3_HELM;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -201,7 +201,7 @@ public class PollingResponseHandlerTest extends CategoryTest {
   @Owner(developers = OwnerRule.MLUKIC)
   @Category(UnitTests.class)
   public void testSuccessNexusRegistryPollingResponseWithDelegateRebalance() {
-    testSuccessResponse(NEXUS, PollingType.ARTIFACT);
+    testSuccessResponse(NEXUS3, PollingType.ARTIFACT);
   }
 
   @Test
@@ -355,7 +355,7 @@ public class PollingResponseHandlerTest extends CategoryTest {
       case GCR:
         artifactDelegateResponses = getGcrArtifactDelegateResponseList(startIndexUnpublished, endIndexUnpublished);
         break;
-      case NEXUS:
+      case NEXUS3:
         artifactDelegateResponses = getNexusArtifactDelegateResponseList(startIndexUnpublished, endIndexUnpublished);
         break;
       case ARTIFACTORY:
@@ -400,7 +400,7 @@ public class PollingResponseHandlerTest extends CategoryTest {
   private List<ArtifactDelegateResponse> getNexusArtifactDelegateResponseList(int startIndex, int endIndex) {
     return IntStream.rangeClosed(startIndex, endIndex)
         .boxed()
-        .map(i -> NexusArtifactDelegateResponse.builder().sourceType(NEXUS_REGISTRY).tag(String.valueOf(i)).build())
+        .map(i -> NexusArtifactDelegateResponse.builder().sourceType(NEXUS3_REGISTRY).tag(String.valueOf(i)).build())
         .collect(Collectors.toList());
   }
 
@@ -445,7 +445,7 @@ public class PollingResponseHandlerTest extends CategoryTest {
         return getDockerHubPollingDocument(polledResponse);
       case GCR:
         return getGcrPollingDocument(polledResponse);
-      case NEXUS:
+      case NEXUS3:
         return getNexusRegistryPollingDocument(polledResponse);
       case ARTIFACTORY:
         return getArtifactoryRegistryPollingDocument(polledResponse);
@@ -501,13 +501,13 @@ public class PollingResponseHandlerTest extends CategoryTest {
 
   private PollingDocument getNexusRegistryPollingDocument(PolledResponse polledResponse) {
     NexusRegistryArtifactInfo nexusRegistryArtifactInfo =
-        NexusRegistryArtifactInfo.builder().imagePath("imagePath").build();
+        NexusRegistryArtifactInfo.builder().artifactPath("imagePath").build();
     return getPollingDocument(polledResponse, nexusRegistryArtifactInfo, PollingType.ARTIFACT);
   }
 
   private PollingDocument getArtifactoryRegistryPollingDocument(PolledResponse polledResponse) {
     ArtifactoryRegistryArtifactInfo artifactoryRegistryArtifactInfo =
-        ArtifactoryRegistryArtifactInfo.builder().imagePath("imagePath").build();
+        ArtifactoryRegistryArtifactInfo.builder().artifactPath("imagePath").build();
     return getPollingDocument(polledResponse, artifactoryRegistryArtifactInfo, PollingType.ARTIFACT);
   }
 

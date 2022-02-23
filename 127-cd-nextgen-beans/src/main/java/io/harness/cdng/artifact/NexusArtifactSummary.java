@@ -20,19 +20,19 @@ import lombok.Data;
 @OwnedBy(CDP)
 @Data
 @Builder
-@JsonTypeName(ArtifactSourceConstants.NEXUS_REGISTRY_NAME)
+@JsonTypeName(ArtifactSourceConstants.NEXUS3_REGISTRY_NAME)
 @RecasterAlias("io.harness.cdng.artifact.NexusArtifactSummary")
 public class NexusArtifactSummary implements ArtifactSummary {
-  String imagePath;
+  String artifactPath;
   String tag;
 
   @Override
   public String getDisplayName() {
-    return imagePath + ":" + tag;
+    return artifactPath + ":" + tag;
   }
 
   @Override
   public String getType() {
-    return ArtifactSourceConstants.NEXUS_REGISTRY_NAME;
+    return ArtifactSourceConstants.NEXUS3_REGISTRY_NAME;
   }
 }

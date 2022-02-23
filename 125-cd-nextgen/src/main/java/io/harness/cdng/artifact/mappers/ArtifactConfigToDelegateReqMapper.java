@@ -83,12 +83,12 @@ public class ArtifactConfigToDelegateReqMapper {
     }
     String port = artifactConfig.getRepositoryPort() != null ? artifactConfig.getRepositoryPort().getValue() : null;
     String artifactRepositoryUrl =
-        artifactConfig.getArtifactRepositoryUrl() != null ? artifactConfig.getArtifactRepositoryUrl().getValue() : null;
+        artifactConfig.getRepositoryUrl() != null ? artifactConfig.getRepositoryUrl().getValue() : null;
 
     return ArtifactDelegateRequestUtils.getNexusArtifactDelegateRequest(artifactConfig.getRepository().getValue(), port,
-        artifactConfig.getImagePath().getValue(), artifactConfig.getRepositoryFormat().getValue(),
+        artifactConfig.getArtifactPath().getValue(), artifactConfig.getRepositoryFormat().getValue(),
         artifactRepositoryUrl, tag, tagRegex, connectorRef, nexusConnectorDTO, encryptedDataDetails,
-        ArtifactSourceType.NEXUS_REGISTRY);
+        ArtifactSourceType.NEXUS3_REGISTRY);
   }
 
   public ArtifactoryArtifactDelegateRequest getArtifactoryArtifactDelegateRequest(
@@ -105,7 +105,7 @@ public class ArtifactConfigToDelegateReqMapper {
         artifactConfig.getArtifactRepositoryUrl() != null ? artifactConfig.getArtifactRepositoryUrl().getValue() : null;
 
     return ArtifactDelegateRequestUtils.getArtifactoryArtifactDelegateRequest(artifactConfig.getRepository().getValue(),
-        artifactConfig.getImagePath().getValue(), artifactConfig.getRepositoryFormat().getValue(),
+        artifactConfig.getArtifactPath().getValue(), artifactConfig.getRepositoryFormat().getValue(),
         artifactRepositoryUrl, tag, tagRegex, connectorRef, artifactoryConnectorDTO, encryptedDataDetails,
         ArtifactSourceType.ARTIFACTORY_REGISTRY);
   }

@@ -20,7 +20,7 @@ public class ArtifactoryRegistryArtifactInfoBuilder implements PollingInfoBuilde
   public PollingInfo toPollingInfo(PollingPayloadData pollingPayloadData) {
     return ArtifactoryRegistryArtifactInfo.builder()
         .connectorRef(pollingPayloadData.getConnectorRef())
-        .imagePath(pollingPayloadData.getArtifactoryRegistryPayload().getImagePath())
+        .artifactPath(pollingPayloadData.getArtifactoryRegistryPayload().getArtifactPath())
         .build();
   }
 }

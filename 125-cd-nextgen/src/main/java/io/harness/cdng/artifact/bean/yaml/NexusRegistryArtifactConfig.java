@@ -8,7 +8,8 @@
 package io.harness.cdng.artifact.bean.yaml;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.delegate.task.artifacts.ArtifactSourceConstants.NEXUS_REGISTRY_NAME;
+import static io.harness.delegate.task.artifacts.ArtifactSourceConstants.NEXUS3_REGISTRY_NAME;
+import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.integer;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
@@ -22,8 +23,10 @@ import io.harness.filters.WithConnectorRef;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.validation.OneOfField;
+import io.harness.validation.OneOfSet;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
 import io.harness.walktree.visitor.Visitable;
+import io.harness.yaml.YamlSchemaTypes;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModelProperty;
@@ -48,11 +51,11 @@ import org.springframework.data.annotation.TypeAlias;
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-@JsonTypeName(NEXUS_REGISTRY_NAME)
+@JsonTypeName(NEXUS3_REGISTRY_NAME)
 @SimpleVisitorHelper(helperClass = ConnectorRefExtractorHelper.class)
 @TypeAlias("nexusRegistryArtifactConfig")
 @OneOfField(fields = {"tag", "tagRegex"})
-@OneOfField(fields = {"repositoryPort", "artifactRepositoryUrl"})
+@OneOfField(fields = {"repositoryPort", "repositoryUrl"})
 @RecasterAlias("io.harness.cdng.artifact.bean.yaml.NexusRegistryArtifactConfig")
 public class NexusRegistryArtifactConfig implements ArtifactConfig, Visitable, WithConnectorRef {
   /**
@@ -64,24 +67,27 @@ public class NexusRegistryArtifactConfig implements ArtifactConfig, Visitable, W
    */
   @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> repository;
   /**
-   * Images in repos need to be referenced via a path.
+   * Artifacts in repos need to be referenced via a path.
    */
-  @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> imagePath;
+  @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> artifactPath;
   /**
    * Repo format.
    */
   @NotNull
-  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH, allowableValues = "docker")
   @Wither
   ParameterField<String> repositoryFormat;
   /**
    * Repo port.
    */
-  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> repositoryPort;
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
+  @YamlSchemaTypes(value = {integer})
+  @Wither
+  ParameterField<String> repositoryPort;
   /**
-   * Docker repo server hostname.
+   * repo server hostname.
    */
-  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> artifactRepositoryUrl;
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> repositoryUrl;
   /**
    * Tag refers to exact tag number.
    */
@@ -102,12 +108,12 @@ public class NexusRegistryArtifactConfig implements ArtifactConfig, Visitable, W
 
   @Override
   public ArtifactSourceType getSourceType() {
-    return ArtifactSourceType.NEXUS_REGISTRY;
+    return ArtifactSourceType.NEXUS3_REGISTRY;
   }
 
   @Override
   public String getUniqueHash() {
-    List<String> valuesList = Arrays.asList(connectorRef.getValue(), imagePath.getValue());
+    List<String> valuesList = Arrays.asList(connectorRef.getValue(), artifactPath.getValue());
     return ArtifactUtils.generateUniqueHashFromStringList(valuesList);
   }
 
@@ -118,8 +124,8 @@ public class NexusRegistryArtifactConfig implements ArtifactConfig, Visitable, W
     if (!ParameterField.isNull(nexusRegistryArtifactConfig.getConnectorRef())) {
       resultantConfig = resultantConfig.withConnectorRef(nexusRegistryArtifactConfig.getConnectorRef());
     }
-    if (!ParameterField.isNull(nexusRegistryArtifactConfig.getImagePath())) {
-      resultantConfig = resultantConfig.withImagePath(nexusRegistryArtifactConfig.getImagePath());
+    if (!ParameterField.isNull(nexusRegistryArtifactConfig.getArtifactPath())) {
+      resultantConfig = resultantConfig.withArtifactPath(nexusRegistryArtifactConfig.getArtifactPath());
     }
     if (!ParameterField.isNull(nexusRegistryArtifactConfig.getTag())) {
       resultantConfig = resultantConfig.withTag(nexusRegistryArtifactConfig.getTag());

@@ -132,7 +132,7 @@ public class ArtifactoryClientImpl {
       }
       if (artifactoryResponse.getStatusLine().getStatusCode() == 404) {
         throw NestedExceptionUtils.hintWithExplanationException(
-            "Check if the URL is correct. Consider appending `/artifactory` to the connector endpoint if you have not already. Check artifact configuration (repository and image field values).",
+            "Check if the URL is correct. Consider appending `/artifactory` to the connector endpoint if you have not already. Check artifact configuration (repository and artifact path field values).",
             "Artifactory connector URL or artifact configuration may be incorrect or the server is down or the server is not reachable from the delegate",
             new ArtifactoryServerException(
                 "Artifactory Server responded with Not Found.", ErrorCode.INVALID_ARTIFACT_SERVER, USER));
@@ -520,7 +520,7 @@ public class ArtifactoryClientImpl {
   }
 
   public List<BuildDetailsInternal> getArtifactsDetails(ArtifactoryConfigRequest artifactoryConfig,
-      String repositoryName, String imageName, String repositoryFormat, int maxNumberOfBuilds) {
+      String repositoryName, String artifactName, String repositoryFormat, int maxNumberOfBuilds) {
     log.info("Retrieving artifact tags");
     List<BuildDetailsInternal> buildDetailsInternals;
     Artifactory artifactoryClient = getArtifactoryClient(artifactoryConfig);
@@ -536,7 +536,7 @@ public class ArtifactoryClientImpl {
 
     ArtifactoryRequest artifactoryRequest =
         new ArtifactoryRequestImpl()
-            .apiUrl("api/docker/" + repositoryName + "/v2/" + imageName + "/tags/list")
+            .apiUrl("api/docker/" + repositoryName + "/v2/" + artifactName + "/tags/list")
             .method(GET)
             .responseType(JSON);
 
@@ -557,7 +557,7 @@ public class ArtifactoryClientImpl {
     try {
       if (artifactoryResponse.getStatusLine().getStatusCode() == 404) {
         throw NestedExceptionUtils.hintWithExplanationException(
-            "Check if the URL is correct. Check artifact configuration (repository and image field values).",
+            "Check if the URL is correct. Check artifact configuration (repository and artifact path field values).",
             String.format(
                 "Artifactory connector URL or artifact configuration may be incorrect or the server is down or the server is not reachable from the delegate. Executed API call '%s %s' and got response code '%s'",
                 artifactoryRequest.getMethod(), artifactoryUrl + artifactoryRequest.getApiUrl(),
@@ -578,9 +578,9 @@ public class ArtifactoryClientImpl {
     if (!isEmpty(response)) {
       List<String> tags = (List<String>) response.get("tags");
       if (isNotEmpty(tags)) {
-        String tagUrl = getBaseUrl(artifactoryConfig) + repositoryName + "/" + imageName + "/";
+        String tagUrl = getBaseUrl(artifactoryConfig) + repositoryName + "/" + artifactName + "/";
         String repoName = ArtifactUtilities.getArtifactoryRepositoryName(artifactoryConfig.getArtifactoryUrl(),
-            artifactoryConfig.getArtifactRepositoryUrl(), repositoryName, imageName);
+            artifactoryConfig.getArtifactRepositoryUrl(), repositoryName, artifactName);
         buildDetailsInternals =
             tags.stream()
                 .map(tag -> {
@@ -588,7 +588,7 @@ public class ArtifactoryClientImpl {
                   metadata.put(ArtifactMetadataKeys.IMAGE, repoName + ":" + tag);
                   metadata.put(ArtifactMetadataKeys.TAG, tag);
                   metadata.put(ArtifactMetadataKeys.ARTIFACT_MANIFEST_URL,
-                      generateArtifactManifestUrl(artifactoryConfig, repositoryName, imageName, tag));
+                      generateArtifactManifestUrl(artifactoryConfig, repositoryName, artifactName, tag));
                   return BuildDetailsInternal.builder()
                       .number(tag)
                       .buildUrl(tagUrl + tag)
@@ -598,11 +598,11 @@ public class ArtifactoryClientImpl {
                 })
                 .collect(toList());
         if (tags.size() < 10) {
-          log.info("Retrieving image tags from artifactory url {} and repo key {} and image {} success. Tags {}",
-              artifactoryUrl + artifactoryRequest.getApiUrl(), repositoryName, imageName, tags);
+          log.info("Retrieving artifact tags from artifactory url {} and repo key {} and artifact {} success. Tags {}",
+              artifactoryUrl + artifactoryRequest.getApiUrl(), repositoryName, artifactName, tags);
         } else {
-          log.info("Retrieving image tags from artifactory url {} and repo key {} and image {} success. Tags {}",
-              artifactoryUrl + artifactoryRequest.getApiUrl(), repositoryName, imageName, tags.size());
+          log.info("Retrieving artifact tags from artifactory url {} and repo key {} and artifact {} success. Tags {}",
+              artifactoryUrl + artifactoryRequest.getApiUrl(), repositoryName, artifactName, tags.size());
         }
 
         buildDetailsInternals.sort(new BuildDetailsInternalComparatorAscending());
@@ -614,8 +614,8 @@ public class ArtifactoryClientImpl {
             artifactoryRequest.getMethod(), artifactoryUrl + artifactoryRequest.getApiUrl(),
             artifactoryResponse.getStatusLine().getStatusCode()),
         new ArtifactoryRegistryException(
-            String.format("No tags found for artifact [repositoryFormat=%s, repository=%s, image=%s].",
-                repositoryFormat, repositoryName, imageName)));
+            String.format("No tags found for artifact [repositoryFormat=%s, repository=%s, artifact=%s].",
+                repositoryFormat, repositoryName, artifactName)));
   }
 
   public boolean verifyArtifactManifestUrl(ArtifactoryConfigRequest artifactoryConfig, String artifactManifestUrl) {
@@ -655,11 +655,11 @@ public class ArtifactoryClientImpl {
   }
 
   private String generateArtifactManifestUrl(
-      ArtifactoryConfigRequest artifactoryConfig, String repositoryName, String imageName, String tag) {
+      ArtifactoryConfigRequest artifactoryConfig, String repositoryName, String artifactName, String tag) {
     return ArtifactUtilities.getArtifactoryRegistryUrl(
                artifactoryConfig.getArtifactoryUrl(), artifactoryConfig.getArtifactRepositoryUrl(), repositoryName)
         + "/artifactory/" + ArtifactUtilities.trimSlashforwardChars(repositoryName) + "/"
-        + ArtifactUtilities.trimSlashforwardChars(imageName) + "/" + ArtifactUtilities.trimSlashforwardChars(tag)
+        + ArtifactUtilities.trimSlashforwardChars(artifactName) + "/" + ArtifactUtilities.trimSlashforwardChars(tag)
         + "/manifest.json";
   }
 

@@ -23,12 +23,12 @@ import lombok.Value;
 public class NexusRegistryArtifactInfo implements ArtifactInfo {
   String connectorRef;
   String repositoryName;
-  String imagePath;
+  String artifactPath;
   String repositoryFormat;
 
   @Override
   public ArtifactSourceType getType() {
-    return ArtifactSourceType.NEXUS_REGISTRY;
+    return ArtifactSourceType.NEXUS3_REGISTRY;
   }
 
   @Override
@@ -36,7 +36,7 @@ public class NexusRegistryArtifactInfo implements ArtifactInfo {
     return NexusRegistryArtifactConfig.builder()
         .connectorRef(ParameterField.<String>builder().value(connectorRef).build())
         .repository(ParameterField.<String>builder().value(repositoryName).build())
-        .imagePath(ParameterField.<String>builder().value(imagePath).build())
+        .artifactPath(ParameterField.<String>builder().value(artifactPath).build())
         .repositoryFormat(ParameterField.<String>builder().value(repositoryFormat).build())
         .build();
   }

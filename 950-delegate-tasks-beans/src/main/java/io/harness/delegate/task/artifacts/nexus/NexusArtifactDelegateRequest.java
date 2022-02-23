@@ -41,7 +41,7 @@ public class NexusArtifactDelegateRequest implements ArtifactSourceDelegateReque
   /** Nexus repository port. */
   String repositoryPort;
   /** Images in repos need to be referenced via a path. */
-  String imagePath;
+  String artifactPath;
   /** Nexus repository format type. */
   String repositoryFormat;
   /** Tag refers to exact tag number. */

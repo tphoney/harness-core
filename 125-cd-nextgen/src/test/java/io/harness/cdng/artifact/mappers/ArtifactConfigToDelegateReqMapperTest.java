@@ -70,7 +70,7 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
             .repository(ParameterField.createValueField("TEST_REPO"))
             .repositoryFormat(ParameterField.createValueField(RepositoryFormat.docker.name()))
             .repositoryPort(ParameterField.createValueField("8181"))
-            .imagePath(ParameterField.createValueField("IMAGE"))
+            .artifactPath(ParameterField.createValueField("IMAGE"))
             .build();
     NexusConnectorDTO connectorDTO = NexusConnectorDTO.builder().build();
     List<EncryptedDataDetail> encryptedDataDetailList = Collections.emptyList();
@@ -84,8 +84,8 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
     assertThat(delegateRequest.getRepositoryPort()).isEqualTo(artifactConfig.getRepositoryPort().getValue());
     assertThat(delegateRequest.getArtifactRepositoryUrl()).isNull();
     assertThat(delegateRequest.getEncryptedDataDetails()).isEqualTo(encryptedDataDetailList);
-    assertThat(delegateRequest.getImagePath()).isEqualTo(artifactConfig.getImagePath().getValue());
-    assertThat(delegateRequest.getSourceType()).isEqualTo(ArtifactSourceType.NEXUS_REGISTRY);
+    assertThat(delegateRequest.getArtifactPath()).isEqualTo(artifactConfig.getArtifactPath().getValue());
+    assertThat(delegateRequest.getSourceType()).isEqualTo(ArtifactSourceType.NEXUS3_REGISTRY);
     assertThat(delegateRequest.getTag()).isEqualTo("");
     assertThat(delegateRequest.getConnectorRef()).isEqualTo("");
     assertThat(delegateRequest.getTagRegex()).isEqualTo("\\*");
@@ -99,7 +99,7 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
         NexusRegistryArtifactConfig.builder()
             .repository(ParameterField.createValueField("TEST_REPO"))
             .repositoryFormat(ParameterField.createValueField(RepositoryFormat.docker.name()))
-            .imagePath(ParameterField.createValueField("IMAGE"))
+            .artifactPath(ParameterField.createValueField("IMAGE"))
             .build();
     NexusConnectorDTO connectorDTO = NexusConnectorDTO.builder().build();
     List<EncryptedDataDetail> encryptedDataDetailList = Collections.emptyList();
@@ -113,8 +113,8 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
     assertThat(delegateRequest.getRepositoryPort()).isNull();
     assertThat(delegateRequest.getArtifactRepositoryUrl()).isNull();
     assertThat(delegateRequest.getEncryptedDataDetails()).isEqualTo(encryptedDataDetailList);
-    assertThat(delegateRequest.getImagePath()).isEqualTo(artifactConfig.getImagePath().getValue());
-    assertThat(delegateRequest.getSourceType()).isEqualTo(ArtifactSourceType.NEXUS_REGISTRY);
+    assertThat(delegateRequest.getArtifactPath()).isEqualTo(artifactConfig.getArtifactPath().getValue());
+    assertThat(delegateRequest.getSourceType()).isEqualTo(ArtifactSourceType.NEXUS3_REGISTRY);
     assertThat(delegateRequest.getTag()).isEqualTo("");
     assertThat(delegateRequest.getConnectorRef()).isEqualTo("");
     assertThat(delegateRequest.getTagRegex()).isEqualTo("\\*");
@@ -129,7 +129,7 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
             .repository(ParameterField.createValueField("TEST_REPO"))
             .repositoryFormat(ParameterField.createValueField(RepositoryFormat.docker.name()))
             .artifactRepositoryUrl(ParameterField.createValueField("harness-repo.jfrog.io"))
-            .imagePath(ParameterField.createValueField("IMAGE"))
+            .artifactPath(ParameterField.createValueField("IMAGE"))
             .build();
     ArtifactoryConnectorDTO connectorDTO = ArtifactoryConnectorDTO.builder().build();
     List<EncryptedDataDetail> encryptedDataDetailList = Collections.emptyList();
@@ -144,7 +144,7 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
     assertThat(delegateRequest.getArtifactRepositoryUrl())
         .isEqualTo(artifactConfig.getArtifactRepositoryUrl().getValue());
     assertThat(delegateRequest.getEncryptedDataDetails()).isEqualTo(encryptedDataDetailList);
-    assertThat(delegateRequest.getImagePath()).isEqualTo(artifactConfig.getImagePath().getValue());
+    assertThat(delegateRequest.getArtifactPath()).isEqualTo(artifactConfig.getArtifactPath().getValue());
     assertThat(delegateRequest.getSourceType()).isEqualTo(ArtifactSourceType.ARTIFACTORY_REGISTRY);
     assertThat(delegateRequest.getTag()).isEqualTo("");
     assertThat(delegateRequest.getConnectorRef()).isEqualTo("");
@@ -159,7 +159,7 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
         ArtifactoryRegistryArtifactConfig.builder()
             .repository(ParameterField.createValueField("TEST_REPO"))
             .repositoryFormat(ParameterField.createValueField(RepositoryFormat.docker.name()))
-            .imagePath(ParameterField.createValueField("IMAGE"))
+            .artifactPath(ParameterField.createValueField("IMAGE"))
             .build();
     ArtifactoryConnectorDTO connectorDTO = ArtifactoryConnectorDTO.builder().build();
     List<EncryptedDataDetail> encryptedDataDetailList = Collections.emptyList();
@@ -173,7 +173,7 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
     assertThat(delegateRequest.getRepositoryFormat()).isEqualTo(RepositoryFormat.docker.name());
     assertThat(delegateRequest.getArtifactRepositoryUrl()).isNull();
     assertThat(delegateRequest.getEncryptedDataDetails()).isEqualTo(encryptedDataDetailList);
-    assertThat(delegateRequest.getImagePath()).isEqualTo(artifactConfig.getImagePath().getValue());
+    assertThat(delegateRequest.getArtifactPath()).isEqualTo(artifactConfig.getArtifactPath().getValue());
     assertThat(delegateRequest.getSourceType()).isEqualTo(ArtifactSourceType.ARTIFACTORY_REGISTRY);
     assertThat(delegateRequest.getTag()).isEqualTo("");
     assertThat(delegateRequest.getConnectorRef()).isEqualTo("");

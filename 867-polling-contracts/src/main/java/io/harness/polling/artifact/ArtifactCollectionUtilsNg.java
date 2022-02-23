@@ -31,7 +31,7 @@ public class ArtifactCollectionUtilsNg {
         return ((EcrArtifactDelegateResponse) artifactDelegateResponse).getTag();
       case GCR:
         return ((GcrArtifactDelegateResponse) artifactDelegateResponse).getTag();
-      case NEXUS_REGISTRY:
+      case NEXUS3_REGISTRY:
         return ((NexusArtifactDelegateResponse) artifactDelegateResponse).getTag();
       case ARTIFACTORY_REGISTRY:
         return ((ArtifactoryArtifactDelegateResponse) artifactDelegateResponse).getTag();

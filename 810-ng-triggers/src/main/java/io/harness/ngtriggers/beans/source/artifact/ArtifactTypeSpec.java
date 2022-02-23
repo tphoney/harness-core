@@ -12,7 +12,7 @@ import static io.harness.ngtriggers.Constants.ARTIFACTORY_REGISTRY;
 import static io.harness.ngtriggers.Constants.DOCKER_REGISTRY;
 import static io.harness.ngtriggers.Constants.ECR;
 import static io.harness.ngtriggers.Constants.GCR;
-import static io.harness.ngtriggers.Constants.NEXUS_REGISTRY;
+import static io.harness.ngtriggers.Constants.NEXUS3_REGISTRY;
 
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.EXTERNAL_PROPERTY;
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
@@ -29,7 +29,7 @@ import java.util.List;
   @JsonSubTypes.Type(value = GcrSpec.class, name = GCR)
   , @JsonSubTypes.Type(value = EcrSpec.class, name = ECR),
       @JsonSubTypes.Type(value = DockerRegistrySpec.class, name = DOCKER_REGISTRY),
-      @JsonSubTypes.Type(value = NexusRegistrySpec.class, name = NEXUS_REGISTRY),
+      @JsonSubTypes.Type(value = NexusRegistrySpec.class, name = NEXUS3_REGISTRY),
       @JsonSubTypes.Type(value = ArtifactoryRegistrySpec.class, name = ARTIFACTORY_REGISTRY)
 })
 

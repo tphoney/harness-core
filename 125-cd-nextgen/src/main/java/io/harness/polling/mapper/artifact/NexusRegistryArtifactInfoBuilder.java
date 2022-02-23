@@ -20,9 +20,9 @@ public class NexusRegistryArtifactInfoBuilder implements PollingInfoBuilder {
   public PollingInfo toPollingInfo(PollingPayloadData pollingPayloadData) {
     return NexusRegistryArtifactInfo.builder()
         .connectorRef(pollingPayloadData.getConnectorRef())
-        .repositoryName(pollingPayloadData.getNexusRegistryPayload().getRepository())
-        .imagePath(pollingPayloadData.getNexusRegistryPayload().getImagePath())
-        .repositoryFormat(pollingPayloadData.getNexusRegistryPayload().getFormat())
+        .repositoryName(pollingPayloadData.getNexus3RegistryPayload().getRepository())
+        .artifactPath(pollingPayloadData.getNexus3RegistryPayload().getArtifactPath())
+        .repositoryFormat(pollingPayloadData.getNexus3RegistryPayload().getFormat())
         .build();
   }
 }

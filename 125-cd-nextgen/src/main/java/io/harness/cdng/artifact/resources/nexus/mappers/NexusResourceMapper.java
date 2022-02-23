@@ -24,7 +24,7 @@ public class NexusResourceMapper {
   public NexusResponseDTO toNexusResponse(List<NexusArtifactDelegateResponse> nexusArtifactDelegateResponseList) {
     List<NexusBuildDetailsDTO> detailsDTOList =
         nexusArtifactDelegateResponseList.stream()
-            .map(response -> toNexusBuildDetailsDTO(response.getBuildDetails(), response.getImagePath()))
+            .map(response -> toNexusBuildDetailsDTO(response.getBuildDetails(), response.getArtifactPath()))
             .collect(Collectors.toList());
     return NexusResponseDTO.builder().buildDetailsList(detailsDTOList).build();
   }

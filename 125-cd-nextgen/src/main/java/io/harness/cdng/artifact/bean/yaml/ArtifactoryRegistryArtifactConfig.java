@@ -65,18 +65,20 @@ public class ArtifactoryRegistryArtifactConfig implements ArtifactConfig, Visita
   /**
    * Images in repos need to be referenced via a path.
    */
-  @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> imagePath;
+  @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> artifactPath;
   /**
    * Repo format.
    */
   @NotNull
-  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH, allowableValues = "docker")
   @Wither
   ParameterField<String> repositoryFormat;
   /**
-   * Docker repo server hostname.
+   * repo server hostname.
    */
-  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> artifactRepositoryUrl;
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH, name = "repositoryUrl")
+  @Wither
+  ParameterField<String> artifactRepositoryUrl;
   /**
    * Tag refers to exact tag number.
    */
@@ -102,7 +104,7 @@ public class ArtifactoryRegistryArtifactConfig implements ArtifactConfig, Visita
 
   @Override
   public String getUniqueHash() {
-    List<String> valuesList = Arrays.asList(connectorRef.getValue(), imagePath.getValue());
+    List<String> valuesList = Arrays.asList(connectorRef.getValue(), artifactPath.getValue());
     return ArtifactUtils.generateUniqueHashFromStringList(valuesList);
   }
 
@@ -114,8 +116,8 @@ public class ArtifactoryRegistryArtifactConfig implements ArtifactConfig, Visita
     if (!ParameterField.isNull(artifactoryRegistryArtifactConfig.getConnectorRef())) {
       resultantConfig = resultantConfig.withConnectorRef(artifactoryRegistryArtifactConfig.getConnectorRef());
     }
-    if (!ParameterField.isNull(artifactoryRegistryArtifactConfig.getImagePath())) {
-      resultantConfig = resultantConfig.withImagePath(artifactoryRegistryArtifactConfig.getImagePath());
+    if (!ParameterField.isNull(artifactoryRegistryArtifactConfig.getArtifactPath())) {
+      resultantConfig = resultantConfig.withArtifactPath(artifactoryRegistryArtifactConfig.getArtifactPath());
     }
     if (!ParameterField.isNull(artifactoryRegistryArtifactConfig.getTag())) {
       resultantConfig = resultantConfig.withTag(artifactoryRegistryArtifactConfig.getTag());

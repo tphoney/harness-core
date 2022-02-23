@@ -359,19 +359,16 @@
         {
           "type": "object",
           "required": [
+            "artifactPath",
             "connectorRef",
-            "imagePath",
             "repository",
             "repositoryFormat"
           ],
           "properties": {
-            "artifactRepositoryUrl": {
+            "artifactPath": {
               "type": "string"
             },
             "connectorRef": {
-              "type": "string"
-            },
-            "imagePath": {
               "type": "string"
             },
             "metadata": {
@@ -381,6 +378,12 @@
               "type": "string"
             },
             "repositoryFormat": {
+              "type": "string",
+              "enum": [
+                "docker"
+              ]
+            },
+            "repositoryUrl": {
               "type": "string"
             },
             "tag": {
@@ -3184,19 +3187,16 @@
         {
           "type": "object",
           "required": [
+            "artifactPath",
             "connectorRef",
-            "imagePath",
             "repository",
             "repositoryFormat"
           ],
           "properties": {
-            "artifactRepositoryUrl": {
+            "artifactPath": {
               "type": "string"
             },
             "connectorRef": {
-              "type": "string"
-            },
-            "imagePath": {
               "type": "string"
             },
             "metadata": {
@@ -3206,9 +3206,22 @@
               "type": "string"
             },
             "repositoryFormat": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "docker"
+              ]
             },
             "repositoryPort": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "repositoryUrl": {
               "type": "string"
             },
             "tag": {
@@ -3223,12 +3236,12 @@
           "oneOf": [
             {
               "required": [
-                "repositoryPort"
+                "tagRegex"
               ]
             },
             {
               "required": [
-                "artifactRepositoryUrl"
+                "tag"
               ]
             }
           ]
@@ -3237,12 +3250,12 @@
           "oneOf": [
             {
               "required": [
-                "tagRegex"
+                "repositoryPort"
               ]
             },
             {
               "required": [
-                "tag"
+                "repositoryUrl"
               ]
             }
           ]
@@ -3724,7 +3737,7 @@
             "DockerRegistry",
             "Gcr",
             "Ecr",
-            "NexusRegistry",
+            "Nexus3Registry",
             "ArtifactoryRegistry"
           ]
         }
@@ -3799,7 +3812,7 @@
           "if": {
             "properties": {
               "type": {
-                "const": "NexusRegistry"
+                "const": "Nexus3Registry"
               }
             }
           },
@@ -4700,7 +4713,7 @@
             "DockerRegistry",
             "Gcr",
             "Ecr",
-            "NexusRegistry",
+            "Nexus3Registry",
             "ArtifactoryRegistry"
           ]
         }
@@ -4775,7 +4788,7 @@
           "if": {
             "properties": {
               "type": {
-                "const": "NexusRegistry"
+                "const": "Nexus3Registry"
               }
             }
           },

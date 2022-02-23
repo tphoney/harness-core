@@ -35,8 +35,8 @@ public class NexusArtifactOutcome implements ArtifactOutcome {
   String connectorRef;
   /** Nexus registry repository name. */
   String repositoryName;
-  /** Images in repos need to be referenced via a path. */
-  String imagePath;
+  /** Artifacts in repos need to be referenced via a path. */
+  String artifactPath;
   /** Nexus registry repository format. */
   String repositoryFormat;
   /** Tag refers to exact tag number. */
@@ -56,7 +56,7 @@ public class NexusArtifactOutcome implements ArtifactOutcome {
 
   @Override
   public ArtifactSummary getArtifactSummary() {
-    return NexusArtifactSummary.builder().imagePath(getImagePath()).tag(getTag()).build();
+    return NexusArtifactSummary.builder().artifactPath(getArtifactPath()).tag(getTag()).build();
   }
 
   @Override

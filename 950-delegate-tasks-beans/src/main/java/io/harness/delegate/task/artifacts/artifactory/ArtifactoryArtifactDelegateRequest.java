@@ -39,7 +39,7 @@ public class ArtifactoryArtifactDelegateRequest implements ArtifactSourceDelegat
   /** Repository name */
   String repositoryName;
   /** Images in repos need to be referenced via a path. */
-  String imagePath;
+  String artifactPath;
   /** Repository format - package type */
   String repositoryFormat;
   /** Tag refers to exact tag number. */

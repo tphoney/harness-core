@@ -61,7 +61,7 @@ public class ArtifactResponseToOutcomeMapperTest extends CategoryTest {
         NexusRegistryArtifactConfig.builder()
             .connectorRef(ParameterField.createValueField("connector"))
             .repository(ParameterField.createValueField("REPO_NAME"))
-            .imagePath(ParameterField.createValueField("IMAGE"))
+            .artifactPath(ParameterField.createValueField("IMAGE"))
             .repositoryFormat(ParameterField.createValueField(RepositoryFormat.docker.name()))
             .build();
     ArtifactDelegateResponse artifactDelegateResponse = NexusArtifactDelegateResponse.builder().build();
@@ -71,7 +71,7 @@ public class ArtifactResponseToOutcomeMapperTest extends CategoryTest {
 
     assertThat(artifactOutcome).isNotNull();
     assertThat(artifactOutcome).isInstanceOf(NexusArtifactOutcome.class);
-    assertThat(artifactOutcome.getArtifactType()).isEqualTo(ArtifactSourceType.NEXUS_REGISTRY.getDisplayName());
+    assertThat(artifactOutcome.getArtifactType()).isEqualTo(ArtifactSourceType.NEXUS3_REGISTRY.getDisplayName());
   }
 
   @Test
@@ -82,7 +82,7 @@ public class ArtifactResponseToOutcomeMapperTest extends CategoryTest {
         ArtifactoryRegistryArtifactConfig.builder()
             .connectorRef(ParameterField.createValueField("connector"))
             .repository(ParameterField.createValueField("REPO_NAME"))
-            .imagePath(ParameterField.createValueField("IMAGE"))
+            .artifactPath(ParameterField.createValueField("IMAGE"))
             .repositoryFormat(ParameterField.createValueField(RepositoryFormat.docker.name()))
             .build();
     ArtifactDelegateResponse artifactDelegateResponse = ArtifactoryArtifactDelegateResponse.builder().build();

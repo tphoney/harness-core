@@ -1039,6 +1039,7 @@ public class WatcherServiceImpl implements WatcherService {
     if (!versionDir.toFile().exists()) {
       Files.createDirectory(versionDir);
     }
+    log.info("reading ff value enableDynamicHandleOfTaskRequest {}",enableDynamicHandleOfTaskRequest);
 
     for (String fileName : asList("start.sh", "stop.sh", DELEGATE_SCRIPT, "setup-proxy.sh")) {
       String filePath = fileName;
@@ -1148,7 +1149,7 @@ public class WatcherServiceImpl implements WatcherService {
                           .redirectError(Slf4jStream.of(scriptName).asError())
                           .setMessageLogger((log, format, arguments) -> log.info(format, arguments))
                           .start();
-
+log.info("calling delegate enableDynamicHandleOfTaskRequest{}",String.valueOf(enableDynamicHandleOfTaskRequest));
         boolean success = false;
         String newDelegateProcess = null;
 

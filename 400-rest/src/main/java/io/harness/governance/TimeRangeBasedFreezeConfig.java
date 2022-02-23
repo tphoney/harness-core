@@ -104,7 +104,7 @@ public class TimeRangeBasedFreezeConfig extends GovernanceFreezeConfig {
   }
 
   public void toggleExpiredWindowsOff() {
-    if (!checkWindowExpired()) {
+    if (checkWindowExpired()) {
       setApplicable(false);
     }
   }
@@ -114,13 +114,13 @@ public class TimeRangeBasedFreezeConfig extends GovernanceFreezeConfig {
     if (timeRange != null) {
       // After all iterations of scheduled windows are done, toggle the window
       if (timeRange.getFreezeOccurrence() != null && currentTime > timeRange.getEndTime()) {
-        return false;
+        return true;
         // toggle scheduled NEVER reoccurring windows and start now windows
       } else if (timeRange.getFreezeOccurrence() == null && currentTime > timeRange.getTo()) {
-        return false;
+        return true;
       }
     }
-    return true;
+    return false;
   }
 
   public void recalculateFreezeWindowState() {

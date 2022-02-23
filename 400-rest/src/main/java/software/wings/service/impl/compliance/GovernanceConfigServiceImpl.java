@@ -489,7 +489,7 @@ public class GovernanceConfigServiceImpl implements GovernanceConfigService {
             throw new InvalidRequestException("Cannot update active freeze window");
           }
         } else if (entry.isApplicable() != oldWindow.isApplicable()) {
-          if (!entry.checkWindowExpired()) {
+          if (entry.checkWindowExpired()) {
             throw new InvalidRequestException("Cannot update expired freeze window");
           }
         }

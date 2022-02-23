@@ -34,6 +34,10 @@ public class ServerlessClient {
     return new ConfigCredentialCommand(this);
   }
 
+  public PluginCommand plugin() {
+    return new PluginCommand(this);
+  }
+
   public String command() {
     StringBuilder command = new StringBuilder(256);
     if (StringUtils.isNotBlank(homeDirectoryPath)) {

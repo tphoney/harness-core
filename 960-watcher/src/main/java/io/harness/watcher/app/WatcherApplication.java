@@ -129,7 +129,7 @@ public class WatcherApplication {
     });
 
     modules.add(new WatcherManagerClientModule(
-        configuration.getManagerUrl(), configuration.getAccountId(), configuration.getAccountSecret()));
+        configuration.getManagerUrl(), configuration.getAccountId(), configuration.getDelegateToken()));
 
     modules.add(WatcherModule.getInstance());
 
@@ -147,7 +147,7 @@ public class WatcherApplication {
       if (publishTarget != null && publishAuthority != null) {
         modules.add(new TailerModule(Config.builder()
                                          .accountId(configuration.getAccountId())
-                                         .accountSecret(configuration.getAccountSecret())
+                                         .accountSecret(configuration.getDelegateToken())
                                          .queueFilePath(Optional.ofNullable(configuration.getQueueFilePath())
                                                             .orElse(EventPublisherConstants.DEFAULT_QUEUE_FILE_PATH))
                                          .publishTarget(publishTarget)

@@ -11,6 +11,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.morphia.MorphiaRegistrar;
 import io.harness.serializer.morphia.ResourceGroupBeansMorphiaRegistrar;
+import io.harness.serializer.morphia.ResourceGroupV2BeansMorphiaRegistrar;
 
 import com.google.common.collect.ImmutableSet;
 import lombok.experimental.UtilityClass;
@@ -33,6 +34,7 @@ public class NGCoreClientRegistrars {
           .addAll(SecretManagerClientRegistrars.morphiaRegistrars)
           .addAll(SetupUsageRegistrars.morphiaRegistrars)
           .add(ResourceGroupBeansMorphiaRegistrar.class)
+          .add(ResourceGroupV2BeansMorphiaRegistrar.class)
           .addAll(ConnectorBeansRegistrars.morphiaRegistrars)
           .build();
 }

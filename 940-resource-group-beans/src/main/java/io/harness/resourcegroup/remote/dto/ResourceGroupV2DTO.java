@@ -42,7 +42,7 @@ public class ResourceGroupV2DTO {
   @Size(max = 128) Map<String, String> tags;
   @Size(max = 1024) String description;
 
-  @NotNull @Valid List<ScopeSelector> includedScopes;
+  @NotNull @NotEmpty @Valid List<ScopeSelector> includedScopes;
 
   List<ResourceFilter> resourceFilter;
 }

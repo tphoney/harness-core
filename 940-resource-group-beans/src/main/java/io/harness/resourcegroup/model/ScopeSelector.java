@@ -25,7 +25,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @JsonInclude(NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ScopeSelector {
-  @NotNull ScopeFilterType filter;
+  @NotNull @ApiModelProperty(required = true) ScopeFilterType filter;
   @ApiModelProperty(required = true) @NotNull @NotEmpty String accountIdentifier;
   @EntityIdentifier(allowBlank = true) String orgIdentifier;
   @EntityIdentifier(allowBlank = true) String projectIdentifier;

@@ -54,5 +54,6 @@ public class ResourceGroupSerializer {
           .addAll(GitSyncSdkRegistrar.morphiaRegistrars)
           .add(ResourceGroupMorphiaRegistrar.class)
           .add(ResourceGroupBeansMorphiaRegistrar.class)
+          .add(ResourceGroupV2BeansMorphiaRegistrar.class)
           .build();
 }

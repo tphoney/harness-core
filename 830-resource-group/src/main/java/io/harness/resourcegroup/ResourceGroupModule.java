@@ -34,9 +34,11 @@ import io.harness.remote.client.ClientMode;
 import io.harness.remote.client.ServiceHttpClientConfig;
 import io.harness.resourcegroup.framework.service.Resource;
 import io.harness.resourcegroup.framework.service.ResourceGroupService;
+import io.harness.resourcegroup.framework.service.ResourceGroupV2Service;
 import io.harness.resourcegroup.framework.service.ResourceTypeService;
 import io.harness.resourcegroup.framework.service.impl.ResourceGroupEventHandler;
 import io.harness.resourcegroup.framework.service.impl.ResourceGroupServiceImpl;
+import io.harness.resourcegroup.framework.service.impl.ResourceGroupV2ServiceImpl;
 import io.harness.resourcegroup.framework.service.impl.ResourceTypeServiceImpl;
 import io.harness.resourcegroupclient.ResourceGroupClientModule;
 import io.harness.resourcegroupclient.remote.ResourceGroupClient;
@@ -75,6 +77,7 @@ public class ResourceGroupModule extends AbstractModule {
     install(new AccessControlAdminClientModule(
         resourceGroupServiceConfig.getAccessControlAdminClientConfiguration(), RESOUCE_GROUP_SERVICE.toString()));
     bind(ResourceGroupService.class).to(ResourceGroupServiceImpl.class);
+    bind(ResourceGroupV2Service.class).to(ResourceGroupV2ServiceImpl.class);
     bind(ResourceTypeService.class).to(ResourceTypeServiceImpl.class);
     bind(String.class).annotatedWith(Names.named("serviceId")).toInstance(RESOUCE_GROUP_SERVICE.toString());
     bind(OutboxEventHandler.class).to(ResourceGroupEventHandler.class);

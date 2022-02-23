@@ -466,7 +466,15 @@ public class ArtifactStreamServiceImpl implements ArtifactStreamService, DataPro
     }
 
     setServiceId(artifactStream);
+
+    boolean originalMetadataOnly = artifactStream.isMetadataOnly();
+    if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, accountId)) {
+      artifactStream.setMetadataOnly(true);
+    }
     artifactStream.validateRequiredFields();
+    if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, accountId)) {
+      artifactStream.setMetadataOnly(originalMetadataOnly);
+    }
 
     validateIfNexus2AndDockerRepositoryType(artifactStream, accountId);
 
@@ -709,7 +717,14 @@ public class ArtifactStreamServiceImpl implements ArtifactStreamService, DataPro
     String accountId = getAccountIdForArtifactStream(artifactStream);
     artifactStream.setAccountId(accountId);
 
+    boolean originalMetadataOnly = artifactStream.isMetadataOnly();
+    if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, accountId)) {
+      artifactStream.setMetadataOnly(true);
+    }
     artifactStream.validateRequiredFields();
+    if (featureFlagService.isEnabled(ARTIFACT_STREAM_METADATA_ONLY, accountId)) {
+      artifactStream.setMetadataOnly(originalMetadataOnly);
+    }
 
     if (artifactStream.getArtifactStreamType() != null && existingArtifactStream.getArtifactStreamType() != null
         && !artifactStream.getArtifactStreamType().equals(existingArtifactStream.getArtifactStreamType())) {

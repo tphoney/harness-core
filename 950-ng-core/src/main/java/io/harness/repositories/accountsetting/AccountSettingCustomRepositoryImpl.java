@@ -9,6 +9,7 @@ package io.harness.repositories.accountsetting;
 
 import static org.springframework.data.mongodb.core.query.Update.update;
 
+import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.accountsetting.dto.AccountSettingType;
 import io.harness.ng.core.accountsetting.entities.AccountSettings;
 import io.harness.ng.core.accountsetting.entities.AccountSettings.AccountSettingsKeys;
@@ -101,5 +102,14 @@ public class AccountSettingCustomRepositoryImpl implements AccountSettingCustomR
           accountSettings.getOrgIdentifier(), accountSettings.getProjectIdentifier(), accountSettings.getType()));
     }
     return existingRecord;
+  }
+
+  @Override
+  public void insertAll(List<AccountSettings> accountSettingsList) {
+    try {
+      mongoTemplate.insertAll(accountSettingsList);
+    } catch (Exception ex) {
+      throw new InvalidRequestException(String.format("Failed to insert default account settings"), ex);
+    }
   }
 }

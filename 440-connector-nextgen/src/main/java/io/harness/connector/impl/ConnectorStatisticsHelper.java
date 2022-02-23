@@ -22,8 +22,8 @@ import io.harness.connector.stats.ConnectorStatusStats.ConnectorStatusStatsKeys;
 import io.harness.connector.stats.ConnectorTypeStats.ConnectorTypeStatsKeys;
 import io.harness.gitsync.helpers.GitContextHelper;
 import io.harness.gitsync.interceptor.GitEntityInfo;
-import io.harness.ng.core.accountsetting.AccountSettingsHelper;
 import io.harness.ng.core.accountsetting.dto.AccountSettingType;
+import io.harness.ng.core.accountsetting.services.NGAccountSettingService;
 import io.harness.repositories.ConnectorRepository;
 
 import com.google.inject.Inject;
@@ -45,7 +45,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 @Slf4j
 public class ConnectorStatisticsHelper {
   ConnectorRepository connectorRepository;
-  AccountSettingsHelper accountSettingsHelper;
+  NGAccountSettingService accountSettingService;
 
   public ConnectorStatistics getStats(String accountIdentifier, String orgIdentifier, String projectIdentifier) {
     Criteria criteria = createCriteriaObjectForConnectorScope(accountIdentifier, orgIdentifier, projectIdentifier);
@@ -75,7 +75,7 @@ public class ConnectorStatisticsHelper {
             .in(projectIdentifier)
             .orOperator(where(ConnectorKeys.deleted).exists(false), where(ConnectorKeys.deleted).is(false));
     boolean isBuiltInSMDisabled =
-        accountSettingsHelper.getIsBuiltInSMDisabled(accountIdentifier, null, null, AccountSettingType.CONNECTOR);
+        accountSettingService.getIsBuiltInSMDisabled(accountIdentifier, null, null, AccountSettingType.CONNECTOR);
     if (isBuiltInSMDisabled) {
       criteria.and(GcpKmsConnector.GcpKmsConnectorKeys.harnessManaged).ne(true);
     }

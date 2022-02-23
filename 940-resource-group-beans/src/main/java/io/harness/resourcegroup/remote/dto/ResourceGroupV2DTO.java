@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -41,6 +42,7 @@ public class ResourceGroupV2DTO {
   String color;
   @Size(max = 128) Map<String, String> tags;
   @Size(max = 1024) String description;
+  Set<String> allowedScopeLevels;
 
   @NotNull @NotEmpty @Valid List<ScopeSelector> includedScopes;
 

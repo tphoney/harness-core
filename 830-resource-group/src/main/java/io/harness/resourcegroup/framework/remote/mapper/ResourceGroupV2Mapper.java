@@ -13,6 +13,7 @@ import io.harness.resourcegroup.remote.dto.ResourceGroupV2DTO;
 import io.harness.resourcegroupclient.ResourceGroupV2Response;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -32,10 +33,16 @@ public class ResourceGroupV2Mapper {
             .color(isBlank(resourceGroupDTO.getColor()) ? HARNESS_BLUE : resourceGroupDTO.getColor())
             .tags(convertToList(resourceGroupDTO.getTags()))
             .description(resourceGroupDTO.getDescription())
+            .allowedScopeLevels(resourceGroupDTO.getAllowedScopeLevels() == null
+                    ? new HashSet<>()
+                    : resourceGroupDTO.getAllowedScopeLevels())
             .includedScopes(
                 resourceGroupDTO.getIncludedScopes() == null ? new ArrayList<>() : resourceGroupDTO.getIncludedScopes())
-            .resourceFilter(resourceGroupDTO.getResourceFilter())
             .build();
+
+    if (resourceGroupDTO.getResourceFilter() != null) {
+      resourceGroupV2.setResourceFilter(resourceGroupDTO.getResourceFilter());
+    }
 
     return resourceGroupV2;
   }

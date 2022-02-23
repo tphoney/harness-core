@@ -5,8 +5,8 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
 import io.harness.ng.beans.PageRequest;
+import io.harness.resourcegroup.remote.dto.ResourceGroupFilterDTO;
 import io.harness.resourcegroup.remote.dto.ResourceGroupV2DTO;
-import io.harness.resourcegroup.remote.dto.ResourceGroupV2FilterDTO;
 import io.harness.resourcegroupclient.ResourceGroupV2Response;
 
 import java.util.Optional;
@@ -17,7 +17,7 @@ import org.springframework.data.domain.Page;
 public interface ResourceGroupV2Service {
   ResourceGroupV2Response create(ResourceGroupV2DTO resourceGroupDTO, boolean harnessManaged);
 
-  Page<ResourceGroupV2Response> list(ResourceGroupV2FilterDTO resourceGroupFilterDTO, PageRequest pageRequest);
+  Page<ResourceGroupV2Response> list(ResourceGroupFilterDTO resourceGroupFilterDTO, PageRequest pageRequest);
 
   Page<ResourceGroupV2Response> list(Scope scope, PageRequest pageRequest, String searchTerm);
 

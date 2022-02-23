@@ -32,6 +32,7 @@ import io.harness.accesscontrol.NGAccessControlCheck;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
+import io.harness.beans.ScopeLevel;
 import io.harness.enforcement.client.annotation.FeatureRestrictionCheck;
 import io.harness.enforcement.constants.FeatureRestrictionName;
 import io.harness.ng.beans.PageRequest;
@@ -41,14 +42,15 @@ import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.resourcegroup.framework.service.ResourceGroupV2Service;
 import io.harness.resourcegroup.framework.service.impl.ResourceGroupV2ValidatorImpl;
+import io.harness.resourcegroup.remote.dto.ResourceGroupFilterDTO;
 import io.harness.resourcegroup.remote.dto.ResourceGroupV2DTO;
-import io.harness.resourcegroup.remote.dto.ResourceGroupV2FilterDTO;
 import io.harness.resourcegroup.remote.dto.ResourceGroupV2Request;
 import io.harness.resourcegroupclient.ResourceGroupV2Response;
 import io.harness.security.annotations.InternalApi;
 import io.harness.security.annotations.NextGenManagerAuth;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -187,7 +189,7 @@ public class HarnessResourceGroupResourceV2 {
       })
   public ResponseDTO<PageResponse<ResourceGroupV2Response>>
   list(@RequestBody(description = "Filter Resource Groups based on multiple parameters",
-           required = true) @NotNull ResourceGroupV2FilterDTO resourceGroupFilterDTO,
+           required = true) @NotNull ResourceGroupFilterDTO resourceGroupFilterDTO,
       @Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @NotNull
       @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier, @BeanParam PageRequest pageRequest) {
     return ResponseDTO.newResponse(getNGPageResponse(resourceGroupV2Service.list(resourceGroupFilterDTO, pageRequest)));
@@ -211,6 +213,8 @@ public class HarnessResourceGroupResourceV2 {
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @RequestBody(description = "This contains the details required to create a Resource Group",
           required = true) @Valid ResourceGroupV2Request resourceGroupV2Request) {
+    resourceGroupV2Request.getResourceGroup().setAllowedScopeLevels(
+        Sets.newHashSet(ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier).toString().toLowerCase()));
     resourceGroupV2Validator.validateResourceGroup(resourceGroupV2Request);
     ResourceGroupV2Response resourceGroupResponse =
         resourceGroupV2Service.create(resourceGroupV2Request.getResourceGroup(), false);
@@ -237,6 +241,8 @@ public class HarnessResourceGroupResourceV2 {
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @RequestBody(description = "This contains the details required to create a Resource Group",
           required = true) @Valid ResourceGroupV2Request resourceGroupV2Request) {
+    resourceGroupV2Request.getResourceGroup().setAllowedScopeLevels(
+        Sets.newHashSet(ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier).toString().toLowerCase()));
     resourceGroupV2Validator.validateResourceGroup(resourceGroupV2Request);
     validateRequest(accountIdentifier, orgIdentifier, projectIdentifier, resourceGroupV2Request.getResourceGroup());
     return ResponseDTO.newResponse(

@@ -12,12 +12,14 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Value;
+import lombok.experimental.FieldNameConstants;
 
 @OwnedBy(PL)
 @Value
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(NON_NULL)
+@FieldNameConstants(innerTypeName = "ResourceFilterKeys")
 public class ResourceFilter {
   @NotNull String resourceType;
   List<String> identifiers;

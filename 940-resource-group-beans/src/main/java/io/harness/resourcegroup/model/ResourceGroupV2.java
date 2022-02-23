@@ -16,6 +16,7 @@ import io.harness.persistence.PersistentEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Set;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import lombok.Builder;
@@ -67,6 +68,7 @@ public class ResourceGroupV2 implements PersistentRegularIterable, PersistentEnt
   @FdIndex @NotNull @Builder.Default Boolean harnessManaged = Boolean.FALSE;
   @NotNull @Singular List<ScopeSelector> includedScopes;
   @Size(max = 256) @Singular("resourceFilter") List<ResourceFilter> resourceFilter;
+  Set<String> allowedScopeLevels;
 
   @CreatedDate Long createdAt;
   @LastModifiedDate Long lastModifiedAt;

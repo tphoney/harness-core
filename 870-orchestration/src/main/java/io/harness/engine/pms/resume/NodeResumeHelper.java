@@ -21,6 +21,7 @@ import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.sdk.core.steps.io.StepResponseNotifyData;
 import io.harness.serializer.KryoSerializer;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
@@ -41,7 +42,8 @@ public class NodeResumeHelper {
     nodeResumeEventPublisher.publishEvent(resumeMetadata, buildResponseMap(resumeMetadata, responseMap), isError);
   }
 
-  private Map<String, ByteString> buildResponseMap(ResumeMetadata resumeMetadata, Map<String, ByteString> response) {
+  @VisibleForTesting
+  Map<String, ByteString> buildResponseMap(ResumeMetadata resumeMetadata, Map<String, ByteString> response) {
     Map<String, ByteString> byteResponseMap = new HashMap<>();
     if (accumulationRequired(resumeMetadata)) {
       List<NodeExecution> childExecutions =
@@ -66,15 +68,16 @@ public class NodeResumeHelper {
     return response;
   }
 
-  private boolean accumulationRequired(ResumeMetadata nodeExecution) {
-    ExecutionMode mode = nodeExecution.getMode();
+  @VisibleForTesting
+  boolean accumulationRequired(ResumeMetadata metadata) {
+    ExecutionMode mode = metadata.getMode();
     if (mode != ExecutionMode.CHILD && mode != ExecutionMode.CHILD_CHAIN) {
       return false;
     } else if (mode == ExecutionMode.CHILD) {
       return true;
     } else {
-      ChildChainExecutableResponse lastChildChainExecutableResponse = Preconditions.checkNotNull(
-          Objects.requireNonNull(nodeExecution.getLatestExecutableResponse()).getChildChain());
+      ChildChainExecutableResponse lastChildChainExecutableResponse =
+          Preconditions.checkNotNull(Objects.requireNonNull(metadata.getLatestExecutableResponse()).getChildChain());
       return !lastChildChainExecutableResponse.getSuspend();
     }
   }

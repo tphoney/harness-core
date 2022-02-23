@@ -2908,11 +2908,18 @@ public class DelegateServiceImpl implements DelegateService {
     Query<DelegateGroup> query = this.persistence.createQuery(DelegateGroup.class)
                                      .filter(DelegateGroupKeys.accountId, accountId)
                                      .filter(DelegateGroupKeys.ng, isNg)
-                                     .filter(DelegateGroupKeys.owner, owner)
                                      .filter(DelegateGroupKeys.name, name);
 
-    // this statement is here because of identifier migration where we used normalized uuid for existing groups
     DelegateGroup existingEntity = query.get();
+
+    if (existingEntity != null && !matchOwners(existingEntity.getOwner(), owner)) {
+      log.error(
+          "Unable to create delegate group. Delegate with same name exists. Delegate name must be unique across account.");
+      throw new InvalidRequestException(
+          "Unable to create delegate group. Delegate with same name exists. Delegate name must be unique across account.");
+    }
+
+    // this statement is here because of identifier migration where we used normalized uuid for existing groups
     if (existingEntity != null && uuidToIdentifier(existingEntity.getUuid()).equals(existingEntity.getIdentifier())) {
       delegateGroupIdentifier = existingEntity.getIdentifier();
     }
@@ -3977,5 +3984,14 @@ public class DelegateServiceImpl implements DelegateService {
     properties.put("Type", delegateType);
     telemetryReporter.sendTrackEvent(eventName, accountId, accountId, properties, null, Category.GLOBAL,
         TelemetryOption.builder().sendForCommunity(false).build());
+  }
+
+  private boolean matchOwners(DelegateEntityOwner existingOwner, DelegateEntityOwner owner) {
+    if ((existingOwner == null && owner != null) || (existingOwner != null && owner == null)) {
+      return false;
+    } else if (existingOwner == null && owner == null) {
+      return true;
+    }
+    return existingOwner.getIdentifier().equals(owner.getIdentifier());
   }
 }

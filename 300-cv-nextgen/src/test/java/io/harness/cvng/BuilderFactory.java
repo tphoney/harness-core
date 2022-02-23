@@ -529,6 +529,7 @@ public class BuilderFactory {
         .environmentIdentifier(context.getEnvIdentifier())
         .eventTime(clock.instant())
         .changeSourceIdentifier("changeSourceID")
+        .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
         .type(ChangeSourceType.HARNESS_CD.getActivityType())
         .stageStepId("stageStepId")
         .verificationStartTime(clock.millis())
@@ -650,7 +651,8 @@ public class BuilderFactory {
         .serviceIdentifier(context.getServiceIdentifier())
         .envIdentifier(context.getEnvIdentifier())
         .eventTime(Instant.EPOCH.getEpochSecond())
-        .changeSourceIdentifier("changeSourceID");
+        .changeSourceIdentifier("changeSourceID")
+        .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier());
   }
 
   public DeploymentEventDTO.Builder getDeploymentEventDTOBuilder() {

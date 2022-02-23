@@ -58,7 +58,21 @@ import io.harness.cdng.NGModule;
 import io.harness.cdng.expressions.CDExpressionEvaluatorProvider;
 import io.harness.cdng.fileservice.FileServiceClient;
 import io.harness.cdng.fileservice.FileServiceClientFactory;
+import io.harness.cdng.helm.HelmDeployStepNode;
+import io.harness.cdng.helm.HelmRollbackStepNode;
+import io.harness.cdng.k8s.K8sApplyStepNode;
+import io.harness.cdng.k8s.K8sBGSwapServicesStepNode;
+import io.harness.cdng.k8s.K8sBlueGreenStepNode;
+import io.harness.cdng.k8s.K8sCanaryDeleteStepNode;
 import io.harness.cdng.k8s.K8sCanaryStepNode;
+import io.harness.cdng.k8s.K8sDeleteStepNode;
+import io.harness.cdng.k8s.K8sRollingRollbackStepNode;
+import io.harness.cdng.k8s.K8sRollingStepNode;
+import io.harness.cdng.k8s.K8sScaleStepNode;
+import io.harness.cdng.provision.terraform.TerraformApplyStepNode;
+import io.harness.cdng.provision.terraform.TerraformDestroyStepNode;
+import io.harness.cdng.provision.terraform.TerraformPlanStepNode;
+import io.harness.cdng.provision.terraform.TerraformRollbackStepNode;
 import io.harness.connector.ConnectorModule;
 import io.harness.connector.ConnectorResourceClientModule;
 import io.harness.connector.events.ConnectorEventHandler;
@@ -284,7 +298,23 @@ public class NextGenModule extends AbstractModule {
   public static final String SECRET_MANAGER_CONNECTOR_SERVICE = "secretManagerConnectorService";
   public static final String CONNECTOR_DECORATOR_SERVICE = "connectorDecoratorService";
   public static Set<Class<?>> cdStepsMovedToNewSchema = new HashSet() {
-    { add(K8sCanaryStepNode.class); }
+    {
+      add(K8sCanaryStepNode.class);
+      add(K8sApplyStepNode.class);
+      add(K8sBlueGreenStepNode.class);
+      add(K8sRollingStepNode.class);
+      add(K8sRollingRollbackStepNode.class);
+      add(K8sScaleStepNode.class);
+      add(K8sDeleteStepNode.class);
+      add(K8sBGSwapServicesStepNode.class);
+      add(K8sCanaryDeleteStepNode.class);
+      add(TerraformApplyStepNode.class);
+      add(TerraformPlanStepNode.class);
+      add(TerraformDestroyStepNode.class);
+      add(TerraformRollbackStepNode.class);
+      add(HelmDeployStepNode.class);
+      add(HelmRollbackStepNode.class);
+    }
   };
   private final NextGenConfiguration appConfig;
   public NextGenModule(NextGenConfiguration appConfig) {

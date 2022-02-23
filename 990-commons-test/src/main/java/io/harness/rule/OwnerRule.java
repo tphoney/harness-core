@@ -121,6 +121,7 @@ public class OwnerRule implements TestRule {
   public static final String JUHI = "juhi.agrawal";
   public static final String KAMAL = "kamal.joshi";
   public static final String KARAN = "karan.siwach";
+  public static final String MANKRIT = "mankrit.singh";
   public static final String MARKO = "marko.barjaktarovic";
   public static final String MLUKIC = "marko.lukic";
   public static final String MARKOM = "marko.milic";

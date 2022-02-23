@@ -41,7 +41,7 @@ import software.wings.service.impl.newrelic.LearningEngineExperimentalAnalysisTa
 import software.wings.service.impl.newrelic.LearningEngineExperimentalAnalysisTask.LearningEngineExperimentalAnalysisTaskKeys;
 import software.wings.service.impl.newrelic.MLExperiments;
 import software.wings.service.intfc.DataStoreService;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.service.intfc.verification.CVActivityLogService;
 import software.wings.service.intfc.verification.CVActivityLogService.Logger;
 import software.wings.sm.ContextElement;

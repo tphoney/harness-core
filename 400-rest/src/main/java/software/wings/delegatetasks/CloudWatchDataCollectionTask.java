@@ -12,7 +12,7 @@ import static io.harness.threading.Morpheus.sleep;
 
 import static software.wings.common.VerificationConstants.DATA_COLLECTION_RETRY_SLEEP;
 import static software.wings.common.VerificationConstants.DURATION_TO_ASK_MINUTES;
-import static software.wings.service.impl.newrelic.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
@@ -28,17 +28,16 @@ import software.wings.beans.TaskType;
 import software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask;
 import software.wings.service.impl.AwsHelperService;
 import software.wings.service.impl.ThirdPartyApiCallLog;
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
-import software.wings.service.impl.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
 import software.wings.service.impl.aws.client.CloseableAmazonWebServiceClient;
 import software.wings.service.impl.aws.delegate.AwsLambdaHelperServiceDelegateImpl;
 import software.wings.service.impl.cloudwatch.AwsNameSpace;
 import software.wings.service.impl.cloudwatch.CloudWatchDataCollectionInfo;
 import software.wings.service.impl.cloudwatch.CloudWatchDelegateServiceImpl;
 import software.wings.service.impl.cloudwatch.CloudWatchMetric;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
-import software.wings.service.intfc.analysis.ClusterLevel;
-import software.wings.sm.StateType;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient;
 import com.google.common.collect.Table.Cell;
@@ -81,13 +80,13 @@ public class CloudWatchDataCollectionTask extends AbstractDelegateDataCollection
     log.info("metric collection - dataCollectionInfo: {}", dataCollectionInfo);
     return DataCollectionTaskResult.builder()
         .status(DataCollectionTaskStatus.SUCCESS)
-        .stateType(StateType.CLOUD_WATCH)
+        .stateType(DelegateStateType.CLOUD_WATCH)
         .build();
   }
 
   @Override
-  protected StateType getStateType() {
-    return StateType.CLOUD_WATCH;
+  protected DelegateStateType getStateType() {
+    return DelegateStateType.CLOUD_WATCH;
   }
 
   @Override

@@ -15,7 +15,7 @@ import static io.harness.rule.OwnerRule.PRAVEEN;
 import static io.harness.rule.OwnerRule.RAGHU;
 import static io.harness.rule.OwnerRule.SOWMYA;
 
-import static software.wings.service.impl.newrelic.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -41,7 +41,7 @@ import software.wings.metrics.ThresholdType;
 import software.wings.metrics.TimeSeriesMetricDefinition;
 import software.wings.service.impl.analysis.TimeSeriesMLTransactionThresholds.TimeSeriesMLTransactionThresholdKeys;
 import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.intfc.DataStoreService;
 import software.wings.service.intfc.MetricDataAnalysisService;
 import software.wings.sm.StateType;

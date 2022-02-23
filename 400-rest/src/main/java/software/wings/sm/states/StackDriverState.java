@@ -13,7 +13,7 @@ import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.waiter.OrchestrationNotifyEventListener.ORCHESTRATION;
 
 import static software.wings.common.VerificationConstants.DELAY_MINUTES;
-import static software.wings.service.impl.analysis.TimeSeriesMlAnalysisType.PREDICTIVE;
+import static software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType.PREDICTIVE;
 
 import io.harness.annotations.dev.BreakDependencyOn;
 import io.harness.annotations.dev.HarnessModule;
@@ -33,7 +33,7 @@ import software.wings.metrics.TimeSeriesMetricDefinition;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
 import software.wings.service.impl.analysis.AnalysisContext;
 import software.wings.service.impl.analysis.DataCollectionCallback;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.service.impl.stackdriver.StackDriverDataCollectionInfo;
 import software.wings.service.intfc.stackdriver.StackDriverService;
 import software.wings.sm.ExecutionContext;

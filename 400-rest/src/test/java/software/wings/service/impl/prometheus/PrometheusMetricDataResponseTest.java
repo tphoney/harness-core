@@ -20,7 +20,7 @@ import io.harness.rule.Owner;
 import io.harness.time.Timestamp;
 
 import software.wings.delegatetasks.DelegateCVActivityLogService;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 
 import com.google.common.collect.TreeBasedTable;
 import java.util.ArrayList;

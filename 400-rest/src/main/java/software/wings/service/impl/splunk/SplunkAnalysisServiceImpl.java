@@ -30,7 +30,7 @@ import software.wings.beans.SplunkConfig;
 import software.wings.beans.SyncTaskContext;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.analysis.AnalysisServiceImpl;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse.VerificationLoadResponse;
 import software.wings.service.impl.apm.MLServiceUtils;

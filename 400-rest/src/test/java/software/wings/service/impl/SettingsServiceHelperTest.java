@@ -41,7 +41,7 @@ import io.harness.rule.Owner;
 
 import software.wings.WingsBaseTest;
 import software.wings.beans.APMVerificationConfig;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.BugsnagConfig;
 import software.wings.beans.CGConstants;
 import software.wings.beans.DatadogConfig;

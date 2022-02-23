@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 import io.harness.category.element.UnitTests;
 import io.harness.rule.Owner;
 
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.SettingAttribute.SettingCategory;
 import software.wings.service.impl.yaml.handler.setting.verificationprovider.AppDynamicsConfigYamlHandler;

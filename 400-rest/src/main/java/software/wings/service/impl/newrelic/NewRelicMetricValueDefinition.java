@@ -18,6 +18,7 @@ import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.SortOrder;
 import io.harness.beans.SortOrder.OrderType;
 
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.metrics.MetricType;
 import software.wings.metrics.RiskLevel;
 import software.wings.metrics.TimeSeriesMetricDefinition;
@@ -145,7 +146,7 @@ public class NewRelicMetricValueDefinition {
   private MetricType metricType;
 
   public NewRelicMetricAnalysisValue analyze(
-      Set<NewRelicMetricDataRecord> testRecords, Set<NewRelicMetricDataRecord> controlRecords) {
+          Set<software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord> testRecords, Set<software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord> controlRecords) {
     double testValue = getValueForComparison(testRecords);
     double controlValue = getValueForComparison(controlRecords);
 
@@ -157,7 +158,7 @@ public class NewRelicMetricValueDefinition {
         .build();
   }
 
-  private double getValueForComparison(Set<NewRelicMetricDataRecord> records) {
+  private double getValueForComparison(Set<software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord> records) {
     double value;
     if (isEmpty(records)) {
       value = -1;
@@ -178,9 +179,9 @@ public class NewRelicMetricValueDefinition {
     return value;
   }
 
-  private List<Double> parseValuesForAnalysis(Set<NewRelicMetricDataRecord> records) {
+  private List<Double> parseValuesForAnalysis(Set<software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord> records) {
     List<Double> values = new ArrayList<>();
-    for (NewRelicMetricDataRecord metricDataRecord : records) {
+    for (software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord metricDataRecord : records) {
       if (metricDataRecord.getValues() == null) {
         continue;
       }
@@ -194,7 +195,7 @@ public class NewRelicMetricValueDefinition {
     return values;
   }
 
-  public List<NewRelicMetricHostAnalysisValue> getTestHostValues(Set<NewRelicMetricDataRecord> testRecords) {
+  public List<NewRelicMetricHostAnalysisValue> getTestHostValues(Set<software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord> testRecords) {
     List<NewRelicMetricHostAnalysisValue> hostAnalysisValues = new ArrayList<>();
     Map<String, Set<NewRelicMetricDataRecord>> recordsSplitByHosts = new HashMap<>();
     if (isNotEmpty(testRecords)) {

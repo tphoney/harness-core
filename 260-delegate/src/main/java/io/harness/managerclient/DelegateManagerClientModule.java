@@ -14,6 +14,7 @@ import io.harness.verificationclient.CVNextGenServiceClient;
 import io.harness.verificationclient.CVNextGenServiceClientFactory;
 
 import com.google.inject.AbstractModule;
+import software.wings.delegatetasks.cv.client.VerificationServiceClient;
 
 @TargetModule(HarnessModule._420_DELEGATE_AGENT)
 public class DelegateManagerClientModule extends AbstractModule {

@@ -7,7 +7,7 @@
 
 package software.wings.verification.newrelic;
 
-import static software.wings.service.impl.newrelic.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 
 import io.harness.beans.FeatureName;
 

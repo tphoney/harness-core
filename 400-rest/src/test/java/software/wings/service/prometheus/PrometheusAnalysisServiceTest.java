@@ -33,7 +33,7 @@ import software.wings.delegatetasks.DelegateProxyFactory;
 import software.wings.delegatetasks.cv.DataCollectionException;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.analysis.APMDelegateService;
-import software.wings.service.impl.analysis.SetupTestNodeData;
+import software.wings.delegatetasks.cv.beans.analysis.SetupTestNodeData;
 import software.wings.service.impl.analysis.TimeSeries;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
 import software.wings.service.impl.apm.MLServiceUtils;

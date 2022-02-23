@@ -13,7 +13,7 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import software.wings.beans.WorkflowExecution;
 import software.wings.beans.WorkflowExecution.WorkflowExecutionKeys;
 import software.wings.dl.WingsPersistence;
-import software.wings.service.impl.analysis.SetupTestNodeData;
+import software.wings.delegatetasks.cv.beans.analysis.SetupTestNodeData;
 import software.wings.sm.ExecutionContext;
 import software.wings.sm.ExecutionContextFactory;
 import software.wings.sm.StateExecutionContext;

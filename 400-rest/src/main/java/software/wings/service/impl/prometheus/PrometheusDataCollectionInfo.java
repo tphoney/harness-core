@@ -14,7 +14,7 @@ import io.harness.expression.ExpressionEvaluator;
 
 import software.wings.beans.PrometheusConfig;
 import software.wings.service.impl.analysis.TimeSeries;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 
 import java.util.List;
 import java.util.Map;

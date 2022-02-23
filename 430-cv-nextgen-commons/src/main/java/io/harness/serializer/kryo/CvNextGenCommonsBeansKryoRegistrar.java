@@ -59,7 +59,7 @@ import io.harness.cvng.beans.appd.AppDynamicsFetchAppRequest;
 import io.harness.cvng.beans.appd.AppDynamicsFetchTiersRequest;
 import io.harness.cvng.beans.appd.AppDynamicsFileDefinition;
 import io.harness.cvng.beans.appd.AppDynamicsMetricDataValidationRequest;
-import io.harness.cvng.beans.appd.AppDynamicsTier;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsTier;
 import io.harness.cvng.beans.customhealth.CustomHealthFetchSampleDataRequest;
 import io.harness.cvng.beans.customhealth.TimestampInfo;
 import io.harness.cvng.beans.datadog.DatadogActiveMetricsRequest;

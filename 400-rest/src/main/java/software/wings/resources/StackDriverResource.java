@@ -17,7 +17,7 @@ import software.wings.security.annotations.Scope;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
 import software.wings.service.impl.stackdriver.StackDriverMetric;
 import software.wings.service.impl.stackdriver.StackDriverSetupTestNodeData;
-import software.wings.service.intfc.analysis.LogAnalysisResource;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.service.intfc.stackdriver.StackDriverService;
 
 import com.codahale.metrics.annotation.ExceptionMetered;

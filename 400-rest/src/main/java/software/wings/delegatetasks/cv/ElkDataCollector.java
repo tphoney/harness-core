@@ -26,7 +26,7 @@ import software.wings.helpers.ext.elk.ElkRestClient;
 import software.wings.helpers.ext.elk.KibanaRestClient;
 import software.wings.service.impl.analysis.ElkConnector;
 import software.wings.service.impl.analysis.ElkValidationType;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.elk.ElkDataCollectionInfoV2;
 import software.wings.service.impl.elk.ElkLogFetchRequest;
 import software.wings.service.impl.elk.ElkQueryType;

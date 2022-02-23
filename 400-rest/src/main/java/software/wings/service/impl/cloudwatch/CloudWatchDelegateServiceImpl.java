@@ -15,7 +15,7 @@ import static software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask
 import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.COMPARE_WITH_CURRENT;
 import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.COMPARE_WITH_PREVIOUS;
 import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.PREDICTIVE;
-import static software.wings.service.impl.newrelic.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 import static software.wings.sm.states.DynatraceState.CONTROL_HOST_NAME;
 import static software.wings.sm.states.DynatraceState.TEST_HOST_NAME;
 
@@ -36,7 +36,7 @@ import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse.VerificationLoadResponse;
 import software.wings.service.impl.aws.client.CloseableAmazonWebServiceClient;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.intfc.cloudwatch.CloudWatchDelegateService;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.sm.StateType;

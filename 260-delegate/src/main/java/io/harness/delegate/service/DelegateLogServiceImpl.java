@@ -34,7 +34,7 @@ import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogLevel;
 import io.harness.managerclient.DelegateAgentManagerClient;
-import io.harness.managerclient.VerificationServiceClient;
+import software.wings.delegatetasks.cv.client.VerificationServiceClient;
 import io.harness.observer.Subject;
 import io.harness.rest.RestResponse;
 import io.harness.serializer.KryoSerializer;

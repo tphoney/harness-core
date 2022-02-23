@@ -34,7 +34,7 @@ import software.wings.SecretManagementTestHelper;
 import software.wings.WingsBaseTest;
 import software.wings.beans.Account;
 import software.wings.beans.AccountType;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.SettingAttribute.SettingAttributeKeys;
 import software.wings.security.UsageRestrictions;

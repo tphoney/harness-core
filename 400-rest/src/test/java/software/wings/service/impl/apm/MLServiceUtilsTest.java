@@ -21,7 +21,7 @@ import io.harness.time.Timestamp;
 
 import software.wings.WingsBaseTest;
 import software.wings.beans.WorkflowExecution;
-import software.wings.service.impl.analysis.SetupTestNodeData;
+import software.wings.delegatetasks.cv.beans.analysis.SetupTestNodeData;
 import software.wings.service.impl.datadog.DataDogSetupTestNodeData;
 import software.wings.sm.StateExecutionInstance;
 import software.wings.sm.StateType;

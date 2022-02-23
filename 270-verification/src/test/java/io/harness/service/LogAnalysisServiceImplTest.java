@@ -13,11 +13,11 @@ import static io.harness.rule.OwnerRule.RAGHU;
 import static io.harness.rule.OwnerRule.SOWMYA;
 
 import static software.wings.common.VerificationConstants.DUMMY_HOST_NAME;
-import static software.wings.service.intfc.analysis.ClusterLevel.H0;
-import static software.wings.service.intfc.analysis.ClusterLevel.H1;
-import static software.wings.service.intfc.analysis.ClusterLevel.L0;
-import static software.wings.service.intfc.analysis.ClusterLevel.L1;
-import static software.wings.service.intfc.analysis.ClusterLevel.L2;
+import static software.wings.delegatetasks.cv.beans.analysis.ClusterLevel.H0;
+import static software.wings.delegatetasks.cv.beans.analysis.ClusterLevel.H1;
+import static software.wings.delegatetasks.cv.beans.analysis.ClusterLevel.L0;
+import static software.wings.delegatetasks.cv.beans.analysis.ClusterLevel.L1;
+import static software.wings.delegatetasks.cv.beans.analysis.ClusterLevel.L2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

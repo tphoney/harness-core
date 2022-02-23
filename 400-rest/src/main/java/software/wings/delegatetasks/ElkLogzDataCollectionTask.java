@@ -29,17 +29,16 @@ import software.wings.beans.TaskType;
 import software.wings.common.VerificationConstants;
 import software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask;
 import software.wings.service.impl.ThirdPartyApiCallLog;
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
-import software.wings.service.impl.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
-import software.wings.service.impl.analysis.LogDataCollectionInfo;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
+import software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.elk.ElkDataCollectionInfo;
 import software.wings.service.impl.elk.ElkDelegateServiceImpl;
 import software.wings.service.impl.elk.ElkLogFetchRequest;
 import software.wings.service.impl.logz.LogzDataCollectionInfo;
 import software.wings.service.intfc.elk.ElkDelegateService;
 import software.wings.service.intfc.logz.LogzDelegateService;
-import software.wings.sm.StateType;
 
 import com.google.inject.Inject;
 import java.text.ParseException;
@@ -104,7 +103,7 @@ public class ElkLogzDataCollectionTask extends AbstractDelegateDataCollectionTas
   }
 
   @Override
-  protected StateType getStateType() {
+  protected DelegateStateType getStateType() {
     return dataCollectionInfo.getStateType();
   }
 

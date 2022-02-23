@@ -19,7 +19,7 @@ import software.wings.service.impl.analysis.TimeSeriesMLScores;
 import software.wings.service.impl.analysis.TimeSeriesMetricGroup.TimeSeriesMlAnalysisGroupInfo;
 import software.wings.service.impl.analysis.Version;
 import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.sm.StateType;
 import software.wings.verification.CVConfiguration;
 

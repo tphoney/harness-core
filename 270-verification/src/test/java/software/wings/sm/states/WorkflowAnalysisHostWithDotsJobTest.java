@@ -12,7 +12,7 @@ import static io.harness.persistence.HQuery.excludeAuthority;
 import static io.harness.rule.OwnerRule.RAGHU;
 
 import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.COMPARE_WITH_CURRENT;
-import static software.wings.service.impl.newrelic.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
@@ -39,15 +39,15 @@ import software.wings.service.impl.analysis.AnalysisContext;
 import software.wings.service.impl.analysis.AnalysisContext.AnalysisContextKeys;
 import software.wings.service.impl.analysis.LogDataRecord;
 import software.wings.service.impl.analysis.LogDataRecord.LogDataRecordKeys;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.analysis.MLAnalysisType;
 import software.wings.service.impl.analysis.TimeSeriesMetricGroup;
 import software.wings.service.impl.analysis.TimeSeriesMetricGroup.TimeSeriesMlAnalysisGroupInfo;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.service.impl.newrelic.LearningEngineAnalysisTask;
 import software.wings.service.impl.newrelic.LearningEngineAnalysisTask.LearningEngineAnalysisTaskKeys;
 import software.wings.service.intfc.DataStoreService;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.sm.StateType;
 
 import com.google.common.collect.Sets;

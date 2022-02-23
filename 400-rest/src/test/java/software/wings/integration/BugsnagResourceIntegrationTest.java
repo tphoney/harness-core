@@ -30,7 +30,7 @@ import software.wings.beans.SettingAttribute.Builder;
 import software.wings.beans.WorkflowExecution;
 import software.wings.service.impl.bugsnag.BugsnagApplication;
 import software.wings.service.impl.bugsnag.BugsnagSetupTestData;
-import software.wings.service.intfc.analysis.LogAnalysisResource;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.sm.StateType;
 
 import com.google.inject.Inject;

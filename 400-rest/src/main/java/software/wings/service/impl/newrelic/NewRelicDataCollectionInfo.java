@@ -15,7 +15,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.NewRelicConfig;
 import software.wings.delegatetasks.delegatecapability.CapabilityHelper;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 
 import java.util.List;
 import java.util.Map;

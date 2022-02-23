@@ -13,8 +13,8 @@ import static io.harness.threading.Morpheus.sleep;
 
 import static software.wings.common.VerificationConstants.DATA_COLLECTION_RETRY_SLEEP;
 import static software.wings.common.VerificationConstants.DURATION_TO_ASK_MINUTES;
-import static software.wings.service.impl.analysis.TimeSeriesMlAnalysisType.PREDICTIVE;
-import static software.wings.service.impl.newrelic.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType.PREDICTIVE;
+import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
@@ -31,13 +31,13 @@ import software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.ThirdPartyApiCallLog.FieldType;
 import software.wings.service.impl.ThirdPartyApiCallLog.ThirdPartyApiCallField;
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
-import software.wings.service.impl.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.impl.stackdriver.StackDriverDataCollectionInfo;
 import software.wings.service.impl.stackdriver.StackdriverDataFetchParameters;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.service.intfc.stackdriver.StackDriverDelegateService;
 import software.wings.sm.StateType;
@@ -89,13 +89,13 @@ public class StackDriverDataCollectionTask extends AbstractDelegateDataCollectio
     log.info("metric collection - dataCollectionInfo: {}", dataCollectionInfo);
     return DataCollectionTaskResult.builder()
         .status(DataCollectionTaskStatus.SUCCESS)
-        .stateType(StateType.STACK_DRIVER)
+        .stateType(DelegateStateType.STACK_DRIVER)
         .build();
   }
 
   @Override
-  protected StateType getStateType() {
-    return StateType.STACK_DRIVER;
+  protected DelegateStateType getStateType() {
+    return DelegateStateType.STACK_DRIVER;
   }
 
   @Override

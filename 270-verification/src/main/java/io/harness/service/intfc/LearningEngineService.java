@@ -16,7 +16,7 @@ import software.wings.service.impl.analysis.MLAnalysisType;
 import software.wings.service.impl.newrelic.LearningEngineAnalysisTask;
 import software.wings.service.impl.newrelic.LearningEngineExperimentalAnalysisTask;
 import software.wings.service.impl.newrelic.MLExperiments;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 
 import java.util.List;
 import java.util.Optional;

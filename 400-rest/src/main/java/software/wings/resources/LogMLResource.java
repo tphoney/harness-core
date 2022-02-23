@@ -26,7 +26,7 @@ import software.wings.service.impl.analysis.LogMLAnalysisSummary;
 import software.wings.service.impl.analysis.LogMLFeedback;
 import software.wings.service.impl.analysis.LogMLFeedbackRecord;
 import software.wings.service.intfc.analysis.AnalysisService;
-import software.wings.service.intfc.analysis.LogAnalysisResource;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.service.intfc.verification.CV24x7DashboardService;
 import software.wings.sm.StateType;
 

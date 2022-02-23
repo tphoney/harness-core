@@ -20,7 +20,7 @@ import io.harness.rest.RestResponse;
 import software.wings.security.annotations.AuthRule;
 import software.wings.security.annotations.Scope;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
-import software.wings.service.impl.appdynamics.AppdynamicsSetupTestNodeData;
+import software.wings.delegatetasks.cv.beans.appd.AppdynamicsSetupTestNodeData;
 import software.wings.service.impl.appdynamics.AppdynamicsTier;
 import software.wings.service.impl.newrelic.NewRelicApplication;
 import software.wings.service.intfc.appdynamics.AppdynamicsService;

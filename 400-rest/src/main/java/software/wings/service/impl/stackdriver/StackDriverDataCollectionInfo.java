@@ -14,8 +14,8 @@ import io.harness.expression.ExpressionEvaluator;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.GcpConfig;
-import software.wings.service.impl.analysis.DataCollectionInfo;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.verification.stackdriver.StackDriverMetricDefinition;
 
 import java.util.List;

@@ -14,10 +14,10 @@ import static software.wings.common.VerificationConstants.MAX_RETRIES;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.concurrent.HTimeLimiter;
-import io.harness.managerclient.VerificationServiceClient;
+import software.wings.delegatetasks.cv.client.VerificationServiceClient;
 
 import software.wings.delegatetasks.DelegateCVTaskService;
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.TimeLimiter;

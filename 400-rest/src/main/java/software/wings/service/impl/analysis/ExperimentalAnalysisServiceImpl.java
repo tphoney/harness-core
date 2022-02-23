@@ -26,6 +26,7 @@ import io.harness.persistence.HIterator;
 
 import software.wings.beans.Base.BaseKeys;
 import software.wings.beans.User;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.dl.WingsPersistence;
 import software.wings.metrics.RiskLevel;
 import software.wings.security.UserThreadLocal;

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 
 /**
  * Created by sriram_parthasarathy on 9/24/17.

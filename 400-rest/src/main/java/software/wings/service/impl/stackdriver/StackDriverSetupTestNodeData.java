@@ -9,7 +9,7 @@ package software.wings.service.impl.stackdriver;
 
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
-import software.wings.service.impl.analysis.SetupTestNodeData;
+import software.wings.delegatetasks.cv.beans.analysis.SetupTestNodeData;
 import software.wings.sm.StateType;
 import software.wings.verification.stackdriver.StackDriverMetricDefinition;
 

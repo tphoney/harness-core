@@ -16,7 +16,7 @@ import software.wings.beans.SplunkConfig;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.ThirdPartyApiCallLog.FieldType;
 import software.wings.service.impl.ThirdPartyApiCallLog.ThirdPartyApiCallField;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.splunk.SplunkDataCollectionInfoV2;
 
 import com.google.common.annotations.VisibleForTesting;

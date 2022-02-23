@@ -32,7 +32,7 @@ import software.wings.service.impl.analysis.TimeSeriesMLAnalysisRecord;
 import software.wings.service.impl.analysis.TimeSeriesMLScores;
 import software.wings.service.impl.analysis.Version;
 import software.wings.service.impl.newrelic.LearningEngineAnalysisTask;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.intfc.DataStoreService;
 import software.wings.service.intfc.MetricDataAnalysisService;
 import software.wings.sm.StateType;

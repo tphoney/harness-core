@@ -143,7 +143,7 @@ import software.wings.service.impl.DelegateTaskServiceClassicImpl;
 import software.wings.service.impl.DelegateTaskStatusObserver;
 import software.wings.service.impl.EventEmitter;
 import software.wings.service.impl.analysis.DataCollectionInfoV2;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.service.impl.aws.model.AwsEc2ListInstancesRequest;
 import software.wings.service.impl.aws.model.AwsIamListInstanceRolesRequest;
 import software.wings.service.impl.aws.model.AwsIamRequest;

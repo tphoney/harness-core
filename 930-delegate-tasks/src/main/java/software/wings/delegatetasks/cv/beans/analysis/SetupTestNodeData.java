@@ -5,22 +5,21 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.service.impl.analysis;
-
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-
-import io.harness.deployment.InstanceDetails;
-
-import software.wings.sm.StateType;
+package software.wings.delegatetasks.cv.beans.analysis;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.concurrent.TimeUnit;
-import javax.validation.constraints.NotNull;
+import io.harness.deployment.InstanceDetails;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Value;
+import software.wings.delegatetasks.DelegateStateType;
+
+import javax.validation.constraints.NotNull;
+import java.util.concurrent.TimeUnit;
+
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 /**
  * Created by rsingh on 8/3/18.
@@ -37,12 +36,12 @@ public class SetupTestNodeData {
   private String hostExpression;
   private String workflowId;
   private String guid;
-  private StateType stateType;
+  private DelegateStateType stateType;
   private long toTime = System.currentTimeMillis() / TimeUnit.SECONDS.toMillis(1);
   private long fromTime = toTime - TimeUnit.MINUTES.toMillis(20) / TimeUnit.SECONDS.toMillis(1);
 
   public SetupTestNodeData(String appId, String settingId, String instanceName, boolean isServiceLevel,
-      Instance instanceElement, String hostExpression, String workflowId, String guid, StateType stateType,
+      Instance instanceElement, String hostExpression, String workflowId, String guid, DelegateStateType stateType,
       long fromTime, long toTime) {
     this.appId = appId;
     this.settingId = settingId;

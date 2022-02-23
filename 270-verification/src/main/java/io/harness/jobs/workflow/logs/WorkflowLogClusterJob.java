@@ -21,7 +21,7 @@ import io.harness.service.intfc.LogAnalysisService;
 import software.wings.service.impl.analysis.AnalysisContext;
 import software.wings.service.impl.analysis.LogRequest;
 import software.wings.service.intfc.DataStoreService;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.verification.VerificationDataAnalysisResponse;
 import software.wings.verification.VerificationStateAnalysisExecutionData;
 

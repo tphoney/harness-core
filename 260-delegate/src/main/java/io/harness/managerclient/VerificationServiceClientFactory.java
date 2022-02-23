@@ -29,10 +29,11 @@ import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
+import software.wings.delegatetasks.cv.client.VerificationServiceClient;
 
 @TargetModule(HarnessModule._420_DELEGATE_AGENT)
 @OwnedBy(HarnessTeam.CV)
-public class VerificationServiceClientFactory implements Provider<VerificationServiceClient> {
+public class VerificationServiceClientFactory implements Provider<software.wings.delegatetasks.cv.client.VerificationServiceClient> {
   public static final ImmutableList<TrustManager> TRUST_ALL_CERTS =
       ImmutableList.of(new DelegateAgentManagerClientX509TrustManager());
 
@@ -45,7 +46,7 @@ public class VerificationServiceClientFactory implements Provider<VerificationSe
   }
 
   @Override
-  public VerificationServiceClient get() {
+  public software.wings.delegatetasks.cv.client.VerificationServiceClient get() {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(new Jdk8Module());
     objectMapper.registerModule(new GuavaModule());

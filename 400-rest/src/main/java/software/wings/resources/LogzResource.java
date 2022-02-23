@@ -13,7 +13,7 @@ import software.wings.security.PermissionAttribute.ResourceType;
 import software.wings.security.annotations.Scope;
 import software.wings.service.impl.elk.ElkQueryType;
 import software.wings.service.intfc.analysis.AnalysisService;
-import software.wings.service.intfc.analysis.LogAnalysisResource;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.sm.StateType;
 
 import com.codahale.metrics.annotation.ExceptionMetered;

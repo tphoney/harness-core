@@ -18,7 +18,7 @@ import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
 import software.wings.service.impl.elk.ElkIndexTemplate;
 import software.wings.service.impl.elk.ElkQueryType;
 import software.wings.service.impl.elk.ElkSetupTestNodeData;
-import software.wings.service.intfc.analysis.LogAnalysisResource;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.service.intfc.elk.ElkAnalysisService;
 import software.wings.sm.StateType;
 

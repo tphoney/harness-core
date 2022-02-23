@@ -43,7 +43,9 @@ import software.wings.APMFetchConfig;
 import software.wings.WingsBaseTest;
 import software.wings.beans.APMValidateCollectorConfig;
 import software.wings.beans.APMVerificationConfig;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.analysis.SetupTestNodeData;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.AwsConfig;
 import software.wings.beans.DatadogConfig;
 import software.wings.beans.Environment;
@@ -59,7 +61,7 @@ import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.apm.APMDataCollectionInfo;
 import software.wings.service.impl.apm.APMSetupTestNodeData;
 import software.wings.service.impl.apm.MLServiceUtils;
-import software.wings.service.impl.appdynamics.AppdynamicsDataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.appd.AppdynamicsDataCollectionInfo;
 import software.wings.service.impl.cloudwatch.CloudWatchDataCollectionInfo;
 import software.wings.service.impl.datadog.DataDogSetupTestNodeData;
 import software.wings.service.impl.log.CustomLogSetupTestNodeData;
@@ -199,7 +201,7 @@ public class APMVerificationServiceImplTest extends WingsBaseTest {
             .metrics("docker.mem.rss")
             .fromTime(Timestamp.currentMinuteBoundary())
             .toTime(Timestamp.currentMinuteBoundary())
-            .instanceElement(SetupTestNodeData.Instance.builder()
+            .instanceElement(software.wings.delegatetasks.cv.beans.analysis.SetupTestNodeData.Instance.builder()
                                  .instanceDetails(InstanceDetails.builder().hostName("sampleHostname").build())
                                  .build())
             .stateType(StateType.DATA_DOG)
@@ -240,7 +242,7 @@ public class APMVerificationServiceImplTest extends WingsBaseTest {
             .metrics("docker.mem.rss")
             .fromTime(Timestamp.currentMinuteBoundary())
             .toTime(Timestamp.currentMinuteBoundary())
-            .instanceElement(SetupTestNodeData.Instance.builder()
+            .instanceElement(software.wings.delegatetasks.cv.beans.analysis.SetupTestNodeData.Instance.builder()
                                  .instanceDetails(InstanceDetails.builder().hostName("sampleHostname").build())
                                  .build())
             .stateType(StateType.DATA_DOG)
@@ -500,7 +502,7 @@ public class APMVerificationServiceImplTest extends WingsBaseTest {
     assertThat(appDynamicsConfig).isEqualTo(dataCollectionInfo.getAppDynamicsConfig());
     assertThat(15).isEqualTo(dataCollectionInfo.getCollectionTime());
     assertThat(1540419553000l).isEqualTo(dataCollectionInfo.getStartTime());
-    assertThat(TimeSeriesMlAnalysisType.PREDICTIVE).isEqualTo(dataCollectionInfo.getTimeSeriesMlAnalysisType());
+    assertThat(software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType.PREDICTIVE).isEqualTo(dataCollectionInfo.getTimeSeriesMlAnalysisType());
   }
 
   @Test

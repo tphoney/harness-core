@@ -25,16 +25,17 @@ import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.annotation.EncryptableSetting;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.SyncTaskContext;
 import software.wings.delegatetasks.DelegateProxyFactory;
+import software.wings.delegatetasks.cv.beans.appd.AppdynamicsSetupTestNodeData;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
 import software.wings.service.impl.apm.MLServiceUtils;
 import software.wings.service.impl.newrelic.NewRelicApplication;
 import software.wings.service.intfc.SettingsService;
-import software.wings.service.intfc.appdynamics.AppdynamicsDelegateService;
+import software.wings.delegatetasks.cv.service.AppdynamicsDelegateService;
 import software.wings.service.intfc.appdynamics.AppdynamicsService;
 import software.wings.service.intfc.security.SecretManager;
 

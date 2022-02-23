@@ -63,6 +63,7 @@ import software.wings.beans.TaskType;
 import software.wings.beans.User;
 import software.wings.common.VerificationConstants;
 import software.wings.delegatetasks.DelegateProxyFactory;
+import software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo;
 import software.wings.dl.WingsPersistence;
 import software.wings.metrics.MetricType;
 import software.wings.security.AppPermissionSummary;

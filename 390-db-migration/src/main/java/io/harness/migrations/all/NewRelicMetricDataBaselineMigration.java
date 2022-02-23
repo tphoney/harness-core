@@ -21,7 +21,7 @@ import software.wings.app.MainConfiguration;
 import software.wings.beans.baseline.WorkflowExecutionBaseline;
 import software.wings.dl.WingsPersistence;
 import software.wings.service.impl.WorkflowExecutionBaselineServiceImpl;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.intfc.DataStoreService;
 
 import com.google.inject.Inject;

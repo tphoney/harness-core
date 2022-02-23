@@ -54,7 +54,7 @@ import io.harness.shell.AuthenticationScheme;
 
 import software.wings.annotation.EncryptableSetting;
 import software.wings.beans.APMVerificationConfig;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.AwsConfig;
 import software.wings.beans.AzureConfig;
 import software.wings.beans.BambooConfig;

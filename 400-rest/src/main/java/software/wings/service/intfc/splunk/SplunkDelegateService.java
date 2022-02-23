@@ -16,7 +16,7 @@ import software.wings.beans.SplunkConfig;
 import software.wings.beans.TaskType;
 import software.wings.delegatetasks.DelegateTaskType;
 import software.wings.service.impl.ThirdPartyApiCallLog;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 
 import com.splunk.Service;
 import java.util.List;

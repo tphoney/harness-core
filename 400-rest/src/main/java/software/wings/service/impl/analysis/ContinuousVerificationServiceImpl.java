@@ -38,7 +38,7 @@ import static software.wings.common.VerificationConstants.PROMETHEUS_DEEPLINK_FO
 import static software.wings.common.VerificationConstants.VERIFICATION_HOST_PLACEHOLDER;
 import static software.wings.common.VerificationConstants.getLogAnalysisStates;
 import static software.wings.common.VerificationConstants.getMetricAnalysisStates;
-import static software.wings.service.impl.newrelic.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 import static software.wings.sm.states.APMVerificationState.buildMetricInfoMap;
 import static software.wings.sm.states.AbstractLogAnalysisState.HOST_BATCH_SIZE;
 import static software.wings.sm.states.DatadogState.metricEndpointsInfo;
@@ -84,7 +84,8 @@ import software.wings.app.MainConfiguration;
 import software.wings.beans.APMValidateCollectorConfig;
 import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.APMVerificationConfig.KeyValues;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.AwsConfig;
 import software.wings.beans.BugsnagConfig;
 import software.wings.beans.DatadogConfig;
@@ -105,6 +106,10 @@ import software.wings.beans.alert.cv.ContinuousVerificationAlertData;
 import software.wings.beans.alert.cv.ContinuousVerificationAlertData.AlertRiskDetail;
 import software.wings.delegatetasks.DelegateProxyFactory;
 import software.wings.delegatetasks.cv.DataCollectionException;
+import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.dl.WingsPersistence;
 import software.wings.metrics.TimeSeriesDataRecord;
 import software.wings.metrics.TimeSeriesDataRecord.TimeSeriesMetricRecordKeys;
@@ -125,7 +130,7 @@ import software.wings.service.impl.apm.APMMetricInfo;
 import software.wings.service.impl.apm.APMResponseParser;
 import software.wings.service.impl.apm.APMSetupTestNodeData;
 import software.wings.service.impl.apm.MLServiceUtils;
-import software.wings.service.impl.appdynamics.AppdynamicsDataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.appd.AppdynamicsDataCollectionInfo;
 import software.wings.service.impl.cloudwatch.CloudWatchDataCollectionInfo;
 import software.wings.service.impl.cloudwatch.CloudWatchMetric;
 import software.wings.service.impl.datadog.DataDogSetupTestNodeData;
@@ -137,8 +142,8 @@ import software.wings.service.impl.log.LogResponseParser;
 import software.wings.service.impl.newrelic.NewRelicDataCollectionInfo;
 import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord;
 import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord.NewRelicMetricAnalysisRecordKeys;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord.NewRelicMetricDataRecordKeys;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.NewRelicMetricDataRecordKeys;
 import software.wings.service.impl.newrelic.NewRelicMetricValueDefinition;
 import software.wings.service.impl.stackdriver.StackDriverDataCollectionInfo;
 import software.wings.service.impl.stackdriver.StackDriverLogDataCollectionInfo;
@@ -1951,7 +1956,7 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
             .dataCollectionMinute(0)
             .hosts(new HashMap<>())
             .encryptedDataDetails(secretManager.getEncryptionDetails(appDynamicsConfig, config.getAppId(), null))
-            .timeSeriesMlAnalysisType(TimeSeriesMlAnalysisType.PREDICTIVE)
+            .timeSeriesMlAnalysisType(software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType.PREDICTIVE)
             .build();
     return createDelegateTask(TaskType.APPDYNAMICS_COLLECT_24_7_METRIC_DATA, config.getAccountId(), config.getAppId(),
         waitId, new Object[] {dataCollectionInfo}, config.getEnvId(), config.getUuid(),
@@ -1962,8 +1967,8 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
       BugsnagCVConfiguration config, String waitId, long startTime, long endTime) {
     BugsnagConfig bugsnagConfig = (BugsnagConfig) settingsService.get(config.getConnectorId()).getValue();
     int timeDuration = (int) TimeUnit.MILLISECONDS.toMinutes(endTime - startTime);
-    final CustomLogDataCollectionInfo dataCollectionInfo =
-        CustomLogDataCollectionInfo.builder()
+    final software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo dataCollectionInfo =
+        software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo.builder()
             .baseUrl(bugsnagConfig.getUrl())
             .validationUrl(BugsnagConfig.validationUrl)
             .cvConfidId(config.getUuid())
@@ -2006,7 +2011,7 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
             .cvConfigId(config.getUuid())
             .collectionTime(timeDuration)
             .newRelicAppId(Long.parseLong(config.getApplicationId()))
-            .timeSeriesMlAnalysisType(TimeSeriesMlAnalysisType.PREDICTIVE)
+            .timeSeriesMlAnalysisType(software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType.PREDICTIVE)
             .dataCollectionMinute(0)
             .hosts(hostsMap)
             .encryptedDataDetails(secretManager.getEncryptionDetails(newRelicConfig, config.getAppId(), null))
@@ -2241,8 +2246,8 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
       case DATA_DOG_LOG:
         DatadogLogCVConfiguration datadogLogCVConfiguration = (DatadogLogCVConfiguration) config;
         DatadogConfig datadogConfig = (DatadogConfig) settingsService.get(config.getConnectorId()).getValue();
-        final CustomLogDataCollectionInfo datadogLogCollectionInfo =
-            CustomLogDataCollectionInfo.builder()
+        final software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo datadogLogCollectionInfo =
+            software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo.builder()
                 .baseUrl(datadogConfig.getUrl())
                 .validationUrl(DatadogConfig.validationUrl)
                 .dataUrl(DatadogConfig.LOG_API_PATH_SUFFIX)
@@ -2280,8 +2285,8 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
         String body = logConfig.resolveSecretNameInUrlOrBody(
             customLogCVServiceConfiguration.getLogCollectionInfo().getCollectionBody());
 
-        CustomLogDataCollectionInfo customLogDataCollectionInfo =
-            CustomLogDataCollectionInfo.builder()
+        software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo customLogDataCollectionInfo =
+            software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo.builder()
                 .baseUrl(logConfig.getUrl())
                 .validationUrl(logConfig.getValidationUrl())
                 .headers(logConfig.collectionHeaders())
@@ -2369,7 +2374,7 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
     switch (context.getStateType()) {
       case SUMO:
         for (List<String> hostBatch : Lists.partition(hostList, HOST_BATCH_SIZE)) {
-          final LogDataCollectionInfo dataCollectionInfo =
+          final software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo dataCollectionInfo =
               createLogDataCollectionInfo(context, collectionStartMinute, new HashSet<>(hostBatch));
           delegateTasks.add(
               createDelegateTaskAndNotify(dataCollectionInfo, SUMO_COLLECT_LOG_DATA, executionData, context, true));
@@ -2379,7 +2384,7 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
         DatadogConfig datadogConfig =
             (DatadogConfig) settingsService.get(context.getAnalysisServerConfigId()).getValue();
         for (List<String> hostBatch : Lists.partition(hostList, HOST_BATCH_SIZE)) {
-          final CustomLogDataCollectionInfo dataCollectionInfo = createCustomLogDataCollectionInfo(
+          final software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo dataCollectionInfo = createCustomLogDataCollectionInfo(
               datadogConfig, context, collectionStartMinute, new HashSet<>(hostBatch));
           delegateTasks.add(createDelegateTaskAndNotify(
               dataCollectionInfo, CUSTOM_LOG_COLLECTION_TASK, executionData, context, true));
@@ -2399,7 +2404,7 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
     }
     for (DelegateTask task : delegateTasks) {
       // This log statement is pretty custom now for LogDataCollectionInfos
-      LogDataCollectionInfo info = (LogDataCollectionInfo) task.getData().getParameters()[0];
+      software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo info = (software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo) task.getData().getParameters()[0];
       log.info(
           "Creating a delegate task for stateExecutionId {} for hosts {}", info.getStateExecutionId(), info.getHosts());
       delegateService.queueTask(task);
@@ -2408,8 +2413,8 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
   }
 
   private DelegateTask createDelegateTaskAndNotify(DataCollectionInfo dataCollectionInfo, TaskType taskType,
-      VerificationStateAnalysisExecutionData executionData, AnalysisContext context,
-      boolean isDataCollectionPerMinuteTask) {
+                                                   VerificationStateAnalysisExecutionData executionData, AnalysisContext context,
+                                                   boolean isDataCollectionPerMinuteTask) {
     String waitId = generateUuid();
     long startTime;
     long endTime;
@@ -2418,7 +2423,7 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
     switch (context.getStateType()) {
       case SUMO:
       case DATA_DOG_LOG:
-        LogDataCollectionInfo logDataCollectionInfo = (LogDataCollectionInfo) dataCollectionInfo;
+        software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo logDataCollectionInfo = (software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo) dataCollectionInfo;
         startTime = logDataCollectionInfo.getStartMinute();
         endTime = startTime + logDataCollectionInfo.getCollectionTime();
         break;
@@ -2426,7 +2431,7 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
         // unfortunately we have inconsistency in the way we set startTime and endTime between providers for per minute
         // task but per minute task is soon going to be replaced by new data collection framework so putting this
         // special condition to to fix activity logs.
-        logDataCollectionInfo = (LogDataCollectionInfo) dataCollectionInfo;
+        logDataCollectionInfo = (software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo) dataCollectionInfo;
         startTime = TimeUnit.MILLISECONDS.toMinutes(logDataCollectionInfo.getStartTime());
         endTime = TimeUnit.MILLISECONDS.toMinutes(logDataCollectionInfo.getEndTime());
         break;
@@ -2450,9 +2455,9 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
     return delegateTask;
   }
 
-  private LogDataCollectionInfo createLogDataCollectionInfo(
+  private software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo createLogDataCollectionInfo(
       AnalysisContext context, long collectionStartMinute, Set<String> hostBatch) {
-    LogDataCollectionInfo savedDataCollectionInfo = (LogDataCollectionInfo) context.getDataCollectionInfo();
+    software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo savedDataCollectionInfo = (LogDataCollectionInfo) context.getDataCollectionInfo();
     savedDataCollectionInfo.setHosts(hostBatch);
     savedDataCollectionInfo.setStartMinute((int) collectionStartMinute);
     savedDataCollectionInfo.setStartTime(collectionStartMinute);
@@ -2470,9 +2475,9 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
     return savedDataCollectionInfo;
   }
 
-  private CustomLogDataCollectionInfo createCustomLogDataCollectionInfo(
+  private software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo createCustomLogDataCollectionInfo(
       DatadogConfig datadogConfig, AnalysisContext context, long collectionStartMinute, Set<String> hostBatch) {
-    CustomLogDataCollectionInfo savedDataCollectionInfo = (CustomLogDataCollectionInfo) context.getDataCollectionInfo();
+    software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo savedDataCollectionInfo = (software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo) context.getDataCollectionInfo();
     CustomLogDataCollectionInfo cloned = savedDataCollectionInfo.clone();
     cloned.setHosts(hostBatch);
     cloned.setStartMinute((int) collectionStartMinute);

@@ -12,11 +12,11 @@ import static io.harness.network.SafeHttpCall.execute;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.concurrent.HTimeLimiter;
-import io.harness.managerclient.VerificationServiceClient;
+import software.wings.delegatetasks.cv.client.VerificationServiceClient;
 import io.harness.rest.RestResponse;
 
 import software.wings.delegatetasks.MetricDataStoreService;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 
 import com.google.common.util.concurrent.TimeLimiter;
 import com.google.inject.Inject;

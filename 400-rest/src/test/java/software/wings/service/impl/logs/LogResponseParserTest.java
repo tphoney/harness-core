@@ -17,7 +17,7 @@ import io.harness.category.element.UnitTests;
 import io.harness.rule.Owner;
 
 import software.wings.beans.DatadogConfig;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.log.LogResponseParser;
 import software.wings.service.impl.log.LogResponseParser.LogResponseData;
 import software.wings.sm.states.BugsnagState;

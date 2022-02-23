@@ -17,7 +17,7 @@ import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.delegate.task.DataCollectionExecutorService;
 
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.helpers.ext.appdynamics.AppdynamicsRestClient;
 import software.wings.service.impl.analysis.MetricElement;
 import software.wings.service.impl.appdynamics.AppDynamicsDataCollectionInfoV2;

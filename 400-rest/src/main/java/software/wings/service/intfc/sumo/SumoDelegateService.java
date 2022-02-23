@@ -13,7 +13,7 @@ import software.wings.beans.SumoConfig;
 import software.wings.beans.TaskType;
 import software.wings.delegatetasks.DelegateTaskType;
 import software.wings.service.impl.ThirdPartyApiCallLog;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
 
 import java.util.List;

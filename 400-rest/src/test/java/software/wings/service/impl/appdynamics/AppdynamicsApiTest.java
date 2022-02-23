@@ -37,7 +37,7 @@ import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import io.harness.security.encryption.SecretDecryptionService;
 
 import software.wings.WingsBaseTest;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.SettingAttribute.SettingCategory;
 import software.wings.beans.SyncTaskContext;
@@ -49,7 +49,7 @@ import software.wings.resources.AppdynamicsResource;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.appdynamics.AppdynamicsMetric.AppdynamicsMetricType;
 import software.wings.service.impl.newrelic.NewRelicApplication;
-import software.wings.service.intfc.appdynamics.AppdynamicsDelegateService;
+import software.wings.delegatetasks.cv.service.AppdynamicsDelegateService;
 import software.wings.service.intfc.appdynamics.AppdynamicsService;
 import software.wings.service.intfc.security.EncryptionService;
 

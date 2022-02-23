@@ -24,7 +24,7 @@ import software.wings.WingsBaseTest;
 import software.wings.metrics.TimeSeriesDataRecord;
 import software.wings.service.impl.newrelic.LearningEngineAnalysisTask;
 import software.wings.service.intfc.VerificationService;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 
 import com.google.inject.Inject;
 import java.util.Collections;

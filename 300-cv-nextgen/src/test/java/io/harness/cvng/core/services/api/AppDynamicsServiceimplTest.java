@@ -35,7 +35,7 @@ import io.harness.cvng.beans.appd.AppDynamicSingleMetricDataRequest;
 import io.harness.cvng.beans.appd.AppDynamicsApplication;
 import io.harness.cvng.beans.appd.AppDynamicsFileDefinition;
 import io.harness.cvng.beans.appd.AppDynamicsFileDefinition.FileType;
-import io.harness.cvng.beans.appd.AppDynamicsTier;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsTier;
 import io.harness.cvng.beans.appd.AppdynamicsMetricDataResponse;
 import io.harness.cvng.client.NextGenService;
 import io.harness.cvng.client.VerificationManagerService;

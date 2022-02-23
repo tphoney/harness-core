@@ -10,7 +10,7 @@ package software.wings.delegatetasks;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
 
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
 
 import java.util.concurrent.TimeoutException;
 @TargetModule(HarnessModule._930_DELEGATE_TASKS)

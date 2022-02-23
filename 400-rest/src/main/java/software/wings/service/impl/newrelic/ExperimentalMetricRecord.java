@@ -9,7 +9,7 @@ package software.wings.service.impl.newrelic;
 
 import software.wings.metrics.RiskLevel;
 import software.wings.service.impl.analysis.ExperimentStatus;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.sm.StateType;
 
 import java.util.List;

@@ -16,7 +16,7 @@ import software.wings.security.annotations.AuthRule;
 import software.wings.security.annotations.Scope;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
 import software.wings.service.impl.splunk.SplunkSetupTestNodeData;
-import software.wings.service.intfc.analysis.LogAnalysisResource;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.service.intfc.splunk.SplunkAnalysisService;
 
 import com.codahale.metrics.annotation.ExceptionMetered;

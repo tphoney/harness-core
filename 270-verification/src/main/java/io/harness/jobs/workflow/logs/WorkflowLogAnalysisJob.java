@@ -23,7 +23,7 @@ import software.wings.service.impl.analysis.AnalysisContext;
 import software.wings.service.impl.analysis.LogRequest;
 import software.wings.service.impl.analysis.MLAnalysisType;
 import software.wings.service.intfc.DataStoreService;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.service.intfc.verification.CVActivityLogService;
 
 import com.google.inject.Inject;

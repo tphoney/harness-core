@@ -12,7 +12,7 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import io.harness.migrations.Migration;
 
 import software.wings.dl.WingsPersistence;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;

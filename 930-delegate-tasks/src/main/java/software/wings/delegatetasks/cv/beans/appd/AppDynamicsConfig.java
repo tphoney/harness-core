@@ -5,34 +5,19 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.beans;
-
-import io.harness.cvng.beans.Connector;
-import io.harness.delegate.beans.executioncapability.ExecutionCapability;
-import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
-import io.harness.delegate.task.mixin.HttpConnectionExecutionCapabilityGenerator;
-import io.harness.encryption.Encrypted;
-import io.harness.expression.ExpressionEvaluator;
-
-import software.wings.annotation.EncryptableSetting;
-import software.wings.audit.ResourceType;
-import software.wings.jersey.JsonViews;
-import software.wings.security.UsageRestrictions;
-import software.wings.settings.SettingValue;
-import software.wings.sm.StateType;
-import software.wings.yaml.setting.VerificationProviderYaml;
+package software.wings.delegatetasks.cv.beans.appd;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.github.reinert.jjschema.Attributes;
 import com.github.reinert.jjschema.SchemaIgnore;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import io.harness.delegate.beans.connector.cvng.Connector;
+import io.harness.delegate.beans.executioncapability.ExecutionCapability;
+import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
+import io.harness.delegate.task.mixin.HttpConnectionExecutionCapabilityGenerator;
+import io.harness.encryption.Encrypted;
+import io.harness.expression.ExpressionEvaluator;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -40,6 +25,20 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.apache.commons.codec.binary.Base64;
 import org.hibernate.validator.constraints.NotEmpty;
+import software.wings.annotation.EncryptableSetting;
+import software.wings.audit.ResourceType;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.jersey.JsonViews;
+import software.wings.security.UsageRestrictions;
+import software.wings.settings.SettingValue;
+import software.wings.yaml.setting.VerificationProviderYaml;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by anubhaw on 8/4/16.
@@ -63,7 +62,7 @@ public class AppDynamicsConfig
    * Instantiates a new App dynamics config.
    */
   public AppDynamicsConfig() {
-    super(StateType.APP_DYNAMICS.name());
+    super(DelegateStateType.APP_DYNAMICS.name());
   }
 
   private AppDynamicsConfig(String username, String accountname, char[] password, String controllerUrl,

@@ -22,14 +22,14 @@ import io.harness.network.Http;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
-import software.wings.delegatetasks.MetricDataStoreService;
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
-import software.wings.service.impl.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
-import software.wings.service.impl.analysis.LogDataCollectionInfo;
-import software.wings.service.impl.analysis.LogElement;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
+import software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo;
+import software.wings.delegatetasks.cv.utils.MetricDataStoreUtil;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.intfc.security.EncryptionService;
-import software.wings.sm.StateType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ public abstract class AbstractDelegateDataCollectionTask extends AbstractDelegat
   @Inject protected EncryptionService encryptionService;
   @Inject @Named("asyncExecutor") private ExecutorService executorService;
   @Inject @Named("verificationExecutor") private ScheduledExecutorService verificationExecutor;
-  @Inject private MetricDataStoreService metricStoreService;
+  @Inject private MetricDataStoreUtil metricStoreService;
 
   private ScheduledFuture future;
   private volatile Future taskFuture;
@@ -161,7 +161,7 @@ public abstract class AbstractDelegateDataCollectionTask extends AbstractDelegat
     int retrySave = 0;
     do {
       try {
-        return metricStoreService.saveNewRelicMetrics(accountId, appId, stateExecutionId, getTaskId(), records);
+        return metricStoreService.saveMetricData(accountId, appId, stateExecutionId, getTaskId(), records);
       } catch (Exception e) {
         getLogger().error(
             "error saving new apm metrics StateExecutionId: {}, Size: {}, {}", stateExecutionId, records.size(), e);
@@ -178,7 +178,7 @@ public abstract class AbstractDelegateDataCollectionTask extends AbstractDelegat
     return rv;
   }
 
-  protected abstract StateType getStateType();
+  protected abstract DelegateStateType getStateType();
 
   protected abstract DataCollectionTaskResult initDataCollection(TaskParameters parameters);
 

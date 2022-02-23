@@ -29,7 +29,7 @@ import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategyProvider;
 import software.wings.service.impl.analysis.AnalysisTolerance;
 import software.wings.service.impl.analysis.AnalysisToleranceProvider;
-import software.wings.service.impl.analysis.CustomLogDataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
 import software.wings.service.impl.analysis.DataCollectionCallback;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.sm.ExecutionContext;

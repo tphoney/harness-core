@@ -25,7 +25,7 @@ import software.wings.service.impl.analysis.TimeSeries;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
 import software.wings.service.impl.prometheus.PrometheusAnalysisServiceImpl;
 import software.wings.service.impl.prometheus.PrometheusSetupTestNodeData;
-import software.wings.service.intfc.analysis.LogAnalysisResource;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.service.intfc.prometheus.PrometheusAnalysisService;
 
 import com.codahale.metrics.annotation.ExceptionMetered;

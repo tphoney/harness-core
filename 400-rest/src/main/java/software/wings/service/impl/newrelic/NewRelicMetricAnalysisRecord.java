@@ -11,7 +11,7 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import static software.wings.common.VerificationConstants.ML_RECORDS_TTL_MONTHS;
-import static software.wings.service.impl.newrelic.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 
 import io.harness.annotation.HarnessEntity;
 import io.harness.annotations.dev.HarnessModule;
@@ -28,7 +28,7 @@ import io.harness.persistence.AccountAccess;
 
 import software.wings.beans.Base;
 import software.wings.metrics.RiskLevel;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.sm.StateType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

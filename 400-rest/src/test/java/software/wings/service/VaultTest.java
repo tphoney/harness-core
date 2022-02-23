@@ -85,7 +85,7 @@ import software.wings.annotation.EncryptableSetting;
 import software.wings.beans.Account;
 import software.wings.beans.AccountType;
 import software.wings.beans.Activity;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.ConfigFile;
 import software.wings.beans.ConfigFile.ConfigOverrideType;
 import software.wings.beans.EntityType;

@@ -8,7 +8,7 @@
 package software.wings.delegatetasks.cv;
 
 import software.wings.service.impl.analysis.LogDataCollectionInfoV2;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 
 import java.util.List;
 

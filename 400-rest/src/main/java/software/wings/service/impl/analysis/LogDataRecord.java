@@ -30,7 +30,8 @@ import io.harness.persistence.AccountAccess;
 import io.harness.persistence.GoogleDataStoreAware;
 
 import software.wings.beans.Base;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.sm.StateType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -149,8 +150,8 @@ public class LogDataRecord extends Base implements GoogleDataStoreAware, Account
   private Date validUntil = Date.from(OffsetDateTime.now().plusWeeks(1).toInstant());
 
   public static List<LogDataRecord> generateDataRecords(StateType stateType, String applicationId, String cvConfigId,
-      String stateExecutionId, String workflowId, String workflowExecutionId, String serviceId,
-      ClusterLevel clusterLevel, ClusterLevel heartbeat, List<LogElement> logElements, String accountId) {
+                                                        String stateExecutionId, String workflowId, String workflowExecutionId, String serviceId,
+                                                        ClusterLevel clusterLevel, ClusterLevel heartbeat, List<software.wings.delegatetasks.cv.beans.analysis.LogElement> logElements, String accountId) {
     final List<LogDataRecord> records = new ArrayList<>();
     for (LogElement logElement : logElements) {
       final LogDataRecord record = new LogDataRecord();

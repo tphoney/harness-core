@@ -35,7 +35,7 @@ import software.wings.service.impl.analysis.TSRequest;
 import software.wings.service.impl.analysis.TimeSeriesMLAnalysisRecord;
 import software.wings.service.impl.analysis.TimeSeriesMLScores;
 import software.wings.service.impl.newrelic.LearningEngineAnalysisTask;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.sm.StateType;
 
 import com.google.common.collect.Sets;

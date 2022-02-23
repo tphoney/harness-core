@@ -23,7 +23,7 @@ import io.harness.serializer.JsonUtils;
 
 import software.wings.beans.NewRelicDeploymentMarkerPayload;
 import software.wings.service.impl.ThirdPartyApiCallLog;
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
 import software.wings.service.impl.newrelic.NewRelicDataCollectionInfo;
 import software.wings.service.intfc.newrelic.NewRelicDelegateService;
 import software.wings.sm.StateType;

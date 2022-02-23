@@ -40,7 +40,7 @@ import software.wings.service.impl.newrelic.LearningEngineAnalysisTask.LearningE
 import software.wings.service.impl.newrelic.LearningEngineExperimentalAnalysisTask;
 import software.wings.service.impl.newrelic.LearningEngineExperimentalAnalysisTask.LearningEngineExperimentalAnalysisTaskKeys;
 import software.wings.service.impl.newrelic.MLExperiments;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.sm.ContextElement;
 import software.wings.sm.StateExecutionInstance;
 

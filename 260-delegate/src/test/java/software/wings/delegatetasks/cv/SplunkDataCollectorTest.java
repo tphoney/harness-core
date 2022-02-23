@@ -29,7 +29,7 @@ import io.harness.rule.Owner;
 import software.wings.beans.SplunkConfig;
 import software.wings.delegatetasks.DelegateCVActivityLogService.Logger;
 import software.wings.service.impl.ThirdPartyApiCallLog;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.splunk.SplunkDataCollectionInfoV2;
 
 import com.google.common.collect.Lists;

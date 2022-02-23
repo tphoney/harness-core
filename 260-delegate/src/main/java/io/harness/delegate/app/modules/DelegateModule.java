@@ -554,7 +554,7 @@ import software.wings.service.intfc.SftpBuildService;
 import software.wings.service.intfc.SlackMessageSender;
 import software.wings.service.intfc.SmbBuildService;
 import software.wings.service.intfc.TerraformConfigInspectService;
-import software.wings.service.intfc.appdynamics.AppdynamicsDelegateService;
+import software.wings.delegatetasks.cv.service.AppdynamicsDelegateService;
 import software.wings.service.intfc.aws.delegate.AwsAmiHelperServiceDelegate;
 import software.wings.service.intfc.aws.delegate.AwsAppAutoScalingHelperServiceDelegate;
 import software.wings.service.intfc.aws.delegate.AwsAsgHelperServiceDelegate;

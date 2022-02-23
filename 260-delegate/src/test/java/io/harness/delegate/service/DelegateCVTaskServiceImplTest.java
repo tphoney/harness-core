@@ -22,10 +22,10 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.concurent.HTimeLimiterMocker;
-import io.harness.managerclient.VerificationServiceClient;
+import software.wings.delegatetasks.cv.client.VerificationServiceClient;
 import io.harness.rule.Owner;
 
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
 
 import com.google.common.util.concurrent.FakeTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;

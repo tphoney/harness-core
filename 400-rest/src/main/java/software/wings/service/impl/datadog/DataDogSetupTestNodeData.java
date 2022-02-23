@@ -7,7 +7,7 @@
 
 package software.wings.service.impl.datadog;
 
-import software.wings.service.impl.analysis.SetupTestNodeData;
+import software.wings.delegatetasks.cv.beans.analysis.SetupTestNodeData;
 import software.wings.sm.StateType;
 import software.wings.sm.states.DatadogState.Metric;
 

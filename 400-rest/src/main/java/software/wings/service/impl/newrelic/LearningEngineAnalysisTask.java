@@ -22,9 +22,10 @@ import io.harness.persistence.AccountAccess;
 import io.harness.version.ServiceApiVersion;
 
 import software.wings.beans.Base;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
 import software.wings.service.impl.analysis.MLAnalysisType;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.sm.StateType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

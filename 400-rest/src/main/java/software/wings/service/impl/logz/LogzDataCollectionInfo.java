@@ -14,7 +14,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.config.LogzConfig;
 import software.wings.delegatetasks.delegatecapability.CapabilityHelper;
-import software.wings.service.impl.analysis.LogDataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo;
 import software.wings.service.impl.elk.ElkQueryType;
 import software.wings.sm.StateType;
 

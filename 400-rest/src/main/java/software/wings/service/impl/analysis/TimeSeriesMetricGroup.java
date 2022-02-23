@@ -16,6 +16,7 @@ import io.harness.mongo.index.MongoIndex;
 import io.harness.persistence.AccountAccess;
 
 import software.wings.beans.Base;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.sm.StateType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

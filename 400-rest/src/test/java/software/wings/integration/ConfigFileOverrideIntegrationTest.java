@@ -30,7 +30,7 @@ import io.harness.rule.Owner;
 import io.harness.stream.BoundedInputStream;
 
 import software.wings.WingsBaseTest;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.Application;
 import software.wings.beans.ConfigFile;
 import software.wings.beans.EntityType;

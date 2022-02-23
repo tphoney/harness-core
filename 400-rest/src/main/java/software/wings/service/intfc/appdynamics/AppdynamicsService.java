@@ -15,7 +15,7 @@ import io.harness.annotations.dev.TargetModule;
 
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
-import software.wings.service.impl.appdynamics.AppdynamicsSetupTestNodeData;
+import software.wings.delegatetasks.cv.beans.appd.AppdynamicsSetupTestNodeData;
 import software.wings.service.impl.appdynamics.AppdynamicsTier;
 import software.wings.service.impl.newrelic.NewRelicApplication;
 

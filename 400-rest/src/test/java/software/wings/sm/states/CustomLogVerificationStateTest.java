@@ -46,7 +46,7 @@ import software.wings.api.HostElement;
 import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.Application;
 import software.wings.beans.SettingAttribute;
-import software.wings.service.impl.analysis.CustomLogDataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
 import software.wings.service.intfc.AppService;
 import software.wings.service.intfc.DelegateService;
 import software.wings.service.intfc.SettingsService;

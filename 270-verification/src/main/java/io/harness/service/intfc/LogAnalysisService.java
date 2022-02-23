@@ -17,12 +17,12 @@ import software.wings.service.impl.analysis.ExpAnalysisInfo;
 import software.wings.service.impl.analysis.ExperimentalLogMLAnalysisRecord;
 import software.wings.service.impl.analysis.FeedbackAction;
 import software.wings.service.impl.analysis.LogDataRecord;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.analysis.LogMLAnalysisRecord;
 import software.wings.service.impl.analysis.LogMLAnalysisStatus;
 import software.wings.service.impl.analysis.LogMLFeedbackRecord;
 import software.wings.service.impl.analysis.LogRequest;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.sm.StateType;
 import software.wings.verification.CVConfiguration;
 

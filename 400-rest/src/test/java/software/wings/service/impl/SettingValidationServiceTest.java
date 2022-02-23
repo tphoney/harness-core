@@ -63,7 +63,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.shell.AccessType;
 
 import software.wings.WingsBaseTest;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.AwsConfig;
 import software.wings.beans.DynaTraceConfig;
 import software.wings.beans.ElkConfig;
@@ -99,7 +99,7 @@ import software.wings.service.intfc.AwsHelperResourceService;
 import software.wings.service.intfc.DelegateService;
 import software.wings.service.intfc.SettingsService;
 import software.wings.service.intfc.analysis.AnalysisService;
-import software.wings.service.intfc.appdynamics.AppdynamicsDelegateService;
+import software.wings.delegatetasks.cv.service.AppdynamicsDelegateService;
 import software.wings.service.intfc.aws.manager.AwsEc2HelperServiceManager;
 import software.wings.service.intfc.dynatrace.DynaTraceDelegateService;
 import software.wings.service.intfc.elk.ElkAnalysisService;

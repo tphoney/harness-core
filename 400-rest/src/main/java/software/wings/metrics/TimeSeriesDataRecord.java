@@ -33,11 +33,11 @@ import io.harness.persistence.UpdatedAtAware;
 import io.harness.persistence.UuidAware;
 
 import software.wings.common.VerificationConstants;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.impl.verification.generated.TimeSeriesMetricRecordProto.MetricDeeplinks;
 import software.wings.service.impl.verification.generated.TimeSeriesMetricRecordProto.MetricValues;
 import software.wings.service.impl.verification.generated.TimeSeriesMetricRecordProto.TxnMetricValues;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.sm.StateType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

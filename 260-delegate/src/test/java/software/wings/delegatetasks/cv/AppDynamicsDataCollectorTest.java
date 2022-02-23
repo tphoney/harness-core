@@ -24,7 +24,7 @@ import io.harness.delegate.task.DataCollectionExecutorService;
 import io.harness.rule.Owner;
 
 import software.wings.WingsBaseTest;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.helpers.ext.appdynamics.AppdynamicsRestClient;
 import software.wings.service.impl.analysis.MetricElement;
 import software.wings.service.impl.appdynamics.AppDynamicsDataCollectionInfoV2;

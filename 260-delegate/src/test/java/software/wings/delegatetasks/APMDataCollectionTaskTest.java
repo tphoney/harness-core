@@ -11,7 +11,7 @@ import static io.harness.rule.OwnerRule.ANJAN;
 import static io.harness.rule.OwnerRule.PRAVEEN;
 
 import static software.wings.beans.TaskType.APM_METRIC_DATA_COLLECTION_TASK;
-import static software.wings.service.impl.newrelic.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -33,7 +33,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 import software.wings.WingsBaseTest;
 import software.wings.delegatetasks.cv.RequestExecutor;
 import software.wings.metrics.MetricType;
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
 import software.wings.service.impl.apm.APMDataCollectionInfo;
 import software.wings.service.impl.apm.APMMetricInfo;
 import software.wings.service.intfc.security.EncryptionService;

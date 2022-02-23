@@ -16,7 +16,7 @@ import static software.wings.service.impl.newrelic.NewRelicDelgateServiceImpl.ME
 import static software.wings.service.impl.newrelic.NewRelicDelgateServiceImpl.batchMetricsToCollect;
 import static software.wings.service.impl.newrelic.NewRelicDelgateServiceImpl.getApdexMetricNames;
 import static software.wings.service.impl.newrelic.NewRelicDelgateServiceImpl.getErrorMetricNames;
-import static software.wings.service.impl.newrelic.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 import static software.wings.service.impl.newrelic.NewRelicMetricValueDefinition.APDEX_SCORE;
 import static software.wings.service.impl.newrelic.NewRelicMetricValueDefinition.AVERAGE_RESPONSE_TIME;
 import static software.wings.service.impl.newrelic.NewRelicMetricValueDefinition.CALL_COUNT;
@@ -38,9 +38,9 @@ import software.wings.beans.TaskType;
 import software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask;
 import software.wings.metrics.TimeSeriesDataRecord;
 import software.wings.service.impl.ThirdPartyApiCallLog;
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
-import software.wings.service.impl.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.service.impl.newrelic.NewRelicApdex;
 import software.wings.service.impl.newrelic.NewRelicApplicationInstance;
 import software.wings.service.impl.newrelic.NewRelicDataCollectionInfo;
@@ -49,11 +49,10 @@ import software.wings.service.impl.newrelic.NewRelicMetric;
 import software.wings.service.impl.newrelic.NewRelicMetricData;
 import software.wings.service.impl.newrelic.NewRelicMetricData.NewRelicMetricSlice;
 import software.wings.service.impl.newrelic.NewRelicMetricData.NewRelicMetricTimeSlice;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.impl.newrelic.NewRelicWebTransactions;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.service.intfc.newrelic.NewRelicDelegateService;
-import software.wings.sm.StateType;
 
 import com.google.common.collect.Table.Cell;
 import com.google.common.collect.TreeBasedTable;
@@ -103,13 +102,13 @@ public class NewRelicDataCollectionTask extends AbstractDelegateDataCollectionTa
     log.info("metric collection - dataCollectionInfo: {}", dataCollectionInfo);
     return DataCollectionTaskResult.builder()
         .status(DataCollectionTaskStatus.SUCCESS)
-        .stateType(StateType.NEW_RELIC)
+        .stateType(DelegateStateType.NEW_RELIC)
         .build();
   }
 
   @Override
-  protected StateType getStateType() {
-    return StateType.NEW_RELIC;
+  protected DelegateStateType getStateType() {
+    return DelegateStateType.NEW_RELIC;
   }
 
   @Override

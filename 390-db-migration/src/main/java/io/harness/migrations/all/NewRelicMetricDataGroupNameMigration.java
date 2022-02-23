@@ -8,13 +8,13 @@
 package io.harness.migrations.all;
 
 import static software.wings.beans.Base.ID_KEY2;
-import static software.wings.service.impl.newrelic.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 
 import io.harness.migrations.Migration;
 import io.harness.persistence.HIterator;
 
 import software.wings.dl.WingsPersistence;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;

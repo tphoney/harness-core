@@ -10,8 +10,8 @@ package software.wings.service.impl.analysis;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.rule.OwnerRule.SOWMYA;
 
-import static software.wings.service.intfc.analysis.ClusterLevel.H0;
-import static software.wings.service.intfc.analysis.ClusterLevel.L0;
+import static software.wings.delegatetasks.cv.beans.analysis.ClusterLevel.H0;
+import static software.wings.delegatetasks.cv.beans.analysis.ClusterLevel.L0;
 import static software.wings.sm.StateType.ELK;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +20,8 @@ import io.harness.category.element.UnitTests;
 import io.harness.rule.Owner;
 
 import software.wings.WingsBaseTest;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.sm.StateType;
 
 import java.util.Collections;
@@ -39,7 +40,7 @@ public class LogDataRecordTest extends WingsBaseTest {
   String serviceId;
   ClusterLevel clusterLevel;
   ClusterLevel heartbeat;
-  List<LogElement> logElements;
+  List<software.wings.delegatetasks.cv.beans.analysis.LogElement> logElements;
   String accountId;
 
   @Before

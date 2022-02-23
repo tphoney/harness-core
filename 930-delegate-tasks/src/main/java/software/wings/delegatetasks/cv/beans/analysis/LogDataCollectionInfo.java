@@ -5,20 +5,19 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.service.impl.analysis;
+package software.wings.delegatetasks.cv.beans.analysis;
 
+import com.google.api.client.util.Lists;
 import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
 import io.harness.delegate.task.TaskParameters;
 import io.harness.security.encryption.EncryptedDataDetail;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import software.wings.delegatetasks.DelegateStateType;
 
-import software.wings.sm.StateType;
-
-import com.google.api.client.util.Lists;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * Common Log Data Collection Info class containing attributes used by Log Verification providers while
@@ -36,13 +35,13 @@ public abstract class LogDataCollectionInfo
   private int collectionTime;
   private String hostnameField;
   private Set<String> hosts;
-  private StateType stateType;
+  private DelegateStateType stateType;
   private int initialDelayMinutes;
   List<EncryptedDataDetail> encryptedDataDetails;
 
   public LogDataCollectionInfo(String accountId, String applicationId, String stateExecutionId, String cvConfigId,
       String workflowId, String workflowExecutionId, String serviceId, String query, long startTime, long endTime,
-      int startMinute, int collectionTime, String hostnameField, Set<String> hosts, StateType stateType,
+      int startMinute, int collectionTime, String hostnameField, Set<String> hosts, DelegateStateType stateType,
       List<EncryptedDataDetail> encryptedDataDetails, int initialDelayMinutes) {
     super(accountId, applicationId, stateExecutionId, cvConfigId, workflowId, workflowExecutionId, serviceId);
     this.query = query;

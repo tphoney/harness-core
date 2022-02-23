@@ -22,25 +22,24 @@ import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.time.Timestamp;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
-import software.wings.beans.AppDynamicsConfig;
 import software.wings.beans.TaskType;
-import software.wings.delegatetasks.MetricDataStoreService;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.service.impl.ThirdPartyApiCallLog;
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
-import software.wings.service.impl.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
-import software.wings.service.impl.appdynamics.AppdynamicsDataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.appd.AppdynamicsDataCollectionInfo;
 import software.wings.service.impl.appdynamics.AppdynamicsMetric;
 import software.wings.service.impl.appdynamics.AppdynamicsMetricData;
 import software.wings.service.impl.appdynamics.AppdynamicsMetricDataValue;
 import software.wings.service.impl.appdynamics.AppdynamicsNode;
 import software.wings.service.impl.appdynamics.AppdynamicsTier;
 import software.wings.service.impl.appdynamics.AppdynamicsTimeSeries;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
-import software.wings.service.intfc.analysis.ClusterLevel;
-import software.wings.service.intfc.appdynamics.AppdynamicsDelegateService;
+import software.wings.delegatetasks.cv.service.AppdynamicsDelegateService;
 import software.wings.service.intfc.security.EncryptionService;
-import software.wings.sm.StateType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,7 +71,6 @@ public class AppdynamicsDataCollectionTask extends AbstractDelegateDataCollectio
 
   @Inject private AppdynamicsDelegateService appdynamicsDelegateService;
 
-  @Inject private MetricDataStoreService metricStoreService;
   @Inject private EncryptionService encryptionService;
 
   private static final Set<String> REJECTED_METRICS_24X7 =
@@ -93,7 +91,7 @@ public class AppdynamicsDataCollectionTask extends AbstractDelegateDataCollectio
     log.info("metric collection - dataCollectionInfo: {}", dataCollectionInfo);
     return DataCollectionTaskResult.builder()
         .status(DataCollectionTaskStatus.SUCCESS)
-        .stateType(StateType.APP_DYNAMICS)
+        .stateType(DelegateStateType.APP_DYNAMICS)
         .build();
   }
 
@@ -103,8 +101,8 @@ public class AppdynamicsDataCollectionTask extends AbstractDelegateDataCollectio
   }
 
   @Override
-  protected StateType getStateType() {
-    return StateType.APP_DYNAMICS;
+  protected DelegateStateType getStateType() {
+    return DelegateStateType.APP_DYNAMICS;
   }
 
   @Override

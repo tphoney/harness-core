@@ -38,8 +38,8 @@ import software.wings.delegatetasks.DelegateCVTaskService;
 import software.wings.delegatetasks.DelegateLogService;
 import software.wings.delegatetasks.cv.commons.CVConstants;
 import software.wings.service.impl.analysis.DataCollectionInfoV2;
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
-import software.wings.service.impl.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.sm.StateType;
 

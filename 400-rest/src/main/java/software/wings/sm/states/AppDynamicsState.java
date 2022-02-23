@@ -13,7 +13,7 @@ import static io.harness.logging.Misc.isLong;
 import static io.harness.waiter.OrchestrationNotifyEventListener.ORCHESTRATION;
 
 import static software.wings.common.TemplateExpressionProcessor.checkFieldTemplatized;
-import static software.wings.service.impl.analysis.TimeSeriesMlAnalysisType.PREDICTIVE;
+import static software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType.PREDICTIVE;
 import static software.wings.service.impl.newrelic.NewRelicMetricValueDefinition.APP_DYNAMICS_24X7_VALUES_TO_ANALYZE;
 import static software.wings.service.impl.newrelic.NewRelicMetricValueDefinition.APP_DYNAMICS_VALUES_TO_ANALYZE;
 
@@ -29,7 +29,7 @@ import io.harness.delegate.beans.TaskData;
 import io.harness.exception.WingsException;
 
 import software.wings.api.DeploymentType;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.InfrastructureMapping;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
@@ -43,13 +43,13 @@ import software.wings.service.impl.analysis.AnalysisToleranceProvider;
 import software.wings.service.impl.analysis.DataCollectionCallback;
 import software.wings.service.impl.analysis.DataCollectionInfoV2;
 import software.wings.service.impl.analysis.TimeSeriesMetricGroup.TimeSeriesMlAnalysisGroupInfo;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.service.impl.appdynamics.AppDynamicsDataCollectionInfoV2;
-import software.wings.service.impl.appdynamics.AppdynamicsDataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.appd.AppdynamicsDataCollectionInfo;
 import software.wings.service.impl.appdynamics.AppdynamicsTier;
 import software.wings.service.impl.appdynamics.AppdynamicsTimeSeries;
 import software.wings.service.impl.newrelic.NewRelicApplication;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.intfc.appdynamics.AppdynamicsService;
 import software.wings.sm.ExecutionContext;
 import software.wings.sm.StateType;

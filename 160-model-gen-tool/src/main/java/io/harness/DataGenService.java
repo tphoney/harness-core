@@ -73,7 +73,7 @@ import io.harness.scm.SecretName;
 import software.wings.app.MainConfiguration;
 import software.wings.beans.Account;
 import software.wings.beans.AppContainer;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.Application;
 import software.wings.beans.AwsConfig;
 import software.wings.beans.NewRelicConfig;

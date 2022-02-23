@@ -36,10 +36,10 @@ import software.wings.delegatetasks.cv.RequestExecutor;
 import software.wings.helpers.ext.apm.APMRestClient;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.analysis.AzureLogAnalyticsConnectionDetails;
-import software.wings.service.impl.analysis.CustomLogDataCollectionInfo;
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
-import software.wings.service.impl.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.log.LogResponseParser;
 import software.wings.sm.StateType;
 import software.wings.sm.states.CustomLogVerificationState.ResponseMapper;
@@ -89,7 +89,7 @@ public class CustomLogDataCollectionTask extends AbstractDelegateDataCollectionT
   }
 
   @Override
-  protected StateType getStateType() {
+  protected DelegateStateType getStateType() {
     return dataCollectionInfo.getStateType();
   }
 

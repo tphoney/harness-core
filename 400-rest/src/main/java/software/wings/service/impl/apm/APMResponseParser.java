@@ -14,7 +14,7 @@ import io.harness.time.Timestamp;
 
 import software.wings.delegatetasks.CustomDataCollectionUtils;
 import software.wings.delegatetasks.cv.DataCollectionException;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 
 import com.google.common.collect.Multimap;
 import java.text.ParseException;

@@ -8,10 +8,12 @@
 package io.harness.cvng.beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Collections;
-import java.util.Map;
+import io.harness.delegate.beans.connector.cvng.Connector;
 import lombok.Builder;
 import lombok.Value;
+
+import java.util.Collections;
+import java.util.Map;
 
 @Value
 @Builder

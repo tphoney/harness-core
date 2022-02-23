@@ -116,7 +116,7 @@ import software.wings.service.intfc.DockerBuildService;
 import software.wings.service.intfc.EcrBuildService;
 import software.wings.service.intfc.GitService;
 import software.wings.service.intfc.NexusBuildService;
-import software.wings.service.intfc.appdynamics.AppdynamicsDelegateService;
+import software.wings.delegatetasks.cv.service.AppdynamicsDelegateService;
 import software.wings.service.intfc.aws.delegate.AwsAppAutoScalingHelperServiceDelegate;
 import software.wings.service.intfc.aws.delegate.AwsAsgHelperServiceDelegate;
 import software.wings.service.intfc.aws.delegate.AwsCFHelperServiceDelegate;

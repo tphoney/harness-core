@@ -58,7 +58,7 @@ import software.wings.service.impl.analysis.ContinuousVerificationExecutionMetaD
 import software.wings.service.impl.analysis.LogClusterContext;
 import software.wings.service.impl.analysis.LogDataRecord;
 import software.wings.service.impl.analysis.LogDataRecord.LogDataRecordKeys;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.analysis.LogMLAnalysisRecord;
 import software.wings.service.impl.analysis.LogMLAnalysisRecord.LogMLAnalysisRecordKeys;
 import software.wings.service.impl.analysis.LogMLAnalysisSummary;
@@ -71,8 +71,8 @@ import software.wings.service.impl.splunk.SplunkAnalysisCluster.MessageFrequency
 import software.wings.service.intfc.AppService;
 import software.wings.service.intfc.DataStoreService;
 import software.wings.service.intfc.analysis.AnalysisService;
-import software.wings.service.intfc.analysis.ClusterLevel;
-import software.wings.service.intfc.analysis.LogAnalysisResource;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.service.intfc.verification.CVActivityLogService;
 import software.wings.service.intfc.yaml.YamlGitService;
 import software.wings.sm.StateExecutionData;

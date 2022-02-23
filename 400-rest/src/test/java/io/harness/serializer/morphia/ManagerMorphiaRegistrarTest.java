@@ -26,7 +26,7 @@ import software.wings.beans.infrastructure.instance.info.InstanceInfo;
 import software.wings.common.SampleElement;
 import software.wings.infra.InfraMappingInfrastructureProvider;
 import software.wings.service.impl.WorkflowExecutionUpdateFake;
-import software.wings.service.impl.analysis.DataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionInfo;
 import software.wings.service.impl.analysis.LogDataCollectionInfoV2;
 import software.wings.settings.SettingValue;
 import software.wings.sm.ContextElement;

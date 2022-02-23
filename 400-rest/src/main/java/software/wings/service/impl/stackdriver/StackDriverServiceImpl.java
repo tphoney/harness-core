@@ -29,7 +29,7 @@ import software.wings.beans.SettingAttribute;
 import software.wings.beans.SyncTaskContext;
 import software.wings.common.VerificationConstants;
 import software.wings.delegatetasks.DelegateProxyFactory;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
 import software.wings.service.impl.apm.MLServiceUtils;
 import software.wings.service.intfc.SettingsService;

@@ -8,7 +8,7 @@
 package io.harness.migrations.all;
 
 import software.wings.service.impl.analysis.TimeSeriesMLAnalysisRecord;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 
 import com.mongodb.DBObject;
 import org.slf4j.LoggerFactory;

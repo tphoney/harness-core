@@ -17,8 +17,8 @@ import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.rule.Owner;
 
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.sm.StateType;
 
 import com.google.common.collect.HashBasedTable;

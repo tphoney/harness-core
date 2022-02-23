@@ -7,46 +7,14 @@
 
 package software.wings.sm.states;
 
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.data.structure.UUIDGenerator.generateUuid;
-import static io.harness.waiter.OrchestrationNotifyEventListener.ORCHESTRATION;
-
-import static software.wings.common.VerificationConstants.URL_BODY_APPENDER;
-import static software.wings.common.VerificationConstants.VERIFICATION_HOST_PLACEHOLDER;
-
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
+import com.github.reinert.jjschema.Attributes;
+import com.google.common.collect.Lists;
 import io.harness.annotations.dev.BreakDependencyOn;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.Cd1SetupFields;
 import io.harness.beans.DelegateTask;
 import io.harness.delegate.beans.TaskData;
-
-import software.wings.beans.APMVerificationConfig;
-import software.wings.beans.SettingAttribute;
-import software.wings.beans.TaskType;
-import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
-import software.wings.service.impl.analysis.AnalysisComparisonStrategyProvider;
-import software.wings.service.impl.analysis.AnalysisTolerance;
-import software.wings.service.impl.analysis.AnalysisToleranceProvider;
-import software.wings.service.impl.analysis.CustomLogDataCollectionInfo;
-import software.wings.service.impl.analysis.DataCollectionCallback;
-import software.wings.sm.ExecutionContext;
-import software.wings.sm.StateType;
-import software.wings.stencils.DefaultValue;
-import software.wings.stencils.EnumData;
-import software.wings.verification.VerificationStateAnalysisExecutionData;
-
-import com.github.reinert.jjschema.Attributes;
-import com.google.common.collect.Lists;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -54,6 +22,35 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
+import software.wings.beans.APMVerificationConfig;
+import software.wings.beans.SettingAttribute;
+import software.wings.beans.TaskType;
+import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
+import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
+import software.wings.service.impl.analysis.AnalysisComparisonStrategyProvider;
+import software.wings.service.impl.analysis.AnalysisTolerance;
+import software.wings.service.impl.analysis.AnalysisToleranceProvider;
+import software.wings.service.impl.analysis.DataCollectionCallback;
+import software.wings.sm.ExecutionContext;
+import software.wings.sm.StateType;
+import software.wings.stencils.DefaultValue;
+import software.wings.stencils.EnumData;
+import software.wings.verification.VerificationStateAnalysisExecutionData;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.data.structure.UUIDGenerator.generateUuid;
+import static io.harness.waiter.OrchestrationNotifyEventListener.ORCHESTRATION;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static software.wings.common.VerificationConstants.URL_BODY_APPENDER;
+import static software.wings.common.VerificationConstants.VERIFICATION_HOST_PLACEHOLDER;
 
 /**
  * @author Praveen

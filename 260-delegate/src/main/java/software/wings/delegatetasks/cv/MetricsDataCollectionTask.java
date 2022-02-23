@@ -19,8 +19,8 @@ import software.wings.delegatetasks.MetricDataStoreService;
 import software.wings.service.impl.analysis.DataCollectionInfoV2;
 import software.wings.service.impl.analysis.MetricElement;
 import software.wings.service.impl.analysis.MetricsDataCollectionInfo;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;

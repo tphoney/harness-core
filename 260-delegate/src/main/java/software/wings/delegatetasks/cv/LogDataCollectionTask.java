@@ -18,8 +18,8 @@ import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
 import software.wings.common.VerificationConstants;
 import software.wings.delegatetasks.LogAnalysisStoreService;
 import software.wings.service.impl.analysis.LogDataCollectionInfoV2;
-import software.wings.service.impl.analysis.LogElement;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;

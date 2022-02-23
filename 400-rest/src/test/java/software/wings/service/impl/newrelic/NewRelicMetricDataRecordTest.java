@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Random;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 
 public class NewRelicMetricDataRecordTest extends WingsBaseTest {
   private Random random = new Random();
@@ -37,8 +38,8 @@ public class NewRelicMetricDataRecordTest extends WingsBaseTest {
   public void testConvertErrorsToPercentage_whenEmpty() {
     Map<String, Double> values = new HashMap<>();
     values.put(generateUuid(), random.nextDouble());
-    NewRelicMetricDataRecord metricDataRecord =
-        NewRelicMetricDataRecord.builder().values(new HashMap<>(values)).build();
+    software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord metricDataRecord =
+        software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.builder().values(new HashMap<>(values)).build();
     metricDataRecord.convertErrorsToPercentage(Collections.emptyMap());
     assertThat(metricDataRecord.getValues()).isEqualTo(values);
   }
@@ -49,8 +50,8 @@ public class NewRelicMetricDataRecordTest extends WingsBaseTest {
   public void testConvertErrorsToPercentage_whenThroughputNoErrors() {
     Map<String, Double> values = new HashMap<>();
     values.put("throughput", random.nextDouble());
-    NewRelicMetricDataRecord metricDataRecord =
-        NewRelicMetricDataRecord.builder().name("txn1").values(new HashMap<>(values)).build();
+    software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord metricDataRecord =
+        software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.builder().name("txn1").values(new HashMap<>(values)).build();
 
     TreeBasedTable<String, String, List<String>> throughputToErrorsMap = TreeBasedTable.create();
     throughputToErrorsMap.put("txn1", "throughput", Lists.newArrayList("error2", "error3"));
@@ -64,8 +65,8 @@ public class NewRelicMetricDataRecordTest extends WingsBaseTest {
   public void testConvertErrorsToPercentage_whenErrorsNoThroughput() {
     Map<String, Double> values = new HashMap<>();
     values.put("error1", random.nextDouble());
-    NewRelicMetricDataRecord metricDataRecord =
-        NewRelicMetricDataRecord.builder().name("txn1").values(new HashMap<>(values)).build();
+    software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord metricDataRecord =
+        software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.builder().name("txn1").values(new HashMap<>(values)).build();
 
     TreeBasedTable<String, String, List<String>> throughputToErrorsMap = TreeBasedTable.create();
     throughputToErrorsMap.put("txn1", "throughput", Lists.newArrayList("error1", "error2"));
@@ -81,8 +82,8 @@ public class NewRelicMetricDataRecordTest extends WingsBaseTest {
     values.put("throughput", 0D);
     values.put("error1", random.nextDouble());
     values.put("error2", random.nextDouble());
-    NewRelicMetricDataRecord metricDataRecord =
-        NewRelicMetricDataRecord.builder().name("txn1").values(new HashMap<>(values)).build();
+    software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord metricDataRecord =
+        software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.builder().name("txn1").values(new HashMap<>(values)).build();
 
     TreeBasedTable<String, String, List<String>> throughputToErrorsMap = TreeBasedTable.create();
     throughputToErrorsMap.put("txn1", "throughput", Lists.newArrayList("error1", "error2"));
@@ -99,7 +100,7 @@ public class NewRelicMetricDataRecordTest extends WingsBaseTest {
     values.put("error1", random.nextDouble());
     values.put("error2", random.nextDouble());
     values.put("error3", random.nextDouble());
-    NewRelicMetricDataRecord metricDataRecord =
+    software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord metricDataRecord =
         NewRelicMetricDataRecord.builder().name("txn1").values(new HashMap<>(values)).build();
 
     TreeBasedTable<String, String, List<String>> throughputToErrorsMap = TreeBasedTable.create();

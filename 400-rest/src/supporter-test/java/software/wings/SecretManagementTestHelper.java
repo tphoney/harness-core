@@ -18,7 +18,7 @@ import io.harness.exception.SecretManagementException;
 import io.harness.persistence.HPersistence;
 import io.harness.security.encryption.EncryptionType;
 
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.AwsSecretsManagerConfig;
 import software.wings.beans.AzureVaultConfig;
 import software.wings.beans.CyberArkConfig;

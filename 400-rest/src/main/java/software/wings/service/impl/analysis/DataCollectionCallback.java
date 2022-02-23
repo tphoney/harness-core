@@ -21,8 +21,9 @@ import io.harness.waiter.WaitNotifyEngine;
 import software.wings.beans.alert.AlertType;
 import software.wings.beans.alert.cv.ContinuousVerificationAlertData;
 import software.wings.beans.alert.cv.ContinuousVerificationDataCollectionAlert;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
 import software.wings.dl.WingsPersistence;
-import software.wings.service.impl.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
 import software.wings.service.intfc.AlertService;
 import software.wings.service.intfc.AppService;
 import software.wings.service.intfc.verification.CVActivityLogService;
@@ -71,7 +72,7 @@ public class DataCollectionCallback implements OldNotifyCallback {
 
   @Override
   public void notify(Map<String, ResponseData> response) {
-    final DataCollectionTaskResult result = (DataCollectionTaskResult) response.values().iterator().next();
+    final software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult result = (software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult) response.values().iterator().next();
     log.info("data collection result for state {} is: {}", stateExecutionId, result);
     activityLog(result);
     if (result.getStatus() == DataCollectionTaskStatus.FAILURE) {

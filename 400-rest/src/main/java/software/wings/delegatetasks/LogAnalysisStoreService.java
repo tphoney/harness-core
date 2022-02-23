@@ -7,7 +7,7 @@
 
 package software.wings.delegatetasks;
 
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.sm.StateType;
 
 import java.io.IOException;

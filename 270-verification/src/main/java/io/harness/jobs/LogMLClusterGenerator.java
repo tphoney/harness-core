@@ -16,8 +16,8 @@ import software.wings.service.impl.analysis.LogClusterContext;
 import software.wings.service.impl.analysis.LogRequest;
 import software.wings.service.impl.analysis.MLAnalysisType;
 import software.wings.service.impl.newrelic.LearningEngineAnalysisTask;
-import software.wings.service.intfc.analysis.ClusterLevel;
-import software.wings.service.intfc.analysis.LogAnalysisResource;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;

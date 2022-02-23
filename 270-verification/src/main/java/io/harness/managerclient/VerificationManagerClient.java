@@ -21,7 +21,7 @@ import software.wings.beans.alert.cv.ContinuousVerificationAlertData;
 import software.wings.common.VerificationConstants;
 import software.wings.service.impl.analysis.CVFeedbackRecord;
 import software.wings.service.impl.analysis.DataCollectionInfoV2;
-import software.wings.service.intfc.analysis.LogAnalysisResource;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.sm.StateType;
 import software.wings.verification.VerificationDataAnalysisResponse;
 

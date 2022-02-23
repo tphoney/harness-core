@@ -5,25 +5,23 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.service.impl.appdynamics;
+package software.wings.delegatetasks.cv.beans.appd;
 
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
 import io.harness.delegate.task.TaskParameters;
 import io.harness.expression.ExpressionEvaluator;
 import io.harness.security.encryption.EncryptedDataDetail;
-
-import software.wings.beans.AppDynamicsConfig;
-import software.wings.delegatetasks.delegatecapability.CapabilityHelper;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
-
-import java.util.List;
-import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.utils.CapablityUtil;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by rsingh on 5/18/17.
@@ -53,6 +51,6 @@ public class AppdynamicsDataCollectionInfo implements TaskParameters, ExecutionC
 
   @Override
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
-    return CapabilityHelper.generateDelegateCapabilities(appDynamicsConfig, encryptedDataDetails, maskingEvaluator);
+    return CapablityUtil.generateDelegateCapabilities(appDynamicsConfig, encryptedDataDetails, maskingEvaluator);
   }
 }

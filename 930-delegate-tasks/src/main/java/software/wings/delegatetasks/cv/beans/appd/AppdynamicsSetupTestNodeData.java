@@ -5,16 +5,15 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.service.impl.appdynamics;
-
-import software.wings.service.impl.analysis.SetupTestNodeData;
-import software.wings.sm.StateType;
+package software.wings.delegatetasks.cv.beans.appd;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.analysis.SetupTestNodeData;
 
 /**
  * Created by rsingh on 8/3/18.
@@ -32,7 +31,7 @@ public class AppdynamicsSetupTestNodeData extends SetupTestNodeData {
       Instance instanceElement, String hostExpression, String workflowId, long fromTime, long toTime,
       long applicationId, long tierId, String guid) {
     super(appId, settingId, instanceName, isServiceLevel, instanceElement, hostExpression, workflowId, guid,
-        StateType.APP_DYNAMICS, fromTime, toTime);
+        DelegateStateType.APP_DYNAMICS, fromTime, toTime);
     this.applicationId = applicationId;
     this.tierId = tierId;
   }

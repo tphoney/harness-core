@@ -29,7 +29,7 @@ import io.harness.serializer.JsonUtils;
 
 import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.AccountPlugin;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.AwsConfig;
 import software.wings.beans.AzureConfig;
 import software.wings.beans.BambooConfig;

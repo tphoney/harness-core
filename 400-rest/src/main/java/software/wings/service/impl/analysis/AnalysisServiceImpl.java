@@ -86,7 +86,7 @@ import software.wings.service.intfc.SettingsService;
 import software.wings.service.intfc.StateExecutionService;
 import software.wings.service.intfc.WorkflowExecutionService;
 import software.wings.service.intfc.analysis.AnalysisService;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.service.intfc.elk.ElkDelegateService;
 import software.wings.service.intfc.instana.InstanaDelegateService;
 import software.wings.service.intfc.logz.LogzDelegateService;

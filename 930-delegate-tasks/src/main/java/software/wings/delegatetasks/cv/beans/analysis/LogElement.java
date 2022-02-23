@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.service.impl.analysis;
+package software.wings.delegatetasks.cv.beans.analysis;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

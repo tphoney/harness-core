@@ -34,7 +34,7 @@ import software.wings.service.impl.analysis.TimeSeriesMLHostSummary;
 import software.wings.service.impl.analysis.TimeSeriesMLMetricSummary;
 import software.wings.service.impl.analysis.TimeSeriesMLTxnSummary;
 import software.wings.service.impl.cloudwatch.CloudWatchMetric;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.sm.StateType;
 import software.wings.sm.states.APMVerificationState;
 import software.wings.verification.CVConfiguration;

@@ -15,7 +15,7 @@ import software.wings.security.annotations.AuthRule;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
 import software.wings.service.impl.bugsnag.BugsnagApplication;
 import software.wings.service.impl.bugsnag.BugsnagSetupTestData;
-import software.wings.service.intfc.analysis.LogAnalysisResource;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.service.intfc.analysis.LogVerificationService;
 import software.wings.sm.StateType;
 

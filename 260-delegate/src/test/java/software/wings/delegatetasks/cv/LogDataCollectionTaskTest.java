@@ -34,8 +34,8 @@ import software.wings.WingsBaseTest;
 import software.wings.delegatetasks.DelegateCVActivityLogService.Logger;
 import software.wings.delegatetasks.LogAnalysisStoreService;
 import software.wings.service.impl.analysis.LogDataCollectionInfoV2;
-import software.wings.service.impl.analysis.LogElement;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.sm.StateType;
 
 import com.google.common.collect.Lists;

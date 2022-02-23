@@ -14,7 +14,7 @@ import io.harness.cvng.beans.AppdynamicsValidationResponse;
 import io.harness.cvng.beans.MetricPackDTO;
 import io.harness.cvng.beans.appd.AppDynamicsApplication;
 import io.harness.cvng.beans.appd.AppDynamicsFileDefinition;
-import io.harness.cvng.beans.appd.AppDynamicsTier;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsTier;
 import io.harness.cvng.beans.appd.AppdynamicsMetricDataResponse;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.ng.beans.PageResponse;

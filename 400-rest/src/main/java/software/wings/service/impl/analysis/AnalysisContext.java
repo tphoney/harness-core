@@ -26,6 +26,7 @@ import io.harness.persistence.AccountAccess;
 import io.harness.version.ServiceApiVersion;
 
 import software.wings.beans.Base;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionInfo;
 import software.wings.sm.StateType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -120,7 +121,7 @@ public class AnalysisContext extends Base implements PersistentRegularIterable, 
   // Collection interval in minutes
   private int collectionInterval;
   private ServiceApiVersion version = ServiceApiVersion.values()[ServiceApiVersion.values().length - 1];
-  private DataCollectionInfo dataCollectionInfo;
+  private software.wings.delegatetasks.cv.beans.analysis.DataCollectionInfo dataCollectionInfo;
   private DataCollectionInfoV2 dataCollectionInfov2;
   private boolean cvTasksCreated;
   private String customThresholdRefId;
@@ -151,18 +152,18 @@ public class AnalysisContext extends Base implements PersistentRegularIterable, 
 
   @Builder
   private AnalysisContext(String uuid, String appId, EmbeddedUser createdBy, long createdAt, EmbeddedUser lastUpdatedBy,
-      long lastUpdatedAt, String entityYamlPath, boolean syncFromGit, String accountId, String workflowId,
-      String workflowExecutionId, String stateExecutionId, String serviceId, String predictiveCvConfigId,
-      int predictiveHistoryMinutes, Map<String, String> controlNodes, Map<String, String> testNodes, String query,
-      boolean isSSL, int appPort, AnalysisComparisonStrategy comparisonStrategy, int timeDuration, StateType stateType,
-      String analysisServerConfigId, String correlationId, int smooth_window, int tolerance,
-      String prevWorkflowExecutionId, int minimumRequestsPerMinute, int comparisonWindow, int parallelProcesses,
-      Map<String, List<TimeSeries>> timeSeriesToCollect, boolean runTillConvergence, String delegateTaskId,
-      MLAnalysisType analysisType, ExecutionStatus executionStatus, String managerVersion, String envId,
-      String hostNameField, int collectionInterval, long startDataCollectionMinute,
-      DataCollectionInfo dataCollectionInfo, int initialDelaySeconds, int dataCollectionIntervalMins,
-      boolean isHistoricalDataCollection, String customThresholdRefId, boolean inspectHostsInLogs,
-      Integer newNodesTrafficShiftPercent, boolean skipVerification, boolean perMinCollectionFinished) {
+                          long lastUpdatedAt, String entityYamlPath, boolean syncFromGit, String accountId, String workflowId,
+                          String workflowExecutionId, String stateExecutionId, String serviceId, String predictiveCvConfigId,
+                          int predictiveHistoryMinutes, Map<String, String> controlNodes, Map<String, String> testNodes, String query,
+                          boolean isSSL, int appPort, AnalysisComparisonStrategy comparisonStrategy, int timeDuration, StateType stateType,
+                          String analysisServerConfigId, String correlationId, int smooth_window, int tolerance,
+                          String prevWorkflowExecutionId, int minimumRequestsPerMinute, int comparisonWindow, int parallelProcesses,
+                          Map<String, List<TimeSeries>> timeSeriesToCollect, boolean runTillConvergence, String delegateTaskId,
+                          MLAnalysisType analysisType, ExecutionStatus executionStatus, String managerVersion, String envId,
+                          String hostNameField, int collectionInterval, long startDataCollectionMinute,
+                          DataCollectionInfo dataCollectionInfo, int initialDelaySeconds, int dataCollectionIntervalMins,
+                          boolean isHistoricalDataCollection, String customThresholdRefId, boolean inspectHostsInLogs,
+                          Integer newNodesTrafficShiftPercent, boolean skipVerification, boolean perMinCollectionFinished) {
     super(uuid, appId, createdBy, createdAt, lastUpdatedBy, lastUpdatedAt, entityYamlPath, syncFromGit);
     this.accountId = accountId;
     this.workflowId = workflowId;

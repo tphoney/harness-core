@@ -7,7 +7,7 @@
 
 package software.wings.service.impl.prometheus;
 
-import software.wings.service.impl.analysis.SetupTestNodeData;
+import software.wings.delegatetasks.cv.beans.analysis.SetupTestNodeData;
 import software.wings.service.impl.analysis.TimeSeries;
 import software.wings.sm.StateType;
 

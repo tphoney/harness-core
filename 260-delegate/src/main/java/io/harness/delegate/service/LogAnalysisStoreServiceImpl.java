@@ -11,11 +11,11 @@ import static io.harness.network.SafeHttpCall.execute;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
-import io.harness.managerclient.VerificationServiceClient;
+import software.wings.delegatetasks.cv.client.VerificationServiceClient;
 
 import software.wings.delegatetasks.LogAnalysisStoreService;
-import software.wings.service.impl.analysis.LogElement;
-import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.sm.StateType;
 
 import com.google.inject.Inject;

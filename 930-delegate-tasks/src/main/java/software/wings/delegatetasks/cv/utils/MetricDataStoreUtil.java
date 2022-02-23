@@ -3,7 +3,7 @@ package software.wings.delegatetasks.cv.utils;
 import com.google.common.util.concurrent.TimeLimiter;
 import com.google.inject.Inject;
 import io.harness.concurrent.HTimeLimiter;
-import io.harness.managerclient.VerificationServiceClient;
+import software.wings.delegatetasks.cv.client.VerificationServiceClient;
 import io.harness.rest.RestResponse;
 import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 

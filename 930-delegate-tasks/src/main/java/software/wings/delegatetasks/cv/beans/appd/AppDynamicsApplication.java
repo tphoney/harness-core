@@ -4,23 +4,21 @@
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
+package software.wings.delegatetasks.cv.beans.appd;
 
-package io.harness.cvng.beans.appd;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Value;
 
+import javax.validation.constraints.NotNull;
+
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class AppDynamicsTier implements Comparable<AppDynamicsTier> {
-  long id;
+public class AppDynamicsApplication implements Comparable<AppDynamicsApplication> {
   String name;
+  long id;
 
   @Override
-  public int compareTo(@NotNull AppDynamicsTier o) {
+  public int compareTo(@NotNull AppDynamicsApplication o) {
     return name.compareTo(o.name);
   }
 }

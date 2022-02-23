@@ -18,7 +18,7 @@ import io.harness.rule.Owner;
 import software.wings.WingsBaseTest;
 import software.wings.metrics.MetricType;
 import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord.NewRelicMetricHostAnalysisValue;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.impl.newrelic.NewRelicMetricValueDefinition;
 import software.wings.sm.StateType;
 

@@ -15,7 +15,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.security.encryption.EncryptionConfig;
 
 import software.wings.annotation.EncryptableSetting;
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.TaskType;
 import software.wings.delegatetasks.cv.AppDynamicsDataCollector;
 import software.wings.delegatetasks.cv.DataCollector;

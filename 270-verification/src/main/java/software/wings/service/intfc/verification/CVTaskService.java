@@ -10,7 +10,7 @@ package software.wings.service.intfc.verification;
 import io.harness.entities.CVTask;
 
 import software.wings.service.impl.analysis.AnalysisContext;
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
 
 import java.util.List;
 import java.util.Optional;

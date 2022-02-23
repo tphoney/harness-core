@@ -5,20 +5,23 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.cvng.beans.appd;
+package software.wings.delegatetasks.cv.beans.appd;
 
-import javax.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Value;
 
+import javax.validation.constraints.NotNull;
+
 @Value
 @Builder
-public class AppDynamicsApplication implements Comparable<AppDynamicsApplication> {
-  String name;
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class AppDynamicsTier implements Comparable<AppDynamicsTier> {
   long id;
+  String name;
 
   @Override
-  public int compareTo(@NotNull AppDynamicsApplication o) {
+  public int compareTo(@NotNull AppDynamicsTier o) {
     return name.compareTo(o.name);
   }
 }

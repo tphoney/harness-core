@@ -19,7 +19,7 @@ import io.harness.delegate.beans.TaskData;
 import software.wings.beans.ScalyrConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
-import software.wings.service.impl.analysis.CustomLogDataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
 import software.wings.service.intfc.scalyr.ScalyrService;
 import software.wings.sm.ExecutionContext;
 import software.wings.sm.StateType;

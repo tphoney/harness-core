@@ -15,22 +15,23 @@ import static software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask
 import static software.wings.service.impl.ThirdPartyApiCallLog.createApiCallLog;
 
 import io.harness.cvng.beans.appd.AppDynamicsApplication;
-import io.harness.cvng.beans.appd.AppDynamicsTier;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsTier;
 import io.harness.delegate.beans.connector.appdynamicsconnector.AppDynamicsConnectorDTO;
 import io.harness.delegate.task.DataCollectionExecutorService;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.security.encryption.SecretDecryptionService;
 
-import software.wings.beans.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.delegatetasks.DelegateLogService;
 import software.wings.delegatetasks.cv.RequestExecutor;
+import software.wings.delegatetasks.cv.beans.appd.AppdynamicsSetupTestNodeData;
 import software.wings.helpers.ext.appdynamics.AppdynamicsRestClient;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse.VerificationLoadResponse;
 import software.wings.service.impl.appdynamics.AppdynamicsMetric.AppdynamicsMetricType;
 import software.wings.service.impl.newrelic.NewRelicApplication;
-import software.wings.service.intfc.appdynamics.AppdynamicsDelegateService;
+import software.wings.delegatetasks.cv.service.AppdynamicsDelegateService;
 import software.wings.service.intfc.security.EncryptionService;
 
 import com.google.common.base.Preconditions;
@@ -342,8 +343,8 @@ public class AppdynamicsDelegateServiceImpl implements AppdynamicsDelegateServic
 
   @Override
   public VerificationNodeDataSetupResponse getMetricsWithDataForNode(AppDynamicsConfig appDynamicsConfig,
-      List<EncryptedDataDetail> encryptionDetails, AppdynamicsSetupTestNodeData setupTestNodeData, String hostName,
-      ThirdPartyApiCallLog apiCallLog) {
+                                                                     List<EncryptedDataDetail> encryptionDetails, AppdynamicsSetupTestNodeData setupTestNodeData, String hostName,
+                                                                     ThirdPartyApiCallLog apiCallLog) {
     final AppdynamicsTier tier = getAppdynamicsTier(appDynamicsConfig, setupTestNodeData.getApplicationId(),
         setupTestNodeData.getTierId(), encryptionDetails, apiCallLog.copy());
     final List<AppdynamicsMetric> tierMetrics = getTierBTMetrics(appDynamicsConfig,

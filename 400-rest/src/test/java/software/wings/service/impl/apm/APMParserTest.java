@@ -13,7 +13,7 @@ import static io.harness.rule.OwnerRule.RAGHU;
 import static io.harness.rule.OwnerRule.SRIRAM;
 
 import static software.wings.api.DeploymentType.KUBERNETES;
-import static software.wings.service.impl.newrelic.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,7 +24,7 @@ import io.harness.serializer.YamlUtils;
 
 import software.wings.WingsBaseTest;
 import software.wings.metrics.MetricType;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.sm.states.APMVerificationState;
 import software.wings.sm.states.DatadogState;
 

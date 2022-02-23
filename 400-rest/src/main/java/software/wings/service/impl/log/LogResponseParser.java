@@ -15,7 +15,7 @@ import io.harness.time.Timestamp;
 
 import software.wings.delegatetasks.CustomDataCollectionUtils;
 import software.wings.delegatetasks.cv.DataCollectionException;
-import software.wings.service.impl.analysis.LogElement;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.apm.VerificationResponseParser;
 import software.wings.sm.states.CustomLogVerificationState.ResponseMapper;
 

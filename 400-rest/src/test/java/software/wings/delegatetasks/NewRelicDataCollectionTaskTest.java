@@ -33,15 +33,15 @@ import software.wings.WingsBaseTest;
 import software.wings.beans.NewRelicConfig;
 import software.wings.beans.TaskType;
 import software.wings.dl.WingsPersistence;
-import software.wings.service.impl.analysis.DataCollectionTaskResult;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.service.impl.newrelic.NewRelicApplicationInstance;
 import software.wings.service.impl.newrelic.NewRelicDataCollectionInfo;
 import software.wings.service.impl.newrelic.NewRelicMetric;
 import software.wings.service.impl.newrelic.NewRelicMetricData;
 import software.wings.service.impl.newrelic.NewRelicMetricData.NewRelicMetricSlice;
 import software.wings.service.impl.newrelic.NewRelicMetricData.NewRelicMetricTimeSlice;
-import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.intfc.newrelic.NewRelicDelegateService;
 
 import com.google.common.collect.Lists;

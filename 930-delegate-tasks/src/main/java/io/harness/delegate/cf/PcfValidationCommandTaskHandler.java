@@ -25,6 +25,7 @@ import java.util.List;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 @NoArgsConstructor
 @Singleton
@@ -50,6 +51,7 @@ public class PcfValidationCommandTaskHandler extends PcfCommandTaskHandler {
     CfInfraMappingDataRequest cfInfraMappingDataRequest = (CfInfraMappingDataRequest) cfCommandRequest;
     CfInternalConfig pcfConfig = cfInfraMappingDataRequest.getPcfConfig();
     secretDecryptionService.decrypt(pcfConfig, encryptedDataDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(pcfConfig, encryptedDataDetails);
 
     CfCommandExecutionResponse cfCommandExecutionResponse = CfCommandExecutionResponse.builder().build();
     try {
@@ -70,7 +72,7 @@ public class PcfValidationCommandTaskHandler extends PcfCommandTaskHandler {
       log.error("Exception in processing PCF validation task for Account {} ",
           cfInfraMappingDataRequest.getPcfConfig().getAccountId(), e);
       cfCommandExecutionResponse.setCommandExecutionStatus(CommandExecutionStatus.FAILURE);
-      cfCommandExecutionResponse.setErrorMessage(ExceptionUtils.getMessage(e));
+      cfCommandExecutionResponse.setErrorMessage(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)));
     }
 
     return cfCommandExecutionResponse;

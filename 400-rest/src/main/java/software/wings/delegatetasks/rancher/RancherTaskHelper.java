@@ -25,6 +25,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.serializer.JsonSubtypeResolver;
 
 import software.wings.beans.RancherConfig;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.jersey.JsonViews;
 import software.wings.service.intfc.security.EncryptionService;
 
@@ -66,6 +67,7 @@ public class RancherTaskHelper {
   public RancherClusterDataResponse resolveRancherClusters(
       final RancherConfig rancherConfig, final List<EncryptedDataDetail> encryptedDataDetails) throws IOException {
     encryptionService.decrypt(rancherConfig, encryptedDataDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(rancherConfig, encryptedDataDetails);
     HttpInternalResponse httpResponse = makeRancherApi("GET", "/v3/clusters", rancherConfig);
 
     return objectMapper.readValue(httpResponse.getHttpResponseBody(), RancherClusterDataResponse.class);
@@ -106,6 +108,7 @@ public class RancherTaskHelper {
       final List<EncryptedDataDetail> encryptedDataDetails, final String clusterName, final String namespace)
       throws IOException {
     encryptionService.decrypt(rancherConfig, encryptedDataDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(rancherConfig, encryptedDataDetails);
     KubernetesConfigBuilder kubernetesConfigBuilder = KubernetesConfig.builder().namespace(namespace);
 
     RancherClusterDataResponse rancherClusterData = resolveRancherClusters(rancherConfig, encryptedDataDetails);

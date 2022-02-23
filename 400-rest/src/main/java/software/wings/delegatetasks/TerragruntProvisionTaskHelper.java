@@ -136,6 +136,7 @@ public class TerragruntProvisionTaskHelper {
           CommandExecutionStatus.RUNNING);
 
       encryptionService.decrypt(tfVarGitSource.getGitConfig(), tfVarGitSource.getEncryptedDataDetails(), false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(tfVarGitSource.getGitConfig(), tfVarGitSource.getEncryptedDataDetails());
       gitClient.downloadFiles(tfVarGitSource.getGitConfig(),
           GitFetchFilesRequest.builder()
               .branch(tfVarGitSource.getGitFileConfig().getBranch())

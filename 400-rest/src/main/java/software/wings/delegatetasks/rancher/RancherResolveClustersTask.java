@@ -22,6 +22,8 @@ import io.harness.exception.InvalidArgumentsException;
 import io.harness.logging.LogCallback;
 import io.harness.logging.LogLevel;
 
+import io.harness.secret.SecretSanitizerThreadLocal;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.infra.RancherKubernetesInfrastructure.ClusterSelectionCriteriaEntry;
 import software.wings.sm.states.rancher.RancherResolveState;
 
@@ -53,6 +55,7 @@ public class RancherResolveClustersTask extends AbstractDelegateRunnableTask {
       ILogStreamingTaskClient logStreamingTaskClient, Consumer<DelegateTaskResponse> postExecute,
       BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, postExecute, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override
@@ -92,7 +95,7 @@ public class RancherResolveClustersTask extends AbstractDelegateRunnableTask {
       log.error("Caught exception while fetching clusters data from rancher", e);
       RancherResolveClustersResponse response =
           RancherResolveClustersResponse.builder().executionStatus(ExecutionStatus.FAILED).build();
-      response.setErrorMessage(e.getLocalizedMessage());
+      response.setErrorMessage(ExceptionMessageSanitizer.sanitizeException(e).getLocalizedMessage());
       return response;
     }
 

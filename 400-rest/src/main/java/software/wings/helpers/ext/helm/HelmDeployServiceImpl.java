@@ -455,6 +455,7 @@ public class HelmDeployServiceImpl implements HelmDeployService {
     String workingDirectory = Paths.get(getWorkingDirectory(commandRequest), gitFileConfig.getFilePath()).toString();
 
     encryptionService.decrypt(gitConfig, sourceRepoConfig.getEncryptedDataDetails(), false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(gitConfig, sourceRepoConfig.getEncryptedDataDetails());
     if (scmFetchFilesHelper.shouldUseScm(
             ((HelmInstallCommandRequest) commandRequest).isOptimizedFilesFetch(), gitConfig)) {
       scmFetchFilesHelper.downloadFilesUsingScm(
@@ -771,10 +772,11 @@ public class HelmDeployServiceImpl implements HelmDeployService {
           .releaseInfoList(releaseInfoList)
           .build();
     } catch (Exception e) {
-      log.error("Helm list releases failed", e);
+      Exception sanitizeException = ExceptionMessageSanitizer.sanitizeException(e);
+      log.error("Helm list releases failed", sanitizeException);
       return HelmListReleasesCommandResponse.builder()
           .commandExecutionStatus(CommandExecutionStatus.FAILURE)
-          .output(ExceptionUtils.getMessage(e))
+          .output(ExceptionUtils.getMessage(sanitizeException))
           .build();
     }
   }
@@ -903,6 +905,7 @@ public class HelmDeployServiceImpl implements HelmDeployService {
 
     try {
       encryptionService.decrypt(gitConfig, commandRequest.getEncryptedDataDetails(), false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(gitConfig, commandRequest.getEncryptedDataDetails());
       GitFileConfig gitFileConfig = commandRequest.getGitFileConfig();
       String repoUrl = gitConfig.getRepoUrl();
 
@@ -1041,7 +1044,7 @@ public class HelmDeployServiceImpl implements HelmDeployService {
       executionLogCallback.saveExecutionLog(helmCliResponse.getOutput());
     } catch (Exception ex) {
       executionLogCallback.saveExecutionLog(
-          "Failed to update information about charts with message " + ExceptionUtils.getMessage(ex));
+          "Failed to update information about charts with message " + ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ex)));
       throw ex;
     }
   }

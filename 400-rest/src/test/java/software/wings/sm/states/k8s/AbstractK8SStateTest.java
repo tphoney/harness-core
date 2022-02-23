@@ -43,7 +43,6 @@ import static software.wings.delegatetasks.GitFetchFilesTask.GIT_FETCH_FILES_TAS
 import static software.wings.settings.SettingVariableTypes.GCP;
 import static software.wings.sm.ExecutionContextImpl.PHASE_PARAM;
 import static software.wings.sm.StateExecutionInstance.Builder.aStateExecutionInstance;
-import static software.wings.sm.StateType.K8S_APPLY;
 import static software.wings.sm.StateType.K8S_CANARY_DEPLOY;
 import static software.wings.sm.StateType.K8S_DEPLOYMENT_ROLLING;
 import static software.wings.sm.StepType.K8S_SCALE;
@@ -111,7 +110,6 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 import io.harness.expression.VariableResolverTracker;
 import io.harness.ff.FeatureFlagService;
-import io.harness.helm.HelmCommandData;
 import io.harness.k8s.K8sCommandUnitConstants;
 import io.harness.k8s.model.HelmVersion;
 import io.harness.k8s.model.K8sPod;

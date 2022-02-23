@@ -68,6 +68,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cloudfoundry.operations.applications.ApplicationDetail;
 import org.cloudfoundry.operations.applications.ApplicationSummary;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 @NoArgsConstructor
 @Singleton
@@ -98,6 +99,7 @@ public class PcfRollbackCommandTaskHandler extends PcfCommandTaskHandler {
 
       CfInternalConfig pcfConfig = cfCommandRequest.getPcfConfig();
       secretDecryptionService.decrypt(pcfConfig, encryptedDataDetails, false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(pcfConfig, encryptedDataDetails);
       if (CollectionUtils.isEmpty(commandRollbackRequest.getInstanceData())) {
         commandRollbackRequest.setInstanceData(new ArrayList<>());
       }

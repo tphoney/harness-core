@@ -29,17 +29,17 @@ import java.util.concurrent.TimeoutException;
 @OwnedBy(CDP)
 public interface TerraformBaseHelper {
   void downloadTfStateFile(String workspace, String accountId, String currentStateFileId, String scriptDirectory)
-      throws IOException;
+          throws IOException;
   List<String> parseOutput(String workspaceOutput);
 
   CliResponse executeTerraformApplyStep(TerraformExecuteStepRequest terraformExecuteStepRequest)
-      throws InterruptedException, IOException, TimeoutException;
+          throws InterruptedException, IOException, TimeoutException;
 
   CliResponse executeTerraformPlanStep(TerraformExecuteStepRequest terraformExecuteStepRequest)
-      throws InterruptedException, IOException, TimeoutException;
+          throws InterruptedException, IOException, TimeoutException;
 
   CliResponse executeTerraformDestroyStep(TerraformExecuteStepRequest terraformExecuteStepRequest)
-      throws InterruptedException, IOException, TimeoutException;
+          throws InterruptedException, IOException, TimeoutException;
 
   String resolveBaseDir(String accountId, String provisionerId);
 
@@ -48,31 +48,31 @@ public interface TerraformBaseHelper {
   String getLatestCommitSHA(File repoDir);
 
   GitBaseRequest getGitBaseRequestForConfigFile(
-      String accountId, GitStoreDelegateConfig confileFileGitStore, GitConfigDTO configFileGitConfigDTO);
+          String accountId, GitStoreDelegateConfig confileFileGitStore, GitConfigDTO configFileGitConfigDTO);
 
   Map<String, String> buildCommitIdToFetchedFilesMap(String configFileIdentifier,
-      GitBaseRequest gitBaseRequestForConfigFile, Map<String, String> commitIdForConfigFilesMap);
+                                                     GitBaseRequest gitBaseRequestForConfigFile, Map<String, String> commitIdForConfigFilesMap);
 
   void addVarFilesCommitIdsToMap(
-      String accountId, List<TerraformVarFileInfo> varFileInfo, Map<String, String> commitIdForConfigFilesMap);
+          String accountId, List<TerraformVarFileInfo> varFileInfo, Map<String, String> commitIdForConfigFilesMap);
 
   String fetchConfigFileAndPrepareScriptDir(GitBaseRequest gitBaseRequestForConfigFile, String accountId,
-      String workspace, String currentStateFileId, GitStoreDelegateConfig confileFileGitStore, LogCallback logCallback,
-      String scriptPath, String workingDir);
+                                            String workspace, String currentStateFileId, GitStoreDelegateConfig confileFileGitStore, LogCallback logCallback,
+                                            String scriptPath, String workingDir);
 
   String fetchConfigFileAndPrepareScriptDir(ArtifactoryStoreDelegateConfig artifactoryStoreDelegateConfig,
-      String accountId, String workspace, String currentStateFileId, LogCallback logCallback, String baseDir);
+                                            String accountId, String workspace, String currentStateFileId, LogCallback logCallback, String baseDir);
 
   void fetchConfigFileAndCloneLocally(GitBaseRequest gitBaseRequestForConfigFile, LogCallback logCallback);
 
   String uploadTfStateFile(String accountId, String delegateId, String taskId, String entityId, File tfStateFile)
-      throws IOException;
+          throws IOException;
 
   void copyConfigFilestoWorkingDirectory(
-      LogCallback logCallback, GitBaseRequest gitBaseRequestForConfigFile, String baseDir, String workingDir);
+          LogCallback logCallback, GitBaseRequest gitBaseRequestForConfigFile, String baseDir, String workingDir);
 
   List<String> checkoutRemoteVarFileAndConvertToVarFilePaths(List<TerraformVarFileInfo> varFileInfo, String scriptDir,
-      LogCallback logCallback, String accountId, String tfVarDirectory) throws IOException;
+                                                             LogCallback logCallback, String accountId, String tfVarDirectory) throws IOException;
 
   EncryptedRecordData encryptPlan(byte[] content, String planName, EncryptionConfig encryptionConfig);
 
@@ -83,5 +83,5 @@ public interface TerraformBaseHelper {
   String getBaseDir(String entityId);
 
   String uploadTfPlanJson(String accountId, String delegateId, String taskId, String entityId, String planName,
-      String localFilePath) throws IOException;
+                          String localFilePath) throws IOException;
 }

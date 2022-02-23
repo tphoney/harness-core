@@ -30,6 +30,7 @@ import software.wings.beans.HostConnectionAttributes;
 import software.wings.beans.SSHExecutionCredential;
 import software.wings.beans.SSHVaultConfig;
 import software.wings.beans.SettingAttribute;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.delegatetasks.validation.capabilities.SSHHostValidationCapability;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.service.intfc.security.SecretManagementDelegateService;
@@ -68,7 +69,7 @@ public class SSHHostValidationCapabilityCheck implements CapabilityCheck {
       performTest(hostConnectionTest);
       capabilityResponseBuilder.validated(true);
     } catch (Exception e) {
-      log.error("Failed to validate host - public dns:" + capability.getValidationInfo().getPublicDns(), e);
+      log.error("Failed to validate host - public dns:" + capability.getValidationInfo().getPublicDns(), ExceptionMessageSanitizer.sanitizeException(e));
       capabilityResponseBuilder.validated(false);
     }
     return capabilityResponseBuilder.build();
@@ -85,6 +86,7 @@ public class SSHHostValidationCapabilityCheck implements CapabilityCheck {
     if (hostConnectionAttributes != null) {
       encryptionService.decrypt(
           (HostConnectionAttributes) hostConnectionAttributes.getValue(), hostConnectionCredential, false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing((HostConnectionAttributes) hostConnectionAttributes.getValue(), hostConnectionCredential);
       if (hostConnectionAttributes.getValue() instanceof HostConnectionAttributes
           && ((HostConnectionAttributes) hostConnectionAttributes.getValue()).isVaultSSH()) {
         secretManagementDelegateService.signPublicKey(
@@ -94,6 +96,7 @@ public class SSHHostValidationCapabilityCheck implements CapabilityCheck {
     if (bastionConnectionAttributes != null) {
       encryptionService.decrypt(
           (BastionConnectionAttributes) bastionConnectionAttributes.getValue(), bastionConnectionCredential, false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing((BastionConnectionAttributes) bastionConnectionAttributes.getValue(), bastionConnectionCredential);
     }
   }
 

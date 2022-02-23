@@ -7,8 +7,6 @@
 
 package io.harness.pms.inputset;
 
-import io.harness.pms.pipeline.PipelineResourceConstants;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
@@ -26,8 +24,8 @@ import lombok.Value;
 @Schema(name = "InputSetErrorWrapper",
     description = "This is the wrapper of list of errors for a field while saving an Input Set")
 public class InputSetErrorResponseDTOPMS {
-  @Schema(name = "InputSetError",
-      description = "This contains the list of errors for a field while saving an Input Set")
+  @Schema(
+      name = "InputSetError", description = "This contains the list of errors for a field while saving an Input Set")
   @Builder.Default
   List<InputSetErrorDTOPMS> errors = new ArrayList<>();
 }

@@ -164,6 +164,7 @@ public class Account extends Base implements PersistentRegularIterable {
   @FdIndex private long delegateTelemetryPublisherIteration;
   @FdIndex private long delegateTaskFailIteration;
   @FdIndex private long delegateTaskRebroadcastIteration;
+  @FdIndex private Long perpetualTaskAccountLevelIteration;
 
   @Getter private boolean cloudCostEnabled;
   @Getter @Setter private boolean ceAutoCollectK8sEvents;
@@ -485,6 +486,11 @@ public class Account extends Base implements PersistentRegularIterable {
       return;
     }
 
+    else if (AccountKeys.perpetualTaskAccountLevelIteration.equals(fieldName)) {
+      this.perpetualTaskAccountLevelIteration = nextIteration;
+      return;
+    }
+
     throw new IllegalArgumentException("Invalid fieldName " + fieldName);
   }
 
@@ -536,8 +542,14 @@ public class Account extends Base implements PersistentRegularIterable {
 
     else if (AccountKeys.delegateTaskFailIteration.equals(fieldName)) {
       return this.delegateTaskFailIteration;
-    } else if (AccountKeys.delegateTaskRebroadcastIteration.equals(fieldName)) {
+    }
+
+    else if (AccountKeys.delegateTaskRebroadcastIteration.equals(fieldName)) {
       return this.delegateTaskRebroadcastIteration;
+    }
+
+    else if (AccountKeys.perpetualTaskAccountLevelIteration.equals(fieldName)) {
+      return this.perpetualTaskAccountLevelIteration;
     }
 
     throw new IllegalArgumentException("Invalid fieldName " + fieldName);

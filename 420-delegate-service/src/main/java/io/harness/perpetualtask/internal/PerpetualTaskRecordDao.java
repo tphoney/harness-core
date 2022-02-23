@@ -39,6 +39,7 @@ import org.mongodb.morphia.query.UpdateResults;
 public class PerpetualTaskRecordDao {
   private final HPersistence persistence;
   private static final int MAX_FIBONACCI_INDEX_FOR_TASK_ASSIGNMENT = 8;
+  private static final int BATCH_SIZE_FOR_PERPETUAL_TASK_TO_REBALANCE = 50;
 
   @Inject
   public PerpetualTaskRecordDao(HPersistence persistence) {
@@ -196,7 +197,7 @@ public class PerpetualTaskRecordDao {
                                            .filter(PerpetualTaskRecordKeys.accountId, accountId)
                                            .filter(PerpetualTaskRecordKeys.state, PerpetualTaskState.TASK_TO_REBALANCE);
 
-    return query.asList(new FindOptions().limit(50));
+    return query.asList(new FindOptions().limit(BATCH_SIZE_FOR_PERPETUAL_TASK_TO_REBALANCE));
   }
 
   public PerpetualTaskRecord getTask(String taskId) {

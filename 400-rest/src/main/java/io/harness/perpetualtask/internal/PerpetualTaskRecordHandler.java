@@ -14,6 +14,8 @@ import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 import static io.harness.mongo.iterator.MongoPersistenceIterator.SchedulingType.IRREGULAR_SKIP_MISSED;
 import static io.harness.mongo.iterator.MongoPersistenceIterator.SchedulingType.REGULAR;
 
+import static software.wings.beans.Account.AccountKeys;
+
 import static java.lang.String.format;
 import static java.time.Duration.ofMinutes;
 import static java.time.Duration.ofSeconds;
@@ -123,7 +125,7 @@ public class PerpetualTaskRecordHandler implements PerpetualTaskCrudObserver {
         PerpetualTaskRecordHandler.class,
         MongoPersistenceIterator.<Account, MorphiaFilterExpander<Account>>builder()
             .clazz(Account.class)
-            .fieldName(Account.AccountKeys.perpetualTaskAccountLevelIteration)
+            .fieldName(AccountKeys.perpetualTaskAccountLevelIteration)
             .targetInterval(ofMinutes(PERPETUAL_TASK_ASSIGNMENT_INTERVAL_MINUTE))
             .acceptableNoAlertDelay(ofSeconds(60))
             .acceptableExecutionTime(ofSeconds(60))

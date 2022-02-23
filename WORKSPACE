@@ -4861,6 +4861,7 @@ plain_artifacts = [
     "org.elasticsearch:elasticsearch:7.7.0",
     "org.elasticsearch:jna:4.5.1",
     "org.freemarker:freemarker:2.3.28",
+    "org.glassfish.corba:glassfish-corba-omgapi:4.2.4",
     "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b32",
     "org.glassfish.hk2.external:javax.inject:2.5.0-b32",
     "org.glassfish.hk2:hk2-api:2.5.0-b32",
@@ -5141,11 +5142,7 @@ maven_install(
                 "org.slf4j:slf4j-log4j12",
             ],
         ),
-        maven.artifact(
-            group = "org.glassfish.corba",
-            artifact = "glassfish-corba-ommgapi",
-            version = "4.2.4",
-        ),
+
         maven_test_artifact("com.github.tomakehurst:wiremock-jre8-standalone:2.27.2"),
         maven_test_artifact("com.icegreen:greenmail:1.5.0"),
         maven_test_artifact("com.squareup.okhttp3:mockwebserver:3.6.0"),

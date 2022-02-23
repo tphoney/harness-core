@@ -218,6 +218,7 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
     EncryptedRecordData encryptedTfPlan = parameters.getEncryptedTfPlan();
     try {
       encryptionService.decrypt(gitConfig, parameters.getSourceRepoEncryptionDetails(), false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(gitConfig, parameters.getSourceRepoEncryptionDetails());
       gitClient.ensureRepoLocallyClonedAndUpdated(gitOperationContext);
     } catch (RuntimeException ex) {
       Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
@@ -618,6 +619,7 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
 
   private Map<String, String> getAwsAuthVariables(TerraformProvisionParameters parameters) {
     encryptionService.decrypt(parameters.getAwsConfig(), parameters.getAwsConfigEncryptionDetails(), false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(parameters.getAwsConfig(), parameters.getSourceRepoEncryptionDetails());
     Map<String, String> awsAuthEnvVariables = new HashMap<>();
     if (isNotEmpty(parameters.getAwsRoleArn())) {
       String region = isNotEmpty(parameters.getAwsRegion()) ? parameters.getAwsRegion() : AWS_DEFAULT_REGION;
@@ -704,6 +706,7 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
           CommandExecutionStatus.RUNNING, INFO, logCallback);
 
       encryptionService.decrypt(tfVarGitSource.getGitConfig(), tfVarGitSource.getEncryptedDataDetails(), false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(tfVarGitSource.getGitConfig(), tfVarGitSource.getEncryptedDataDetails());
       gitClient.downloadFiles(tfVarGitSource.getGitConfig(),
           GitFetchFilesRequest.builder()
               .branch(tfVarGitSource.getGitFileConfig().getBranch())

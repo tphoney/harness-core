@@ -644,7 +644,7 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
       TerraformHelperUtils.copyFilesToWorkingDirectory(
           gitClientHelper.getRepoDirectory(gitBaseRequestForConfigFile), workingDir);
     } catch (Exception ex) {
-      handleExceptionWhileCopyingConfigFiles(logCallback, baseDir, ex);
+      handleExceptionWhileCopyingConfigFiles(logCallback, baseDir, ExceptionMessageSanitizer.sanitizeException(ex));
     }
   }
 
@@ -658,7 +658,7 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
       unzip(scriptDir, new ZipInputStream(inputStream));
       FileIo.waitForDirectoryToBeAccessibleOutOfProcess(scriptDir.getPath(), 10);
     } catch (Exception ex) {
-      handleExceptionWhileCopyingConfigFiles(logCallback, baseDir, ex);
+      handleExceptionWhileCopyingConfigFiles(logCallback, baseDir, ExceptionMessageSanitizer.sanitizeException(ex));
     }
   }
 
@@ -839,13 +839,14 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
             log.info("Terraform Plan has been safely deleted from vault");
           }
         } catch (Exception ex) {
+          Exception sanitizeException = ExceptionMessageSanitizer.sanitizeException(ex);
           logCallback.saveExecutionLog(
               color(format("Failed to delete secret: [%s] from vault: [%s], please clean it up",
                         parameters.getEncryptedTfPlan().getEncryptionKey(), parameters.getEncryptionConfig().getName()),
                   LogColor.Yellow, LogWeight.Bold),
               WARN, CommandExecutionStatus.RUNNING);
-          logCallback.saveExecutionLog(ex.getMessage(), WARN);
-          log.error("Exception occurred while deleting Terraform Plan from vault", ex);
+          logCallback.saveExecutionLog(sanitizeException.getMessage(), WARN);
+          log.error("Exception occurred while deleting Terraform Plan from vault", sanitizeException);
         }
       }
       logCallback.saveExecutionLog("Done cleaning up directories.", INFO, CommandExecutionStatus.SUCCESS);

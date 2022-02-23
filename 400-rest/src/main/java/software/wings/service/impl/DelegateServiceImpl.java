@@ -1094,7 +1094,7 @@ public class DelegateServiceImpl implements DelegateService {
       }
       delegateScripts.setDoUpgrade(doUpgrade);
       delegateScripts.setVersion(upgradeToVersion);
-      delegateScripts.setEnableDynamicHandleOfTaskRequest(featureFlagService.isEnabled(DELEGATE_ENABLE_DYNAMIC_HANDLING_OF_REQUEST, accountId);
+      delegateScripts.setEnableDynamicHandleOfTaskRequest(featureFlagService.isEnabled(DELEGATE_ENABLE_DYNAMIC_HANDLING_OF_REQUEST, accountId));
       delegateScripts.setStartScript(processTemplate(scriptParams, "start.sh.ftl"));
       delegateScripts.setDelegateScript(processTemplate(scriptParams, "delegate.sh.ftl"));
       delegateScripts.setStopScript(processTemplate(scriptParams, "stop.sh.ftl"));
@@ -1139,7 +1139,7 @@ public class DelegateServiceImpl implements DelegateService {
       }
       delegateScripts.setDoUpgrade(doUpgrade);
       delegateScripts.setVersion(upgradeToVersion);
-      delegateScripts.setEnableDynamicHandleOfTaskRequest(featureFlagService.isEnabled(DELEGATE_ENABLE_DYNAMIC_HANDLING_OF_REQUEST, accountId);
+      delegateScripts.setEnableDynamicHandleOfTaskRequest(featureFlagService.isEnabled(DELEGATE_ENABLE_DYNAMIC_HANDLING_OF_REQUEST, accountId));
       delegateScripts.setStartScript(processTemplate(scriptParams, "start.sh.ftl"));
       delegateScripts.setDelegateScript(processTemplate(scriptParams, "delegate.sh.ftl"));
       delegateScripts.setStopScript(processTemplate(scriptParams, "stop.sh.ftl"));

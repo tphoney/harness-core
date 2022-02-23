@@ -25,6 +25,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.time.Timestamp;
 
 import software.wings.beans.TaskType;
+import software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask;
 import software.wings.service.impl.AwsHelperService;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.analysis.DataCollectionTaskResult;

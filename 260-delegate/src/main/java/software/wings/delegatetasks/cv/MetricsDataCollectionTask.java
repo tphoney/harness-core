@@ -7,7 +7,7 @@
 
 package software.wings.delegatetasks.cv;
 
-import static software.wings.delegatetasks.AbstractDelegateDataCollectionTask.HARNESS_HEARTBEAT_METRIC_NAME;
+import static software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask.HARNESS_HEARTBEAT_METRIC_NAME;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;

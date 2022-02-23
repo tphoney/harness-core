@@ -311,7 +311,7 @@ import software.wings.cloudprovider.gke.GkeClusterService;
 import software.wings.cloudprovider.gke.GkeClusterServiceImpl;
 import software.wings.core.ssh.executors.SshExecutorFactory;
 import software.wings.delegatetasks.APMDataCollectionTask;
-import software.wings.delegatetasks.AppdynamicsDataCollectionTask;
+import software.wings.delegatetasks.cv.AppdynamicsDataCollectionTask;
 import software.wings.delegatetasks.BambooTask;
 import software.wings.delegatetasks.CloudWatchDataCollectionTask;
 import software.wings.delegatetasks.CollaborationProviderTask;

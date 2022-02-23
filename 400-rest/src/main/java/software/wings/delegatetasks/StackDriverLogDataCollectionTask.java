@@ -24,6 +24,7 @@ import io.harness.delegate.task.TaskParameters;
 import io.harness.delegate.task.gcp.helpers.GcpHelperService;
 
 import software.wings.beans.TaskType;
+import software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask;
 import software.wings.delegatetasks.cv.DataCollectionException;
 import software.wings.service.impl.analysis.DataCollectionTaskResult;
 import software.wings.service.impl.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;

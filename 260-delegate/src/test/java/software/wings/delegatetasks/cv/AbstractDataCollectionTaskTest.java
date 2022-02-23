@@ -36,6 +36,7 @@ import software.wings.delegatetasks.DelegateCVActivityLogService;
 import software.wings.delegatetasks.DelegateCVActivityLogService.Logger;
 import software.wings.delegatetasks.DelegateCVTaskService;
 import software.wings.delegatetasks.DelegateLogService;
+import software.wings.delegatetasks.cv.commons.CVConstants;
 import software.wings.service.impl.analysis.DataCollectionInfoV2;
 import software.wings.service.impl.analysis.DataCollectionTaskResult;
 import software.wings.service.impl.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;

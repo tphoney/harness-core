@@ -7,7 +7,7 @@
 
 package software.wings.service.impl.dynatrace;
 
-import static software.wings.delegatetasks.AbstractDelegateDataCollectionTask.getUnsafeHttpClient;
+import static software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask.getUnsafeHttpClient;
 
 import io.harness.delegate.task.DataCollectionExecutorService;
 import io.harness.security.encryption.EncryptedDataDetail;

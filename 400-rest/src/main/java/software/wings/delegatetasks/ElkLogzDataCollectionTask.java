@@ -27,6 +27,7 @@ import io.harness.time.Timestamp;
 
 import software.wings.beans.TaskType;
 import software.wings.common.VerificationConstants;
+import software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.analysis.DataCollectionTaskResult;
 import software.wings.service.impl.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;

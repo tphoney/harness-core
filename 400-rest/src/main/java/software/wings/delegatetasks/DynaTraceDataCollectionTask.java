@@ -28,6 +28,7 @@ import io.harness.time.Timestamp;
 
 import software.wings.beans.DynaTraceConfig;
 import software.wings.beans.TaskType;
+import software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
 import software.wings.service.impl.analysis.DataCollectionTaskResult;

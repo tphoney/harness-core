@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.delegatetasks.cv;
+package software.wings.delegatetasks.cv.commons;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.time.Duration;
@@ -13,4 +13,9 @@ import java.time.Duration;
 public class CVConstants {
   private CVConstants() {}
   @VisibleForTesting static Duration RETRY_SLEEP_DURATION = Duration.ofSeconds(10);
+  public static final Duration DATA_COLLECTION_RETRY_SLEEP = Duration.ofSeconds(30);
+  public static final int DELAY_MINUTES = 2;
+  public static final int DURATION_TO_ASK_MINUTES = 5;
+
+
 }

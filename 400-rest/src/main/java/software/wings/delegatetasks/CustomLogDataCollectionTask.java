@@ -31,6 +31,7 @@ import io.harness.serializer.JsonUtils;
 import io.harness.time.Timestamp;
 
 import software.wings.beans.TaskType;
+import software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask;
 import software.wings.delegatetasks.cv.RequestExecutor;
 import software.wings.helpers.ext.apm.APMRestClient;
 import software.wings.service.impl.ThirdPartyApiCallLog;

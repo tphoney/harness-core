@@ -27,7 +27,7 @@ import static software.wings.common.VerificationConstants.TIME_DELAY_QUERY_MINS;
 import static software.wings.common.VerificationConstants.VERIFICATION_SERVICE_BASE_URL;
 import static software.wings.common.VerificationConstants.getLogAnalysisStates;
 import static software.wings.common.VerificationConstants.getMetricAnalysisStates;
-import static software.wings.delegatetasks.AbstractDelegateDataCollectionTask.PREDECTIVE_HISTORY_MINUTES;
+import static software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask.PREDECTIVE_HISTORY_MINUTES;
 import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.PREDICTIVE;
 import static software.wings.service.impl.analysis.TimeSeriesMlAnalysisType.TIMESERIES_24x7;
 import static software.wings.sm.states.AbstractMetricAnalysisState.COMPARISON_WINDOW;

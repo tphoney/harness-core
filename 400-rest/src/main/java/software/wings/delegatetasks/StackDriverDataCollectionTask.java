@@ -27,6 +27,7 @@ import io.harness.exception.WingsException;
 import io.harness.serializer.JsonUtils;
 
 import software.wings.beans.TaskType;
+import software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.ThirdPartyApiCallLog.FieldType;
 import software.wings.service.impl.ThirdPartyApiCallLog.ThirdPartyApiCallField;

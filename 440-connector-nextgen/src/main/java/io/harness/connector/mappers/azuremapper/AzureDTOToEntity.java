@@ -7,16 +7,16 @@
 
 package io.harness.connector.mappers.azuremapper;
 
-import com.google.inject.Singleton;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.connector.entities.embedded.azureconnector.AzureConfig;
 import io.harness.connector.entities.embedded.azureconnector.AzureManualCredential;
 import io.harness.connector.mappers.ConnectorDTOToEntityMapper;
-
 import io.harness.delegate.beans.connector.azureconnector.*;
 import io.harness.encryption.SecretRefHelper;
 import io.harness.exception.InvalidRequestException;
+
+import com.google.inject.Singleton;
 
 @OwnedBy(HarnessTeam.CDP)
 @Singleton
@@ -43,11 +43,14 @@ public class AzureDTOToEntity implements ConnectorDTOToEntityMapper<AzureConnect
     final AzureManualDetailsDTO config = (AzureManualDetailsDTO) connector.getConfig();
     final String secretKeyRef = SecretRefHelper.getSecretConfigString(config.getSecretKey());
     AzureManualCredential azureManualCredential = AzureManualCredential.builder()
-            .subscription(config.getSubscription())
-            .tenantId(config.getTenantId())
-            .clientId(config.getClientId())
-            .secretKeyRef(secretKeyRef)
-            .build();
-    return AzureConfig.builder().credentialType(AzureCredentialType.MANUAL_CREDENTIALS).credential(azureManualCredential).build();
+                                                      .subscription(config.getSubscription())
+                                                      .tenantId(config.getTenantId())
+                                                      .clientId(config.getClientId())
+                                                      .secretKeyRef(secretKeyRef)
+                                                      .build();
+    return AzureConfig.builder()
+        .credentialType(AzureCredentialType.MANUAL_CREDENTIALS)
+        .credential(azureManualCredential)
+        .build();
   }
 }

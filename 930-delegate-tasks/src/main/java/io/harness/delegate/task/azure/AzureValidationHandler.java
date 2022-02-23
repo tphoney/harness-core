@@ -7,63 +7,71 @@
 
 package io.harness.delegate.task.azure;
 
-import com.google.inject.Inject;
-import io.harness.azure.client.AzureKubernetesClient;
+import io.harness.azure.AzureEnvironmentType;
+import io.harness.azure.client.AzureManagementClient;
 import io.harness.azure.model.AzureConfig;
 import io.harness.connector.ConnectivityStatus;
 import io.harness.connector.ConnectorValidationResult;
 import io.harness.connector.task.ConnectorValidationHandler;
 import io.harness.delegate.beans.connector.ConnectorValidationParams;
-import io.harness.delegate.beans.connector.azureconnector.AzureConnectorDTO;
-import io.harness.delegate.beans.connector.azureconnector.AzureManualDetailsDTO;
-import io.harness.delegate.beans.connector.azureconnector.AzureValidationParams;
+import io.harness.delegate.beans.connector.azureconnector.*;
 import io.harness.errorhandling.NGErrorHelper;
+import io.harness.security.encryption.EncryptedDataDetail;
+import io.harness.security.encryption.SecretDecryptionService;
 
-
+import com.google.inject.Inject;
 import java.util.Collections;
-
+import java.util.List;
 
 public class AzureValidationHandler implements ConnectorValidationHandler {
+  @Inject private NGErrorHelper ngErrorHelper;
+  @Inject private AzureManagementClient azureManagementClient;
+  @Inject private SecretDecryptionService secretDecryptionService;
 
-    @Inject
-    private NGErrorHelper ngErrorHelper;
-    @Inject
-    private AzureKubernetesClient azureKubernetesClient;
-    @Inject
-    private AzureConfigMapper azureConfigMapper;
+  @Override
+  public ConnectorValidationResult validate(
+      ConnectorValidationParams connectorValidationParams, String accountIdentifier) {
+    final AzureValidationParams azureValidationParams = (AzureValidationParams) connectorValidationParams;
+    final AzureConnectorDTO connectorDTO = azureValidationParams.getAzureConnectorDTO();
+    final AzureManualDetailsDTO config = (AzureManualDetailsDTO) connectorDTO.getCredential().getConfig();
 
-    @Override
-    public ConnectorValidationResult validate(ConnectorValidationParams connectorValidationParams, String accountIdentifier) {
-        final AzureValidationParams azureValidationParams = (AzureValidationParams) connectorValidationParams;
-        final AzureConnectorDTO connectorDTO = azureValidationParams.getAzureConnectorDTO();
-        final AzureManualDetailsDTO config = (AzureManualDetailsDTO) connectorDTO.getCredential().getConfig();
+    AzureConfig azureConfig =
+        mapAzureConfigWithDecryption(connectorDTO.getCredential(), azureValidationParams.getEncryptedDataDetails());
 
+    return handleValidateTask(azureConfig, config.getSubscription());
+  }
 
-        AzureConfig azureConfig = azureConfigMapper.mapAzureConfigWithDecryption(connectorDTO.getCredential(), connectorDTO.getCredential().getAzureCredentialType(), azureValidationParams.getEncryptedDataDetails());
+  private ConnectorValidationResult handleValidateTask(AzureConfig azureConfig, String subscription) {
+    ConnectorValidationResult connectorValidationResult;
+    try {
+      azureManagementClient.validateConnection(azureConfig, subscription);
+      connectorValidationResult = ConnectorValidationResult.builder()
+                                      .status(ConnectivityStatus.SUCCESS)
+                                      .testedAt(System.currentTimeMillis())
+                                      .build();
 
-
-        return handleValidateTask(azureConfig, config.getSubscription());
-
+    } catch (Exception e) {
+      String errorMessage = e.getMessage();
+      connectorValidationResult = ConnectorValidationResult.builder()
+                                      .status(ConnectivityStatus.FAILURE)
+                                      .errors(Collections.singletonList(ngErrorHelper.createErrorDetail(errorMessage)))
+                                      .errorSummary(ngErrorHelper.getErrorSummary(errorMessage))
+                                      .testedAt(System.currentTimeMillis())
+                                      .build();
     }
+    return connectorValidationResult;
+  }
 
-    private ConnectorValidationResult handleValidateTask(AzureConfig azureConfig, String subscription) {
-        ConnectorValidationResult connectorValidationResult;
-        try {
-            azureKubernetesClient.listKubernetesClusters(azureConfig, subscription);
-            connectorValidationResult = ConnectorValidationResult.builder()
-                    .status(ConnectivityStatus.SUCCESS)
-                    .testedAt(System.currentTimeMillis())
-                    .build();
+  private AzureConfig mapAzureConfigWithDecryption(
+      AzureConnectorCredentialDTO credential, List<EncryptedDataDetail> encryptedDataDetails) {
+    AzureManualDetailsDTO config = (AzureManualDetailsDTO) credential.getConfig();
 
-        } catch (Exception e) {
-            String errorMessage = e.getMessage();
-            connectorValidationResult = ConnectorValidationResult.builder()
-                    .status(ConnectivityStatus.FAILURE)
-                    .errors(Collections.singletonList(ngErrorHelper.createErrorDetail(errorMessage)))
-                    .errorSummary(ngErrorHelper.getErrorSummary(errorMessage))
-                    .testedAt(System.currentTimeMillis())
-                    .build();
-        }
-        return connectorValidationResult;
-    }
+    secretDecryptionService.decrypt(config, encryptedDataDetails);
+    return AzureConfig.builder()
+        .clientId(config.getClientId())
+        .tenantId(config.getTenantId())
+        .key(config.getSecretKey().getDecryptedValue())
+        .azureEnvironmentType(AzureEnvironmentType.AZURE)
+        .build();
+  }
 }

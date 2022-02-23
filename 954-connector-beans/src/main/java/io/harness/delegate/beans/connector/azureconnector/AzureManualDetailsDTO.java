@@ -7,19 +7,18 @@
 
 package io.harness.delegate.beans.connector.azureconnector;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
-
-import com.google.common.base.Preconditions;
 import io.harness.beans.DecryptableEntity;
 import io.harness.encryption.SecretRefData;
 import io.harness.encryption.SecretReference;
+
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.common.base.Preconditions;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Value;
-
-import javax.validation.constraints.NotNull;
 
 @Value
 @Builder
@@ -27,19 +26,14 @@ import javax.validation.constraints.NotNull;
 @ApiModel("AzureManualDetails")
 @Schema(name = "AzureManualDetails", description = "This contains Azure manual credentials connector details")
 public class AzureManualDetailsDTO implements AzureCredentialSpecDTO {
-    @Schema(description = "Application ID of the Azure App.")
-    @NotNull
-    private String clientId;
-    @SecretReference
-    @ApiModelProperty(dataType = "string")
-    @Schema(description = "This is the Harness text secret with the Azure authentication key as its value.")
-    @NotNull
-    private SecretRefData secretKey;
-    @NotNull
-    @Schema(description = "The Azure Active Directory (AAD) directory ID where you created your application.")
-    private String tenantId;
-    @Schema(description = "Azure Subscription ID.")
-    @NotNull
-    private String subscription;
-
+  @Schema(description = "Application ID of the Azure App.") @NotNull private String clientId;
+  @SecretReference
+  @ApiModelProperty(dataType = "string")
+  @Schema(description = "This is the Harness text secret with the Azure authentication key as its value.")
+  @NotNull
+  private SecretRefData secretKey;
+  @NotNull
+  @Schema(description = "The Azure Active Directory (AAD) directory ID where you created your application.")
+  private String tenantId;
+  @Schema(description = "Azure Subscription ID.") @NotNull private String subscription;
 }

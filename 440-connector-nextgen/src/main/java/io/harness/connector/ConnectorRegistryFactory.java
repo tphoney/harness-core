@@ -179,9 +179,9 @@ public class ConnectorRegistryFactory {
             AwsValidationParamsProvider.class, AwsDTOToEntity.class, AwsEntityToDTO.class,
             NotSupportedValidationHandler.class));
     registrar.put(ConnectorType.AZURE,
-            new ConnectorRegistrar(ConnectorCategory.CLOUD_PROVIDER, AzureConnectorValidator.class,
-                    AzureValidationParamsProvider.class, AzureDTOToEntity.class, AzureEntityToDTO.class,
-                    NotSupportedValidationHandler.class));
+        new ConnectorRegistrar(ConnectorCategory.CLOUD_PROVIDER, AzureConnectorValidator.class,
+            AzureValidationParamsProvider.class, AzureDTOToEntity.class, AzureEntityToDTO.class,
+            NotSupportedValidationHandler.class));
     registrar.put(ConnectorType.CE_AWS,
         new ConnectorRegistrar(ConnectorCategory.CLOUD_COST, CEAwsConnectorValidator.class,
             NoOpConnectorValidationParamsProvider.class, CEAwsDTOToEntity.class, CEAwsEntityToDTO.class,

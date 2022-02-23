@@ -178,4 +178,12 @@ public interface AzureManagementClient {
   PagedList<DeploymentOperationInner> getDeploymentOperations(ARMDeploymentSteadyStateContext context);
 
   String getARMDeploymentOutputs(ARMDeploymentSteadyStateContext context);
+
+  /**
+   * Validate azure connection with a provided config. Will throw exception if connection can't be made
+   *
+   * @param azureConfig - tenantId, clientId, secretKey and environmentType data
+   * @param subscriptionId
+   */
+  void validateConnection(AzureConfig azureConfig, String subscriptionId);
 }

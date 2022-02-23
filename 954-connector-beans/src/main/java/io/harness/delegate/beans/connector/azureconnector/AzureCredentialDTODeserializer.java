@@ -7,47 +7,47 @@
 
 package io.harness.delegate.beans.connector.azureconnector;
 
+import io.harness.exception.InvalidRequestException;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import io.harness.exception.InvalidRequestException;
-
 import java.io.IOException;
 
 public class AzureCredentialDTODeserializer extends StdDeserializer<AzureConnectorCredentialDTO> {
-    public AzureCredentialDTODeserializer() {
-        super(io.harness.delegate.beans.connector.azureconnector.AzureConnectorCredentialDTO.class);
-    }
-    protected AzureCredentialDTODeserializer(Class<?> vc) {
-        super(vc);
-    }
+  public AzureCredentialDTODeserializer() {
+    super(io.harness.delegate.beans.connector.azureconnector.AzureConnectorCredentialDTO.class);
+  }
+  protected AzureCredentialDTODeserializer(Class<?> vc) {
+    super(vc);
+  }
 
-    @Override
-    public AzureConnectorCredentialDTO deserialize(JsonParser jp, DeserializationContext deserializationContext)
-            throws IOException {
-        JsonNode parentJsonNode = jp.getCodec().readTree(jp);
-        JsonNode typeNode = parentJsonNode.get("type");
-        JsonNode authSpec = parentJsonNode.get("spec");
+  @Override
+  public AzureConnectorCredentialDTO deserialize(JsonParser jp, DeserializationContext deserializationContext)
+      throws IOException {
+    JsonNode parentJsonNode = jp.getCodec().readTree(jp);
+    JsonNode typeNode = parentJsonNode.get("type");
+    JsonNode authSpec = parentJsonNode.get("spec");
 
-        AzureCredentialType type = getType(typeNode);
-        AzureCredentialSpecDTO azureCredentialSpecDTO = null;
+    AzureCredentialType type = getType(typeNode);
+    AzureCredentialSpecDTO azureCredentialSpecDTO = null;
 
-        ObjectMapper mapper = (ObjectMapper) jp.getCodec();
-        if (type == AzureCredentialType.MANUAL_CREDENTIALS) {
-            azureCredentialSpecDTO = mapper.readValue(authSpec.toString(), AzureManualDetailsDTO.class);
-        } else if (type == AzureCredentialType.INHERIT_FROM_DELEGATE) {
-            if (authSpec != null && !authSpec.isNull()) {
-                throw new InvalidRequestException("No spec should be provided with the inherit from delegate type");
-            }
-        }
-
-        return AzureConnectorCredentialDTO.builder().azureCredentialType(type).config(azureCredentialSpecDTO).build();
+    ObjectMapper mapper = (ObjectMapper) jp.getCodec();
+    if (type == AzureCredentialType.MANUAL_CREDENTIALS) {
+      azureCredentialSpecDTO = mapper.readValue(authSpec.toString(), AzureManualDetailsDTO.class);
+    } else if (type == AzureCredentialType.INHERIT_FROM_DELEGATE) {
+      if (authSpec != null && !authSpec.isNull()) {
+        throw new InvalidRequestException("No spec should be provided with the inherit from delegate type");
+      }
     }
 
-    AzureCredentialType getType(JsonNode typeNode) {
-        String typeValue = typeNode.asText();
-        return AzureCredentialType.fromString(typeValue);
-    }
+    return AzureConnectorCredentialDTO.builder().azureCredentialType(type).config(azureCredentialSpecDTO).build();
+  }
+
+  AzureCredentialType getType(JsonNode typeNode) {
+    String typeValue = typeNode.asText();
+    return AzureCredentialType.fromString(typeValue);
+  }
 }

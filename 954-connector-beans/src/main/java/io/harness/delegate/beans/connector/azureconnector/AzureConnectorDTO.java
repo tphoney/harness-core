@@ -8,7 +8,6 @@
 package io.harness.delegate.beans.connector.azureconnector;
 
 import static io.harness.ConnectorConstants.INHERIT_FROM_DELEGATE_TYPE_ERROR_MSG;
-
 import static io.harness.azure.AzureEnvironmentType.AZURE;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
@@ -35,27 +34,26 @@ import lombok.EqualsAndHashCode;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ApiModel("AzureConnector")
 @Schema(name = "AzureConnector", description = "This contains details of the Azure connector")
-public class AzureConnectorDTO extends ConnectorConfigDTO implements DelegateSelectable{
-    @Valid
-    AzureConnectorCredentialDTO credential;
-    Set<String> delegateSelectors;
-    @Builder.Default
-    @Schema(description = "This specifies the Azure Environment type, which is AZURE by default.")
-    private AzureEnvironmentType azureEnvironmentType = AZURE;
+public class AzureConnectorDTO extends ConnectorConfigDTO implements DelegateSelectable {
+  @Valid AzureConnectorCredentialDTO credential;
+  Set<String> delegateSelectors;
+  @Builder.Default
+  @Schema(description = "This specifies the Azure Environment type, which is AZURE by default.")
+  private AzureEnvironmentType azureEnvironmentType = AZURE;
 
-    @Override
-    public List<DecryptableEntity> getDecryptableEntities() {
-        if (credential.getAzureCredentialType() == AzureCredentialType.MANUAL_CREDENTIALS) {
-            return Collections.singletonList(credential.getConfig());
-        }
-        return null;
+  @Override
+  public List<DecryptableEntity> getDecryptableEntities() {
+    if (credential.getAzureCredentialType() == AzureCredentialType.MANUAL_CREDENTIALS) {
+      return Collections.singletonList(credential.getConfig());
     }
+    return null;
+  }
 
-    @Override
-    public void validate() {
-        if (AzureCredentialType.INHERIT_FROM_DELEGATE.equals(credential.getAzureCredentialType())
-                && isEmpty(delegateSelectors)) {
-            throw new InvalidRequestException(INHERIT_FROM_DELEGATE_TYPE_ERROR_MSG);
-        }
+  @Override
+  public void validate() {
+    if (AzureCredentialType.INHERIT_FROM_DELEGATE.equals(credential.getAzureCredentialType())
+        && isEmpty(delegateSelectors)) {
+      throw new InvalidRequestException(INHERIT_FROM_DELEGATE_TYPE_ERROR_MSG);
     }
+  }
 }

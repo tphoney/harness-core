@@ -11,35 +11,35 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum AzureCredentialType {
-    @JsonProperty(AzureConstants.INHERIT_FROM_DELEGATE) INHERIT_FROM_DELEGATE(AzureConstants.INHERIT_FROM_DELEGATE),
-    @JsonProperty(AzureConstants.MANUAL_CONFIG) MANUAL_CREDENTIALS(AzureConstants.MANUAL_CONFIG);
+  @JsonProperty(AzureConstants.INHERIT_FROM_DELEGATE) INHERIT_FROM_DELEGATE(AzureConstants.INHERIT_FROM_DELEGATE),
+  @JsonProperty(AzureConstants.MANUAL_CONFIG) MANUAL_CREDENTIALS(AzureConstants.MANUAL_CONFIG);
 
-    private final String displayName;
+  private final String displayName;
 
-    AzureCredentialType(String displayName) {
-        this.displayName = displayName;
+  AzureCredentialType(String displayName) {
+    this.displayName = displayName;
+  }
+
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  @Override
+  public String toString() {
+    return displayName;
+  }
+
+  @JsonValue
+  final String displayName() {
+    return this.displayName;
+  }
+
+  public static AzureCredentialType fromString(String typeEnum) {
+    for (AzureCredentialType enumValue : AzureCredentialType.values()) {
+      if (enumValue.getDisplayName().equals(typeEnum)) {
+        return enumValue;
+      }
     }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    @Override
-    public String toString() {
-        return displayName;
-    }
-
-    @JsonValue
-    final String displayName() {
-        return this.displayName;
-    }
-
-    public static AzureCredentialType fromString(String typeEnum) {
-        for (AzureCredentialType enumValue : AzureCredentialType.values()) {
-            if (enumValue.getDisplayName().equals(typeEnum)) {
-                return enumValue;
-            }
-        }
-        throw new IllegalArgumentException("Invalid value: " + typeEnum);
-    }
+    throw new IllegalArgumentException("Invalid value: " + typeEnum);
+  }
 }

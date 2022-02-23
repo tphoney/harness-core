@@ -1101,9 +1101,12 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(VmServiceDependency.class, 543474);
     kryo.register(VmServiceStatus.class, 543475);
     kryo.register(VmServiceStatus.Status.class, 543476);
-    kryo.register(AzureTaskParams.class, 543477);
-    kryo.register(AzureTaskType.class, 543478);
-    kryo.register(AzureValidateTaskResponse.class, 543479);
-    kryo.register(AzureValidationParams.class, 543480);
+    kryo.register(ArtifactoryFetchRepositoriesResponse.class, 543477);
+    kryo.register(ArtifactoryFetchBuildsResponse.class, 543478);
+    kryo.register(ArtifactoryStoreDelegateConfig.class, 543479);
+    kryo.register(AzureTaskParams.class, 543480);
+    kryo.register(AzureTaskType.class, 543481);
+    kryo.register(AzureValidateTaskResponse.class, 543482);
+    kryo.register(AzureValidationParams.class, 543483);
   }
 }

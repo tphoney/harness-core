@@ -7,13 +7,13 @@
 
 package io.harness.connector.validator;
 
+import static software.wings.beans.TaskType.NG_AZURE_TASK;
+
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.ConnectorValidationResult;
 import io.harness.delegate.beans.connector.ConnectorConfigDTO;
 import io.harness.delegate.beans.connector.azureconnector.*;
 import io.harness.delegate.task.TaskParameters;
-
-import static software.wings.beans.TaskType.NG_AZURE_TASK;
 
 public class AzureConnectorValidator extends AbstractConnectorValidator {
   @Override

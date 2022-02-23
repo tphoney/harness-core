@@ -59,6 +59,7 @@ import com.microsoft.azure.management.resources.implementation.DeploymentsInner;
 import com.microsoft.azure.management.resources.implementation.PageImpl;
 import com.microsoft.rest.ServiceResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -610,5 +611,17 @@ public class AzureManagementClientImpl extends AzureClient implements AzureManag
     properties.withTemplate(JsonUtils.readTree(template.getTemplateJSON()));
     properties.withParameters(JsonUtils.readTree(template.getParametersJSON()));
     return properties;
+  }
+
+  @Override
+  public void validateConnection(AzureConfig azureConfig, String subscriptionId) {
+    if (isBlank(subscriptionId)) {
+      throw new IllegalArgumentException(SUBSCRIPTION_ID_NULL_VALIDATION_MSG);
+    }
+
+    getAzureClient(azureConfig, subscriptionId);
+
+    log.debug("Azure connection validated for clientId {} tenantId {} subscriptionId {}", azureConfig.getClientId(),
+        azureConfig.getTenantId(), subscriptionId);
   }
 }

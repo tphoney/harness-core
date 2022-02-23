@@ -7,8 +7,8 @@
 
 package io.harness.connector.heartbeat;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+
 import io.harness.beans.DecryptableEntity;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.helper.EncryptionHelper;
@@ -17,9 +17,9 @@ import io.harness.delegate.beans.connector.azureconnector.AzureConnectorDTO;
 import io.harness.delegate.beans.connector.azureconnector.AzureValidationParams;
 import io.harness.security.encryption.EncryptedDataDetail;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import java.util.List;
-
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 @Singleton
 public class AzureValidationParamsProvider implements ConnectorValidationParamsProvider {

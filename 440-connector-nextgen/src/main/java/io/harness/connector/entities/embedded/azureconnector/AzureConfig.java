@@ -7,9 +7,12 @@
 
 package io.harness.connector.entities.embedded.azureconnector;
 
+import static io.harness.azure.AzureEnvironmentType.AZURE;
+
 import io.harness.azure.AzureEnvironmentType;
 import io.harness.connector.entities.Connector;
 import io.harness.delegate.beans.connector.azureconnector.AzureCredentialType;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,8 +20,6 @@ import lombok.experimental.FieldNameConstants;
 import org.mongodb.morphia.annotations.Entity;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.annotation.TypeAlias;
-
-import static io.harness.azure.AzureEnvironmentType.AZURE;
 
 @Data
 @Builder
@@ -31,6 +32,5 @@ public class AzureConfig extends Connector {
   AzureCredentialType credentialType;
   AzureCredential credential;
 
-  @Builder.Default
-  AzureEnvironmentType azureEnvironmentType = AZURE;
+  @Builder.Default AzureEnvironmentType azureEnvironmentType = AZURE;
 }

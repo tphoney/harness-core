@@ -7,22 +7,22 @@
 
 package io.harness.delegate.beans.connector.azureconnector;
 
+import io.harness.beans.DecryptableEntity;
+import io.harness.delegate.beans.connector.gcpconnector.GcpCredentialDTODeserializer;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.harness.beans.DecryptableEntity;
-import io.harness.delegate.beans.connector.gcpconnector.GcpCredentialDTODeserializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.v3.oas.annotations.media.Schema;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 @Data
 @NoArgsConstructor
@@ -32,18 +32,16 @@ import javax.validation.constraints.NotNull;
 @JsonDeserialize(using = AzureCredentialDTODeserializer.class)
 @Schema(name = "AzureConnectorCredential", description = "This contains Azure connector credentials")
 public class AzureConnectorCredentialDTO {
-    @NotNull
-    @JsonProperty("type")
-    AzureCredentialType azureCredentialType;
-    @JsonProperty("spec")
-    @JsonTypeInfo(
-            use = JsonTypeInfo.Id.NAME, property = "type", include = JsonTypeInfo.As.EXTERNAL_PROPERTY, visible = true)
-    @Valid
-    AzureCredentialSpecDTO config;
+  @NotNull @JsonProperty("type") AzureCredentialType azureCredentialType;
+  @JsonProperty("spec")
+  @JsonTypeInfo(
+      use = JsonTypeInfo.Id.NAME, property = "type", include = JsonTypeInfo.As.EXTERNAL_PROPERTY, visible = true)
+  @Valid
+  AzureCredentialSpecDTO config;
 
-    @Builder
-    public AzureConnectorCredentialDTO(AzureCredentialType azureCredentialType, AzureCredentialSpecDTO config) {
-        this.azureCredentialType = azureCredentialType;
-        this.config = config;
-    }
+  @Builder
+  public AzureConnectorCredentialDTO(AzureCredentialType azureCredentialType, AzureCredentialSpecDTO config) {
+    this.azureCredentialType = azureCredentialType;
+    this.config = config;
+  }
 }

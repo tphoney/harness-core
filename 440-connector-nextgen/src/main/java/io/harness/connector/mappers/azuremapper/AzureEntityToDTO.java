@@ -7,17 +7,18 @@
 
 package io.harness.connector.mappers.azuremapper;
 
-import com.google.inject.Singleton;
 import io.harness.connector.entities.embedded.azureconnector.AzureConfig;
 import io.harness.connector.entities.embedded.azureconnector.AzureManualCredential;
 import io.harness.connector.mappers.ConnectorEntityToDTOMapper;
 import io.harness.delegate.beans.connector.azureconnector.AzureConnectorCredentialDTO;
-import io.harness.delegate.beans.connector.azureconnector.AzureManualDetailsDTO;
 import io.harness.delegate.beans.connector.azureconnector.AzureConnectorDTO;
 import io.harness.delegate.beans.connector.azureconnector.AzureCredentialType;
+import io.harness.delegate.beans.connector.azureconnector.AzureManualDetailsDTO;
 import io.harness.encryption.SecretRefData;
 import io.harness.encryption.SecretRefHelper;
 import io.harness.exception.InvalidRequestException;
+
+import com.google.inject.Singleton;
 
 @Singleton
 public class AzureEntityToDTO implements ConnectorEntityToDTOMapper<AzureConnectorDTO, AzureConfig> {
@@ -38,11 +39,11 @@ public class AzureEntityToDTO implements ConnectorEntityToDTOMapper<AzureConnect
     final AzureManualCredential auth = (AzureManualCredential) connector.getCredential();
     final SecretRefData secretRef = SecretRefHelper.createSecretRef(auth.getSecretKeyRef());
     final AzureManualDetailsDTO azureManualDetailsDTO = AzureManualDetailsDTO.builder()
-            .clientId(auth.getClientId())
-            .secretKey(secretRef)
-            .tenantId(auth.getTenantId())
-            .subscription(auth.getSubscription())
-            .build();
+                                                            .clientId(auth.getClientId())
+                                                            .secretKey(secretRef)
+                                                            .tenantId(auth.getTenantId())
+                                                            .subscription(auth.getSubscription())
+                                                            .build();
     return AzureConnectorDTO.builder()
         .delegateSelectors(connector.getDelegateSelectors())
         .credential(AzureConnectorCredentialDTO.builder()

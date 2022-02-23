@@ -7,28 +7,30 @@
 
 package io.harness.delegate.beans.connector.azureconnector;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
+
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.connector.ConnectorCapabilityBaseHelper;
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.task.mixin.HttpConnectionExecutionCapabilityGenerator;
+import io.harness.exception.UnknownEnumTypeException;
 import io.harness.expression.ExpressionEvaluator;
-import lombok.experimental.UtilityClass;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.harness.annotations.dev.HarnessTeam.CDP;
-
+import lombok.experimental.UtilityClass;
 
 @OwnedBy(CDP)
 @UtilityClass
 public class AzureCapabilityHelper extends ConnectorCapabilityBaseHelper {
   private static final String AZURE_URL = "https://azure.microsoft.com/";
   private static final String AZURE_US_GOV_URL = "https://usgovcloudapi.microsoft.com/";
+
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(
-          AzureConnectorDTO azureConnectorDTO, ExpressionEvaluator maskingEvaluator) {
+      AzureConnectorDTO azureConnectorDTO, ExpressionEvaluator maskingEvaluator) {
     List<ExecutionCapability> executionCapabilities = new ArrayList<>();
-    if (azureConnectorDTO != null) {
+    if (azureConnectorDTO != null
+        && azureConnectorDTO.getCredential().getAzureCredentialType() == AzureCredentialType.MANUAL_CREDENTIALS) {
       String encryptionServiceUrl;
       if (azureConnectorDTO.getAzureEnvironmentType() == null) {
         encryptionServiceUrl = AZURE_URL;
@@ -42,7 +44,6 @@ public class AzureCapabilityHelper extends ConnectorCapabilityBaseHelper {
             encryptionServiceUrl = AZURE_URL;
         }
       }
-
       executionCapabilities.add(HttpConnectionExecutionCapabilityGenerator.buildHttpConnectionExecutionCapability(
           encryptionServiceUrl, maskingEvaluator));
       populateDelegateSelectorCapability(executionCapabilities, azureConnectorDTO.getDelegateSelectors());

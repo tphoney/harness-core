@@ -8,8 +8,8 @@
 package software.wings.service.impl.instance;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.beans.FeatureName.SSH_PERPETUAL_TASK;
-import static io.harness.beans.FeatureName.STOP_INSTANCE_SYNC_VIA_ITERATOR_FOR_SSH_DEPLOYMENTS;
+import static io.harness.beans.FeatureName.PDC_PERPETUAL_TASK;
+import static io.harness.beans.FeatureName.STOP_INSTANCE_SYNC_VIA_ITERATOR_FOR_PDC_DEPLOYMENTS;
 import static io.harness.exception.WingsException.USER;
 
 import static software.wings.beans.CGConstants.GLOBAL_APP_ID;
@@ -131,7 +131,7 @@ public class PdcInstanceHandler extends InstanceHandler implements InstanceSyncB
   // done
   @Override
   public FeatureName getFeatureFlagToStopIteratorBasedInstanceSync() {
-    return STOP_INSTANCE_SYNC_VIA_ITERATOR_FOR_SSH_DEPLOYMENTS;
+    return STOP_INSTANCE_SYNC_VIA_ITERATOR_FOR_PDC_DEPLOYMENTS;
   }
 
   // done
@@ -159,7 +159,7 @@ public class PdcInstanceHandler extends InstanceHandler implements InstanceSyncB
   // done
   @Override
   public FeatureName getFeatureFlagToEnablePerpetualTaskForInstanceSync() {
-    return SSH_PERPETUAL_TASK;
+    return PDC_PERPETUAL_TASK;
   }
 
   // done

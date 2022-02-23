@@ -151,7 +151,7 @@ public class PdcPerpetualTaskServiceClient implements PerpetualTaskServiceClient
   }
 
   private List<String> getHostNames(PerpetualTaskClientContext clientContext) {
-    String hostNames = clientContext.getClientParams().get(InstanceSyncConstants.HOSTNAME);
+    String hostNames = clientContext.getClientParams().get(InstanceSyncConstants.HOSTNAMES);
     return Stream.of(hostNames.split(",")).map(String::trim).collect(toList());
   }
 

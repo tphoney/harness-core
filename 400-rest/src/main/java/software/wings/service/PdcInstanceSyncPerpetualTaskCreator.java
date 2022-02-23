@@ -58,7 +58,7 @@ public class PdcInstanceSyncPerpetualTaskCreator extends AbstractInstanceSyncPer
 
     Map<String, String> clientParamMap = ImmutableMap.of(InstanceSyncConstants.INFRASTRUCTURE_MAPPING_ID,
         clientParams.getInframappingId(), InstanceSyncConstants.HARNESS_APPLICATION_ID, clientParams.getAppId(),
-        InstanceSyncConstants.HOSTNAME, concatenatedHosts);
+        InstanceSyncConstants.HOSTNAMES, concatenatedHosts);
 
     PerpetualTaskClientContext clientContext =
         PerpetualTaskClientContext.builder().clientParams(clientParamMap).build();

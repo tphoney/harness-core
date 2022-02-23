@@ -7,15 +7,14 @@
 
 package software.wings.delegatetasks.cv.beans;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.github.reinert.jjschema.SchemaIgnore;
-import com.google.cloud.datastore.Datastore;
-import com.google.cloud.datastore.Key;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.hash.Hashing;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.persistence.GoogleDataStoreAware.addFieldIfNotEmpty;
+import static io.harness.persistence.GoogleDataStoreAware.readLong;
+import static io.harness.persistence.GoogleDataStoreAware.readString;
+
+import static software.wings.delegatetasks.cv.commons.CVConstants.ML_RECORDS_TTL_MONTHS;
+
 import io.harness.annotation.HarnessEntity;
 import io.harness.annotation.IgnoreUnusedIndex;
 import io.harness.beans.EmbeddedUser;
@@ -33,6 +32,27 @@ import io.harness.persistence.UpdatedByAware;
 import io.harness.persistence.UuidAware;
 import io.harness.serializer.JsonUtils;
 import io.harness.validation.Update;
+
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.github.reinert.jjschema.SchemaIgnore;
+import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.Key;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.hash.Hashing;
+import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.time.OffsetDateTime;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -43,24 +63,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
 import org.mongodb.morphia.annotations.Transient;
-import software.wings.delegatetasks.DelegateStateType;
-import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
-
-import javax.validation.constraints.NotNull;
-import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
-import java.time.OffsetDateTime;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.persistence.GoogleDataStoreAware.addFieldIfNotEmpty;
-import static io.harness.persistence.GoogleDataStoreAware.readLong;
-import static io.harness.persistence.GoogleDataStoreAware.readString;
-import static software.wings.delegatetasks.cv.commons.CVConstants.ML_RECORDS_TTL_MONTHS;
 
 /**
  * Created by rsingh on 08/30/17.
@@ -74,7 +76,8 @@ import static software.wings.delegatetasks.cv.commons.CVConstants.ML_RECORDS_TTL
 @IgnoreUnusedIndex
 @Entity(value = "newRelicMetricRecords", noClassnameStored = true)
 @HarnessEntity(exportable = false)
-public class NewRelicMetricDataRecord implements PersistentEntity, UuidAware, CreatedAtAware, CreatedByAware, UpdatedAtAware, UpdatedByAware, AccountAccess, GoogleDataStoreAware {
+public class NewRelicMetricDataRecord implements PersistentEntity, UuidAware, CreatedAtAware, CreatedByAware,
+                                                 UpdatedAtAware, UpdatedByAware, AccountAccess, GoogleDataStoreAware {
   public static List<MongoIndex> mongoIndexes() {
     return ImmutableList.<MongoIndex>builder()
         .add(SortCompoundMongoIndex.builder()
@@ -96,6 +99,7 @@ public class NewRelicMetricDataRecord implements PersistentEntity, UuidAware, Cr
                 .build())
         .build();
   }
+  @Deprecated public static final String ID_KEY2 = "_id";
 
   @Id @NotNull(groups = {Update.class}) @SchemaIgnore private String uuid;
   @FdIndex @NotNull @SchemaIgnore protected String appId;
@@ -109,11 +113,7 @@ public class NewRelicMetricDataRecord implements PersistentEntity, UuidAware, Cr
    * TODO: Add isDeleted boolean field to enable soft delete. @swagat
    */
 
-  @JsonIgnore
-  @SchemaIgnore
-  @Transient
-  private transient String entityYamlPath;
-
+  @JsonIgnore @SchemaIgnore @Transient private transient String entityYamlPath;
 
   @Transient public static String DEFAULT_GROUP_NAME = "default";
 

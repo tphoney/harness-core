@@ -11,8 +11,8 @@ import static io.harness.threading.Morpheus.sleep;
 
 import static software.wings.common.VerificationConstants.DATA_COLLECTION_RETRY_SLEEP;
 import static software.wings.common.VerificationConstants.DURATION_TO_ASK_MINUTES;
-import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.COMPARE_WITH_CURRENT;
 import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.COMPARE_WITH_CURRENT;
 import static software.wings.sm.states.AbstractMetricAnalysisState.CANARY_DAYS_TO_COLLECT;
 
 import io.harness.annotations.dev.HarnessModule;
@@ -29,16 +29,16 @@ import io.harness.time.Timestamp;
 import software.wings.beans.DynaTraceConfig;
 import software.wings.beans.TaskType;
 import software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask;
-import software.wings.service.impl.ThirdPartyApiCallLog;
-import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
 import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
+import software.wings.service.impl.ThirdPartyApiCallLog;
+import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
 import software.wings.service.impl.dynatrace.DynaTraceDataCollectionInfo;
 import software.wings.service.impl.dynatrace.DynaTraceMetricDataRequest;
 import software.wings.service.impl.dynatrace.DynaTraceMetricDataResponse;
 import software.wings.service.impl.dynatrace.DynaTraceTimeSeries;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
-import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.service.intfc.dynatrace.DynaTraceDelegateService;
 import software.wings.sm.StateType;
 import software.wings.sm.states.DynatraceState;
@@ -394,7 +394,7 @@ public class DynaTraceDataCollectionTask extends AbstractDelegateDataCollectionT
                         .dataCollectionMinute(getCollectionMinute(
                             Timestamp.minuteBoundary(timeStamp.longValue()), dataResponse.getResult().getHost(), false))
                         .timeStamp(timeStamp.longValue())
-                        .stateType(StateType.DYNA_TRACE)
+                        .stateType(DelegateStateType.DYNA_TRACE)
                         .host(dataResponse.getResult().getHost())
                         .values(new HashMap<>())
                         .groupName(DEFAULT_GROUP_NAME)

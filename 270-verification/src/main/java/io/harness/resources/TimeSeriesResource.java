@@ -21,6 +21,7 @@ import io.harness.security.annotations.LearningEngineAuth;
 import io.harness.service.intfc.LearningEngineService;
 import io.harness.service.intfc.TimeSeriesAnalysisService;
 
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.metrics.TimeSeriesMetricDefinition;
 import software.wings.security.PermissionAttribute.ResourceType;
 import software.wings.security.annotations.Scope;
@@ -32,7 +33,6 @@ import software.wings.service.impl.analysis.TimeSeriesMLAnalysisRecord;
 import software.wings.service.impl.analysis.TimeSeriesMLScores;
 import software.wings.service.impl.analysis.Version;
 import software.wings.service.impl.newrelic.LearningEngineAnalysisTask;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.intfc.DataStoreService;
 import software.wings.service.intfc.MetricDataAnalysisService;
 import software.wings.sm.StateType;
@@ -117,8 +117,8 @@ public class TimeSeriesResource {
       @QueryParam("taskId") String taskId, @QueryParam("baseLineExecutionId") String baseLineExecutionId,
       @QueryParam("cvConfigId") String cvConfigId, @QueryParam("tag") String tag,
       TimeSeriesMLAnalysisRecord mlAnalysisResponse) {
-    try (VerificationLogContext ignored =
-             new VerificationLogContext(accountId, cvConfigId, stateExecutionId, stateType, OVERRIDE_ERROR)) {
+    try (VerificationLogContext ignored = new VerificationLogContext(
+             accountId, cvConfigId, stateExecutionId, stateType.getDelegateStateType(), OVERRIDE_ERROR)) {
       LearningEngineAnalysisTask analysisTask = learningEngineService.getTaskById(taskId);
       Preconditions.checkNotNull(analysisTask);
       long currentEpoch = currentTimeMillis();

@@ -30,11 +30,13 @@ import io.harness.time.Timestamp;
 import software.wings.WingsBaseTest;
 import software.wings.beans.Account;
 import software.wings.beans.AccountType;
-import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.LicenseInfo;
 import software.wings.beans.Service;
 import software.wings.beans.SettingAttribute;
 import software.wings.common.VerificationConstants;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.dl.WingsPersistence;
 import software.wings.metrics.MetricType;
 import software.wings.metrics.TimeSeriesDataRecord;
@@ -49,7 +51,6 @@ import software.wings.service.impl.analysis.TimeSeriesMLMetricSummary;
 import software.wings.service.impl.analysis.TimeSeriesMLTxnSummary;
 import software.wings.service.impl.analysis.TimeSeriesRiskSummary;
 import software.wings.service.impl.cloudwatch.CloudWatchMetric;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.sm.StateType;
 import software.wings.verification.CVConfiguration;
 import software.wings.verification.HeatMap;
@@ -408,7 +409,7 @@ public class HeatMapApiUnitTest extends WingsBaseTest {
                                             .serviceId(cvConfiguration.getServiceId())
                                             .cvConfigId(cvConfiguration.getUuid())
                                             .dataCollectionMinute(min)
-                                            .stateType(stateType)
+                                            .stateType(stateType.getDelegateStateType())
                                             .name("/login")
                                             .values(metricMap)
                                             .build();
@@ -846,7 +847,7 @@ public class HeatMapApiUnitTest extends WingsBaseTest {
       metricDataRecords.forEach(metricDataRecord -> {
         metricDataRecord.setAppId(appId);
         metricDataRecord.setCvConfigId(cvConfigId);
-        metricDataRecord.setStateType(StateType.APP_DYNAMICS);
+        metricDataRecord.setStateType(DelegateStateType.APP_DYNAMICS);
       });
       wingsPersistence.save(metricDataRecords);
 
@@ -1273,7 +1274,7 @@ public class HeatMapApiUnitTest extends WingsBaseTest {
       metricDataRecords.forEach(metricDataRecord -> {
         metricDataRecord.setAppId(appId);
         metricDataRecord.setCvConfigId(cvConfigId);
-        metricDataRecord.setStateType(StateType.APP_DYNAMICS);
+        metricDataRecord.setStateType(DelegateStateType.APP_DYNAMICS);
       });
 
       final List<TimeSeriesDataRecord> dataRecords =

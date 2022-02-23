@@ -38,13 +38,14 @@ import software.wings.beans.DatadogConfig;
 import software.wings.beans.GcpConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.SumoConfig;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionInfo;
 import software.wings.metrics.RiskLevel;
 import software.wings.service.impl.VerificationLogContext;
 import software.wings.service.impl.analysis.AnalysisContext;
 import software.wings.service.impl.analysis.AnalysisContext.AnalysisContextKeys;
 import software.wings.service.impl.analysis.AnalysisTolerance;
-import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
-import software.wings.delegatetasks.cv.beans.analysis.DataCollectionInfo;
 import software.wings.service.impl.analysis.DataCollectionInfoV2;
 import software.wings.service.impl.analysis.LogMLAnalysisSummary;
 import software.wings.service.impl.analysis.MLAnalysisType;
@@ -137,7 +138,8 @@ public abstract class AbstractLogAnalysisState extends AbstractAnalysisState {
   @Override
   public ExecutionResponse execute(ExecutionContext executionContext) {
     try (VerificationLogContext ignored = new VerificationLogContext(executionContext.getAccountId(), null,
-             executionContext.getStateExecutionInstanceId(), StateType.valueOf(getStateType()), OVERRIDE_ERROR)) {
+             executionContext.getStateExecutionInstanceId(), DelegateStateType.valueOf(getStateType()),
+             OVERRIDE_ERROR)) {
       getLogger().info("Executing state {}", executionContext.getStateExecutionInstanceId());
       String correlationId = UUID.randomUUID().toString();
       Logger activityLogger = cvActivityLogService.getLoggerByStateExecutionId(
@@ -547,7 +549,7 @@ public abstract class AbstractLogAnalysisState extends AbstractAnalysisState {
                     datadogConfig.fetchLogBodyMap(false), analysisContext.getHostNameField()))
                 .query(getRenderedQuery())
                 .hosts(Sets.newHashSet(DUMMY_HOST_NAME))
-                .stateType(StateType.DATA_DOG_LOG)
+                .stateType(DelegateStateType.DATA_DOG_LOG)
                 .applicationId(analysisContext.getAppId())
                 .stateExecutionId(analysisContext.getStateExecutionId())
                 .workflowId(analysisContext.getWorkflowId())
@@ -571,7 +573,7 @@ public abstract class AbstractLogAnalysisState extends AbstractAnalysisState {
             .gcpConfig(gcpConfig)
             .projectId(stackDriverLogState.getProjectId())
             .hostnameField(getResolvedFieldValue(executionContext, AnalysisContextKeys.hostNameField, hostnameField))
-            .stateType(StateType.STACK_DRIVER_LOG)
+            .stateType(DelegateStateType.STACK_DRIVER_LOG)
             .applicationId(analysisContext.getAppId())
             .logMessageField(getResolvedFieldValue(
                 executionContext, StackDriverLogStateKeys.messageField, stackDriverLogState.getMessageField()))

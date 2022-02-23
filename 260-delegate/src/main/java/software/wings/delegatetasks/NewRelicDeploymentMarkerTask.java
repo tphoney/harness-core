@@ -22,11 +22,10 @@ import io.harness.exception.WingsException;
 import io.harness.serializer.JsonUtils;
 
 import software.wings.beans.NewRelicDeploymentMarkerPayload;
-import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
+import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.newrelic.NewRelicDataCollectionInfo;
 import software.wings.service.intfc.newrelic.NewRelicDelegateService;
-import software.wings.sm.StateType;
 
 import com.google.inject.Inject;
 import java.util.function.BooleanSupplier;
@@ -72,7 +71,7 @@ public class NewRelicDeploymentMarkerTask extends AbstractDelegateRunnableTask {
     } catch (Exception ex) {
       return DataCollectionTaskResult.builder()
           .status(DataCollectionTaskResult.DataCollectionTaskStatus.FAILURE)
-          .stateType(StateType.NEW_RELIC)
+          .stateType(DelegateStateType.NEW_RELIC)
           .errorMessage("Could not send deployment marker : " + ExceptionUtils.getMessage(ex))
           .newRelicDeploymentMarkerBody(dataCollectionInfo.getDeploymentMarker())
           .build();

@@ -14,8 +14,8 @@ import static io.harness.waiter.OrchestrationNotifyEventListener.ORCHESTRATION;
 
 import static software.wings.common.VerificationConstants.URL_BODY_APPENDER;
 import static software.wings.common.VerificationConstants.VERIFICATION_HOST_PLACEHOLDER;
-import static software.wings.service.impl.apm.APMMetricInfo.ResponseMapper;
 import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.service.impl.apm.APMMetricInfo.ResponseMapper;
 import static software.wings.sm.states.DynatraceState.CONTROL_HOST_NAME;
 import static software.wings.sm.states.DynatraceState.TEST_HOST_NAME;
 
@@ -35,6 +35,8 @@ import io.harness.exception.WingsException;
 import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.metrics.MetricType;
 import software.wings.metrics.TimeSeriesMetricDefinition;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
@@ -42,7 +44,6 @@ import software.wings.service.impl.analysis.AnalysisContext;
 import software.wings.service.impl.analysis.DataCollectionCallback;
 import software.wings.service.impl.analysis.DataCollectionInfoV2;
 import software.wings.service.impl.analysis.TimeSeriesMetricGroup;
-import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.service.impl.apm.APMDataCollectionInfo;
 import software.wings.service.impl.apm.APMMetricInfo;
 import software.wings.service.impl.apm.CustomAPMDataCollectionInfo;
@@ -399,7 +400,7 @@ public class APMVerificationState extends AbstractMetricAnalysisState {
             .options(apmConfig.collectionParams())
             .encryptedDataDetails(apmConfig.encryptedDataDetails(secretManager))
             .hosts(hosts)
-            .stateType(StateType.APM_VERIFICATION)
+            .stateType(DelegateStateType.APM_VERIFICATION)
             .applicationId(context.getAppId())
             .stateExecutionId(context.getStateExecutionInstanceId())
             .workflowId(getWorkflowId(context))

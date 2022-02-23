@@ -36,10 +36,11 @@ import software.wings.delegatetasks.DelegateCVActivityLogService;
 import software.wings.delegatetasks.DelegateCVActivityLogService.Logger;
 import software.wings.delegatetasks.DelegateCVTaskService;
 import software.wings.delegatetasks.DelegateLogService;
-import software.wings.delegatetasks.cv.commons.CVConstants;
-import software.wings.service.impl.analysis.DataCollectionInfoV2;
+import software.wings.delegatetasks.DelegateStateType;
 import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
 import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
+import software.wings.delegatetasks.cv.commons.CVConstants;
+import software.wings.service.impl.analysis.DataCollectionInfoV2;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.sm.StateType;
 
@@ -235,7 +236,7 @@ public class AbstractDataCollectionTaskTest extends CategoryTest {
   }
 
   private DataCollectionInfoV2 createDataCollectionInfo() {
-    StateType stateType = StateType.SPLUNKV2;
+    DelegateStateType stateType = DelegateStateType.SPLUNKV2;
     DataCollectionInfoV2 dataCollectionInfoV2 = mock(DataCollectionInfoV2.class);
     when(dataCollectionInfoV2.getStateType()).thenReturn(stateType);
     when(dataCollectionInfoV2.getEncryptableSetting()).thenReturn(Optional.empty());

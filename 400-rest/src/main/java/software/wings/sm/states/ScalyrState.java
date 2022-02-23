@@ -20,6 +20,7 @@ import software.wings.beans.ScalyrConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
 import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.CustomLogResponseMapper;
 import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
 import software.wings.service.intfc.scalyr.ScalyrService;
 import software.wings.sm.ExecutionContext;
@@ -78,7 +79,7 @@ public class ScalyrState extends AbstractLogAnalysisState {
     final long dataCollectionStartTimeStamp = dataCollectionStartTimestampMillis();
     String accountId = appService.get(context.getAppId()).getAccountId();
 
-    Map<String, Map<String, ResponseMapper>> logDefinitions = scalyrService.createLogCollectionMapping(
+    Map<String, Map<String, CustomLogResponseMapper>> logDefinitions = scalyrService.createLogCollectionMapping(
         getResolvedFieldValue(context, AbstractAnalysisStateKeys.hostnameField, hostnameField),
         getResolvedFieldValue(context, ScalyrStateKeys.messageField, messageField),
         getResolvedFieldValue(context, ScalyrStateKeys.timestampField, timestampField));

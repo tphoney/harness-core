@@ -26,14 +26,14 @@ import static software.wings.common.VerificationConstants.SERVICE_GUARD_ANALYSIS
 import static software.wings.common.VerificationConstants.TIME_DELAY_QUERY_MINS;
 import static software.wings.common.VerificationConstants.VERIFICATION_SERVICE_BASE_URL;
 import static software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask.PREDECTIVE_HISTORY_MINUTES;
-import static software.wings.service.impl.analysis.LogMLAnalysisRecord.LogMLAnalysisRecordKeys;
-import static software.wings.service.impl.analysis.LogMLAnalysisStatus.FEEDBACK_ANALYSIS_COMPLETE;
-import static software.wings.service.impl.analysis.MLAnalysisType.FEEDBACK_ANALYSIS;
 import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 import static software.wings.delegatetasks.cv.commons.LogAnalysisResource.ANALYSIS_GET_24X7_ALL_LOGS_URL;
 import static software.wings.delegatetasks.cv.commons.LogAnalysisResource.ANALYSIS_GET_24X7_LOG_URL;
 import static software.wings.delegatetasks.cv.commons.LogAnalysisResource.ANALYSIS_STATE_SAVE_24X7_CLUSTERED_LOG_URL;
 import static software.wings.delegatetasks.cv.commons.LogAnalysisResource.LOG_ANALYSIS;
+import static software.wings.service.impl.analysis.LogMLAnalysisRecord.LogMLAnalysisRecordKeys;
+import static software.wings.service.impl.analysis.LogMLAnalysisStatus.FEEDBACK_ANALYSIS_COMPLETE;
+import static software.wings.service.impl.analysis.MLAnalysisType.FEEDBACK_ANALYSIS;
 
 import static java.time.Duration.ofMillis;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeField;
@@ -87,6 +87,11 @@ import software.wings.beans.alert.Alert;
 import software.wings.beans.alert.Alert.AlertKeys;
 import software.wings.beans.alert.AlertType;
 import software.wings.beans.alert.cv.ContinuousVerificationAlertData;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionInfo;
 import software.wings.dl.WingsPersistence;
 import software.wings.metrics.MetricType;
 import software.wings.metrics.TimeSeriesDataRecord;
@@ -97,8 +102,6 @@ import software.wings.service.impl.analysis.AnalysisContext;
 import software.wings.service.impl.analysis.AnalysisTolerance;
 import software.wings.service.impl.analysis.CVFeedbackRecord;
 import software.wings.service.impl.analysis.ContinuousVerificationServiceImpl;
-import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
-import software.wings.delegatetasks.cv.beans.analysis.DataCollectionInfo;
 import software.wings.service.impl.analysis.DataCollectionInfoV2;
 import software.wings.service.impl.analysis.FeedbackAction;
 import software.wings.service.impl.analysis.FeedbackPriority;
@@ -115,7 +118,6 @@ import software.wings.service.impl.newrelic.LearningEngineAnalysisTask.LearningE
 import software.wings.service.impl.newrelic.LearningEngineExperimentalAnalysisTask;
 import software.wings.service.impl.newrelic.LearningEngineExperimentalAnalysisTask.LearningEngineExperimentalAnalysisTaskKeys;
 import software.wings.service.impl.newrelic.MLExperiments;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.impl.splunk.LogAnalysisResult;
 import software.wings.service.impl.splunk.SplunkAnalysisCluster;
 import software.wings.service.impl.sumo.SumoDataCollectionInfo;
@@ -126,7 +128,6 @@ import software.wings.service.intfc.DataStoreService;
 import software.wings.service.intfc.DelegateService;
 import software.wings.service.intfc.EnvironmentService;
 import software.wings.service.intfc.SettingsService;
-import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.service.intfc.security.SecretManager;
 import software.wings.service.intfc.verification.CVActivityLogService;
 import software.wings.service.intfc.verification.CVActivityLogService.Logger;
@@ -1507,7 +1508,7 @@ public class ContinuousVerificationServiceTest extends VerificationBase {
       metricDataRecords.forEach(metricDataRecord -> {
         metricDataRecord.setAppId(appId);
         metricDataRecord.setCvConfigId(configId);
-        metricDataRecord.setStateType(StateType.NEW_RELIC);
+        metricDataRecord.setStateType(DelegateStateType.NEW_RELIC);
         metricDataRecord.setDataCollectionMinute(10);
       });
 
@@ -1704,7 +1705,7 @@ public class ContinuousVerificationServiceTest extends VerificationBase {
                                                          .options(datadogConfig.fetchLogOptionsMap())
                                                          .query("test query")
                                                          .hosts(Sets.newHashSet(DUMMY_HOST_NAME))
-                                                         .stateType(StateType.DATA_DOG_LOG)
+                                                         .stateType(DelegateStateType.DATA_DOG_LOG)
                                                          .applicationId(appId)
                                                          .stateExecutionId(stateExecutionId)
                                                          .workflowId(workflowId)
@@ -2402,7 +2403,7 @@ public class ContinuousVerificationServiceTest extends VerificationBase {
                                             .cvConfigId(cvConfigId)
                                             .dataCollectionMinute((int) time)
                                             .serviceId(serviceId)
-                                            .stateType(cvServiceConfiguration.getStateType())
+                                            .stateType(cvServiceConfiguration.getStateType().getDelegateStateType())
                                             .groupName(DEFAULT_GROUP_NAME)
                                             .build();
       wingsPersistence.save(dataRecord);
@@ -2448,7 +2449,7 @@ public class ContinuousVerificationServiceTest extends VerificationBase {
                                             .cvConfigId(cvConfigId)
                                             .dataCollectionMinute((int) time)
                                             .serviceId(serviceId)
-                                            .stateType(cvServiceConfiguration.getStateType())
+                                            .stateType(cvServiceConfiguration.getStateType().getDelegateStateType())
                                             .groupName(DEFAULT_GROUP_NAME)
                                             .build();
       wingsPersistence.save(dataRecord);
@@ -2530,7 +2531,7 @@ public class ContinuousVerificationServiceTest extends VerificationBase {
                                             .cvConfigId(cvConfigId)
                                             .dataCollectionMinute((int) time)
                                             .serviceId(serviceId)
-                                            .stateType(cvServiceConfiguration.getStateType())
+                                            .stateType(cvServiceConfiguration.getStateType().getDelegateStateType())
                                             .groupName(DEFAULT_GROUP_NAME)
                                             .build();
       wingsPersistence.save(dataRecord);
@@ -2570,7 +2571,7 @@ public class ContinuousVerificationServiceTest extends VerificationBase {
                                             .cvConfigId(cvConfigId)
                                             .dataCollectionMinute((int) time)
                                             .serviceId(serviceId)
-                                            .stateType(cvServiceConfiguration.getStateType())
+                                            .stateType(cvServiceConfiguration.getStateType().getDelegateStateType())
                                             .groupName(DEFAULT_GROUP_NAME)
                                             .build();
       wingsPersistence.save(dataRecord);
@@ -3750,7 +3751,7 @@ public class ContinuousVerificationServiceTest extends VerificationBase {
                               .uuid("timeseriesUuid")
                               .createdAt(currentTime - TimeUnit.MINUTES.toMillis(6))
                               .cvConfigId(cvConfigId)
-                              .stateType(StateType.APP_DYNAMICS)
+                              .stateType(DelegateStateType.APP_DYNAMICS)
                               .level(ClusterLevel.H0)
                               .dataCollectionMinute((int) TimeUnit.MILLISECONDS.toMinutes(currentTime) - 20)
                               .build());
@@ -3777,7 +3778,7 @@ public class ContinuousVerificationServiceTest extends VerificationBase {
                               .uuid("timeseriesUuid")
                               .createdAt(currentTime - TimeUnit.MINUTES.toMillis(35))
                               .cvConfigId(cvConfigId)
-                              .stateType(StateType.APP_DYNAMICS)
+                              .stateType(DelegateStateType.APP_DYNAMICS)
                               .level(ClusterLevel.H0)
                               .dataCollectionMinute((int) TimeUnit.MILLISECONDS.toMinutes(currentTime) - 20)
                               .build());
@@ -3802,7 +3803,7 @@ public class ContinuousVerificationServiceTest extends VerificationBase {
                               .uuid("timeseriesUuid")
                               .createdAt(currentTime - TimeUnit.MINUTES.toMillis(41))
                               .cvConfigId(cvConfigId)
-                              .stateType(StateType.APP_DYNAMICS)
+                              .stateType(DelegateStateType.APP_DYNAMICS)
                               .level(ClusterLevel.H0)
                               .dataCollectionMinute((int) TimeUnit.MILLISECONDS.toMinutes(currentTime) - 20)
                               .build());

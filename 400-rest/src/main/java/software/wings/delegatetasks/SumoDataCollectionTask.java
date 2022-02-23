@@ -7,36 +7,38 @@
 
 package software.wings.delegatetasks;
 
-import com.google.inject.Inject;
-import com.sumologic.client.SumoLogicClient;
+import static io.harness.threading.Morpheus.sleep;
+
+import static software.wings.common.VerificationConstants.DATA_COLLECTION_RETRY_SLEEP;
+
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.delegate.beans.DelegateTaskPackage;
 import io.harness.delegate.beans.DelegateTaskResponse;
 import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
 import io.harness.delegate.task.TaskParameters;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
+
 import software.wings.beans.TaskType;
 import software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask;
 import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
 import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
-import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.delegatetasks.cv.beans.analysis.LogElement;
+import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.sumo.SumoDataCollectionInfo;
 import software.wings.service.impl.sumo.SumoDelegateServiceImpl;
 import software.wings.sm.StateType;
 
+import com.google.inject.Inject;
+import com.sumologic.client.SumoLogicClient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-
-import static io.harness.threading.Morpheus.sleep;
-import static software.wings.common.VerificationConstants.DATA_COLLECTION_RETRY_SLEEP;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
 
 /**
  * Created by sriram_parthasarathy on 9/12/17.
@@ -63,8 +65,10 @@ public class SumoDataCollectionTask extends AbstractDelegateDataCollectionTask {
 
   @Override
   protected DataCollectionTaskResult initDataCollection(TaskParameters parameters) {
-    DataCollectionTaskResult taskResult =
-        DataCollectionTaskResult.builder().status(DataCollectionTaskStatus.SUCCESS).stateType(DelegateStateType.SUMO).build();
+    DataCollectionTaskResult taskResult = DataCollectionTaskResult.builder()
+                                              .status(DataCollectionTaskStatus.SUCCESS)
+                                              .stateType(DelegateStateType.SUMO)
+                                              .build();
     this.dataCollectionInfo = (SumoDataCollectionInfo) parameters;
     log.info("log collection - dataCollectionInfo: {}", dataCollectionInfo);
     sumoClient = sumoDelegateService.getSumoClient(
@@ -147,7 +151,7 @@ public class SumoDataCollectionTask extends AbstractDelegateDataCollectionTask {
             }
           }
 
-          boolean response = logAnalysisStoreService.save(StateType.SUMO, dataCollectionInfo.getAccountId(),
+          boolean response = logAnalysisStoreService.save(DelegateStateType.SUMO, dataCollectionInfo.getAccountId(),
               dataCollectionInfo.getApplicationId(), dataCollectionInfo.getCvConfigId(),
               dataCollectionInfo.getStateExecutionId(), dataCollectionInfo.getWorkflowId(),
               dataCollectionInfo.getWorkflowExecutionId(), dataCollectionInfo.getServiceId(), delegateTaskId,

@@ -13,8 +13,8 @@ import static io.harness.threading.Morpheus.sleep;
 
 import static software.wings.common.VerificationConstants.DATA_COLLECTION_RETRY_SLEEP;
 import static software.wings.common.VerificationConstants.DURATION_TO_ASK_MINUTES;
-import static software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType.PREDICTIVE;
 import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType.PREDICTIVE;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
@@ -28,19 +28,18 @@ import io.harness.serializer.JsonUtils;
 
 import software.wings.beans.TaskType;
 import software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask;
-import software.wings.service.impl.ThirdPartyApiCallLog;
-import software.wings.service.impl.ThirdPartyApiCallLog.FieldType;
-import software.wings.service.impl.ThirdPartyApiCallLog.ThirdPartyApiCallField;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
 import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
 import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.service.impl.ThirdPartyApiCallLog;
+import software.wings.service.impl.ThirdPartyApiCallLog.FieldType;
+import software.wings.service.impl.ThirdPartyApiCallLog.ThirdPartyApiCallField;
 import software.wings.service.impl.stackdriver.StackDriverDataCollectionInfo;
 import software.wings.service.impl.stackdriver.StackdriverDataFetchParameters;
-import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.service.intfc.stackdriver.StackDriverDelegateService;
-import software.wings.sm.StateType;
 
 import com.google.api.services.monitoring.v3.Monitoring;
 import com.google.api.services.monitoring.v3.model.ListTimeSeriesResponse;
@@ -340,7 +339,7 @@ public class StackDriverDataCollectionTask extends AbstractDelegateDataCollectio
           long timeStamp = stackDriverDelegateService.getTimeStamp(point.getInterval().getEndTime());
           NewRelicMetricDataRecord newRelicMetricDataRecord =
               NewRelicMetricDataRecord.builder()
-                  .stateType(StateType.STACK_DRIVER)
+                  .stateType(DelegateStateType.STACK_DRIVER)
                   .appId(appId)
                   .name(dataFetchParameters.getNameSpace())
                   .workflowId(dataCollectionInfo.getWorkflowId())

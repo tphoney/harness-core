@@ -33,6 +33,8 @@ import io.harness.service.intfc.TimeSeriesAnalysisService;
 
 import software.wings.WingsBaseTest;
 import software.wings.beans.WorkflowExecution;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.dl.WingsPersistence;
 import software.wings.metrics.MetricType;
 import software.wings.metrics.Threshold;
@@ -41,7 +43,6 @@ import software.wings.metrics.ThresholdType;
 import software.wings.metrics.TimeSeriesMetricDefinition;
 import software.wings.service.impl.analysis.TimeSeriesMLTransactionThresholds.TimeSeriesMLTransactionThresholdKeys;
 import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.intfc.DataStoreService;
 import software.wings.service.intfc.MetricDataAnalysisService;
 import software.wings.sm.StateType;
@@ -116,7 +117,7 @@ public class MetricDataAnalysisServiceImplTest extends WingsBaseTest {
 
     timeSeriesAnalysisService.saveMetricData(accountId, appId, stateExecutionId, generateUuid(),
         Lists.newArrayList(NewRelicMetricDataRecord.builder()
-                               .stateType(StateType.NEW_RELIC)
+                               .stateType(DelegateStateType.NEW_RELIC)
                                .appId(appId)
                                .workflowId(workflowId)
                                .workflowExecutionId(execId)
@@ -124,7 +125,7 @@ public class MetricDataAnalysisServiceImplTest extends WingsBaseTest {
                                .build()));
 
     String lastId = metricDataAnalysisService.getLastSuccessfulWorkflowExecutionIdWithData(
-        StateType.NEW_RELIC, appId, workflowId, serviceId, infraMappingId, envId);
+        DelegateStateType.NEW_RELIC, appId, workflowId, serviceId, infraMappingId, envId);
 
     assertThat(lastId).isNotNull();
     assertThat(lastId).isEqualTo(execId);
@@ -150,7 +151,7 @@ public class MetricDataAnalysisServiceImplTest extends WingsBaseTest {
 
     timeSeriesAnalysisService.saveMetricData(accountId, appId, stateExecutionId, generateUuid(),
         Lists.newArrayList(NewRelicMetricDataRecord.builder()
-                               .stateType(StateType.NEW_RELIC)
+                               .stateType(DelegateStateType.NEW_RELIC)
                                .appId(appId)
                                .workflowId(workflowId)
                                .workflowExecutionId(execId)
@@ -158,7 +159,7 @@ public class MetricDataAnalysisServiceImplTest extends WingsBaseTest {
                                .build()));
 
     String lastId = metricDataAnalysisService.getLastSuccessfulWorkflowExecutionIdWithData(
-        StateType.NEW_RELIC, appId, workflowId, serviceId, infraMappingId, envId);
+        DelegateStateType.NEW_RELIC, appId, workflowId, serviceId, infraMappingId, envId);
 
     assertThat(lastId).isNull();
   }

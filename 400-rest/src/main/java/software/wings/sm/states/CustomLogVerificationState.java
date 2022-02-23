@@ -7,25 +7,28 @@
 
 package software.wings.sm.states;
 
-import com.github.reinert.jjschema.Attributes;
-import com.google.common.collect.Lists;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.data.structure.UUIDGenerator.generateUuid;
+import static io.harness.waiter.OrchestrationNotifyEventListener.ORCHESTRATION;
+
+import static software.wings.common.VerificationConstants.URL_BODY_APPENDER;
+import static software.wings.common.VerificationConstants.VERIFICATION_HOST_PLACEHOLDER;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import io.harness.annotations.dev.BreakDependencyOn;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.Cd1SetupFields;
 import io.harness.beans.DelegateTask;
 import io.harness.delegate.beans.TaskData;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.FieldNameConstants;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
+
 import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
 import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.CustomLogResponseMapper;
 import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategyProvider;
@@ -38,20 +41,21 @@ import software.wings.stencils.DefaultValue;
 import software.wings.stencils.EnumData;
 import software.wings.verification.VerificationStateAnalysisExecutionData;
 
+import com.github.reinert.jjschema.Attributes;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.data.structure.UUIDGenerator.generateUuid;
-import static io.harness.waiter.OrchestrationNotifyEventListener.ORCHESTRATION;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static software.wings.common.VerificationConstants.URL_BODY_APPENDER;
-import static software.wings.common.VerificationConstants.VERIFICATION_HOST_PLACEHOLDER;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldNameConstants;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 /**
  * @author Praveen
@@ -161,7 +165,8 @@ public class CustomLogVerificationState extends AbstractLogAnalysisState {
     final long dataCollectionStartTimeStamp = dataCollectionStartTimestampMillis();
     String accountId = appService.get(context.getAppId()).getAccountId();
 
-    Map<String, Map<String, ResponseMapper>> logDefinitions = constructLogDefinitions(context, logCollectionInfos);
+    Map<String, Map<String, CustomLogResponseMapper>> logDefinitions =
+        constructLogDefinitions(context, logCollectionInfos);
     CustomLogDataCollectionInfo dataCollectionInfo =
         CustomLogDataCollectionInfo.builder()
             .baseUrl(logConfig.getUrl())
@@ -227,9 +232,9 @@ public class CustomLogVerificationState extends AbstractLogAnalysisState {
     return shouldDoHostbasedFiltering;
   }
 
-  public static Map<String, Map<String, ResponseMapper>> constructLogDefinitions(
+  public static Map<String, Map<String, CustomLogResponseMapper>> constructLogDefinitions(
       final ExecutionContext context, final List<LogCollectionInfo> logCollectionInfos) {
-    Map<String, Map<String, ResponseMapper>> logDefinition = new HashMap<>();
+    Map<String, Map<String, CustomLogResponseMapper>> logDefinition = new HashMap<>();
     for (LogCollectionInfo logInfo : logCollectionInfos) {
       String evaluatedUrl =
           context != null ? context.renderExpression(logInfo.getCollectionUrl()) : logInfo.getCollectionUrl();
@@ -245,9 +250,9 @@ public class CustomLogVerificationState extends AbstractLogAnalysisState {
     return logDefinition;
   }
 
-  private static Map<String, ResponseMapper> getResponseMappers(LogCollectionInfo logCollectionInfo) {
+  private static Map<String, CustomLogResponseMapper> getResponseMappers(LogCollectionInfo logCollectionInfo) {
     ResponseMapping responseMapping = logCollectionInfo.getResponseMapping();
-    Map<String, ResponseMapper> responseMappers = new HashMap<>();
+    Map<String, CustomLogResponseMapper> responseMappers = new HashMap<>();
 
     // Set the host details (if exists) in the responseMapper
     if (!isEmpty(responseMapping.getHostJsonPath())) {
@@ -256,21 +261,22 @@ public class CustomLogVerificationState extends AbstractLogAnalysisState {
       hostJsonList.add(hostJson);
       List<String> hostRegex =
           isEmpty(responseMapping.getHostRegex()) ? null : Lists.newArrayList(responseMapping.getHostRegex());
-      ResponseMapper hostResponseMapper =
-          ResponseMapper.builder().fieldName("host").regexs(hostRegex).jsonPath(hostJsonList).build();
+      CustomLogResponseMapper hostResponseMapper =
+          CustomLogResponseMapper.builder().fieldName("host").regexs(hostRegex).jsonPath(hostJsonList).build();
       responseMappers.put("host", hostResponseMapper);
     }
     List timestampJsonList = new ArrayList(), logMsgList = new ArrayList();
     timestampJsonList.add(responseMapping.getTimestampJsonPath());
     responseMappers.put("timestamp",
-        ResponseMapper.builder()
+        CustomLogResponseMapper.builder()
             .fieldName("timestamp")
             .jsonPath(timestampJsonList)
             .timestampFormat(responseMapping.getTimestampFormat())
             .build());
 
     logMsgList.add(responseMapping.getLogMessageJsonPath());
-    responseMappers.put("logMessage", ResponseMapper.builder().fieldName("logMessage").jsonPath(logMsgList).build());
+    responseMappers.put(
+        "logMessage", CustomLogResponseMapper.builder().fieldName("logMessage").jsonPath(logMsgList).build());
 
     return responseMappers;
   }

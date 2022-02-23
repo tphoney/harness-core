@@ -28,8 +28,8 @@ import static software.wings.common.VerificationConstants.VERIFICATION_SERVICE_B
 import static software.wings.common.VerificationConstants.getLogAnalysisStates;
 import static software.wings.common.VerificationConstants.getMetricAnalysisStates;
 import static software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask.PREDECTIVE_HISTORY_MINUTES;
-import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.PREDICTIVE;
 import static software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType.TIMESERIES_24x7;
+import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.PREDICTIVE;
 import static software.wings.sm.states.AbstractMetricAnalysisState.COMPARISON_WINDOW;
 import static software.wings.sm.states.AbstractMetricAnalysisState.MIN_REQUESTS_PER_MINUTE;
 import static software.wings.sm.states.AbstractMetricAnalysisState.PARALLEL_PROCESSES;
@@ -58,6 +58,8 @@ import software.wings.beans.AccountStatus;
 import software.wings.beans.AccountType;
 import software.wings.beans.alert.cv.ContinuousVerificationAlertData;
 import software.wings.common.VerificationConstants;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.dl.WingsPersistence;
 import software.wings.service.impl.VerificationLogContext;
 import software.wings.service.impl.analysis.AnalysisContext;
@@ -80,8 +82,6 @@ import software.wings.service.impl.newrelic.MLExperiments.MLExperimentsKeys;
 import software.wings.service.impl.splunk.LogAnalysisResult;
 import software.wings.service.impl.splunk.SplunkAnalysisCluster;
 import software.wings.service.intfc.MetricDataAnalysisService;
-import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
-import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.service.intfc.verification.CVActivityLogService;
 import software.wings.service.intfc.verification.CVConfigurationService;
 import software.wings.service.intfc.verification.CVTaskService;
@@ -337,8 +337,9 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
         .filter(cvConfiguration
             -> cvConfiguration.isEnabled24x7() && getMetricAnalysisStates().contains(cvConfiguration.getStateType()))
         .forEach(cvConfiguration -> {
-          try (VerificationLogContext ignored = new VerificationLogContext(cvConfiguration.getAccountId(),
-                   cvConfiguration.getUuid(), null, cvConfiguration.getStateType(), OVERRIDE_ERROR)) {
+          try (VerificationLogContext ignored =
+                   new VerificationLogContext(cvConfiguration.getAccountId(), cvConfiguration.getUuid(), null,
+                       cvConfiguration.getStateType().getDelegateStateType(), OVERRIDE_ERROR)) {
             try {
               log.info("Executing APM data analysis Job for accountId {} and configId {}", accountId,
                   cvConfiguration.getUuid());
@@ -936,8 +937,9 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
             -> cvConfiguration.isEnabled24x7() && getLogAnalysisStates().contains(cvConfiguration.getStateType())
                 && cvConfiguration.getStateType() != StateType.SPLUNKV2)
         .forEach(cvConfiguration -> {
-          try (VerificationLogContext ignored = new VerificationLogContext(cvConfiguration.getAccountId(),
-                   cvConfiguration.getUuid(), null, cvConfiguration.getStateType(), OVERRIDE_ERROR)) {
+          try (VerificationLogContext ignored =
+                   new VerificationLogContext(cvConfiguration.getAccountId(), cvConfiguration.getUuid(), null,
+                       cvConfiguration.getStateType().getDelegateStateType(), OVERRIDE_ERROR)) {
             long currentMinute = TimeUnit.MILLISECONDS.toMinutes(Timestamp.currentMinuteBoundary());
             log.info(
                 "triggering logs L1 Clustering for account {} and cvConfigId {}", accountId, cvConfiguration.getUuid());
@@ -1165,8 +1167,9 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
             -> cvConfiguration.isEnabled24x7() && getLogAnalysisStates().contains(cvConfiguration.getStateType())
                 && cvConfiguration.getStateType() != StateType.SPLUNKV2)
         .forEach(cvConfiguration -> {
-          try (VerificationLogContext ignored = new VerificationLogContext(cvConfiguration.getAccountId(),
-                   cvConfiguration.getUuid(), null, cvConfiguration.getStateType(), OVERRIDE_ERROR)) {
+          try (VerificationLogContext ignored =
+                   new VerificationLogContext(cvConfiguration.getAccountId(), cvConfiguration.getUuid(), null,
+                       cvConfiguration.getStateType().getDelegateStateType(), OVERRIDE_ERROR)) {
             log.info(
                 "triggering logs L2 Clustering for account {} and cvConfigId {}", accountId, cvConfiguration.getUuid());
             try {
@@ -1758,8 +1761,9 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
               "triggering logs Data Analysis for account {} and cvConfigId {}", accountId, cvConfiguration.getUuid());
           LogsCVConfiguration logsCVConfiguration = (LogsCVConfiguration) cvConfiguration;
 
-          try (VerificationLogContext ignored = new VerificationLogContext(logsCVConfiguration.getAccountId(),
-                   logsCVConfiguration.getUuid(), null, logsCVConfiguration.getStateType(), OVERRIDE_ERROR)) {
+          try (VerificationLogContext ignored =
+                   new VerificationLogContext(logsCVConfiguration.getAccountId(), logsCVConfiguration.getUuid(), null,
+                       logsCVConfiguration.getStateType().getDelegateStateType(), OVERRIDE_ERROR)) {
             try {
               if (logsCVConfiguration.isWorkflowConfig()) {
                 AnalysisContext context =

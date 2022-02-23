@@ -7,9 +7,11 @@
 
 package software.wings.delegatetasks.cv;
 
-import com.google.common.collect.TreeBasedTable;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import static io.harness.threading.Morpheus.sleep;
+
+import static software.wings.delegatetasks.cv.commons.CVConstants.DATA_COLLECTION_RETRY_SLEEP;
+import static software.wings.delegatetasks.cv.commons.CVConstants.DELAY_MINUTES;
+
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.delegate.beans.DelegateTaskPackage;
@@ -19,18 +21,19 @@ import io.harness.delegate.task.AbstractDelegateRunnableTask;
 import io.harness.delegate.task.TaskParameters;
 import io.harness.exception.ExceptionUtils;
 import io.harness.network.Http;
-import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.NotImplementedException;
-import org.slf4j.Logger;
+
 import software.wings.delegatetasks.DelegateStateType;
 import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult;
 import software.wings.delegatetasks.cv.beans.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
 import software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo;
-import software.wings.delegatetasks.cv.utils.MetricDataStoreUtil;
 import software.wings.delegatetasks.cv.beans.analysis.LogElement;
+import software.wings.delegatetasks.cv.utils.MetricDataStoreUtil;
 import software.wings.service.intfc.security.EncryptionService;
 
+import com.google.common.collect.TreeBasedTable;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +45,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-
-import static io.harness.threading.Morpheus.sleep;
-import static software.wings.delegatetasks.cv.commons.CVConstants.DATA_COLLECTION_RETRY_SLEEP;
-import static software.wings.delegatetasks.cv.commons.CVConstants.DELAY_MINUTES;
+import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.NotImplementedException;
+import org.slf4j.Logger;
 
 /**
  * Created by rsingh on 9/11/17.
@@ -154,7 +156,8 @@ public abstract class AbstractDelegateDataCollectionTask extends AbstractDelegat
     }
   }
 
-  protected boolean saveMetrics(String accountId, String appId, String stateExecutionId, List<NewRelicMetricDataRecord> records) {
+  public boolean saveMetrics(
+      String accountId, String appId, String stateExecutionId, List<NewRelicMetricDataRecord> records) {
     if (records.isEmpty()) {
       return true;
     }

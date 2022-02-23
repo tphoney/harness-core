@@ -15,6 +15,7 @@ import io.harness.security.encryption.EncryptionConfig;
 import software.wings.annotation.EncryptableSetting;
 import software.wings.beans.SplunkConfig;
 import software.wings.beans.TaskType;
+import software.wings.delegatetasks.DelegateStateType;
 import software.wings.delegatetasks.cv.SplunkDataCollector;
 import software.wings.delegatetasks.delegatecapability.CapabilityHelper;
 import software.wings.service.impl.analysis.DataCollectionInfoV2;
@@ -68,8 +69,8 @@ public class SplunkDataCollectionInfoV2 extends LogDataCollectionInfoV2 {
   }
 
   @Override
-  public StateType getStateType() {
-    return StateType.SPLUNKV2;
+  public DelegateStateType getStateType() {
+    return DelegateStateType.SPLUNKV2;
   }
 
   @Override

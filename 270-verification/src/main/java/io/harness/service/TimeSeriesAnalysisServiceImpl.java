@@ -18,8 +18,8 @@ import static io.harness.persistence.HQuery.excludeAuthority;
 
 import static software.wings.common.VerificationConstants.CRON_POLL_INTERVAL_IN_MINUTES;
 import static software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask.HARNESS_HEARTBEAT_METRIC_NAME;
-import static software.wings.metrics.TimeSeriesDataRecord.shouldLogDetailedInfoForDebugging;
 import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.metrics.TimeSeriesDataRecord.shouldLogDetailedInfoForDebugging;
 
 import static java.lang.Integer.max;
 
@@ -44,6 +44,10 @@ import io.harness.service.intfc.LearningEngineService;
 import io.harness.service.intfc.TimeSeriesAnalysisService;
 
 import software.wings.common.VerificationConstants;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.NewRelicMetricDataRecordKeys;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.dl.WingsPersistence;
 import software.wings.metrics.MetricType;
 import software.wings.metrics.Threshold;
@@ -75,17 +79,13 @@ import software.wings.service.impl.analysis.TimeSeriesMetricGroup;
 import software.wings.service.impl.analysis.TimeSeriesMetricGroup.TimeSeriesMlAnalysisGroupInfo;
 import software.wings.service.impl.analysis.TimeSeriesMetricTemplates;
 import software.wings.service.impl.analysis.TimeSeriesMetricTemplates.TimeSeriesMetricTemplatesKeys;
-import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.service.impl.analysis.TimeSeriesRiskData;
 import software.wings.service.impl.analysis.TimeSeriesRiskSummary;
 import software.wings.service.impl.analysis.Version;
 import software.wings.service.impl.dynatrace.DynaTraceTimeSeries;
 import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.NewRelicMetricDataRecordKeys;
 import software.wings.service.impl.newrelic.NewRelicMetricValueDefinition;
 import software.wings.service.intfc.DataStoreService;
-import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.service.intfc.verification.CVActivityLogService;
 import software.wings.sm.StateType;
 import software.wings.verification.CVConfiguration;
@@ -571,7 +571,8 @@ public class TimeSeriesAnalysisServiceImpl implements TimeSeriesAnalysisService 
         results.getResponse()
             .stream()
             .filter(dataRecord
-                -> dataRecord.getStateType() == stateType && dataRecord.getServiceId().equals(serviceId)
+                -> dataRecord.getStateType() == stateType.getDelegateStateType()
+                    && dataRecord.getServiceId().equals(serviceId)
                     && (dataRecord.getGroupName().equals(groupName)
                         || dataRecord.getGroupName().equals(DEFAULT_GROUP_NAME))
                     && (ClusterLevel.H0 != dataRecord.getLevel() && ClusterLevel.HF != dataRecord.getLevel()))
@@ -614,7 +615,8 @@ public class TimeSeriesAnalysisServiceImpl implements TimeSeriesAnalysisService 
           results.getResponse()
               .stream()
               .filter(dataRecord
-                  -> dataRecord.getStateType() == stateType && dataRecord.getServiceId().equals(serviceId)
+                  -> dataRecord.getStateType() == stateType.getDelegateStateType()
+                      && dataRecord.getServiceId().equals(serviceId)
 
                       && (ClusterLevel.H0 != dataRecord.getLevel() && ClusterLevel.HF != dataRecord.getLevel()))
               .collect(Collectors.toList());
@@ -708,8 +710,8 @@ public class TimeSeriesAnalysisServiceImpl implements TimeSeriesAnalysisService 
     List<TimeSeriesDataRecord> dataRecords =
         results.stream()
             .filter(dataRecord
-                -> dataRecord.getStateType() == stateType && dataRecord.getServiceId().equals(serviceId)
-                    && ClusterLevel.HF == dataRecord.getLevel())
+                -> dataRecord.getStateType() == stateType.getDelegateStateType()
+                    && dataRecord.getServiceId().equals(serviceId) && ClusterLevel.HF == dataRecord.getLevel())
             .collect(Collectors.toList());
     List<NewRelicMetricDataRecord> rv =
         TimeSeriesDataRecord.getNewRelicDataRecordsFromTimeSeriesDataRecords(dataRecords);
@@ -742,8 +744,8 @@ public class TimeSeriesAnalysisServiceImpl implements TimeSeriesAnalysisService 
     List<TimeSeriesDataRecord> dataRecords =
         results.stream()
             .filter(dataRecord
-                -> dataRecord.getStateType() == stateType && dataRecord.getServiceId().equals(serviceId)
-                    && ClusterLevel.H0 == dataRecord.getLevel())
+                -> dataRecord.getStateType() == stateType.getDelegateStateType()
+                    && dataRecord.getServiceId().equals(serviceId) && ClusterLevel.H0 == dataRecord.getLevel())
             .collect(Collectors.toList());
     List<NewRelicMetricDataRecord> rv =
         TimeSeriesDataRecord.getNewRelicDataRecordsFromTimeSeriesDataRecords(dataRecords);

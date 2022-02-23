@@ -48,14 +48,16 @@ import io.harness.rule.Owner;
 import software.wings.api.DeploymentType;
 import software.wings.api.PhaseElement;
 import software.wings.beans.AccountType;
-import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.Application;
 import software.wings.beans.Environment;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
 import software.wings.beans.TemplateExpression;
 import software.wings.beans.WorkflowExecution;
+import software.wings.delegatetasks.DelegateStateType;
 import software.wings.delegatetasks.cv.DataCollectionException;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppdynamicsDataCollectionInfo;
 import software.wings.metrics.MetricType;
 import software.wings.metrics.appdynamics.AppdynamicsConstants;
 import software.wings.service.impl.ThirdPartyApiCallLog;
@@ -63,7 +65,6 @@ import software.wings.service.impl.WorkflowExecutionServiceImpl;
 import software.wings.service.impl.analysis.AnalysisContext;
 import software.wings.service.impl.analysis.ContinuousVerificationExecutionMetaData;
 import software.wings.service.impl.appdynamics.AppDynamicsDataCollectionInfoV2;
-import software.wings.delegatetasks.cv.beans.appd.AppdynamicsDataCollectionInfo;
 import software.wings.service.impl.appdynamics.AppdynamicsTier;
 import software.wings.service.impl.newrelic.NewRelicApplication;
 import software.wings.service.intfc.AccountService;
@@ -75,7 +76,6 @@ import software.wings.service.intfc.ServiceResourceService;
 import software.wings.service.intfc.appdynamics.AppdynamicsService;
 import software.wings.service.intfc.verification.CVActivityLogService.Logger;
 import software.wings.sm.ExecutionResponse;
-import software.wings.sm.StateType;
 import software.wings.sm.states.AbstractAnalysisState.CVInstanceApiResponse;
 import software.wings.sm.states.AppDynamicsState.AppDynamicsStateKeys;
 import software.wings.verification.VerificationStateAnalysisExecutionData;
@@ -325,7 +325,7 @@ public class AppDynamicsStateTest extends APMStateVerificationTestBase {
     when(executionContext.getContextElement(ContextElementType.STANDARD)).thenReturn(workflowStandardParams);
 
     when(metricAnalysisService.getLastSuccessfulWorkflowExecutionIdWithData(
-             StateType.APP_DYNAMICS, appId, workflowId, serviceId, infraMappingId, environment.getUuid()))
+             DelegateStateType.APP_DYNAMICS, appId, workflowId, serviceId, infraMappingId, environment.getUuid()))
         .thenReturn(workflowExecutionId);
     return spyAppDynamicsState;
   }
@@ -395,7 +395,7 @@ public class AppDynamicsStateTest extends APMStateVerificationTestBase {
     doReturn(serviceId).when(spyAppDynamicsState).getPhaseServiceId(executionContext);
 
     when(metricAnalysisService.getLastSuccessfulWorkflowExecutionIdWithData(
-             StateType.APP_DYNAMICS, appId, workflowId, serviceId, infraMappingId, environment.getUuid()))
+             DelegateStateType.APP_DYNAMICS, appId, workflowId, serviceId, infraMappingId, environment.getUuid()))
         .thenReturn(workflowExecutionId);
     when(executionContext.renderExpression("${workflow.variables.AppDynamics_Server}"))
         .thenReturn(settingAttribute.getUuid());
@@ -688,7 +688,7 @@ public class AppDynamicsStateTest extends APMStateVerificationTestBase {
     doReturn(serviceId).when(spyAppDynamicsState).getPhaseServiceId(executionContext);
 
     when(metricAnalysisService.getLastSuccessfulWorkflowExecutionIdWithData(
-             StateType.APP_DYNAMICS, appId, workflowId, serviceId, infraMappingId, environment.getUuid()))
+             DelegateStateType.APP_DYNAMICS, appId, workflowId, serviceId, infraMappingId, environment.getUuid()))
         .thenReturn(workflowExecutionId);
     when(executionContext.renderExpression("${workflow.variables.AppDynamics_Server}"))
         .thenReturn(settingAttribute.getUuid());

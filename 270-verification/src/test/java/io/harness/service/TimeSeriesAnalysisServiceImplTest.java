@@ -49,6 +49,11 @@ import io.harness.service.intfc.LearningEngineService;
 import io.harness.service.intfc.TimeSeriesAnalysisService;
 import io.harness.time.Timestamp;
 
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.NewRelicMetricDataRecordKeys;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.dl.WingsPersistence;
 import software.wings.metrics.MetricType;
 import software.wings.metrics.RiskLevel;
@@ -65,14 +70,10 @@ import software.wings.service.impl.analysis.TimeSeriesMLTransactionThresholds;
 import software.wings.service.impl.analysis.TimeSeriesMetricGroup;
 import software.wings.service.impl.analysis.TimeSeriesMetricGroup.TimeSeriesMlAnalysisGroupInfo;
 import software.wings.service.impl.analysis.TimeSeriesMetricTemplates;
-import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.service.impl.analysis.Version;
 import software.wings.service.impl.newrelic.LearningEngineAnalysisTask;
 import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.NewRelicMetricDataRecordKeys;
 import software.wings.service.intfc.DataStoreService;
-import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.sm.StateType;
 import software.wings.verification.CVConfiguration;
 
@@ -346,7 +347,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                                                   .name("key")
                                                   .stateExecutionId(stateExecutionId)
                                                   .appId(appId)
-                                                  .stateType(StateType.NEW_RELIC)
+                                                  .stateType(DelegateStateType.NEW_RELIC)
                                                   .dataCollectionMinute(currentEpochMinute)
                                                   .host(hostname)
                                                   .values(new HashMap<>())
@@ -355,7 +356,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
     TimeSeriesDataRecord timeSeriesDataRecord = TimeSeriesDataRecord.builder()
                                                     .groupName(DEFAULT_GROUP_NAME)
                                                     .stateExecutionId(stateExecutionId)
-                                                    .stateType(StateType.NEW_RELIC)
+                                                    .stateType(DelegateStateType.NEW_RELIC)
                                                     .dataCollectionMinute(currentEpochMinute)
                                                     .host(hostname)
                                                     .values(HashBasedTable.create())
@@ -377,7 +378,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
     TimeSeriesDataRecord timeSeriesDataRecord = TimeSeriesDataRecord.builder()
                                                     .groupName(DEFAULT_GROUP_NAME)
                                                     .stateExecutionId(stateExecutionId)
-                                                    .stateType(StateType.NEW_RELIC)
+                                                    .stateType(DelegateStateType.NEW_RELIC)
                                                     .dataCollectionMinute(currentEpochMinute)
                                                     .host(hostname)
                                                     .level(ClusterLevel.L1)
@@ -386,7 +387,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
     wingsPersistence.save(TimeSeriesDataRecord.builder()
                               .groupName(DEFAULT_GROUP_NAME)
                               .stateExecutionId(stateExecutionId)
-                              .stateType(StateType.NEW_RELIC)
+                              .stateType(DelegateStateType.NEW_RELIC)
                               .dataCollectionMinute(currentEpochMinute)
                               .host(hostname)
                               .level(ClusterLevel.H0)
@@ -395,7 +396,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                               .groupName(DEFAULT_GROUP_NAME)
                               .stateExecutionId(stateExecutionId)
                               .appId(appId)
-                              .stateType(StateType.NEW_RELIC)
+                              .stateType(DelegateStateType.NEW_RELIC)
                               .dataCollectionMinute(currentEpochMinute)
                               .host(hostname)
                               .level(ClusterLevel.HF)
@@ -415,7 +416,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                                                     .groupName(DEFAULT_GROUP_NAME)
                                                     .stateExecutionId(stateExecutionId)
                                                     .workflowExecutionId(workflowExecutionId)
-                                                    .stateType(StateType.NEW_RELIC)
+                                                    .stateType(DelegateStateType.NEW_RELIC)
                                                     .dataCollectionMinute(currentEpochMinute)
                                                     .host(hostname)
                                                     .level(ClusterLevel.L1)
@@ -425,7 +426,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                               .groupName(DEFAULT_GROUP_NAME)
                               .stateExecutionId(stateExecutionId)
                               .workflowExecutionId(workflowExecutionId)
-                              .stateType(StateType.NEW_RELIC)
+                              .stateType(DelegateStateType.NEW_RELIC)
                               .dataCollectionMinute(currentEpochMinute)
                               .host(hostname)
                               .level(ClusterLevel.H0)
@@ -434,7 +435,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                               .groupName(DEFAULT_GROUP_NAME)
                               .stateExecutionId(stateExecutionId)
                               .workflowExecutionId(workflowExecutionId)
-                              .stateType(StateType.NEW_RELIC)
+                              .stateType(DelegateStateType.NEW_RELIC)
                               .dataCollectionMinute(currentEpochMinute)
                               .host(hostname)
                               .level(ClusterLevel.HF)
@@ -453,7 +454,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
     TimeSeriesDataRecord timeSeriesDataRecord = TimeSeriesDataRecord.builder()
                                                     .groupName(DEFAULT_GROUP_NAME)
                                                     .workflowExecutionId(workflowExecutionId)
-                                                    .stateType(StateType.NEW_RELIC)
+                                                    .stateType(DelegateStateType.NEW_RELIC)
                                                     .dataCollectionMinute(currentEpochMinute)
                                                     .host(hostname)
                                                     .level(ClusterLevel.L1)
@@ -472,7 +473,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
     NewRelicMetricDataRecord newRelicMetricDataRecord = NewRelicMetricDataRecord.builder()
                                                             .groupName(DEFAULT_GROUP_NAME)
                                                             .workflowExecutionId(workflowExecutionId)
-                                                            .stateType(StateType.NEW_RELIC)
+                                                            .stateType(DelegateStateType.NEW_RELIC)
                                                             .dataCollectionMinute(currentEpochMinute)
                                                             .workflowExecutionId(workflowExecutionId)
                                                             .host(hostname)
@@ -497,7 +498,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                               .stateExecutionId(stateExecutionId)
                               .workflowExecutionId(workflowExecutionId)
                               .serviceId(serviceId)
-                              .stateType(StateType.NEW_RELIC)
+                              .stateType(DelegateStateType.NEW_RELIC)
                               .dataCollectionMinute(currentEpochMinute)
                               .host(hostname)
                               .level(ClusterLevel.L1)
@@ -508,7 +509,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                               .stateExecutionId(stateExecutionId)
                               .workflowExecutionId(workflowExecutionId)
                               .serviceId(serviceId)
-                              .stateType(StateType.NEW_RELIC)
+                              .stateType(DelegateStateType.NEW_RELIC)
                               .dataCollectionMinute(currentEpochMinute - 2)
                               .host(hostname)
                               .level(ClusterLevel.L1)
@@ -541,7 +542,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                               .stateExecutionId(stateExecutionId)
                               .workflowExecutionId(workflowExecutionId)
                               .serviceId(serviceId)
-                              .stateType(StateType.NEW_RELIC)
+                              .stateType(DelegateStateType.NEW_RELIC)
                               .dataCollectionMinute(currentEpochMinute)
                               .host(hostname)
                               .level(ClusterLevel.L1)
@@ -552,7 +553,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                               .stateExecutionId(stateExecutionId)
                               .workflowExecutionId(workflowExecutionId)
                               .serviceId(serviceId)
-                              .stateType(StateType.NEW_RELIC)
+                              .stateType(DelegateStateType.NEW_RELIC)
                               .dataCollectionMinute(currentEpochMinute - 2)
                               .host(hostname)
                               .level(ClusterLevel.L1)
@@ -591,7 +592,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                                                             .stateExecutionId(stateExecutionId)
                                                             .appId(appId)
                                                             .name("metric-name")
-                                                            .stateType(StateType.NEW_RELIC)
+                                                            .stateType(DelegateStateType.NEW_RELIC)
                                                             .dataCollectionMinute(currentEpochMinute)
                                                             .host("test-host")
                                                             .level(ClusterLevel.L1)
@@ -613,7 +614,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                           .groupName("DEFAULT")
                           .stateExecutionId(stateExecutionId)
                           .appId(appId)
-                          .stateType(StateType.NEW_RELIC)
+                          .stateType(DelegateStateType.NEW_RELIC)
                           .dataCollectionMinute(currentEpochMinute)
                           .host("test-host")
                           .level(ClusterLevel.L1)
@@ -622,7 +623,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                           .groupName("DEFAULT")
                           .stateExecutionId(stateExecutionId)
                           .appId(appId)
-                          .stateType(StateType.NEW_RELIC)
+                          .stateType(DelegateStateType.NEW_RELIC)
                           .dataCollectionMinute(currentEpochMinute)
                           .host("test-host")
                           .level(ClusterLevel.H0)
@@ -631,7 +632,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                           .groupName("DEFAULT")
                           .stateExecutionId(stateExecutionId)
                           .appId(appId)
-                          .stateType(StateType.NEW_RELIC)
+                          .stateType(DelegateStateType.NEW_RELIC)
                           .dataCollectionMinute(currentEpochMinute)
                           .host("test-host")
                           .level(ClusterLevel.HF)
@@ -651,7 +652,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                                                                           .groupName("DEFAULT")
                                                                           .workflowExecutionId(workflowExecutionId)
                                                                           .appId(appId)
-                                                                          .stateType(StateType.NEW_RELIC)
+                                                                          .stateType(DelegateStateType.NEW_RELIC)
                                                                           .dataCollectionMinute(currentEpochMinute)
                                                                           .host("test-host")
                                                                           .level(ClusterLevel.L1)
@@ -660,7 +661,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
             .groupName("DEFAULT")
             .workflowExecutionId(workflowExecutionId)
             .appId(appId)
-            .stateType(StateType.NEW_RELIC)
+            .stateType(DelegateStateType.NEW_RELIC)
             .dataCollectionMinute(currentEpochMinute)
             .host("test-host")
             .level(ClusterLevel.H0)
@@ -669,7 +670,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
             .groupName("DEFAULT")
             .workflowExecutionId(workflowExecutionId)
             .appId(appId)
-            .stateType(StateType.NEW_RELIC)
+            .stateType(DelegateStateType.NEW_RELIC)
             .dataCollectionMinute(currentEpochMinute)
             .host("test-host")
             .level(ClusterLevel.HF)
@@ -690,7 +691,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                                                             .groupName("DEFAULT")
                                                             .workflowExecutionId(workflowExecutionId)
                                                             .appId(appId)
-                                                            .stateType(StateType.NEW_RELIC)
+                                                            .stateType(DelegateStateType.NEW_RELIC)
                                                             .dataCollectionMinute(currentEpochMinute)
                                                             .host("test-host")
                                                             .level(ClusterLevel.L1)
@@ -713,7 +714,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                                                                           .workflowExecutionId(workflowExecutionId)
                                                                           .appId(appId)
                                                                           .serviceId(serviceId)
-                                                                          .stateType(StateType.NEW_RELIC)
+                                                                          .stateType(DelegateStateType.NEW_RELIC)
                                                                           .dataCollectionMinute(currentEpochMinute)
                                                                           .host("test-host")
                                                                           .level(ClusterLevel.L1)
@@ -725,7 +726,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
             .workflowExecutionId(workflowExecutionId)
             .appId(appId)
             .serviceId(serviceId)
-            .stateType(StateType.NEW_RELIC)
+            .stateType(DelegateStateType.NEW_RELIC)
             .dataCollectionMinute(currentEpochMinute - 2)
             .host("test-host")
             .level(ClusterLevel.L1)
@@ -759,7 +760,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                                                                           .workflowExecutionId(workflowExecutionId)
                                                                           .appId(appId)
                                                                           .serviceId(serviceId)
-                                                                          .stateType(StateType.NEW_RELIC)
+                                                                          .stateType(DelegateStateType.NEW_RELIC)
                                                                           .dataCollectionMinute(currentEpochMinute)
                                                                           .host("test-host")
                                                                           .level(ClusterLevel.L1)
@@ -771,7 +772,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
             .workflowExecutionId(workflowExecutionId)
             .appId(appId)
             .serviceId(serviceId)
-            .stateType(StateType.NEW_RELIC)
+            .stateType(DelegateStateType.NEW_RELIC)
             .dataCollectionMinute(currentEpochMinute - 2)
             .host("test-host")
             .level(ClusterLevel.L1)
@@ -832,7 +833,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
         metricDataRecords.add(NewRelicMetricDataRecord.builder()
                                   .cvConfigId(cvConfigId)
                                   .serviceId(serviceId)
-                                  .stateType(StateType.NEW_RELIC)
+                                  .stateType(DelegateStateType.NEW_RELIC)
                                   .name(txn)
                                   .timeStamp(k * 1000)
                                   .dataCollectionMinute(k)
@@ -864,7 +865,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
         expectedRecords.add(NewRelicMetricDataRecord.builder()
                                 .cvConfigId(cvConfigId)
                                 .serviceId(serviceId)
-                                .stateType(StateType.NEW_RELIC)
+                                .stateType(DelegateStateType.NEW_RELIC)
                                 .name(txn)
                                 .timeStamp(k * 1000)
                                 .dataCollectionMinute(k)
@@ -897,7 +898,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
     final TimeSeriesDataRecord timeSeriesDataRecord = TimeSeriesDataRecord.builder()
                                                           .cvConfigId(cvConfigId)
                                                           .serviceId(serviceId)
-                                                          .stateType(StateType.NEW_RELIC)
+                                                          .stateType(DelegateStateType.NEW_RELIC)
                                                           .timeStamp(1000)
                                                           .dataCollectionMinute(100)
                                                           .host(generateUuid())
@@ -932,7 +933,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
     List<NewRelicMetricDataRecord> recordsToSave = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
       recordsToSave.add(NewRelicMetricDataRecord.builder()
-                            .stateType(StateType.NEW_RELIC)
+                            .stateType(DelegateStateType.NEW_RELIC)
                             .appId(appId)
                             .stateExecutionId(stateExecutionId)
                             .workflowExecutionId(workflowExecutionId)
@@ -1144,7 +1145,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                               .host("test-host")
                               .workflowId(UUID.randomUUID().toString())
                               .workflowExecutionId(workflowExecutionId)
-                              .stateType(StateType.APP_DYNAMICS)
+                              .stateType(DelegateStateType.APP_DYNAMICS)
                               .build());
 
     wingsPersistence.save(NewRelicMetricDataRecord.builder()
@@ -1154,7 +1155,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                               .host("test-host")
                               .workflowId(UUID.randomUUID().toString())
                               .workflowExecutionId(workflowExecutionId)
-                              .stateType(StateType.APP_DYNAMICS)
+                              .stateType(DelegateStateType.APP_DYNAMICS)
                               .build());
     long minute = timeSeriesAnalysisService.getLastDataCollectedMinute(appId, stateExecutionId, StateType.APP_DYNAMICS);
     assertThat(minute).isEqualTo(dataCollectionMinute + 1);
@@ -1167,7 +1168,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
     NewRelicMetricDataRecord newRelicMetricDataRecord =
         NewRelicMetricDataRecord.builder()
             .level(ClusterLevel.HF)
-            .stateType(StateType.NEW_RELIC)
+            .stateType(DelegateStateType.NEW_RELIC)
             .serviceId(serviceId)
             .workflowExecutionId(lastSuccessfulWorkflowExecutionIds.get(0))
             .stateExecutionId(generateUuid())
@@ -1177,7 +1178,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
 
     wingsPersistence.save(NewRelicMetricDataRecord.builder()
                               .level(ClusterLevel.H0)
-                              .stateType(StateType.NEW_RELIC)
+                              .stateType(DelegateStateType.NEW_RELIC)
                               .serviceId(serviceId)
                               .workflowExecutionId(lastSuccessfulWorkflowExecutionIds.get(1))
                               .stateExecutionId(generateUuid())
@@ -1200,7 +1201,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
     NewRelicMetricDataRecord newRelicMetricDataRecord =
         NewRelicMetricDataRecord.builder()
             .level(ClusterLevel.L1)
-            .stateType(StateType.NEW_RELIC)
+            .stateType(DelegateStateType.NEW_RELIC)
             .serviceId(serviceId)
             .workflowExecutionId(lastSuccessfulWorkflowExecutionIds.get(0))
             .stateExecutionId(generateUuid())
@@ -1210,7 +1211,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
 
     wingsPersistence.save(NewRelicMetricDataRecord.builder()
                               .level(ClusterLevel.H0)
-                              .stateType(StateType.NEW_RELIC)
+                              .stateType(DelegateStateType.NEW_RELIC)
                               .serviceId(serviceId)
                               .workflowExecutionId(lastSuccessfulWorkflowExecutionIds.get(1))
                               .stateExecutionId(generateUuid())
@@ -1573,28 +1574,28 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
   public void testBumpCollectionMinuteToProcess() {
     List<NewRelicMetricDataRecord> recordsToSave = new ArrayList<>();
     recordsToSave.add(NewRelicMetricDataRecord.builder()
-                          .stateType(StateType.NEW_RELIC)
+                          .stateType(DelegateStateType.NEW_RELIC)
                           .level(ClusterLevel.H0)
                           .stateExecutionId(stateExecutionId)
                           .appId(appId)
                           .dataCollectionMinute(currentEpochMinute)
                           .build());
     recordsToSave.add(NewRelicMetricDataRecord.builder()
-                          .stateType(StateType.NEW_RELIC)
+                          .stateType(DelegateStateType.NEW_RELIC)
                           .level(ClusterLevel.H0)
                           .stateExecutionId(stateExecutionId)
                           .appId(appId)
                           .dataCollectionMinute(currentEpochMinute - 1)
                           .build());
     recordsToSave.add(NewRelicMetricDataRecord.builder()
-                          .stateType(StateType.NEW_RELIC)
+                          .stateType(DelegateStateType.NEW_RELIC)
                           .level(ClusterLevel.H0)
                           .stateExecutionId(stateExecutionId)
                           .appId(appId)
                           .dataCollectionMinute(currentEpochMinute - 10)
                           .build());
     recordsToSave.add(NewRelicMetricDataRecord.builder()
-                          .stateType(StateType.NEW_RELIC)
+                          .stateType(DelegateStateType.NEW_RELIC)
                           .level(ClusterLevel.H0)
                           .stateExecutionId(stateExecutionId)
                           .appId(appId)
@@ -1622,7 +1623,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
   @Category(UnitTests.class)
   public void testGetAnalysisMinuteForLastHeartbeatRecord() {
     List<NewRelicMetricDataRecord> recordsToSave = Lists.newArrayList(NewRelicMetricDataRecord.builder()
-                                                                          .stateType(StateType.NEW_RELIC)
+                                                                          .stateType(DelegateStateType.NEW_RELIC)
                                                                           .serviceId(serviceId)
                                                                           .level(ClusterLevel.L1)
                                                                           .stateExecutionId(stateExecutionId)
@@ -1630,7 +1631,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                                                                           .dataCollectionMinute(currentEpochMinute)
                                                                           .build(),
         NewRelicMetricDataRecord.builder()
-            .stateType(StateType.NEW_RELIC)
+            .stateType(DelegateStateType.NEW_RELIC)
             .serviceId(serviceId)
             .level(ClusterLevel.HF)
             .stateExecutionId(stateExecutionId)
@@ -1638,7 +1639,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
             .dataCollectionMinute(currentEpochMinute - 1)
             .build(),
         NewRelicMetricDataRecord.builder()
-            .stateType(StateType.NEW_RELIC)
+            .stateType(DelegateStateType.NEW_RELIC)
             .serviceId(serviceId)
             .level(ClusterLevel.H0)
             .stateExecutionId(stateExecutionId)
@@ -1646,7 +1647,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
             .dataCollectionMinute(currentEpochMinute - 10)
             .build(),
         NewRelicMetricDataRecord.builder()
-            .stateType(StateType.NEW_RELIC)
+            .stateType(DelegateStateType.NEW_RELIC)
             .serviceId(serviceId)
             .level(ClusterLevel.H0)
             .stateExecutionId(stateExecutionId)
@@ -1665,7 +1666,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
   @Category(UnitTests.class)
   public void testGetAnalysisMinuteIfNoHeartbeatAvailable() {
     wingsPersistence.save(NewRelicMetricDataRecord.builder()
-                              .stateType(StateType.NEW_RELIC)
+                              .stateType(DelegateStateType.NEW_RELIC)
                               .serviceId(serviceId)
                               .level(ClusterLevel.L1)
                               .stateExecutionId(stateExecutionId)
@@ -1673,7 +1674,7 @@ public class TimeSeriesAnalysisServiceImplTest extends VerificationBase {
                               .dataCollectionMinute(currentEpochMinute)
                               .build());
     wingsPersistence.save(NewRelicMetricDataRecord.builder()
-                              .stateType(StateType.NEW_RELIC)
+                              .stateType(DelegateStateType.NEW_RELIC)
                               .serviceId(serviceId)
                               .level(ClusterLevel.HF)
                               .stateExecutionId(stateExecutionId)

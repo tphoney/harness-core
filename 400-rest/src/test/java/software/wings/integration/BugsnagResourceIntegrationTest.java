@@ -28,9 +28,10 @@ import io.harness.scm.SecretName;
 import software.wings.beans.BugsnagConfig;
 import software.wings.beans.SettingAttribute.Builder;
 import software.wings.beans.WorkflowExecution;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.service.impl.bugsnag.BugsnagApplication;
 import software.wings.service.impl.bugsnag.BugsnagSetupTestData;
-import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.sm.StateType;
 
 import com.google.inject.Inject;
@@ -154,7 +155,7 @@ public class BugsnagResourceIntegrationTest extends IntegrationTestBase {
         .projectId("5ccb6cbfe837a900163d315b")
         .settingId(settingId)
         .instanceName("testHost")
-        .stateType(StateType.BUG_SNAG)
+        .stateType(DelegateStateType.BUG_SNAG)
         .toTime(toTime)
         .fromTime(fromTime)
         .workflowId(workflowId)

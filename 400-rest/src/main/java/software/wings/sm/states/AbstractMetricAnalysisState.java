@@ -13,8 +13,8 @@ import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 import static io.harness.persistence.HQuery.excludeAuthority;
 
 import static software.wings.common.VerificationConstants.LAMBDA_HOST_NAME;
-import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.COMPARE_WITH_PREVIOUS;
 import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.COMPARE_WITH_PREVIOUS;
 import static software.wings.sm.states.DynatraceState.CONTROL_HOST_NAME;
 import static software.wings.sm.states.DynatraceState.TEST_HOST_NAME;
 
@@ -31,6 +31,9 @@ import io.harness.time.Timestamp;
 import io.harness.version.VersionInfoManager;
 
 import software.wings.beans.GcpConfig;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.analysis.DataCollectionInfo;
+import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.metrics.RiskLevel;
 import software.wings.service.impl.VerificationLogContext;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
@@ -38,12 +41,10 @@ import software.wings.service.impl.analysis.AnalysisContext;
 import software.wings.service.impl.analysis.AnalysisContext.AnalysisContextKeys;
 import software.wings.service.impl.analysis.AnalysisTolerance;
 import software.wings.service.impl.analysis.ContinuousVerificationExecutionMetaData;
-import software.wings.delegatetasks.cv.beans.analysis.DataCollectionInfo;
 import software.wings.service.impl.analysis.DataCollectionInfoV2;
 import software.wings.service.impl.analysis.DeploymentTimeSeriesAnalysis;
 import software.wings.service.impl.analysis.MLAnalysisType;
 import software.wings.service.impl.analysis.TimeSeriesMetricGroup.TimeSeriesMlAnalysisGroupInfo;
-import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord;
 import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord.NewRelicMetricAnalysis;
 import software.wings.service.impl.stackdriver.StackDriverDataCollectionInfo;
@@ -131,7 +132,7 @@ public abstract class AbstractMetricAnalysisState extends AbstractAnalysisState 
   @Override
   public ExecutionResponse execute(ExecutionContext context) {
     try (VerificationLogContext ignored = new VerificationLogContext(context.getAccountId(), null,
-             context.getStateExecutionInstanceId(), StateType.valueOf(getStateType()), OVERRIDE_ERROR)) {
+             context.getStateExecutionInstanceId(), DelegateStateType.valueOf(getStateType()), OVERRIDE_ERROR)) {
       getLogger().info("Executing state {}", context.getStateExecutionInstanceId());
       Logger activityLogger = cvActivityLogService.getLoggerByStateExecutionId(
           context.getAccountId(), context.getStateExecutionInstanceId());
@@ -253,10 +254,10 @@ public abstract class AbstractMetricAnalysisState extends AbstractAnalysisState 
           if (isEmpty(baselineWorkflowExecutionId)) {
             responseMessage = "No baseline was set for the workflow. Workflow running with auto baseline.";
             getLogger().info(responseMessage);
-            baselineWorkflowExecutionId =
-                metricAnalysisService.getLastSuccessfulWorkflowExecutionIdWithData(analysisContext.getStateType(),
-                    analysisContext.getAppId(), analysisContext.getWorkflowId(), analysisContext.getServiceId(),
-                    getPhaseInfraMappingId(context), workflowStandardParams.getEnv().getUuid());
+            baselineWorkflowExecutionId = metricAnalysisService.getLastSuccessfulWorkflowExecutionIdWithData(
+                analysisContext.getStateType().getDelegateStateType(), analysisContext.getAppId(),
+                analysisContext.getWorkflowId(), analysisContext.getServiceId(), getPhaseInfraMappingId(context),
+                workflowStandardParams.getEnv().getUuid());
           } else {
             responseMessage = "Baseline is fixed for the workflow. Analyzing against fixed baseline.";
             getLogger().info("Baseline execution is {}", baselineWorkflowExecutionId);

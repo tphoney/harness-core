@@ -22,6 +22,8 @@ import io.harness.service.intfc.LearningEngineService;
 import io.harness.service.intfc.LogAnalysisService;
 
 import software.wings.common.VerificationConstants;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.service.impl.VerificationLogContext;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
 import software.wings.service.impl.analysis.AnalysisContext;
@@ -32,8 +34,6 @@ import software.wings.service.impl.newrelic.LearningEngineAnalysisTask.LearningE
 import software.wings.service.impl.newrelic.LearningEngineExperimentalAnalysisTask;
 import software.wings.service.impl.newrelic.LearningEngineExperimentalAnalysisTask.LearningEngineExperimentalAnalysisTaskBuilder;
 import software.wings.service.impl.newrelic.MLExperiments;
-import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
-import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.sm.StateType;
 import software.wings.verification.VerificationDataAnalysisResponse;
 import software.wings.verification.VerificationStateAnalysisExecutionData;
@@ -89,8 +89,8 @@ public class LogMLAnalysisGenerator implements Runnable {
 
   @Override
   public void run() {
-    try (VerificationLogContext ignored = new VerificationLogContext(
-             accountId, null, context.getStateExecutionId(), context.getStateType(), OVERRIDE_ERROR)) {
+    try (VerificationLogContext ignored = new VerificationLogContext(accountId, null, context.getStateExecutionId(),
+             context.getStateType().getDelegateStateType(), OVERRIDE_ERROR)) {
       if (analysisType != null && analysisType == MLAnalysisType.FEEDBACK_ANALYSIS) {
         generateFeedbackAnalysis();
       } else {

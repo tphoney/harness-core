@@ -17,6 +17,9 @@ import io.harness.security.annotations.LearningEngineAuth;
 import io.harness.service.intfc.LogAnalysisService;
 
 import software.wings.common.VerificationConstants;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
+import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.dl.WingsPersistence;
 import software.wings.security.PermissionAttribute;
 import software.wings.security.annotations.Scope;
@@ -26,14 +29,11 @@ import software.wings.service.impl.analysis.CVFeedbackRecord;
 import software.wings.service.impl.analysis.ExperimentalLogMLAnalysisRecord;
 import software.wings.service.impl.analysis.FeedbackAction;
 import software.wings.service.impl.analysis.LogDataRecord;
-import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.analysis.LogMLAnalysisRecord;
 import software.wings.service.impl.analysis.LogMLAnalysisRecord.LogMLAnalysisRecordKeys;
 import software.wings.service.impl.analysis.LogMLAnalysisRequest;
 import software.wings.service.impl.analysis.LogMLFeedbackRecord;
 import software.wings.service.impl.analysis.LogRequest;
-import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
-import software.wings.delegatetasks.cv.commons.LogAnalysisResource;
 import software.wings.sm.StateType;
 import software.wings.verification.log.LogsCVConfiguration;
 
@@ -174,7 +174,7 @@ public class LogVerificationResource {
     final LogsCVConfiguration logsCVConfiguration = wingsPersistence.get(LogsCVConfiguration.class, cvConfigId);
     Preconditions.checkNotNull(logsCVConfiguration);
     try (VerificationLogContext ignored = new VerificationLogContext(logsCVConfiguration.getAccountId(), cvConfigId,
-             null, logsCVConfiguration.getStateType(), OVERRIDE_ERROR)) {
+             null, logsCVConfiguration.getStateType().getDelegateStateType(), OVERRIDE_ERROR)) {
       return new RestResponse<>(analysisService.save24X7LogAnalysisRecords(
           appId, cvConfigId, analysisMinute, mlAnalysisResponse, Optional.of(taskId), Optional.of(isFeedbackAnalysis)));
     }

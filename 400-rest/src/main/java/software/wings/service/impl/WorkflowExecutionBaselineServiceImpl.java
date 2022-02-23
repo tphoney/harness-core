@@ -20,20 +20,19 @@ import io.harness.beans.PageRequest.PageRequestBuilder;
 import io.harness.beans.SearchFilter;
 import io.harness.beans.WorkflowType;
 
-import software.wings.beans.Base;
 import software.wings.beans.PipelineExecution;
 import software.wings.beans.PipelineStageExecution;
 import software.wings.beans.WorkflowExecution;
 import software.wings.beans.WorkflowExecution.WorkflowExecutionKeys;
 import software.wings.beans.baseline.WorkflowExecutionBaseline;
 import software.wings.beans.baseline.WorkflowExecutionBaseline.WorkflowExecutionBaselineKeys;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.dl.WingsPersistence;
 import software.wings.metrics.TimeSeriesDataRecord;
 import software.wings.metrics.TimeSeriesDataRecord.TimeSeriesMetricRecordKeys;
 import software.wings.service.impl.analysis.LogMLAnalysisRecord;
 import software.wings.service.impl.analysis.TimeSeriesMLAnalysisRecord;
 import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.service.intfc.DataStoreService;
 import software.wings.service.intfc.WorkflowExecutionBaselineService;
 
@@ -191,7 +190,7 @@ public class WorkflowExecutionBaselineServiceImpl implements WorkflowExecutionBa
     updateTtlForDataRecords(workflowExecutionId);
   }
 
-  private <T extends Base> void updateTtl(String workflowExecutionId, String appId, Class<T> recordClass) {
+  private void updateTtl(String workflowExecutionId, String appId, Class recordClass) {
     wingsPersistence.update(wingsPersistence.createQuery(recordClass)
                                 .filter("workflowExecutionId", workflowExecutionId)
                                 .filter(WorkflowExecutionKeys.appId, appId),

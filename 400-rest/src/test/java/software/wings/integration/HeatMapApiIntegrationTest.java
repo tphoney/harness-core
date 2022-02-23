@@ -22,6 +22,7 @@ import software.wings.beans.Service;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.SettingAttribute.SettingCategory;
 import software.wings.common.VerificationConstants;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.dl.WingsPersistence;
 import software.wings.metrics.MetricType;
 import software.wings.metrics.TimeSeriesDataRecord;
@@ -34,7 +35,6 @@ import software.wings.service.impl.analysis.TimeSeriesMLHostSummary;
 import software.wings.service.impl.analysis.TimeSeriesMLMetricSummary;
 import software.wings.service.impl.analysis.TimeSeriesMLTxnSummary;
 import software.wings.service.impl.cloudwatch.CloudWatchMetric;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
 import software.wings.sm.StateType;
 import software.wings.sm.states.APMVerificationState;
 import software.wings.verification.CVConfiguration;
@@ -353,7 +353,7 @@ public class HeatMapApiIntegrationTest extends IntegrationTestBase {
                                                             .groupName("default")
                                                             .name(transactionName)
                                                             .serviceId(savedService.getUuid())
-                                                            .stateType(stateType)
+                                                            .stateType(stateType.getDelegateStateType())
                                                             .dataCollectionMinute(minute)
                                                             .timeStamp(TimeUnit.MINUTES.toMillis(minute))
                                                             .host(generateUuid())

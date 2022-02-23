@@ -30,6 +30,7 @@ import io.harness.waiter.WaitNotifyEngine;
 import software.wings.beans.ScalyrConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
+import software.wings.delegatetasks.cv.beans.CustomLogResponseMapper;
 import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
 import software.wings.service.intfc.AppService;
 import software.wings.service.intfc.DelegateService;
@@ -110,12 +111,11 @@ public class ScalyrStateTest extends APMStateVerificationTestBase {
     assertThat(customLogDataCollectionInfo.getBody()).isEqualTo(scalyrConfig.fetchLogBodyMap(false));
     assertThat(customLogDataCollectionInfo.getHosts()).isEqualTo(Sets.newHashSet("host"));
 
-    final Map<String, Map<String, CustomLogVerificationState.ResponseMapper>> logCollectionMapping =
+    final Map<String, Map<String, CustomLogResponseMapper>> logCollectionMapping =
         customLogDataCollectionInfo.getLogResponseDefinition();
 
     assertThat(logCollectionMapping.size()).isEqualTo(1);
-    final Map<String, CustomLogVerificationState.ResponseMapper> responseMap =
-        logCollectionMapping.get(ScalyrConfig.QUERY_URL);
+    final Map<String, CustomLogResponseMapper> responseMap = logCollectionMapping.get(ScalyrConfig.QUERY_URL);
     assertThat(responseMap.get("host"))
         .isEqualTo(CustomLogVerificationState.ResponseMapper.builder()
                        .fieldName("host")
@@ -171,12 +171,11 @@ public class ScalyrStateTest extends APMStateVerificationTestBase {
     CustomLogDataCollectionInfo customLogDataCollectionInfo = (CustomLogDataCollectionInfo) parameters[0];
     assertThat(customLogDataCollectionInfo.getHosts()).isEqualTo(hosts.keySet());
 
-    final Map<String, Map<String, CustomLogVerificationState.ResponseMapper>> logCollectionMapping =
+    final Map<String, Map<String, CustomLogResponseMapper>> logCollectionMapping =
         customLogDataCollectionInfo.getLogResponseDefinition();
 
     assertThat(logCollectionMapping.size()).isEqualTo(1);
-    final Map<String, CustomLogVerificationState.ResponseMapper> responseMap =
-        logCollectionMapping.get(ScalyrConfig.QUERY_URL);
+    final Map<String, CustomLogResponseMapper> responseMap = logCollectionMapping.get(ScalyrConfig.QUERY_URL);
     assertThat(responseMap.get("host"))
         .isEqualTo(CustomLogVerificationState.ResponseMapper.builder()
                        .fieldName("host")

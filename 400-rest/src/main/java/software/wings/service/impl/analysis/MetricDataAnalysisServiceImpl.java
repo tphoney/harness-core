@@ -22,9 +22,9 @@ import static software.wings.common.VerificationConstants.DEMO_FAILURE_TS_STATE_
 import static software.wings.common.VerificationConstants.DEMO_SUCCESS_TS_STATE_EXECUTION_ID;
 import static software.wings.common.VerificationConstants.DEMO_WORKFLOW_EXECUTION_ID;
 import static software.wings.delegatetasks.cv.AppdynamicsDataCollectionTask.PREDECTIVE_HISTORY_MINUTES;
+import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 import static software.wings.metrics.ThresholdType.ALERT_WHEN_HIGHER;
 import static software.wings.metrics.ThresholdType.ALERT_WHEN_LOWER;
-import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.HarnessTeam;
@@ -42,6 +42,10 @@ import io.harness.persistence.HIterator;
 import software.wings.api.SkipStateExecutionData;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.WorkflowExecution;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.NewRelicMetricDataRecordKeys;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.dl.WingsPersistence;
 import software.wings.metrics.RiskLevel;
@@ -65,8 +69,6 @@ import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord.NewReli
 import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord.NewRelicMetricAnalysisRecordKeys;
 import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord.NewRelicMetricAnalysisValue;
 import software.wings.service.impl.newrelic.NewRelicMetricAnalysisRecord.NewRelicMetricHostAnalysisValue;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.NewRelicMetricDataRecordKeys;
 import software.wings.service.intfc.AppService;
 import software.wings.service.intfc.DataStoreService;
 import software.wings.service.intfc.MetricDataAnalysisService;
@@ -74,7 +76,6 @@ import software.wings.service.intfc.SettingsService;
 import software.wings.service.intfc.VerificationService;
 import software.wings.service.intfc.WorkflowExecutionService;
 import software.wings.service.intfc.WorkflowService;
-import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
 import software.wings.service.intfc.verification.CVConfigurationService;
 import software.wings.sm.StateExecutionData;
 import software.wings.sm.StateExecutionInstance;
@@ -124,8 +125,8 @@ public class MetricDataAnalysisServiceImpl implements MetricDataAnalysisService 
   @Inject private CVConfigurationService cvConfigurationService;
 
   @Override
-  public String getLastSuccessfulWorkflowExecutionIdWithData(
-      StateType stateType, String appId, String workflowId, String serviceId, String infraMappingId, String envId) {
+  public String getLastSuccessfulWorkflowExecutionIdWithData(DelegateStateType stateType, String appId,
+      String workflowId, String serviceId, String infraMappingId, String envId) {
     List<String> successfulExecutions = new ArrayList<>();
     List<WorkflowExecution> executions =
         workflowExecutionService.getLastSuccessfulWorkflowExecutions(appId, workflowId, serviceId);
@@ -256,8 +257,8 @@ public class MetricDataAnalysisServiceImpl implements MetricDataAnalysisService 
       for (Entry<String, TimeSeriesMLHostSummary> mlHostSummaryEntry : timeSeriesMLHostSummaryMap.entrySet()) {
         boolean isPredictiveAnalysis = false;
         if (mlHostSummaryEntry.getValue().getTimeSeriesMlAnalysisType() != null) {
-          isPredictiveAnalysis =
-              mlHostSummaryEntry.getValue().getTimeSeriesMlAnalysisType() == software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType.PREDICTIVE;
+          isPredictiveAnalysis = mlHostSummaryEntry.getValue().getTimeSeriesMlAnalysisType()
+              == software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType.PREDICTIVE;
         }
         hostAnalysisValues.add(
             NewRelicMetricHostAnalysisValue.builder()
@@ -878,8 +879,9 @@ public class MetricDataAnalysisServiceImpl implements MetricDataAnalysisService 
     analysisRecords.forEach(analysisRecord -> {
       TimeSeriesMlAnalysisGroupInfo mlAnalysisGroupInfo = metricGroups.get(analysisRecord.getGroupName());
       analysisRecord.setDependencyPath(mlAnalysisGroupInfo == null ? null : mlAnalysisGroupInfo.getDependencyPath());
-      analysisRecord.setMlAnalysisType(
-          mlAnalysisGroupInfo == null ? software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType.COMPARATIVE : mlAnalysisGroupInfo.getMlAnalysisType());
+      analysisRecord.setMlAnalysisType(mlAnalysisGroupInfo == null
+              ? software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType.COMPARATIVE
+              : mlAnalysisGroupInfo.getMlAnalysisType());
       if (analysisRecord.getMetricAnalyses() != null) {
         int highRisk = 0;
         int mediumRisk = 0;

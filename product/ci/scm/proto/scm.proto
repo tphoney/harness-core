@@ -250,6 +250,9 @@ message Provider {
   string endpoint = 7;
   bool skipVerify = 8;
   bool debug = 9;
+  // If skipVerify is false, we can pass in a path of additional certs to allow
+  // This might be useful in self hosted repositories which use self signed certs.
+  string additional_certs_path = 10;
 }
 
 /*

@@ -13,8 +13,6 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.1
-	github.com/nbio/st v0.0.0-20140626010706-e9e8d9816f32 // indirect
-	github.com/stretchr/testify v1.7.0
 	github.com/harness/harness-core/commons/go/lib v0.0.0-00010101000000-000000000000
 	github.com/harness/harness-core/product/log-service v0.0.0-20210305084455-298bbd5bd1fd // indirect
 	github.com/nbio/st v0.0.0-20140626010706-e9e8d9816f32 // indirect

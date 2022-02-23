@@ -30,6 +30,7 @@ import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.Timed;
 import com.google.inject.Inject;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -81,6 +82,7 @@ public class DelegateTokenNgResource {
   @POST
   @Timed
   @ExceptionMetered
+  @ApiOperation(value = "Creates Delegate NG Token", nickname = "createDelegateToken")
   @Operation(operationId = "createDelegateToken", summary = "Creates Delegate NG Token.",
       responses =
       {
@@ -103,6 +105,7 @@ public class DelegateTokenNgResource {
   @PUT
   @Timed
   @ExceptionMetered
+  @ApiOperation(value = "Revokes Delegate NG Token", nickname = "revokeDelegateToken")
   @Operation(operationId = "revokeDelegateToken", summary = "Revokes Delegate Ng Token.",
       responses =
       {
@@ -126,6 +129,7 @@ public class DelegateTokenNgResource {
   @GET
   @Timed
   @ExceptionMetered
+  @ApiOperation(value = "Get Delegate NG Tokens", nickname = "getDelegateTokens")
   @Operation(operationId = "getDelegateTokens",
       summary = "Retrieves Delegate Ng Tokens by Account, Organization, Project, status and name.",
       responses =

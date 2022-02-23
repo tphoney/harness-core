@@ -77,7 +77,12 @@ public interface MonitoredServiceService extends DeleteEntityByHandler<Monitored
 
   String getYamlTemplate(ProjectParams projectParams, MonitoredServiceType type);
 
-  List<HealthSourceDTO> getHealthSources(ServiceEnvironmentParams serviceEnvironmentParams);
+  List<HealthSourceDTO> getHealthSources(ProjectParams projectParams, String monitoredServiceIdentifier);
+  /**
+   * use #getHealthSources with monitored service identifier instead
+   */
+  @Deprecated List<HealthSourceDTO> getHealthSources(ServiceEnvironmentParams serviceEnvironmentParams);
+
   List<ChangeEventDTO> getChangeEvents(ProjectParams projectParams, String monitoredServiceIdentifier,
       Instant startTime, Instant endTime, List<ChangeCategory> changeCategories);
   ChangeSummaryDTO getChangeSummary(

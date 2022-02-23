@@ -92,7 +92,7 @@ public class GetFilesInFolderForkTask extends RecursiveTask<List<FileChange>> {
   private boolean hasMoreFiles(FindFilesInBranchResponse filesInBranchResponse) {
     return filesInBranchResponse != null && filesInBranchResponse.getPagination() != null
         && (filesInBranchResponse.getPagination().getNext() != 0
-            || filesInBranchResponse.getPagination().getNextUrl() != "");
+            || !"".equals(filesInBranchResponse.getPagination().getNextUrl()));
   }
 
   private List<GetFilesInFolderForkTask> createTasksForSubFolders(List<String> newFoldersToBeProcessed) {

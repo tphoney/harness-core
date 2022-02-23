@@ -7,35 +7,32 @@
 
 package io.harness.debezium;
 
-import io.harness.lock.AcquiredLock;
-import io.harness.lock.PersistentLocker;
+import io.harness.persistence.PersistentEntity;
 import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Singleton;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
 import io.debezium.serde.DebeziumSerdes;
+import java.io.File;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
-import org.redisson.api.RLock;
 
 @Singleton
 @Slf4j
 public class DebeziumController implements Runnable {
-  private final PersistentLocker persistentLocker;
   private static final String MONGO_DB_CONNECTOR = "io.debezium.connector.mongodb.MongoDbConnector";
   private static final String CONNECTOR_NAME = "name";
   private static final String OFFSET_STORAGE = "offset.storage";
@@ -59,21 +56,22 @@ public class DebeziumController implements Runnable {
   private static final String DEBEZIUM_CONNECTOR_MONGODB_TRANSFORMS_EXTRACT_NEW_DOCUMENT_STATE =
       "io.debezium.connector.mongodb.transforms.ExtractNewDocumentState";
   private static final String UNKNOWN_PROPERTIES_IGNORED = "unknown.properties.ignored";
-  private final Map<String, ChangeConsumer<? extends PipelineExecutionSummaryEntity>> collectionToConsumerMap;
-  protected final DebeziumConfiguration debeziumConfiguration;
-  protected final ExecutorService executorService;
+  private static final String PLAN_EXECUTIONS_SUMMARY = "planExecutionsSummary";
+  private Map<String, ChangeConsumer<? extends PersistentEntity>> collectionToConsumerMap;
+  protected final ExecutorService executorService =
+      Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("debezium-controller-class").build());
+  private DebeziumConfig debeziumConfig;
 
-  public DebeziumController(PersistentLocker persistentLocker,
-      Map<String, ChangeConsumer<? extends PipelineExecutionSummaryEntity>> collectionToConsumerMap,
-      DebeziumConfiguration debeziumConfiguration, ExecutorService executorService) {
-    this.persistentLocker = persistentLocker;
-    this.collectionToConsumerMap = collectionToConsumerMap;
-    this.debeziumConfiguration = debeziumConfiguration;
-    this.executorService = executorService;
+  public DebeziumController(DebeziumConfig debeziumConfig) {
+    this.debeziumConfig = debeziumConfig;
+    ChangeConsumer<PipelineExecutionSummaryEntity> pipelineExecutionSummaryEntityChangeConsumer =
+        new PipelineExecutionSummaryConsumer();
+    collectionToConsumerMap = new HashMap<>();
+    collectionToConsumerMap.put(PLAN_EXECUTIONS_SUMMARY, pipelineExecutionSummaryEntityChangeConsumer);
   }
 
   protected DebeziumChangeConsumer buildDebeziumChangeConsumer() {
-    Map<String, Deserializer<? extends PipelineExecutionSummaryEntity>> collectionToDeserializerMap = new HashMap<>();
+    Map<String, Deserializer<? extends PersistentEntity>> collectionToDeserializerMap = new HashMap<>();
     Map<String, String> valueDeserializerConfig = Maps.newHashMap(ImmutableMap.of(UNKNOWN_PROPERTIES_IGNORED, "true"));
     // configuring id deserializer
     Serde<String> idSerde = DebeziumSerdes.payloadJson(String.class);
@@ -83,58 +81,32 @@ public class DebeziumController implements Runnable {
     Serde<PipelineExecutionSummaryEntity> pipelineSerde =
         DebeziumSerdes.payloadJson(PipelineExecutionSummaryEntity.class);
     pipelineSerde.configure(valueDeserializerConfig, false);
-    collectionToDeserializerMap.put("pipeline", pipelineSerde.deserializer());
-    // configuring debezium
+    collectionToDeserializerMap.put(PLAN_EXECUTIONS_SUMMARY, pipelineSerde.deserializer());
+    // configuring debezium change consumer
     return new DebeziumChangeConsumer(idDeserializer, collectionToDeserializerMap, collectionToConsumerMap);
   }
 
   @Override
   public void run() {
-    DebeziumEngine<ChangeEvent<String, String>> debeziumEngine = null;
-    try (AcquiredLock<?> debeziumLock = acquireLock(true)) {
-      if (debeziumLock == null) {
-        return;
-      }
-      log.info("Acquired lock, initiating sync.");
-      RLock rLock = (RLock) debeziumLock.getLock();
-      DebeziumChangeConsumer debeziumChangeConsumer = buildDebeziumChangeConsumer();
-      debeziumEngine = getEngine(debeziumConfiguration.getDebeziumConfig(), debeziumChangeConsumer);
-      Future<?> debeziumEngineFuture = executorService.submit(debeziumEngine);
-
-      while (!debeziumEngineFuture.isDone() && rLock.isHeldByCurrentThread()) {
-        log.info("primary lock remaining ttl {}, isHeldByCurrentThread {}, holdCount {}, name {}",
-            rLock.remainTimeToLive(), rLock.isHeldByCurrentThread(), rLock.getHoldCount(), rLock.getName());
-        TimeUnit.SECONDS.sleep(30);
-      }
-      log.warn("The primary sync debezium engine has unexpectedly stopped or the lock is no longer held");
-
-    } catch (InterruptedException e) {
-      log.warn("Thread interrupted, stopping primary aggregator sync", e);
-    } catch (Exception e) {
-      log.error("Primary sync stopped due to exception", e);
-    } finally {
-      try {
-        if (debeziumEngine != null) {
-          debeziumEngine.close();
-          TimeUnit.SECONDS.sleep(10);
-        }
-      } catch (IOException e) {
-        log.error("Failed to close debezium engine due to IO exception", e);
-      } catch (InterruptedException e) {
-        log.warn("Interrupted while waiting for debezium engine to close", e);
-      } catch (Exception e) {
-        log.error("Failed to close debezium engine due to unexpected exception", e);
-      }
-    }
+    DebeziumEngine<ChangeEvent<String, String>> debeziumEngine;
+    DebeziumChangeConsumer debeziumChangeConsumer = buildDebeziumChangeConsumer();
+    debeziumEngine = getEngine(debeziumConfig, debeziumChangeConsumer);
+    executorService.submit(debeziumEngine);
   }
 
   protected DebeziumEngine<ChangeEvent<String, String>> getEngine(
       DebeziumConfig debeziumConfig, DebeziumChangeConsumer debeziumChangeConsumer) {
+    File offsetStorageTempFile = null;
+    try {
+      offsetStorageTempFile = File.createTempFile("offsets_", ".dat");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     Properties props = new Properties();
     String offsetCollection = "offset_collection";
     props.setProperty(CONNECTOR_NAME, debeziumConfig.getConnectorName());
-    props.setProperty(OFFSET_STORAGE, MongoOffsetBackingStore.class.getName());
-    props.setProperty(OFFSET_STORAGE_FILE_FILENAME, debeziumConfig.getOffsetStorageFileName());
+    props.setProperty(OFFSET_STORAGE, "org.apache.kafka.connect.storage.FileOffsetBackingStore");
+    props.setProperty(OFFSET_STORAGE_FILE_FILENAME, offsetStorageTempFile.getAbsolutePath());
     props.setProperty(OFFSET_STORAGE_COLLECTION, offsetCollection);
     props.setProperty(KEY_CONVERTER_SCHEMAS_ENABLE, debeziumConfig.getKeyConverterSchemasEnable());
     props.setProperty(VALUE_CONVERTER_SCHEMAS_ENABLE, debeziumConfig.getValueConverterSchemasEnable());
@@ -159,23 +131,5 @@ public class DebeziumController implements Runnable {
     props.setProperty(TRANSFORMS_UNWRAP_ADD_HEADERS, "op");
 
     return DebeziumEngine.create(Json.class).using(props).notifying(debeziumChangeConsumer).build();
-  }
-
-  protected AcquiredLock<?> acquireLock(boolean retryIndefinitely) throws InterruptedException {
-    AcquiredLock<?> debeziumLock = null;
-    String lockIdentifier = "debezium_lock";
-    do {
-      try {
-        log.info("Trying to acquire {} lock with 5 seconds timeout", lockIdentifier);
-        debeziumLock =
-            persistentLocker.tryToAcquireInfiniteLockWithPeriodicRefresh(lockIdentifier, Duration.ofSeconds(5));
-      } catch (Exception ex) {
-        log.warn("Unable to get {} lock, due to the exception. Will retry again", lockIdentifier, ex);
-      }
-      if (debeziumLock == null) {
-        TimeUnit.SECONDS.sleep(120);
-      }
-    } while (debeziumLock == null && retryIndefinitely);
-    return debeziumLock;
   }
 }

@@ -8,10 +8,10 @@
 package io.harness.debezium;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity;
+import io.harness.persistence.PersistentEntity;
 
 @OwnedBy(HarnessTeam.PIPELINE)
-public interface ChangeConsumer<T extends PipelineExecutionSummaryEntity> {
+public interface ChangeConsumer<T extends PersistentEntity> {
   void consumeUpdateEvent(String id, T updatedEntity);
 
   void consumeDeleteEvent(String id);

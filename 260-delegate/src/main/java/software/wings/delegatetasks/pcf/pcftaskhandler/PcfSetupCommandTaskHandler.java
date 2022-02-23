@@ -67,6 +67,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.annotation.EncryptableSetting;
 import software.wings.beans.artifact.ArtifactStreamAttributes;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.delegatetasks.pcf.PcfCommandTaskHelper;
 import software.wings.helpers.ext.pcf.request.CfCommandSetupRequest;
 import software.wings.settings.SettingValue;
@@ -119,6 +120,7 @@ public class PcfSetupCommandTaskHandler extends PcfCommandTaskHandler {
     CfManifestFileData pcfManifestFileData = CfManifestFileData.builder().varFiles(new ArrayList<>()).build();
     CfInternalConfig pcfConfig = cfCommandRequest.getPcfConfig();
     secretDecryptionService.decrypt(pcfConfig, encryptedDataDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(pcfConfig, encryptedDataDetails);
     CfCommandSetupRequest cfCommandSetupRequest = (CfCommandSetupRequest) cfCommandRequest;
     decryptArtifactRepositoryPassword(cfCommandSetupRequest);
     File artifactFile = null;
@@ -300,18 +302,19 @@ public class PcfSetupCommandTaskHandler extends PcfCommandTaskHandler {
           .build();
 
     } catch (RuntimeException | PivotalClientApiException | IOException | ExecutionException e) {
+      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(e);
       log.error(
-          PIVOTAL_CLOUD_FOUNDRY_LOG_PREFIX + "Exception in processing PCF Setup task [{}]", cfCommandSetupRequest, e);
+          PIVOTAL_CLOUD_FOUNDRY_LOG_PREFIX + "Exception in processing PCF Setup task [{}]", cfCommandSetupRequest, sanitizedException);
       executionLogCallback.saveExecutionLog(
           "\n\n ----------  PCF Setup process failed to complete successfully", ERROR, CommandExecutionStatus.FAILURE);
 
       handleAppRenameRevert(
           renames, cfRequestConfig, cfCommandSetupRequest.getReleaseNamePrefix(), executionLogCallback);
 
-      Misc.logAllMessages(e, executionLogCallback);
+      Misc.logAllMessages(sanitizedException, executionLogCallback);
       return CfCommandExecutionResponse.builder()
           .commandExecutionStatus(CommandExecutionStatus.FAILURE)
-          .errorMessage(ExceptionUtils.getMessage(e))
+          .errorMessage(ExceptionUtils.getMessage(sanitizedException))
           .build();
     } finally {
       executionLogCallback = logStreamingTaskClient.obtainLogCallback(Wrapup);
@@ -517,6 +520,7 @@ public class PcfSetupCommandTaskHandler extends PcfCommandTaskHandler {
       List<EncryptedDataDetail> artifactServerEncryptedDataDetails =
           cfCommandSetupRequest.getArtifactStreamAttributes().getArtifactServerEncryptedDataDetails();
       secretDecryptionService.decrypt((EncryptableSetting) settingValue, artifactServerEncryptedDataDetails, false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing((EncryptableSetting) settingValue, artifactServerEncryptedDataDetails);
     }
   }
 
@@ -803,7 +807,7 @@ public class PcfSetupCommandTaskHandler extends PcfCommandTaskHandler {
             executionLogCallback, log, retryPolicy);
       }
     } catch (PivotalClientApiException exception) {
-      log.warn(exception.getMessage());
+      log.warn(ExceptionMessageSanitizer.sanitizeException(exception).getMessage());
     }
   }
 

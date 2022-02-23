@@ -83,6 +83,7 @@ import software.wings.beans.container.KubernetesServiceSpecification;
 import software.wings.beans.container.KubernetesServiceType;
 import software.wings.beans.container.Label;
 import software.wings.cloudprovider.gke.GkeClusterService;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.helpers.ext.azure.AzureHelperService;
 import software.wings.service.impl.artifact.ArtifactCollectionUtils;
 import software.wings.service.intfc.security.EncryptionService;
@@ -237,6 +238,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
       if (cloudProviderSetting.getValue() instanceof KubernetesClusterConfig) {
         KubernetesClusterConfig config = (KubernetesClusterConfig) cloudProviderSetting.getValue();
         encryptionService.decrypt(config, edd, false);
+        ExceptionMessageSanitizer.storeAllSecretsForSanitizing(config, edd);
 
         kubernetesConfig = config.createKubernetesConfig(setupParams.getNamespace());
       } else if (cloudProviderSetting.getValue() instanceof AzureConfig) {
@@ -485,7 +487,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
           // This should not halt workflow execution.
           downsizeOldOrUnhealthy(kubernetesConfig, containerServiceName, setupParams, executionLogCallback);
         } catch (Exception e) {
-          log.warn("Cleaning up of old or unhealthy instances failed while setting up Kubernetes service: ", e);
+          log.warn("Cleaning up of old or unhealthy instances failed while setting up Kubernetes service: ", ExceptionMessageSanitizer.sanitizeException(e));
         }
         if (setupParams.isUseNewLabelMechanism()) {
           cleanupWithLabels(kubernetesConfig, executionLogCallback);
@@ -515,8 +517,9 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
 
       return CommandExecutionStatus.SUCCESS;
     } catch (Exception ex) {
-      log.error(ExceptionUtils.getMessage(ex), ex);
-      Misc.logAllMessages(ex, executionLogCallback);
+      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
+      log.error(ExceptionUtils.getMessage(sanitizedException), sanitizedException);
+      Misc.logAllMessages(sanitizedException, executionLogCallback);
       return CommandExecutionStatus.FAILURE;
     } finally {
       context.setCommandExecutionData(commandExecutionDataBuilder.build());
@@ -716,7 +719,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
     try {
       service = kubernetesContainerService.getServiceFabric8(kubernetesConfig, kubernetesServiceName);
     } catch (Exception e) {
-      Misc.logAllMessages(e, executionLogCallback);
+      Misc.logAllMessages(ExceptionMessageSanitizer.sanitizeException(e), executionLogCallback);
     }
 
     if (serviceSpecification == null || serviceSpecification.getServiceType() == null
@@ -728,7 +731,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
             kubernetesContainerService.deleteService(kubernetesConfig, kubernetesServiceName);
           }
         } catch (Exception e) {
-          log.error("Couldn't delete service {}", kubernetesServiceName, e);
+          log.error("Couldn't delete service {}", kubernetesServiceName, ExceptionMessageSanitizer.sanitizeException(e));
         }
       }
       return null;
@@ -862,8 +865,9 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
           kubernetesContainerService.deleteIstioDestinationRule(kubernetesConfig, virtualServiceName);
         }
       } catch (Exception e) {
-        log.error("Error checking for previous istio route", e);
-        Misc.logAllMessages(e, executionLogCallback);
+        Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(e);
+        log.error("Error checking for previous istio route", sanitizedException);
+        Misc.logAllMessages(sanitizedException, executionLogCallback);
       }
     }
   }
@@ -884,7 +888,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
           kubernetesContainerService.deleteIngress(kubernetesConfig, ingressName);
         }
       } catch (Exception e) {
-        Misc.logAllMessages(e, executionLogCallback);
+        Misc.logAllMessages(ExceptionMessageSanitizer.sanitizeException(e), executionLogCallback);
       }
       ingress = null;
     }
@@ -964,7 +968,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
           configMap.setData(new HashMap<>());
         }
       } catch (Exception e) {
-        throw new WingsException("Error while loading configMap yaml", e);
+        throw new WingsException("Error while loading configMap yaml", ExceptionMessageSanitizer.sanitizeException(e));
       }
     } else {
       configMap = new ConfigMapBuilder()
@@ -1120,7 +1124,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
 
       return horizontalPodAutoscaler;
     } catch (Exception e) {
-      throw new WingsException("Error while loading custom yaml for horizontal pod autoscaler", e);
+      throw new WingsException("Error while loading custom yaml for horizontal pod autoscaler", ExceptionMessageSanitizer.sanitizeException(e));
     }
   }
 
@@ -1303,7 +1307,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
       try {
         configMap = KubernetesHelper.loadYaml(configMapYaml);
       } catch (Exception e) {
-        throw new InvalidArgumentsException("Couldn't parse configMap YAML: " + configMapYaml, e, USER);
+        throw new InvalidArgumentsException("Couldn't parse configMap YAML: " + configMapYaml, ExceptionMessageSanitizer.sanitizeException(e), USER);
       }
       executionLogCallback.saveExecutionLog("Setting configMap:\n\n" + toDisplayYaml(configMap));
       kubernetesContainerService.createOrReplaceConfigMapFabric8(kubernetesConfig, configMap);
@@ -1316,7 +1320,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
           kubernetesContainerService.deleteConfigMapFabric8(kubernetesConfig, controllerName);
         } catch (Exception e) {
           executionLogCallback.saveExecutionLog("Error deleting configMap: " + controllerName, LogLevel.ERROR);
-          Misc.logAllMessages(e, executionLogCallback);
+          Misc.logAllMessages(ExceptionMessageSanitizer.sanitizeException(e), executionLogCallback);
         }
       }
     }
@@ -1327,7 +1331,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
       try {
         secretMap = KubernetesHelper.loadYaml(secretMapYaml);
       } catch (Exception e) {
-        throw new InvalidArgumentsException("Couldn't parse secretMap YAML: " + controllerName, e, USER);
+        throw new InvalidArgumentsException("Couldn't parse secretMap YAML: " + controllerName, ExceptionMessageSanitizer.sanitizeException(e), USER);
       }
       executionLogCallback.saveExecutionLog("Setting secretMap:\n\n"
           + toDisplayYaml(
@@ -1345,7 +1349,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
           kubernetesContainerService.deleteSecretFabric8(kubernetesConfig, controllerName);
         } catch (Exception e) {
           executionLogCallback.saveExecutionLog("Error deleting secretMap: " + controllerName, LogLevel.ERROR);
-          Misc.logAllMessages(e, executionLogCallback);
+          Misc.logAllMessages(ExceptionMessageSanitizer.sanitizeException(e), executionLogCallback);
         }
       }
     }
@@ -1357,7 +1361,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
       try {
         controller = KubernetesHelper.loadYaml(controllerYaml);
       } catch (Exception e) {
-        throw new InvalidArgumentsException("Couldn't parse controller YAML: " + controllerYaml, e, USER);
+        throw new InvalidArgumentsException("Couldn't parse controller YAML: " + controllerYaml, ExceptionMessageSanitizer.sanitizeException(e), USER);
       }
       executionLogCallback.saveExecutionLog("Rolling back controller " + controllerName);
       executionLogCallback.saveExecutionLog("Setting controller:\n\n" + toDisplayYaml(controller));
@@ -1379,7 +1383,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
             kubernetesConfig, labels, steadyStateTimeout, originalPods, startTime, executionLogCallback);
       } catch (Exception e) {
         executionLogCallback.saveExecutionLog("Error deleting controller: " + controllerName, LogLevel.ERROR);
-        Misc.logAllMessages(e, executionLogCallback);
+        Misc.logAllMessages(ExceptionMessageSanitizer.sanitizeException(e), executionLogCallback);
       }
     }
 
@@ -1445,7 +1449,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
         executionLogCallback.saveExecutionLog(
             format("Timed out waiting for service [%s] load balancer to be ready", serviceName), LogLevel.ERROR);
       } catch (Exception e) {
-        Misc.logAllMessages(e, executionLogCallback);
+        Misc.logAllMessages(ExceptionMessageSanitizer.sanitizeException(e), executionLogCallback);
       }
     } else if (loadBalancer != null && !loadBalancer.getIngress().isEmpty()) {
       return getLoadBalancerEndpoint(executionLogCallback, serviceName, loadBalancer);
@@ -1685,7 +1689,8 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
         executionLogCallback.saveExecutionLog("Setting service:\n\n" + toDisplayYaml(service));
         return service;
       } catch (Exception e) {
-        throw new InvalidArgumentsException(ExceptionUtils.getMessage(e), e, null);
+        Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(e);
+        throw new InvalidArgumentsException(ExceptionUtils.getMessage(sanitizedException), sanitizedException, null);
       }
     } else {
       ServiceSpecBuilder spec =
@@ -1826,7 +1831,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
                 kubernetesContainerService.deleteConfigMapFabric8(kubernetesConfig, controllerName);
                 kubernetesContainerService.deleteSecretFabric8(kubernetesConfig, controllerName);
               } catch (Exception e) {
-                Misc.logAllMessages(e, executionLogCallback);
+                Misc.logAllMessages(ExceptionMessageSanitizer.sanitizeException(e), executionLogCallback);
               }
             }
           });
@@ -1855,7 +1860,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
             kubernetesContainerService.deleteConfigMapFabric8(kubernetesConfig, controllerName);
             kubernetesContainerService.deleteSecretFabric8(kubernetesConfig, controllerName);
           } catch (Exception e) {
-            Misc.logAllMessages(e, executionLogCallback);
+            Misc.logAllMessages(ExceptionMessageSanitizer.sanitizeException(e), executionLogCallback);
           }
         });
 
@@ -1878,7 +1883,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
             kubernetesContainerService.deleteService(kubernetesConfig, serviceName);
             kubernetesContainerService.deleteIngress(kubernetesConfig, serviceName);
           } catch (Exception e) {
-            Misc.logAllMessages(e, executionLogCallback);
+            Misc.logAllMessages(ExceptionMessageSanitizer.sanitizeException(e), executionLogCallback);
           }
         });
   }
@@ -1895,7 +1900,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
       primaryService = kubernetesContainerService.getServiceFabric8(kubernetesConfig, primaryServiceName);
       stageService = kubernetesContainerService.getServiceFabric8(kubernetesConfig, stageServiceName);
     } catch (Exception e) {
-      Misc.logAllMessages(e, executionLogCallback);
+      Misc.logAllMessages(ExceptionMessageSanitizer.sanitizeException(e), executionLogCallback);
       return;
     }
 
@@ -1950,9 +1955,10 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
             format("%nIngress Rule: %s : %s %s → %s", isNotBlank(host) ? host : "", port, path, serviceName));
       }
     } catch (Exception e) {
-      log.error("Couldn't get path from ingress rule.", e);
+      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(e);
+      log.error("Couldn't get path from ingress rule.", sanitizedException);
       executionLogCallback.saveExecutionLog(
-          "Error getting Ingress rule - " + ExceptionUtils.getMessage(e), LogLevel.WARN);
+          "Error getting Ingress rule - " + ExceptionUtils.getMessage(sanitizedException), LogLevel.WARN);
     }
   }
 

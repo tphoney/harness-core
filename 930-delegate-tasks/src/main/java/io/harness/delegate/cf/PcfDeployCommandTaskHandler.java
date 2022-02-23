@@ -58,6 +58,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cloudfoundry.operations.applications.ApplicationDetail;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 @NoArgsConstructor
 @Singleton
@@ -98,6 +99,7 @@ public class PcfDeployCommandTaskHandler extends PcfCommandTaskHandler {
 
       CfInternalConfig pcfConfig = cfCommandRequest.getPcfConfig();
       secretDecryptionService.decrypt(pcfConfig, encryptedDataDetails, false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(pcfConfig, encryptedDataDetails);
 
       CfRequestConfig cfRequestConfig = getCfRequestConfig(cfCommandDeployRequest, pcfConfig);
 
@@ -158,8 +160,8 @@ public class PcfDeployCommandTaskHandler extends PcfCommandTaskHandler {
 
     } catch (Exception e) {
       exceptionOccured = true;
-      exception = e;
-      logException(executionLogCallback, cfCommandDeployRequest, exception);
+      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(e);;
+      logException(executionLogCallback, cfCommandDeployRequest, sanitizedException);
     } finally {
       try {
         if (workingDirectory != null) {

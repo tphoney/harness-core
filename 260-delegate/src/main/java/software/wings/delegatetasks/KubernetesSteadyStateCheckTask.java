@@ -27,6 +27,7 @@ import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogLevel;
 import io.harness.logging.Misc;
 
+import io.harness.secret.SecretSanitizerThreadLocal;
 import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.beans.container.KubernetesSteadyStateCheckParams;
 import software.wings.helpers.ext.container.ContainerDeploymentDelegateHelper;
@@ -56,6 +57,7 @@ public class KubernetesSteadyStateCheckTask extends AbstractDelegateRunnableTask
       ILogStreamingTaskClient logStreamingTaskClient, Consumer<DelegateTaskResponse> consumer,
       BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override
@@ -102,11 +104,11 @@ public class KubernetesSteadyStateCheckTask extends AbstractDelegateRunnableTask
       executionLogCallback.saveExecutionLog(msg, LogLevel.ERROR, CommandExecutionStatus.FAILURE);
       return KubernetesSteadyStateCheckResponse.builder().executionStatus(ExecutionStatus.FAILED).build();
     } catch (WingsException e) {
-      Misc.logAllMessages(e, executionLogCallback);
+      Misc.logAllMessages(ExceptionMessageSanitizer.sanitizeException(e), executionLogCallback);
       throw e;
     } catch (Exception e) {
       log.error("Exception in KubernetesSteadyStateCheck", e);
-      Misc.logAllMessages(e, executionLogCallback);
+      Misc.logAllMessages(ExceptionMessageSanitizer.sanitizeException(e), executionLogCallback);
       executionLogCallback.saveExecutionLog("Exception occurred while waiting for controller to reach steady state",
           LogLevel.ERROR, CommandExecutionStatus.FAILURE);
       return KubernetesSteadyStateCheckResponse.builder().executionStatus(ExecutionStatus.FAILED).build();

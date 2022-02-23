@@ -38,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cloudfoundry.operations.applications.ApplicationSummary;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 @NoArgsConstructor
 @Singleton
@@ -57,6 +58,7 @@ public class PcfDataFetchCommandTaskHandler extends PcfCommandTaskHandler {
     CfInfraMappingDataRequest cfInfraMappingDataRequest = (CfInfraMappingDataRequest) cfCommandRequest;
     CfInternalConfig pcfConfig = cfInfraMappingDataRequest.getPcfConfig();
     secretDecryptionService.decrypt(pcfConfig, encryptedDataDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(pcfConfig, encryptedDataDetails);
 
     CfCommandExecutionResponse cfCommandExecutionResponse = CfCommandExecutionResponse.builder().build();
     CfInfraMappingDataResponse cfInfraMappingDataResponse = CfInfraMappingDataResponse.builder().build();
@@ -94,7 +96,7 @@ public class PcfDataFetchCommandTaskHandler extends PcfCommandTaskHandler {
       cfInfraMappingDataResponse.setSpaces(emptyList());
       cfInfraMappingDataResponse.setRouteMaps(emptyList());
       cfInfraMappingDataResponse.setCommandExecutionStatus(CommandExecutionStatus.FAILURE);
-      cfInfraMappingDataResponse.setOutput(ExceptionUtils.getMessage(e));
+      cfInfraMappingDataResponse.setOutput(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)));
     }
 
     cfCommandExecutionResponse.setCommandExecutionStatus(cfInfraMappingDataResponse.getCommandExecutionStatus());

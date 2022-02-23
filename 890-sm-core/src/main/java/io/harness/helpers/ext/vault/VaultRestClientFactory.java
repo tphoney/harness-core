@@ -149,7 +149,6 @@ public class VaultRestClientFactory {
       Response<Void> response =
           vaultRestClient.deleteSecret(authToken, namespace, secretEngine, pathAndKey.path).execute();
       logErrorIfRequestFailed(response, "V1Impl-deleteSecret");
-      checkAndThrowHashicorpVaultRuntimeException(response);
       return response.isSuccessful();
     }
 
@@ -200,7 +199,6 @@ public class VaultRestClientFactory {
       Response<Void> response =
           vaultRestClient.deleteSecret(authToken, namespace, secretEngine, pathAndKey.path).execute();
       logErrorIfRequestFailed(response, "V2Impl-deleteSecret");
-      checkAndThrowHashicorpVaultRuntimeException(response);
       return response.isSuccessful();
     }
 

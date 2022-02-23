@@ -15,7 +15,6 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.eraro.ErrorCode;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidRequestException;
-import io.harness.exception.ScmException;
 import io.harness.exception.WingsException;
 import io.harness.git.model.ChangeType;
 import io.harness.gitsync.FileInfo;
@@ -63,14 +62,14 @@ public class SCMGitSyncHelper {
         GitSyncGrpcClientUtils.retryAndProcessException(harnessToGitPushInfoServiceBlockingStub::pushFile, fileInfo);
     try {
       checkForError(pushFileResponse);
-    } catch (ScmException e) {
+    } catch (WingsException e) {
       throwDifferentExceptionInCaseOfChangeTypeAdd(gitBranchInfo, changeType, e);
     }
     return ScmGitUtils.createScmPushResponse(yaml, gitBranchInfo, pushFileResponse, entityDetail, changeType);
   }
 
   private void throwDifferentExceptionInCaseOfChangeTypeAdd(
-      GitEntityInfo gitBranchInfo, ChangeType changeType, ScmException e) {
+      GitEntityInfo gitBranchInfo, ChangeType changeType, WingsException e) {
     if (changeType.equals(ChangeType.ADD)) {
       final WingsException cause = ExceptionUtils.cause(ErrorCode.SCM_CONFLICT_ERROR, e);
       if (cause != null) {

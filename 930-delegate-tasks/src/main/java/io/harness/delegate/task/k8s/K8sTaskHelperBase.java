@@ -2572,17 +2572,9 @@ public class K8sTaskHelperBase {
   public ConnectorValidationResult validate(
       ConnectorConfigDTO connector, List<EncryptedDataDetail> encryptionDetailList) {
     KubernetesConfig kubernetesConfig = getKubernetesConfig(connector, encryptionDetailList);
-    try {
-      VersionInfo versionInfo = kubernetesContainerService.getVersion(kubernetesConfig);
-      log.debug(versionInfo.toString());
-      return ConnectorValidationResult.builder().status(ConnectivityStatus.SUCCESS).build();
-    } catch (Exception ex) {
-      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
-      log.error(K8sExceptionConstants.KUBERNETES_CLUSTER_CONNECTION_VALIDATION_FAILED, sanitizedException);
-      throw NestedExceptionUtils.hintWithExplanationException(
-          K8sExceptionConstants.KUBERNETES_CLUSTER_CONNECTION_VALIDATION_FAILED, sanitizedException.getMessage(),
-          sanitizedException);
-    }
+    VersionInfo versionInfo = kubernetesContainerService.getVersion(kubernetesConfig);
+    log.debug(versionInfo.toString());
+    return ConnectorValidationResult.builder().status(ConnectivityStatus.SUCCESS).build();
   }
 
   private KubernetesConfig getKubernetesConfig(

@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.core.winrm.executors;
+package io.harness.delegate.task.winrm;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.rule.OwnerRule.ARVIND;
@@ -28,17 +28,13 @@ import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.spy;
 
 import io.harness.CategoryTest;
-import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.annotations.dev.TargetModule;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.configuration.InstallUtils;
 import io.harness.exception.InvalidRequestException;
 import io.harness.logging.LogCallback;
 import io.harness.rule.Owner;
 import io.harness.ssh.SshHelperUtils;
-
-import software.wings.beans.WinRmConnectionAttributes;
 
 import com.jcraft.jsch.JSchException;
 import io.cloudsoft.winrm4j.client.ShellCommand;
@@ -68,11 +64,9 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({software.wings.utils.SshHelperUtils.class, io.harness.ssh.SshHelperUtils.class, WinRmSession.class,
-    InstallUtils.class, WinRmClient.class})
+@PrepareForTest({SshHelperUtils.class, WinRmSession.class, InstallUtils.class, WinRmClient.class})
 @PowerMockIgnore({"javax.security.*", "javax.net.*"})
 @OwnedBy(CDP)
-@TargetModule(HarnessModule._930_DELEGATE_TASKS)
 public class WinRmSessionTest extends CategoryTest {
   @Mock private SshHelperUtils sshHelperUtils;
   @Mock private Writer writer;
@@ -99,7 +93,7 @@ public class WinRmSessionTest extends CategoryTest {
                              .username("TestUser")
                              .environment(new HashMap<>())
                              .hostname("localhost")
-                             .authenticationScheme(WinRmConnectionAttributes.AuthenticationScheme.KERBEROS)
+                             .authenticationScheme(AuthenticationScheme.KERBEROS)
                              .build();
     PowerMockito
         .when(SshHelperUtils.executeLocalCommand(anyString(), any(LogCallback.class), any(Writer.class), anyBoolean()))
@@ -126,7 +120,7 @@ public class WinRmSessionTest extends CategoryTest {
                              .username("TestUser")
                              .environment(new HashMap<>())
                              .hostname("localhost")
-                             .authenticationScheme(WinRmConnectionAttributes.AuthenticationScheme.KERBEROS)
+                             .authenticationScheme(AuthenticationScheme.KERBEROS)
                              .build();
     PowerMockito
         .when(SshHelperUtils.executeLocalCommand(anyString(), any(LogCallback.class), any(Writer.class), anyBoolean()))
@@ -147,7 +141,7 @@ public class WinRmSessionTest extends CategoryTest {
                              .username("TestUser")
                              .environment(new HashMap<>())
                              .hostname("localhost")
-                             .authenticationScheme(WinRmConnectionAttributes.AuthenticationScheme.KERBEROS)
+                             .authenticationScheme(AuthenticationScheme.KERBEROS)
                              .build();
     PowerMockito
         .when(SshHelperUtils.executeLocalCommand(anyString(), any(LogCallback.class), any(Writer.class), anyBoolean()))
@@ -170,7 +164,7 @@ public class WinRmSessionTest extends CategoryTest {
                              .username("TestUser")
                              .environment(new HashMap<>())
                              .hostname("localhost")
-                             .authenticationScheme(WinRmConnectionAttributes.AuthenticationScheme.KERBEROS)
+                             .authenticationScheme(AuthenticationScheme.KERBEROS)
                              .build();
     PowerMockito
         .when(SshHelperUtils.executeLocalCommand(anyString(), any(LogCallback.class), any(Writer.class), anyBoolean()))
@@ -193,7 +187,7 @@ public class WinRmSessionTest extends CategoryTest {
                              .username("TestUser")
                              .environment(new HashMap<>())
                              .hostname("localhost")
-                             .authenticationScheme(WinRmConnectionAttributes.AuthenticationScheme.KERBEROS)
+                             .authenticationScheme(AuthenticationScheme.KERBEROS)
                              .build();
     PowerMockito
         .when(SshHelperUtils.executeLocalCommand(anyString(), any(LogCallback.class), any(Writer.class), anyBoolean()))
@@ -218,7 +212,7 @@ public class WinRmSessionTest extends CategoryTest {
                              .skipCertChecks(true)
                              .environment(new HashMap<>())
                              .hostname("localhost")
-                             .authenticationScheme(WinRmConnectionAttributes.AuthenticationScheme.KERBEROS)
+                             .authenticationScheme(AuthenticationScheme.KERBEROS)
                              .build();
 
     assertThatExceptionOfType(InvalidRequestException.class)
@@ -239,7 +233,7 @@ public class WinRmSessionTest extends CategoryTest {
                              .username("TestUser")
                              .environment(new HashMap<>())
                              .hostname("localhost")
-                             .authenticationScheme(WinRmConnectionAttributes.AuthenticationScheme.KERBEROS)
+                             .authenticationScheme(AuthenticationScheme.KERBEROS)
                              .build();
 
     assertThatExceptionOfType(InvalidRequestException.class)
@@ -261,9 +255,9 @@ public class WinRmSessionTest extends CategoryTest {
                              .username("TestUser")
                              .environment(new HashMap<>())
                              .hostname("localhost")
-                             .authenticationScheme(WinRmConnectionAttributes.AuthenticationScheme.KERBEROS)
+                             .authenticationScheme(AuthenticationScheme.KERBEROS)
                              .build();
-    WinRmSession session = new WinRmSession(winRmSessionConfig, logCallback);
+    io.harness.delegate.task.winrm.WinRmSession session = new WinRmSession(winRmSessionConfig, logCallback);
     WinRmClientContext context = Mockito.mock(WinRmClientContext.class);
     WinRmClient client = Mockito.mock(WinRmClient.class);
     on(session).set("context", context);
@@ -283,7 +277,7 @@ public class WinRmSessionTest extends CategoryTest {
     commandsList.add(commands);
     ShellCommand shell = mock(ShellCommand.class);
     WinRmTool winRmTool = mock(WinRmTool.class);
-    PyWinrmArgs pyWinrmArgs = mock(PyWinrmArgs.class);
+    io.harness.delegate.task.winrm.PyWinrmArgs pyWinrmArgs = mock(io.harness.delegate.task.winrm.PyWinrmArgs.class);
     setupMocks(commands, shell, winRmTool, pyWinrmArgs);
 
     winRmSession.executeCommandsList(commandsList, writer, error, false, "executeCommand");
@@ -341,7 +335,7 @@ public class WinRmSessionTest extends CategoryTest {
                              .environment(new HashMap<>())
                              .hostname("localhost")
                              .workingDirectory("workingDirectory")
-                             .authenticationScheme(WinRmConnectionAttributes.AuthenticationScheme.NTLM)
+                             .authenticationScheme(AuthenticationScheme.NTLM)
                              .build();
     winRmSession = new WinRmSession(winRmSessionConfig, logCallback);
     on(winRmSession).set("args", pyWinrmArgs);

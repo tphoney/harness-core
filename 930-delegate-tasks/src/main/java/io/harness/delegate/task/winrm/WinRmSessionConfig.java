@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package software.wings.core.winrm.executors;
+package io.harness.delegate.task.winrm;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
@@ -15,7 +15,6 @@ import io.harness.annotations.dev.TargetModule;
 import io.harness.encryption.Encrypted;
 
 import software.wings.annotation.EncryptableSetting;
-import software.wings.beans.WinRmConnectionAttributes.AuthenticationScheme;
 import software.wings.settings.SettingVariableTypes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

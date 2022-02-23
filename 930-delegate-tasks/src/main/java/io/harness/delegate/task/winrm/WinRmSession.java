@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package software.wings.core.winrm.executors;
+package io.harness.delegate.task.winrm;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -21,8 +21,6 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 import io.harness.logging.LogCallback;
 import io.harness.ssh.SshHelperUtils;
-
-import software.wings.beans.WinRmConnectionAttributes.AuthenticationScheme;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.jcraft.jsch.JSchException;
@@ -219,7 +217,7 @@ public class WinRmSession implements AutoCloseable {
   }
 
   @VisibleForTesting
-  String getUserPrincipal(String username, String domain) {
+  public String getUserPrincipal(String username, String domain) {
     if (username == null || domain == null) {
       throw new InvalidRequestException("Username or domain cannot be null", WingsException.USER);
     }

@@ -250,3 +250,4 @@ io.harness.cdng.manifest.yaml.ArtifactoryStoreConfig
 io.harness.steps.policy.PolicyStepInfo
 io.harness.steps.policy.PolicyStepNode
 io.harness.steps.policy.custom.CustomPolicyStepSpec
+io.harness.cdng.service.beans.SshServiceSpec

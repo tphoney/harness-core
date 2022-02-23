@@ -84,13 +84,13 @@ public class K8SSyncEventTasklet extends EventWriter implements Tasklet {
       if (k8SClusterSyncEvent.getVersion() == 2) {
         instanceInfoTimescaleDAO.stopInactiveNodesAtTime(jobConstants, k8SClusterSyncEvent.getClusterId(),
             syncEventTime, new ArrayList<>(k8SClusterSyncEvent.getActiveNodeUidsMapMap().keySet()));
-        instanceInfoTimescaleDAO.stopInactivePodsAtTime(jobConstants, k8SClusterSyncEvent.getClusterId(), syncEventTime,
-            new ArrayList<>(k8SClusterSyncEvent.getActivePodUidsMapMap().keySet()));
+        instanceInfoTimescaleDAO.stopInactivePodsAtTime(jobConstants.getAccountId(), k8SClusterSyncEvent.getClusterId(),
+            syncEventTime, new ArrayList<>(k8SClusterSyncEvent.getActivePodUidsMapMap().keySet()));
       } else {
         instanceInfoTimescaleDAO.stopInactiveNodesAtTime(jobConstants, k8SClusterSyncEvent.getClusterId(),
             syncEventTime, k8SClusterSyncEvent.getActiveNodeUidsList());
-        instanceInfoTimescaleDAO.stopInactivePodsAtTime(jobConstants, k8SClusterSyncEvent.getClusterId(), syncEventTime,
-            k8SClusterSyncEvent.getActivePodUidsList());
+        instanceInfoTimescaleDAO.stopInactivePodsAtTime(jobConstants.getAccountId(), k8SClusterSyncEvent.getClusterId(),
+            syncEventTime, k8SClusterSyncEvent.getActivePodUidsList());
       }
     }
   }

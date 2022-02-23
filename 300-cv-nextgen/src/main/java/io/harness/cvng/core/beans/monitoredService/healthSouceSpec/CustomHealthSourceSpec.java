@@ -139,8 +139,8 @@ public class CustomHealthSourceSpec extends MetricHealthSourceSpec {
                                                 .monitoringSourceName(name)
                                                 .monitoredServiceIdentifier(monitoredServiceIdentifier)
                                                 .build();
-      mappedCVConfig.setMetricPack(
-          mappedCVConfig.generateMetricPack(metricDefinition.getMetricName(), metricDefinition.getRiskProfile()));
+      mappedCVConfig.setMetricPack(mappedCVConfig.generateMetricPack(
+          metricDefinition.getIdentifier(), metricDefinition.getMetricName(), metricDefinition.getRiskProfile()));
 
       cvConfigMap.put(cvConfigKey, mappedCVConfig);
     });

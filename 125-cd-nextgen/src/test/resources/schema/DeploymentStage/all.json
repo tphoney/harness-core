@@ -3997,7 +3997,8 @@
           "type": "string",
           "enum": [
             "Kubernetes",
-            "NativeHelm"
+            "NativeHelm",
+            "Ssh"
           ]
         }
       },
@@ -4031,6 +4032,22 @@
             "properties": {
               "spec": {
                 "$ref": "#/definitions/NativeHelmServiceSpec"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Ssh"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/SshServiceSpec"
               }
             }
           }
@@ -4580,6 +4597,22 @@
           "$ref": "#/definitions/SidecarArtifact"
         }
       },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "SshServiceSpec": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ServiceSpec"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "metadata": {
+              "type": "string"
+            }
+          }
+        }
+      ],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "StageOverridesConfig": {

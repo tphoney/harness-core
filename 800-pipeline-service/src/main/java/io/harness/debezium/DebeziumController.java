@@ -100,7 +100,7 @@ public class DebeziumController implements Runnable {
     try {
       offsetStorageTempFile = File.createTempFile("offsets_", ".dat");
     } catch (IOException e) {
-      e.printStackTrace();
+      log.error("ioException", e);
     }
     Properties props = new Properties();
     String offsetCollection = "offset_collection";

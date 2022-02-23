@@ -26,7 +26,6 @@ import static io.harness.k8s.manifest.ManifestHelper.normalizeFolderPath;
 import static io.harness.validation.Validator.notNullCheck;
 
 import static software.wings.api.InstanceElement.Builder.anInstanceElement;
-import static software.wings.beans.appmanifest.AppManifestKind.VALUES;
 import static software.wings.beans.appmanifest.ManifestFile.VALUES_YAML_KEY;
 import static software.wings.beans.appmanifest.StoreType.HelmChartRepo;
 import static software.wings.beans.appmanifest.StoreType.Remote;
@@ -721,7 +720,7 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
             applicationManifestUtils.getOverrideApplicationManifests(context, AppManifestKind.KUSTOMIZE_PATCHES);
         remotePatches = isValuesInGit(appManifestMap);
       } else {
-        appManifestMap = applicationManifestUtils.getApplicationManifests(context, VALUES);
+        appManifestMap = applicationManifestUtils.getApplicationManifests(context, AppManifestKind.VALUES);
 
         valuesInGit = isValuesInGit(appManifestMap);
         valuesInHelmChartRepo = applicationManifestUtils.isValuesInHelmChartRepo(context);
@@ -733,7 +732,7 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
         appManifestMap.put(K8sValuesLocation.Step,
             ApplicationManifest.builder()
                 .gitFileConfig(getStepRemoteOverrideGitConfig())
-                .kind(VALUES)
+                .kind(AppManifestKind.VALUES)
                 .storeType(Remote)
                 .build());
         valuesInGit = true;
@@ -1080,7 +1079,7 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
     }
 
     Map<K8sValuesLocation, ApplicationManifest> appManifestMap =
-        applicationManifestUtils.getApplicationManifests(context, VALUES);
+        applicationManifestUtils.getApplicationManifests(context, AppManifestKind.VALUES);
 
     boolean valuesInGit = isValuesInGit(appManifestMap);
     boolean valuesInCustomSource = isValuesInCustomSource(appManifestMap);
@@ -1208,7 +1207,7 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
     if (applicationManifestUtils.isKustomizeSource(context) && isUseLatestKustomizeVersion(context.getAccountId())) {
       appManifestKind = AppManifestKind.KUSTOMIZE_PATCHES;
     } else {
-      appManifestKind = isOpenShiftManifestConfig ? AppManifestKind.OC_PARAMS : VALUES;
+      appManifestKind = isOpenShiftManifestConfig ? AppManifestKind.OC_PARAMS : AppManifestKind.VALUES;
     }
     return applicationManifestUtils.getApplicationManifests(context, appManifestKind);
   }

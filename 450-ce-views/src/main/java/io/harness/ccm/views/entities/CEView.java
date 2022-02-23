@@ -18,6 +18,7 @@ import io.harness.persistence.UpdatedAtAware;
 import io.harness.persistence.UpdatedByAware;
 import io.harness.persistence.UuidAware;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import javax.validation.constraints.Size;
@@ -40,21 +41,27 @@ import org.mongodb.morphia.annotations.Id;
 public final class CEView implements PersistentEntity, UuidAware, CreatedAtAware, UpdatedAtAware, AccountAccess,
                                      CreatedByAware, UpdatedByAware {
   @Id String uuid;
-  @Size(min = 1, max = 32, message = "for view must be between 1 and 32 characters long") @NotBlank String name;
+  @Schema(description = "Name of the Perspective (must be between 1 and 32 characters long)")
+  @Size(min = 1, max = 32, message = "for view must be between 1 and 32 characters long")
+  @NotBlank
+  String name;
   String accountId;
-  @NotBlank String viewVersion;
+  @Hidden @NotBlank String viewVersion;
 
-  ViewTimeRange viewTimeRange;
-  List<ViewRule> viewRules;
+  @Schema(description = "The time interval on which you want to create a Perspective") ViewTimeRange viewTimeRange;
+  @Schema(description = "An array of Perspective Rules, which are combined using OR operator") List<ViewRule> viewRules;
   List<ViewFieldIdentifier> dataSources;
+  @Schema(
+      description =
+          "Perspective default visualization, which specifies the default group by field, chart granularity (day / month) and chart type (line chart / bar chart)")
   ViewVisualization viewVisualization;
-  ViewType viewType = ViewType.CUSTOMER;
+  @Hidden ViewType viewType = ViewType.CUSTOMER;
 
-  ViewState viewState = ViewState.DRAFT;
+  @Hidden ViewState viewState = ViewState.DRAFT;
 
-  double totalCost;
-  long createdAt;
-  long lastUpdatedAt;
-  private EmbeddedUser createdBy;
-  private EmbeddedUser lastUpdatedBy;
+  @Hidden double totalCost;
+  @Hidden long createdAt;
+  @Hidden long lastUpdatedAt;
+  @Hidden private EmbeddedUser createdBy;
+  @Hidden private EmbeddedUser lastUpdatedBy;
 }

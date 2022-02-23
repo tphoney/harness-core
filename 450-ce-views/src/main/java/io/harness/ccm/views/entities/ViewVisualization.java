@@ -7,6 +7,7 @@
 
 package io.harness.ccm.views.entities;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Value;
@@ -15,6 +16,9 @@ import lombok.experimental.FieldDefaults;
 @Value
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Schema(
+    description =
+        "Perspective default visualization, which specifies the default group by field, chart granularity (day / month) and chart type (line chart / bar chart)")
 public class ViewVisualization {
   ViewTimeGranularity granularity;
   ViewField groupBy;

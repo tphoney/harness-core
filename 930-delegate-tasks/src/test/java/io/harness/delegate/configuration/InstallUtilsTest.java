@@ -64,7 +64,8 @@ public class InstallUtilsTest extends CategoryTest implements MockableTestMixin 
     boolean useCdn = delegateConfiguration.isUseCdn();
 
     assertThat(useCdn).isFalse();
-    assertThat(InstallUtils.getTerraformConfigInspectDownloadUrl(delegateConfiguration, terraformConfigInspectVersion))
+    assertThat(io.harness.delegate.configuration.InstallUtils.getTerraformConfigInspectDownloadUrl(
+                   delegateConfiguration, terraformConfigInspectVersion))
         .isEqualTo(
             "https://app.harness.io/storage/harness-download/harness-terraform-config-inspect/v1.0/windows/amd64/terraform-config-inspect");
   }
@@ -82,22 +83,22 @@ public class InstallUtilsTest extends CategoryTest implements MockableTestMixin 
     try {
       setStaticFieldValue(SystemUtils.class, "IS_OS_WINDOWS", false);
       setStaticFieldValue(SystemUtils.class, "IS_OS_MAC", false);
-      assertThat(
-          InstallUtils.getTerraformConfigInspectDownloadUrl(delegateConfiguration, terraformConfigInspectVersion))
+      assertThat(io.harness.delegate.configuration.InstallUtils.getTerraformConfigInspectDownloadUrl(
+                     delegateConfiguration, terraformConfigInspectVersion))
           .isEqualTo(
               "https://app.harness.io/storage/harness-download/harness-terraform-config-inspect/v1.0/linux/amd64/terraform-config-inspect");
 
       setStaticFieldValue(SystemUtils.class, "IS_OS_WINDOWS", false);
       setStaticFieldValue(SystemUtils.class, "IS_OS_MAC", true);
-      assertThat(
-          InstallUtils.getTerraformConfigInspectDownloadUrl(delegateConfiguration, terraformConfigInspectVersion))
+      assertThat(io.harness.delegate.configuration.InstallUtils.getTerraformConfigInspectDownloadUrl(
+                     delegateConfiguration, terraformConfigInspectVersion))
           .isEqualTo(
               "https://app.harness.io/storage/harness-download/harness-terraform-config-inspect/v1.0/darwin/amd64/terraform-config-inspect");
 
       setStaticFieldValue(SystemUtils.class, "IS_OS_WINDOWS", true);
       setStaticFieldValue(SystemUtils.class, "IS_OS_MAC", false);
-      assertThat(
-          InstallUtils.getTerraformConfigInspectDownloadUrl(delegateConfiguration, terraformConfigInspectVersion))
+      assertThat(io.harness.delegate.configuration.InstallUtils.getTerraformConfigInspectDownloadUrl(
+                     delegateConfiguration, terraformConfigInspectVersion))
           .isEqualTo(
               "https://app.harness.io/storage/harness-download/harness-terraform-config-inspect/v1.0/windows/amd64/terraform-config-inspect");
     } finally {
@@ -119,15 +120,15 @@ public class InstallUtilsTest extends CategoryTest implements MockableTestMixin 
     try {
       setStaticFieldValue(SystemUtils.class, "IS_OS_WINDOWS", false);
       setStaticFieldValue(SystemUtils.class, "IS_OS_MAC", false);
-      assertThat(InstallUtils.getScmDownloadUrl(delegateConfiguration))
+      assertThat(io.harness.delegate.configuration.InstallUtils.getScmDownloadUrl(delegateConfiguration))
           .isEqualTo(
-              "https://app.harness.io/storage/harness-download/harness-scm/release/3ac4cefa/bin/linux/amd64/scm");
+              "https://app.harness.io/storage/harness-download/harness-scm/release/04ad961e/bin/linux/amd64/scm");
 
       setStaticFieldValue(SystemUtils.class, "IS_OS_WINDOWS", false);
       setStaticFieldValue(SystemUtils.class, "IS_OS_MAC", true);
-      assertThat(InstallUtils.getScmDownloadUrl(delegateConfiguration))
+      assertThat(io.harness.delegate.configuration.InstallUtils.getScmDownloadUrl(delegateConfiguration))
           .isEqualTo(
-              "https://app.harness.io/storage/harness-download/harness-scm/release/3ac4cefa/bin/darwin/amd64/scm");
+              "https://app.harness.io/storage/harness-download/harness-scm/release/04ad961e/bin/darwin/amd64/scm");
     } finally {
       setStaticFieldValue(SystemUtils.class, "IS_OS_WINDOWS", win);
       setStaticFieldValue(SystemUtils.class, "IS_OS_MAC", mac);
@@ -139,7 +140,7 @@ public class InstallUtilsTest extends CategoryTest implements MockableTestMixin 
   @Category(UnitTests.class)
   public void testGetOsPathWindows() throws Exception {
     setStaticFieldValue(SystemUtils.class, "IS_OS_WINDOWS", true);
-    assertThat(InstallUtils.getOsPath()).isEqualTo("windows");
+    assertThat(io.harness.delegate.configuration.InstallUtils.getOsPath()).isEqualTo("windows");
   }
 
   @Test
@@ -148,7 +149,7 @@ public class InstallUtilsTest extends CategoryTest implements MockableTestMixin 
   public void testGetOsPathMac() throws Exception {
     setStaticFieldValue(SystemUtils.class, "IS_OS_WINDOWS", false);
     setStaticFieldValue(SystemUtils.class, "IS_OS_MAC", true);
-    assertThat(InstallUtils.getOsPath()).isEqualTo("darwin");
+    assertThat(io.harness.delegate.configuration.InstallUtils.getOsPath()).isEqualTo("darwin");
   }
 
   @Test
@@ -157,18 +158,18 @@ public class InstallUtilsTest extends CategoryTest implements MockableTestMixin 
   public void testGetOsPathLinux() throws Exception {
     setStaticFieldValue(SystemUtils.class, "IS_OS_WINDOWS", false);
     setStaticFieldValue(SystemUtils.class, "IS_OS_MAC", false);
-    assertThat(InstallUtils.getOsPath()).isEqualTo("linux");
+    assertThat(io.harness.delegate.configuration.InstallUtils.getOsPath()).isEqualTo("linux");
   }
 
   @Test
   @Owner(developers = ANSHUL)
   @Category(UnitTests.class)
   public void testGetOcPath() throws Exception {
-    setStaticFieldValue(InstallUtils.class, "ocPath", "oc");
-    assertThat(InstallUtils.getOcPath()).isEqualTo("oc");
+    setStaticFieldValue(io.harness.delegate.configuration.InstallUtils.class, "ocPath", "oc");
+    assertThat(io.harness.delegate.configuration.InstallUtils.getOcPath()).isEqualTo("oc");
 
-    setStaticFieldValue(InstallUtils.class, "ocPath", "path_to_oc");
-    assertThat(InstallUtils.getOcPath()).isEqualTo("path_to_oc");
+    setStaticFieldValue(io.harness.delegate.configuration.InstallUtils.class, "ocPath", "path_to_oc");
+    assertThat(io.harness.delegate.configuration.InstallUtils.getOcPath()).isEqualTo("path_to_oc");
   }
 
   @Test
@@ -179,24 +180,24 @@ public class InstallUtilsTest extends CategoryTest implements MockableTestMixin 
     setStaticFieldValue(SystemUtils.class, "IS_OS_WINDOWS", false);
     setStaticFieldValue(SystemUtils.class, "IS_OS_MAC", true);
     deleteOcDirectory();
-    assertThat(InstallUtils.installOc(delegateConfiguration)).isFalse();
+    assertThat(io.harness.delegate.configuration.InstallUtils.installOc(delegateConfiguration)).isFalse();
 
     setStaticFieldValue(SystemUtils.class, "IS_OS_WINDOWS", false);
     setStaticFieldValue(SystemUtils.class, "IS_OS_MAC", false);
     deleteOcDirectory();
-    assertThat(InstallUtils.installOc(delegateConfiguration)).isTrue();
+    assertThat(io.harness.delegate.configuration.InstallUtils.installOc(delegateConfiguration)).isTrue();
 
     deleteOcDirectory();
-    assertThat(InstallUtils.installOc(delegateConfiguration)).isTrue();
-    assertThat(InstallUtils.installOc(delegateConfiguration)).isTrue();
+    assertThat(io.harness.delegate.configuration.InstallUtils.installOc(delegateConfiguration)).isTrue();
+    assertThat(io.harness.delegate.configuration.InstallUtils.installOc(delegateConfiguration)).isTrue();
 
     deleteOcDirectory();
     setStaticFieldValue(SystemUtils.class, "IS_OS_WINDOWS", true);
-    assertThat(InstallUtils.installOc(delegateConfiguration)).isTrue();
+    assertThat(io.harness.delegate.configuration.InstallUtils.installOc(delegateConfiguration)).isTrue();
 
     deleteOcDirectory();
     delegateConfiguration.setOcPath("oc");
-    assertThat(InstallUtils.installOc(delegateConfiguration)).isTrue();
+    assertThat(io.harness.delegate.configuration.InstallUtils.installOc(delegateConfiguration)).isTrue();
   }
 
   private void deleteOcDirectory() throws Exception {
@@ -210,28 +211,28 @@ public class InstallUtilsTest extends CategoryTest implements MockableTestMixin 
   @Owner(developers = YOGESH)
   @Category(UnitTests.class)
   public void testisHelmV2() {
-    assertThat(InstallUtils.isHelmV2("V2")).isTrue();
-    assertThat(InstallUtils.isHelmV2("v2")).isTrue();
-    assertThat(InstallUtils.isHelmV2("V3")).isFalse();
-    assertThat(InstallUtils.isHelmV2("v3")).isFalse();
+    assertThat(io.harness.delegate.configuration.InstallUtils.isHelmV2("V2")).isTrue();
+    assertThat(io.harness.delegate.configuration.InstallUtils.isHelmV2("v2")).isTrue();
+    assertThat(io.harness.delegate.configuration.InstallUtils.isHelmV2("V3")).isFalse();
+    assertThat(io.harness.delegate.configuration.InstallUtils.isHelmV2("v3")).isFalse();
   }
 
   @Test
   @Owner(developers = YOGESH)
   @Category(UnitTests.class)
   public void testisHelmV3() {
-    assertThat(InstallUtils.isHelmV3("V3")).isTrue();
-    assertThat(InstallUtils.isHelmV3("v3")).isTrue();
-    assertThat(InstallUtils.isHelmV3("V2")).isFalse();
-    assertThat(InstallUtils.isHelmV3("v2")).isFalse();
+    assertThat(io.harness.delegate.configuration.InstallUtils.isHelmV3("V3")).isTrue();
+    assertThat(io.harness.delegate.configuration.InstallUtils.isHelmV3("v3")).isTrue();
+    assertThat(io.harness.delegate.configuration.InstallUtils.isHelmV3("V2")).isFalse();
+    assertThat(io.harness.delegate.configuration.InstallUtils.isHelmV3("v2")).isFalse();
   }
 
   @Test
   @Owner(developers = YOGESH)
   @Category(UnitTests.class)
   public void testGetHelmPath() {
-    assertThat(InstallUtils.getHelm2Path()).isNotNull();
-    assertThat(InstallUtils.getHelm3Path()).isNotNull();
+    assertThat(io.harness.delegate.configuration.InstallUtils.getHelm2Path()).isNotNull();
+    assertThat(io.harness.delegate.configuration.InstallUtils.getHelm3Path()).isNotNull();
   }
 
   @Test
@@ -304,7 +305,7 @@ public class InstallUtilsTest extends CategoryTest implements MockableTestMixin 
 
   @Before
   public void setup() throws Exception {
-    setStaticFieldValue(InstallUtils.class, "helmPaths", new HashMap() {
+    setStaticFieldValue(io.harness.delegate.configuration.InstallUtils.class, "helmPaths", new HashMap() {
       {
         put(helm2Version, "helm");
         put(helm3Version, "helm");
@@ -318,9 +319,11 @@ public class InstallUtilsTest extends CategoryTest implements MockableTestMixin 
   public void testHelm2Install() {
     DelegateConfiguration helm2DelegateConfiguration = DelegateConfiguration.builder().helmPath("helm2Path").build();
 
-    assertThat(InstallUtils.delegateConfigHasHelmPath(helm2DelegateConfiguration, helm2Version)).isTrue();
-    assertThat(InstallUtils.getHelm2Path()).isEqualTo("helm2Path");
-    assertThat(InstallUtils.getHelm3Path()).isEqualTo("helm");
+    assertThat(io.harness.delegate.configuration.InstallUtils.delegateConfigHasHelmPath(
+                   helm2DelegateConfiguration, helm2Version))
+        .isTrue();
+    assertThat(io.harness.delegate.configuration.InstallUtils.getHelm2Path()).isEqualTo("helm2Path");
+    assertThat(io.harness.delegate.configuration.InstallUtils.getHelm3Path()).isEqualTo("helm");
   }
 
   @Test
@@ -329,8 +332,10 @@ public class InstallUtilsTest extends CategoryTest implements MockableTestMixin 
   public void testHelm3Install() {
     DelegateConfiguration helm3DelegateConfiguration = DelegateConfiguration.builder().helm3Path("helm3Path").build();
 
-    assertThat(InstallUtils.delegateConfigHasHelmPath(helm3DelegateConfiguration, helm3Version)).isTrue();
-    assertThat(InstallUtils.getHelm3Path()).isEqualTo("helm3Path");
-    assertThat(InstallUtils.getHelm2Path()).isEqualTo("helm");
+    assertThat(io.harness.delegate.configuration.InstallUtils.delegateConfigHasHelmPath(
+                   helm3DelegateConfiguration, helm3Version))
+        .isTrue();
+    assertThat(io.harness.delegate.configuration.InstallUtils.getHelm3Path()).isEqualTo("helm3Path");
+    assertThat(io.harness.delegate.configuration.InstallUtils.getHelm2Path()).isEqualTo("helm");
   }
 }

@@ -55,5 +55,6 @@ public interface PipelineResourceConstants {
       "If an Input Set save fails, this field contains the map from FQN to why that FQN threw an error";
   String INPUT_SET_VERSION_MESSAGE = "The version of the Input Set";
   String INPUT_SET_MODULES_MESSAGE = "Modules in which the Pipeline belongs";
-  String INPUT_SET_REPLACED_EXPRESSIONS_MESSAGE = "List of Expressions that need to be replaced for running selected Stages. Empty if the full Pipeline is being run or no expressions need to be replaced";
+  String INPUT_SET_REPLACED_EXPRESSIONS_MESSAGE =
+      "List of Expressions that need to be replaced for running selected Stages. Empty if the full Pipeline is being run or no expressions need to be replaced";
 }

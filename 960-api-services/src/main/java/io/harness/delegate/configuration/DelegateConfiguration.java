@@ -19,7 +19,7 @@ import lombok.Data;
 @OwnedBy(DEL)
 public class DelegateConfiguration {
   private String accountId;
-  private String accountSecret;
+  private String delegateToken;
   private String managerUrl;
   private String verificationServiceUrl;
   private String cvNextGenUrl;

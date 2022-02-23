@@ -30,5 +30,6 @@ import lombok.experimental.FieldDefaults;
 @ApiModel("InputSetTemplateRequest")
 @Schema(name = "InputSetTemplateRequest", description = "Contains Stage Identifiers to filter Runtime Input Template.")
 public class InputSetTemplateRequestDTO {
+  @Schema(description = "List of Stage identifiers for which the Runtime Input template is needed")
   List<String> stageIdentifiers;
 }

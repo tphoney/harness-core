@@ -30,5 +30,5 @@ import lombok.experimental.FieldDefaults;
 @Schema(name = "MergeInputSetTemplateRequest",
     description = "View of the Request Parameter for Merging of Runtime Input into a Pipeline")
 public class MergeInputSetTemplateRequestDTO {
-  String runtimeInputYaml;
+  @Schema(description = "Runtime Input YAML that is to be merged") String runtimeInputYaml;
 }

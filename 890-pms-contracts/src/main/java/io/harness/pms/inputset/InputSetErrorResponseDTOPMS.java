@@ -7,9 +7,12 @@
 
 package io.harness.pms.inputset;
 
+import io.harness.pms.pipeline.PipelineResourceConstants;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
@@ -20,6 +23,11 @@ import lombok.Value;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ApiModel("InputSetErrorResponse")
+@Schema(name = "InputSetErrorWrapper",
+    description = "This is the wrapper of list of errors for a field while saving an Input Set")
 public class InputSetErrorResponseDTOPMS {
-  @Builder.Default List<InputSetErrorDTOPMS> errors = new ArrayList<>();
+  @Schema(name = "InputSetError",
+      description = "This contains the list of errors for a field while saving an Input Set")
+  @Builder.Default
+  List<InputSetErrorDTOPMS> errors = new ArrayList<>();
 }

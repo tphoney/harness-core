@@ -7,9 +7,12 @@
 
 package io.harness.pms.inputset;
 
+import io.harness.pms.pipeline.PipelineResourceConstants;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
 
@@ -18,8 +21,9 @@ import lombok.Value;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ApiModel("InputSetError")
+@Schema(name = "InputSetError", description = "This contains the error details for a field while saving an Input Set")
 public class InputSetErrorDTOPMS {
-  String fieldName;
-  String message;
-  String identifierOfErrorSource;
+  @Schema(description = "Name of the field that has the error") String fieldName;
+  @Schema(description = "Error message for this field") String message;
+  @Schema(description = "Identifier of the Input Set from which this field is from") String identifierOfErrorSource;
 }

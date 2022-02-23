@@ -7,7 +7,7 @@
 
 package software.wings.helpers.ext.appdynamics;
 
-import software.wings.delegatetasks.cv.beans.appd.AppDynamicsTier;
+import io.harness.cv.beans.AppDynamicsTier;
 
 import software.wings.service.impl.appdynamics.AppdynamicsMetric;
 import software.wings.service.impl.appdynamics.AppdynamicsMetricData;

@@ -177,7 +177,6 @@ import software.wings.sm.states.APMVerificationState.Method;
 import software.wings.sm.states.AppDynamicsState;
 import software.wings.sm.states.BugsnagState;
 import software.wings.sm.states.CustomLogVerificationState;
-import software.wings.sm.states.CustomLogVerificationState.ResponseMapper;
 import software.wings.sm.states.DatadogLogState;
 import software.wings.sm.states.DatadogState;
 import software.wings.sm.states.DatadogState.Metric;

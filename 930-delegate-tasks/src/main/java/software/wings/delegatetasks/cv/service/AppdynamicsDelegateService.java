@@ -8,19 +8,19 @@
 package software.wings.delegatetasks.cv.service;
 
 import io.harness.cv.beans.AppDynamicsApplication;
-import software.wings.delegatetasks.cv.beans.appd.AppDynamicsTier;
+import io.harness.cv.beans.AppDynamicsTier;
 import io.harness.delegate.beans.connector.appdynamicsconnector.AppDynamicsConnectorDTO;
 import io.harness.security.encryption.EncryptedDataDetail;
 
-import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.TaskType;
 import software.wings.delegatetasks.DelegateTaskType;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
+import software.wings.delegatetasks.cv.beans.appd.AppdynamicsSetupTestNodeData;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
 import software.wings.service.impl.appdynamics.AppdynamicsMetric;
 import software.wings.service.impl.appdynamics.AppdynamicsMetricData;
 import software.wings.service.impl.appdynamics.AppdynamicsNode;
-import software.wings.delegatetasks.cv.beans.appd.AppdynamicsSetupTestNodeData;
 import software.wings.service.impl.appdynamics.AppdynamicsTier;
 import software.wings.service.impl.newrelic.NewRelicApplication;
 

@@ -14,6 +14,7 @@ import static io.harness.data.structure.UUIDGenerator.generateUuid;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cv.beans.AppDynamicsApplication;
+import io.harness.cv.beans.AppDynamicsTier;
 import io.harness.cvng.beans.AppdynamicsValidationResponse;
 import io.harness.cvng.beans.AppdynamicsValidationResponse.AppdynamicsMetricValueValidationResponse;
 import io.harness.cvng.beans.AppdynamicsValidationResponse.AppdynamicsValidationResponseBuilder;
@@ -28,7 +29,6 @@ import io.harness.cvng.beans.appd.AppDynamicsFetchTiersRequest;
 import io.harness.cvng.beans.appd.AppDynamicsFileDefinition;
 import io.harness.cvng.beans.appd.AppDynamicsFileDefinition.FileType;
 import io.harness.cvng.beans.appd.AppDynamicsMetricDataValidationRequest;
-import software.wings.delegatetasks.cv.beans.appd.AppDynamicsTier;
 import io.harness.cvng.beans.appd.AppdynamicsMetricDataResponse;
 import io.harness.cvng.beans.appd.AppdynamicsMetricDataResponse.DataPoint;
 import io.harness.cvng.core.beans.OnboardingRequestDTO;
@@ -143,7 +143,7 @@ public class AppDynamicsServiceImpl implements AppDynamicsService {
 
   @Override
   public PageResponse<AppDynamicsApplication> getApplications(String accountId, String connectorIdentifier,
-                                                              String orgIdentifier, String projectIdentifier, int offset, int pageSize, String filter) {
+      String orgIdentifier, String projectIdentifier, int offset, int pageSize, String filter) {
     DataCollectionRequest request =
         AppDynamicsFetchAppRequest.builder().type(DataCollectionRequestType.APPDYNAMICS_FETCH_APPS).build();
 

@@ -316,14 +316,4 @@ public class CustomLogVerificationState extends AbstractLogAnalysisState {
   public enum ResponseType { JSON }
 
   public enum Method { POST, GET }
-
-  @Data
-  @Builder
-  public static class ResponseMapper {
-    private String fieldName;
-    private String fieldValue;
-    private List<String> jsonPath;
-    private List<String> regexs;
-    private String timestampFormat;
-  }
 }

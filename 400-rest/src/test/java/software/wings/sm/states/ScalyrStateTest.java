@@ -117,17 +117,17 @@ public class ScalyrStateTest extends APMStateVerificationTestBase {
     assertThat(logCollectionMapping.size()).isEqualTo(1);
     final Map<String, CustomLogResponseMapper> responseMap = logCollectionMapping.get(ScalyrConfig.QUERY_URL);
     assertThat(responseMap.get("host"))
-        .isEqualTo(CustomLogVerificationState.ResponseMapper.builder()
+        .isEqualTo(CustomLogResponseMapper.builder()
                        .fieldName("host")
                        .jsonPath(Collections.singletonList("resolved_host_name"))
                        .build());
     assertThat(responseMap.get("timestamp"))
-        .isEqualTo(CustomLogVerificationState.ResponseMapper.builder()
+        .isEqualTo(CustomLogResponseMapper.builder()
                        .fieldName("timestamp")
                        .jsonPath(Collections.singletonList("resolved_timestamp_field"))
                        .build());
     assertThat(responseMap.get("logMessage"))
-        .isEqualTo(CustomLogVerificationState.ResponseMapper.builder()
+        .isEqualTo(CustomLogResponseMapper.builder()
                        .fieldName("logMessage")
                        .jsonPath(Collections.singletonList("resolved_message_field"))
                        .build());
@@ -177,17 +177,17 @@ public class ScalyrStateTest extends APMStateVerificationTestBase {
     assertThat(logCollectionMapping.size()).isEqualTo(1);
     final Map<String, CustomLogResponseMapper> responseMap = logCollectionMapping.get(ScalyrConfig.QUERY_URL);
     assertThat(responseMap.get("host"))
-        .isEqualTo(CustomLogVerificationState.ResponseMapper.builder()
+        .isEqualTo(CustomLogResponseMapper.builder()
                        .fieldName("host")
                        .jsonPath(Collections.singletonList("resolved_host_name"))
                        .build());
     assertThat(responseMap.get("timestamp"))
-        .isEqualTo(CustomLogVerificationState.ResponseMapper.builder()
+        .isEqualTo(CustomLogResponseMapper.builder()
                        .fieldName("timestamp")
                        .jsonPath(Collections.singletonList("resolved_timestamp_field"))
                        .build());
     assertThat(responseMap.get("logMessage"))
-        .isEqualTo(CustomLogVerificationState.ResponseMapper.builder()
+        .isEqualTo(CustomLogResponseMapper.builder()
                        .fieldName("logMessage")
                        .jsonPath(Collections.singletonList("resolved_message_field"))
                        .build());

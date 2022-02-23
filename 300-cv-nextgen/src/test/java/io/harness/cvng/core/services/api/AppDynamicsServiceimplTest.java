@@ -7,15 +7,24 @@
 
 package io.harness.cvng.core.services.api;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.Lists;
-import com.google.common.io.Resources;
-import com.google.inject.Inject;
+import static io.harness.annotations.dev.HarnessTeam.CV;
+import static io.harness.data.structure.UUIDGenerator.generateUuid;
+import static io.harness.rule.OwnerRule.ABHIJITH;
+import static io.harness.rule.OwnerRule.RAGHU;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import io.harness.CvNextGenTestBase;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.cv.beans.AppDynamicsApplication;
+import io.harness.cv.beans.AppDynamicsTier;
 import io.harness.cvng.BuilderFactory;
 import io.harness.cvng.beans.AppdynamicsValidationResponse;
 import io.harness.cvng.beans.DataCollectionRequest;
@@ -36,13 +45,11 @@ import io.harness.delegate.beans.connector.appdynamicsconnector.AppDynamicsConne
 import io.harness.ng.beans.PageResponse;
 import io.harness.rule.Owner;
 import io.harness.serializer.JsonUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.Mock;
-import software.wings.delegatetasks.cv.beans.appd.AppDynamicsTier;
 
+import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
+import com.google.common.io.Resources;
+import com.google.inject.Inject;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -51,17 +58,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import static io.harness.annotations.dev.HarnessTeam.CV;
-import static io.harness.data.structure.UUIDGenerator.generateUuid;
-import static io.harness.rule.OwnerRule.ABHIJITH;
-import static io.harness.rule.OwnerRule.RAGHU;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.Mock;
 
 @OwnedBy(CV)
 public class AppDynamicsServiceimplTest extends CvNextGenTestBase {

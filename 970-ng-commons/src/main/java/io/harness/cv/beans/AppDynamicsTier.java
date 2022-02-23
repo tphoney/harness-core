@@ -5,13 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package software.wings.delegatetasks.cv.beans.appd;
+package io.harness.cv.beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Value;
-
-import javax.validation.constraints.NotNull;
 
 @Value
 @Builder

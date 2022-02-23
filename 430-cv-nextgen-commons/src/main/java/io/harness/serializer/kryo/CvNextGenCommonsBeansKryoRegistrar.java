@@ -7,7 +7,8 @@
 
 package io.harness.serializer.kryo;
 
-import com.esotericsoftware.kryo.Kryo;
+import static io.harness.annotations.dev.HarnessTeam.CV;
+
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.beans.AppDynamicsDataCollectionInfo;
 import io.harness.cvng.beans.AppDynamicsDataCollectionInfo.AppMetricInfoDTO;
@@ -94,10 +95,8 @@ import io.harness.cvng.beans.stackdriver.StackdriverLogSampleDataRequest;
 import io.harness.cvng.beans.stackdriver.StackdriverSampleDataRequest;
 import io.harness.cvng.models.VerificationType;
 import io.harness.serializer.KryoRegistrar;
-import io.harness.cv.beans.AppDynamicsApplication;
-import software.wings.delegatetasks.cv.beans.appd.AppDynamicsTier;
 
-import static io.harness.annotations.dev.HarnessTeam.CV;
+import com.esotericsoftware.kryo.Kryo;
 
 @OwnedBy(CV)
 public class CvNextGenCommonsBeansKryoRegistrar implements KryoRegistrar {
@@ -120,8 +119,6 @@ public class CvNextGenCommonsBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(SplunkValidationResponse.class, 9017);
     kryo.register(SplunkValidationResponse.SampleLog.class, 9018);
     kryo.register(DataCollectionConnectorBundle.class, 9019);
-    kryo.register(AppDynamicsApplication.class, 9020);
-    kryo.register(AppDynamicsTier.class, 9021);
     kryo.register(TimeSeriesThresholdDTO.class, 9022);
     kryo.register(TimeSeriesThresholdActionType.class, 9023);
     kryo.register(TimeSeriesThresholdCriteria.class, 9024);

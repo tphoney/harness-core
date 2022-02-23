@@ -25,7 +25,6 @@ import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInf
 import software.wings.service.intfc.scalyr.ScalyrService;
 import software.wings.sm.ExecutionContext;
 import software.wings.sm.StateType;
-import software.wings.sm.states.CustomLogVerificationState.ResponseMapper;
 import software.wings.verification.VerificationStateAnalysisExecutionData;
 
 import com.github.reinert.jjschema.SchemaIgnore;

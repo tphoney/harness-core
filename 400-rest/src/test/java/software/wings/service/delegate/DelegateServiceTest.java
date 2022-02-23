@@ -3240,7 +3240,7 @@ public class DelegateServiceTest extends WingsBaseTest {
 
     CapabilityTaskSelectionDetails taskSelectionDetails = buildCapabilityTaskSelectionDetails();
 
-    when(assignDelegateService.canAssign(eq(null), eq(delegateId), eq(accountId), eq("app1"), eq("env1"), eq("infra1"),
+    when(assignDelegateService.canAssign(eq(delegateId), eq(accountId), eq("app1"), eq("env1"), eq("infra1"),
              eq(taskSelectionDetails.getTaskGroup()), any(List.class),
              eq(taskSelectionDetails.getTaskSetupAbstractions())))
         .thenReturn(true);
@@ -3250,7 +3250,7 @@ public class DelegateServiceTest extends WingsBaseTest {
 
     ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
     verify(assignDelegateService)
-        .canAssign(eq(null), eq(delegateId), eq(accountId), eq("app1"), eq("env1"), eq("infra1"),
+        .canAssign(eq(delegateId), eq(accountId), eq("app1"), eq("env1"), eq("infra1"),
             eq(taskSelectionDetails.getTaskGroup()), captor.capture(),
             eq(taskSelectionDetails.getTaskSetupAbstractions()));
 
@@ -3266,8 +3266,7 @@ public class DelegateServiceTest extends WingsBaseTest {
 
     captor = ArgumentCaptor.forClass(List.class);
     verify(assignDelegateService)
-        .canAssign(eq(null), eq(delegateId), eq(accountId), eq(null), eq(null), eq(null), eq(null), captor.capture(),
-            eq(null));
+        .canAssign(eq(delegateId), eq(accountId), eq(null), eq(null), eq(null), eq(null), captor.capture(), eq(null));
 
     selectorCapabilities = captor.getValue();
     assertThat(selectorCapabilities).isEmpty();
@@ -3289,7 +3288,7 @@ public class DelegateServiceTest extends WingsBaseTest {
     CapabilityTaskSelectionDetails taskSelectionDetails = buildCapabilityTaskSelectionDetails();
     when(capabilityService.getAllCapabilityTaskSelectionDetails(accountId, capabilityId))
         .thenReturn(Collections.singletonList(taskSelectionDetails));
-    when(assignDelegateService.canAssign(any(null), eq(delegateId), eq(accountId), eq("app1"), eq("env1"), eq("infra1"),
+    when(assignDelegateService.canAssign(eq(delegateId), eq(accountId), eq("app1"), eq("env1"), eq("infra1"),
              eq(taskSelectionDetails.getTaskGroup()), any(List.class),
              eq(taskSelectionDetails.getTaskSetupAbstractions())))
         .thenReturn(true);
@@ -3301,7 +3300,7 @@ public class DelegateServiceTest extends WingsBaseTest {
     taskSelectionDetails.setBlocked(false);
     persistence.save(taskSelectionDetails);
 
-    when(assignDelegateService.canAssign(any(null), anyString(), eq(accountId), eq("app1"), eq("env1"), eq("infra1"),
+    when(assignDelegateService.canAssign(anyString(), eq(accountId), eq("app1"), eq("env1"), eq("infra1"),
              eq(taskSelectionDetails.getTaskGroup()), any(List.class),
              eq(taskSelectionDetails.getTaskSetupAbstractions())))
         .thenReturn(false);
@@ -3335,8 +3334,7 @@ public class DelegateServiceTest extends WingsBaseTest {
     CapabilityTaskSelectionDetails taskSelectionDetails = buildCapabilityTaskSelectionDetails();
     when(capabilityService.getAllCapabilityTaskSelectionDetails(accountId, capabilityRequirement2.getUuid()))
         .thenReturn(Collections.singletonList(taskSelectionDetails));
-    when(assignDelegateService.canAssign(any(), any(), any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(false);
+    when(assignDelegateService.canAssign(any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(false);
     when(capabilityService.getNotDeniedCapabilityPermissions(accountId, capabilityRequirement2.getUuid()))
         .thenReturn(Collections.emptyList());
     when(capabilityService.getAllCapabilityPermissions(accountId, capabilityRequirement1.getUuid(), null))

@@ -38,6 +38,8 @@ import static io.harness.mongo.MongoUtils.setUnset;
 import static io.harness.persistence.HQuery.excludeAuthority;
 
 import static software.wings.app.ManagerCacheRegistrar.SECRET_TOKEN_CACHE;
+import static software.wings.service.impl.DelegateSelectionLogsServiceImpl.NO_ELIGIBLE_DELEGATES;
+import static software.wings.service.impl.DelegateSelectionLogsServiceImpl.TASK_VALIDATION_FAILED;
 
 import static java.lang.String.format;
 import static java.lang.String.join;
@@ -119,7 +121,6 @@ import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.security.encryption.EncryptedRecordData;
 import io.harness.security.encryption.EncryptionConfig;
-import io.harness.selection.log.BatchDelegateSelectionLog;
 import io.harness.selection.log.DelegateSelectionLogTaskMetadata;
 import io.harness.serializer.KryoSerializer;
 import io.harness.service.intfc.DelegateCache;
@@ -383,11 +384,11 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
     if (task.getUuid() == null) {
       task.setUuid(generateUuid());
     }
-    log.info("Queueing async task {} of type {} ", task.getUuid(), task.getData().getTaskType());
 
     try (AutoLogContext ignore1 = new TaskLogContext(task.getUuid(), task.getData().getTaskType(),
              TaskType.valueOf(task.getData().getTaskType()).getTaskGroup().name(), task.getRank(), OVERRIDE_NESTS);
          AutoLogContext ignore2 = new AccountLogContext(task.getAccountId(), OVERRIDE_ERROR)) {
+      log.info("Queueing async task {} of type {} ", task.getUuid(), task.getData().getTaskType());
       processDelegateTask(task, QUEUED);
       broadcastHelper.broadcastNewDelegateTaskAsync(task);
     }
@@ -443,18 +444,17 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
     try (AutoLogContext ignore = new TaskLogContext(task.getUuid(), task.getData().getTaskType(),
              TaskType.valueOf(task.getData().getTaskType()).getTaskGroup().name(), OVERRIDE_ERROR)) {
       try {
-        BatchDelegateSelectionLog batch = delegateSelectionLogsService.createBatch(task);
         // capabilities created,then appended to task.executionCapabilities to get eligible delegates
         generateCapabilitiesForTask(task);
         convertToExecutionCapability(task);
 
-        List<String> eligibleListOfDelegates = assignDelegateService.getEligibleDelegatesToExecuteTask(task, batch);
+        List<String> eligibleListOfDelegates = assignDelegateService.getEligibleDelegatesToExecuteTask(task);
 
         if (eligibleListOfDelegates.isEmpty()) {
-          String errorMessage = String.format("No eligible delegates to execute task id %s", task.getUuid());
-          addToTaskActivityLog(task, errorMessage);
-          delegateSelectionLogsService.logNoEligibleDelegatesToExecuteTask(batch, task.getAccountId());
-          delegateSelectionLogsService.save(batch);
+          addToTaskActivityLog(task, NO_ELIGIBLE_DELEGATES);
+          if (task.isSelectionLogsTrackingEnabled()) {
+            delegateSelectionLogsService.logNoEligibleDelegatesToExecuteTask(task.getAccountId(), task.getUuid());
+          }
           delegateMetricsService.recordDelegateTaskMetrics(task, DELEGATE_TASK_NO_ELIGIBLE_DELEGATES);
           throw new NoEligibleDelegatesInAccountException();
         }
@@ -463,21 +463,21 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
         task.setBroadcastToDelegateIds(
             Lists.newArrayList(getDelegateIdForFirstBroadcast(task, eligibleListOfDelegates)));
 
-        delegateSelectionLogsService.logEligibleDelegatesToExecuteTask(
-            batch, Sets.newHashSet(eligibleListOfDelegates), task.getAccountId());
+        if (task.isSelectionLogsTrackingEnabled()) {
+          delegateSelectionLogsService.logEligibleDelegatesToExecuteTask(
+              Sets.newHashSet(eligibleListOfDelegates), task.getAccountId(), task.getUuid());
+        }
         // save eligible delegate ids as part of task (will be used for rebroadcasting)
         task.setEligibleToExecuteDelegateIds(new LinkedList<>(eligibleListOfDelegates));
-
         log.info("Assignable/eligible delegates to execute task {} are {}.", task.getUuid(),
             task.getEligibleToExecuteDelegateIds());
 
         // filter only connected ones from list
         List<String> connectedEligibleDelegates =
-            assignDelegateService.getConnectedDelegateList(eligibleListOfDelegates, task.getAccountId(), batch);
+            assignDelegateService.getConnectedDelegateList(eligibleListOfDelegates, task.getAccountId());
 
         if (!task.getData().isAsync() && connectedEligibleDelegates.isEmpty()) {
           addToTaskActivityLog(task, "No Connected eligible delegates to execute sync task");
-          delegateSelectionLogsService.save(batch);
           if (assignDelegateService.noInstalledDelegates(task.getAccountId())) {
             throw new NoInstalledDelegatesException();
           } else {
@@ -500,8 +500,11 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
         if (task.getData().isAsync()) {
           task.setNextBroadcast(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5));
         }
-        delegateSelectionLogsService.save(batch);
         persistence.save(task);
+        if (task.isSelectionLogsTrackingEnabled()) {
+          delegateSelectionLogsService.logBroadcastToDelegate(
+              Sets.newHashSet(task.getBroadcastToDelegateIds()), task.getAccountId(), task.getUuid());
+        }
         delegateMetricsService.recordDelegateTaskMetrics(task, DELEGATE_TASK_CREATION);
         log.info("Task {} marked as {} with first attempt broadcast to {}", task.getUuid(), taskStatus,
             task.getBroadcastToDelegateIds());
@@ -510,7 +513,9 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
         log.info("Task id {} failed with error {}", task.getUuid(), exception);
         printErrorMessageOnTaskFailure(task);
         handleTaskFailureResponse(task, ExceptionUtils.getMessage(exception));
-        throw exception;
+        if (!task.getData().isAsync()) {
+          throw exception;
+        }
       }
     }
   }
@@ -647,7 +652,7 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
           taskSelectionDetails.getTaskSetupAbstractions().get(Cd1SetupFields.INFRASTRUCTURE_MAPPING_ID_FIELD);
     }
 
-    return assignDelegateService.canAssign(null, delegateId, accountId, appId, envId, infraMappingId,
+    return assignDelegateService.canAssign(delegateId, accountId, appId, envId, infraMappingId,
         taskSelectionDetails.getTaskGroup(), selectorCapabilities, taskSelectionDetails.getTaskSetupAbstractions());
   }
 
@@ -876,6 +881,11 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
         log.info("Waiting for task {} to be acquired by a whitelisted delegate: {}", taskId, whitelistedDelegates);
         return;
       }
+      String capabilitiesFailErrorMessage = TASK_VALIDATION_FAILED + generateCapabilitiesMessage(delegateTask);
+      if (delegateTask.isSelectionLogsTrackingEnabled()) {
+        delegateSelectionLogsService.logTaskValidationFailed(
+            delegateTask.getAccountId(), delegateTask.getUuid(), capabilitiesFailErrorMessage);
+      }
 
       String errorMessage = generateValidationError(delegateTask, areClientToolsInstalled);
       log.info(errorMessage);
@@ -883,7 +893,7 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
       if (delegateTask.getData().isAsync()) {
         response = ErrorNotifyResponseData.builder()
                        .failureTypes(EnumSet.of(FailureType.DELEGATE_PROVISIONING))
-                       .errorMessage(errorMessage)
+                       .errorMessage(capabilitiesFailErrorMessage)
                        .build();
       } else {
         response =
@@ -1229,9 +1239,9 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
       }
       task.getData().setParameters(delegateTask.getData().getParameters());
 
-      BatchDelegateSelectionLog batch = delegateSelectionLogsService.createBatch(delegateTask);
-      delegateSelectionLogsService.logTaskAssigned(batch, task.getAccountId(), delegateId);
-      delegateSelectionLogsService.save(batch);
+      if (task.isSelectionLogsTrackingEnabled()) {
+        delegateSelectionLogsService.logTaskAssigned(task.getAccountId(), delegateId, taskId);
+      }
 
       delegateTaskStatusObserverSubject.fireInform(DelegateTaskStatusObserver::onTaskAssigned,
           delegateTask.getAccountId(), taskId, delegateId, task.getData().getTimeout());

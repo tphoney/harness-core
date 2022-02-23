@@ -380,8 +380,8 @@ debeziumConfig:
   offset.flush.interval.ms: ${OFFSET_FLUSH_INTERVAL_MS:-5000}
   mongodb.hosts: ${MONGODB_HOSTS:-rs0/localhost:27017}
   mongodb.name: ${MONGODB_NAME:-pms-harness_db}
-  mongodb.user: ${MONGODB_USER:-"root"}
-  mongodb.password: ${MONGODB_PASSWORD:-"root"}
+  mongodb.user: ${MONGODB_USER:-""}
+  mongodb.password: ${MONGODB_PASSWORD:-""}
   mongodb.ssl.enabled: ${MONGODB_SSL_ENABLED:-false}
   connector.class: ${CONNECTOR_CLASS:-io.debezium.connector.mongodb.MongoDbConnector}
   database.include.list: ${DATABASE_INCLUDE_LIST:-pms-harness}

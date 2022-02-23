@@ -13,7 +13,6 @@ import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.plancreator.steps.common.SpecParameters;
 import io.harness.pms.yaml.ParameterField;
-import io.harness.steps.approval.step.beans.CriteriaSpecWrapper;
 
 import java.util.List;
 import java.util.Map;

@@ -8,6 +8,7 @@
 
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.5-230
+RUN microdnf install shadow-utils
 # Copy ci-addon binary
 COPY ci-addon_/ci-addon /usr/local/bin/ci-addon-linux-amd64
 RUN chmod +x /usr/local/bin/ci-addon-linux-amd64

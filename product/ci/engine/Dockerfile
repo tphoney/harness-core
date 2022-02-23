@@ -6,6 +6,7 @@
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.5-230
 RUN microdnf update
+RUN microdnf install shadow-utils
 RUN apk add git
 COPY engine_/engine /usr/local/bin/ci-lite-engine
 RUN chmod +x /usr/local/bin/ci-lite-engine

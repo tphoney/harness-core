@@ -21,6 +21,7 @@ public class DelegateScripts {
   private String startScript;
   private String delegateScript;
   private String setupProxyScript;
+  private boolean enableDynamicHandleOfTaskRequest;
 
   public String getScriptByName(String fileName) {
     switch (fileName) {

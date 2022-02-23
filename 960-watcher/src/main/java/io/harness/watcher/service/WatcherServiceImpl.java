@@ -190,6 +190,7 @@ public class WatcherServiceImpl implements WatcherService {
 
   private static final boolean multiVersion;
   private static boolean accountVersion;
+  private static boolean enableDynamicHandleOfTaskRequest;
 
   static {
     String deployMode = System.getenv().get("DEPLOY_MODE");
@@ -1033,7 +1034,7 @@ public class WatcherServiceImpl implements WatcherService {
     }
 
     DelegateScripts delegateScripts = restResponse.getResource();
-
+    enableDynamicHandleOfTaskRequest = delegateScripts.isEnableDynamicHandleOfTaskRequest();
     Path versionDir = Paths.get(directory);
     if (!versionDir.toFile().exists()) {
       Files.createDirectory(versionDir);
@@ -1141,12 +1142,12 @@ public class WatcherServiceImpl implements WatcherService {
     executorService.submit(() -> {
       StartedProcess newDelegate = null;
       try {
-        newDelegate =
-            new ProcessExecutor()
-                .command("nohup", versionFolder + File.separator + DELEGATE_SCRIPT, watcherProcess, versionFolder)
-                .redirectError(Slf4jStream.of(scriptName).asError())
-                .setMessageLogger((log, format, arguments) -> log.info(format, arguments))
-                .start();
+        newDelegate = new ProcessExecutor()
+                          .command("nohup", versionFolder + File.separator + DELEGATE_SCRIPT, watcherProcess,
+                              versionFolder, String.valueOf(enableDynamicHandleOfTaskRequest))
+                          .redirectError(Slf4jStream.of(scriptName).asError())
+                          .setMessageLogger((log, format, arguments) -> log.info(format, arguments))
+                          .start();
 
         boolean success = false;
         String newDelegateProcess = null;

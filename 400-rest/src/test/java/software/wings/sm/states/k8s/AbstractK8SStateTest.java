@@ -16,6 +16,7 @@ import static io.harness.k8s.manifest.ManifestHelper.values_filename;
 import static io.harness.logging.CommandExecutionStatus.FAILURE;
 import static io.harness.logging.CommandExecutionStatus.SUCCESS;
 import static io.harness.rule.OwnerRule.ABOSII;
+import static io.harness.rule.OwnerRule.ACHYUTH;
 import static io.harness.rule.OwnerRule.ADWAIT;
 import static io.harness.rule.OwnerRule.ANSHUL;
 import static io.harness.rule.OwnerRule.BOJANA;
@@ -42,6 +43,7 @@ import static software.wings.delegatetasks.GitFetchFilesTask.GIT_FETCH_FILES_TAS
 import static software.wings.settings.SettingVariableTypes.GCP;
 import static software.wings.sm.ExecutionContextImpl.PHASE_PARAM;
 import static software.wings.sm.StateExecutionInstance.Builder.aStateExecutionInstance;
+import static software.wings.sm.StateType.K8S_APPLY;
 import static software.wings.sm.StateType.K8S_CANARY_DEPLOY;
 import static software.wings.sm.StateType.K8S_DEPLOYMENT_ROLLING;
 import static software.wings.sm.StepType.K8S_SCALE;
@@ -109,6 +111,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 import io.harness.expression.VariableResolverTracker;
 import io.harness.ff.FeatureFlagService;
+import io.harness.helm.HelmCommandData;
 import io.harness.k8s.K8sCommandUnitConstants;
 import io.harness.k8s.model.HelmVersion;
 import io.harness.k8s.model.K8sPod;
@@ -209,6 +212,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1535,6 +1539,44 @@ public class AbstractK8SStateTest extends WingsBaseTest {
       assertThatExceptionOfType(InvalidRequestException.class);
       assertThat(ex.getCause()).isInstanceOf(UnsupportedOperationException.class);
     }
+  }
+
+  @Test
+  @Owner(developers = ACHYUTH)
+  @Category(UnitTests.class)
+  public void testExecuteWrapperWithManifestStepOverride() {
+    K8sApplyState k8sApplyState = mock(K8sApplyState.class);
+    GitFileConfig remoteOverride = GitFileConfig.builder()
+                                       .branch("master")
+                                       .connectorId("git-connector")
+                                       .filePathList(Arrays.asList("folder/v1.yaml", "folder/v2.yaml"))
+                                       .build();
+    k8sApplyState.setRemoteStepOverride(remoteOverride);
+
+    K8sStateExecutionData k8sStateExecutionData = (K8sStateExecutionData) context.getStateExecutionData();
+    k8sStateExecutionData.setValuesFiles(new HashMap<>());
+
+    ArgumentCaptor<Map> argumentCaptor = ArgumentCaptor.forClass(Map.class);
+
+    when(openShiftManagerService.isOpenShiftManifestConfig(context)).thenReturn(false);
+    when(applicationManifestUtils.isKustomizeSource(context)).thenReturn(false);
+    when(abstractK8SState.getStepRemoteOverrideGitConfig()).thenReturn(remoteOverride);
+    doReturn(Activity.builder().uuid(ACTIVITY_ID).build())
+        .when(abstractK8SState)
+        .createK8sActivity(eq(context), any(), any(), any(), any());
+
+    doReturn(ExecutionResponse.builder()
+                 .stateExecutionData(K8sStateExecutionData.builder().currentTaskType(TaskType.GIT_COMMAND).build())
+                 .build())
+        .when(abstractK8SState)
+        .executeGitTask(eq(context), argumentCaptor.capture(), any(), any());
+
+    ExecutionResponse executionResponse =
+        abstractK8SState.executeWrapperWithManifest(k8sApplyState, context, 10 * 60 * 1000L);
+    assertThat(((K8sStateExecutionData) executionResponse.getStateExecutionData()).getCurrentTaskType())
+        .isEqualTo(TaskType.GIT_COMMAND);
+    assertThat(argumentCaptor.getValue().get(K8sValuesLocation.Step))
+        .extracting(appManifest -> ((ApplicationManifest) appManifest).getGitFileConfig().equals(remoteOverride));
   }
 
   @Test

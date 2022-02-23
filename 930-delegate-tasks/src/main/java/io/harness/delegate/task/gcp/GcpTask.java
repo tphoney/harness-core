@@ -26,6 +26,8 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 
 import com.google.inject.Inject;
+import io.harness.secret.SecretSanitizerThreadLocal;
+
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -37,6 +39,8 @@ public class GcpTask extends AbstractDelegateRunnableTask {
   public GcpTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override

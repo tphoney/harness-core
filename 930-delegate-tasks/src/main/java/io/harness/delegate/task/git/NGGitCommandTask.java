@@ -31,6 +31,7 @@ import io.harness.delegate.task.TaskParameters;
 import io.harness.git.model.CommitAndPushRequest;
 import io.harness.git.model.CommitAndPushResult;
 import io.harness.git.model.GitBaseRequest;
+import io.harness.secret.SecretSanitizerThreadLocal;
 import io.harness.shell.SshSessionConfig;
 
 import com.google.inject.Inject;
@@ -49,6 +50,8 @@ public class NGGitCommandTask extends AbstractDelegateRunnableTask {
   public NGGitCommandTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override

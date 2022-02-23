@@ -28,6 +28,7 @@ import io.harness.delegate.task.AbstractDelegateRunnableTask;
 import io.harness.delegate.task.TaskParameters;
 import io.harness.errorhandling.NGErrorHelper;
 import io.harness.exception.InvalidRequestException;
+import io.harness.secret.SecretSanitizerThreadLocal;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.security.encryption.SecretDecryptionService;
 
@@ -51,6 +52,8 @@ public class ArtifactoryDelegateTask extends AbstractDelegateRunnableTask {
       ILogStreamingTaskClient logStreamingTaskClient, Consumer<DelegateTaskResponse> consumer,
       BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override

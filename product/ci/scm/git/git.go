@@ -342,7 +342,6 @@ func ListCommits(ctx context.Context, request *pb.ListCommitsRequest, log *zap.S
 
 	commits, response, err := client.Git.ListCommits(ctx, request.GetSlug(), scm.CommitListOptions{Ref: ref, Page: int(request.GetPagination().GetPage()), Path: request.FilePath})
 	
-	log.Infow("ListCommits", "commits", commits, "response", response)
 	if err != nil {
 		log.Errorw("ListCommits failure", "provider", gitclient.GetProvider(*request.GetProvider()), "slug", request.GetSlug(), "ref", ref, "elapsed_time_ms", utils.TimeSince(start), zap.Error(err))
 		return nil, err
@@ -451,10 +450,8 @@ func GetUserRepos(ctx context.Context, request *pb.GetUserReposRequest, log *zap
 }
 
 func GetLatestCommitOnFile(ctx context.Context, request *pb.GetLatestCommitOnFileRequest, log *zap.SugaredLogger) (out *pb.GetLatestCommitOnFileResponse, err error) {
-	log.Infow("GetLatestCommitOnFile", "request", request)
 	// For Bitbucket, we also get commits for a non-existent file if it had been created before (deleted now)
 	response, err := ListCommits(ctx, &pb.ListCommitsRequest{Provider: request.Provider, Slug: request.Slug, Type: &pb.ListCommitsRequest_Branch{Branch: request.Branch}, FilePath: request.FilePath}, log)
-	log.Infow("GetLatestCommitOnFile", "listCommitsResponse", response)
 	if err != nil {
 		return &pb.GetLatestCommitOnFileResponse {
 			CommitId: "",

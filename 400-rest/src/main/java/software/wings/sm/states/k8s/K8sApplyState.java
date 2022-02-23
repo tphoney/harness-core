@@ -91,11 +91,12 @@ public class K8sApplyState extends AbstractK8sState {
   @Getter @Setter @Attributes(title = "Skip manifest rendering") private boolean skipRendering;
   @Getter @Setter @Attributes(title = "Export manifests") private boolean exportManifests;
   @Getter @Setter @Attributes(title = "Inherit manifests") private boolean inheritManifests;
+  @Getter @Setter @Attributes(title = "Apply Step Override") private boolean stepOverride;
   @Getter @Setter @Attributes(title = "Override remote values yaml") private GitFileConfig remoteStepOverride;
   @Getter @Setter @Attributes(title = "Override inline values yaml") private String inlineStepOverride;
 
   @Override
-  public GitFileConfig getApplyStepRemoteOverrideGitConfig() {
+  public GitFileConfig getStepRemoteOverrideGitConfig() {
     return this.remoteStepOverride;
   }
 

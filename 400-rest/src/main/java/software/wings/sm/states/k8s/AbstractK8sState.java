@@ -26,8 +26,10 @@ import static io.harness.k8s.manifest.ManifestHelper.normalizeFolderPath;
 import static io.harness.validation.Validator.notNullCheck;
 
 import static software.wings.api.InstanceElement.Builder.anInstanceElement;
+import static software.wings.beans.appmanifest.AppManifestKind.VALUES;
 import static software.wings.beans.appmanifest.ManifestFile.VALUES_YAML_KEY;
 import static software.wings.beans.appmanifest.StoreType.HelmChartRepo;
+import static software.wings.beans.appmanifest.StoreType.Remote;
 import static software.wings.delegatetasks.GitFetchFilesTask.GIT_FETCH_FILES_TASK_ASYNC_TIMEOUT;
 import static software.wings.sm.ExecutionContextImpl.PHASE_PARAM;
 import static software.wings.sm.InstanceStatusSummary.InstanceStatusSummaryBuilder.anInstanceStatusSummary;
@@ -323,25 +325,8 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
     manifestConfigBuilder.encryptedDataDetails(encryptionDetails);
   }
 
-  public GitFetchFilesConfig convertGitFileConfig(GitFileConfig gitFileConfig, ExecutionContext context) {
-    gitFileConfigHelperService.renderGitFileConfig(context, gitFileConfig);
-    applicationManifestUtils.splitGitFileConfigFilePath(gitFileConfig);
-    GitConfig gitConfig = settingsService.fetchGitConfigFromConnectorId(gitFileConfig.getConnectorId());
-    notNullCheck("Git config not found", gitConfig);
-    gitConfigHelperService.convertToRepoGitConfig(gitConfig, gitFileConfig.getRepoName());
-    List<EncryptedDataDetail> encryptionDetails =
-        secretManager.getEncryptionDetails(gitConfig, context.getAppId(), context.getWorkflowExecutionId());
-
-    return GitFetchFilesConfig.builder()
-        .gitConfig(gitConfig)
-        .gitFileConfig(gitFileConfig)
-        .encryptedDataDetails(encryptionDetails)
-        .build();
-  }
-
   public ExecutionResponse executeGitTask(ExecutionContext context,
-      Map<K8sValuesLocation, ApplicationManifest> appManifestMap, String activityId, String commandName,
-      GitFileConfig applyStepOverrideGitFileConfig) {
+      Map<K8sValuesLocation, ApplicationManifest> appManifestMap, String activityId, String commandName) {
     Application app = appService.get(context.getAppId());
     applicationManifestUtils.populateRemoteGitConfigFilePathList(context, appManifestMap);
 
@@ -364,11 +349,6 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
       if (null != k8sGitConfigMapInfo) {
         fetchFilesTaskParams.setGitFetchFilesConfigMap(k8sGitConfigMapInfo.getGitFetchFilesConfigMap());
       }
-    }
-
-    if (applyStepOverrideGitFileConfig != null) {
-      fetchFilesTaskParams.getGitFetchFilesConfigMap().put(
-          "Step", convertGitFileConfig(applyStepOverrideGitFileConfig, context));
     }
 
     ContainerInfrastructureMapping infraMapping = k8sStateHelper.fetchContainerInfrastructureMapping(context);
@@ -709,7 +689,7 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
     return ((K8sStateExecutionData) context.getStateExecutionData()).getActivityId();
   }
 
-  public GitFileConfig getApplyStepRemoteOverrideGitConfig() {
+  public GitFileConfig getStepRemoteOverrideGitConfig() {
     return null;
   }
 
@@ -725,10 +705,10 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
       boolean remotePatches = false;
       boolean customSourceParams = false;
       boolean ocTemplateSource = false;
-      GitFileConfig applyStepRemoteOverride = getApplyStepRemoteOverrideGitConfig();
 
       Activity activity;
       Map<K8sValuesLocation, ApplicationManifest> appManifestMap;
+
       if (openShiftManagerService.isOpenShiftManifestConfig(context)) {
         ocTemplateSource = true;
         appManifestMap = applicationManifestUtils.getOverrideApplicationManifests(context, AppManifestKind.OC_PARAMS);
@@ -741,13 +721,24 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
             applicationManifestUtils.getOverrideApplicationManifests(context, AppManifestKind.KUSTOMIZE_PATCHES);
         remotePatches = isValuesInGit(appManifestMap);
       } else {
-        appManifestMap = applicationManifestUtils.getApplicationManifests(context, AppManifestKind.VALUES);
+        appManifestMap = applicationManifestUtils.getApplicationManifests(context, VALUES);
 
         valuesInGit = isValuesInGit(appManifestMap);
         valuesInHelmChartRepo = applicationManifestUtils.isValuesInHelmChartRepo(context);
         kustomizeSource = applicationManifestUtils.isKustomizeSource(context);
         valuesInCustomSource = isValuesInCustomSource(appManifestMap);
       }
+
+      if (getStepRemoteOverrideGitConfig() != null) {
+        appManifestMap.put(K8sValuesLocation.Step,
+            ApplicationManifest.builder()
+                .gitFileConfig(getStepRemoteOverrideGitConfig())
+                .kind(VALUES)
+                .storeType(Remote)
+                .build());
+        valuesInGit = true;
+      }
+
       activity =
           createK8sActivity(context, k8sStateExecutor.commandName(), k8sStateExecutor.stateType(), activityService,
               k8sStateExecutor.commandUnitList(
@@ -758,9 +749,8 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
       if (valuesInHelmChartRepo) {
         return executeHelmValuesFetchTask(
             context, activity.getUuid(), k8sStateExecutor.commandName(), timeoutInMillis, appManifestMap);
-      } else if (valuesInGit || remoteParams || remotePatches || (applyStepRemoteOverride != null)) {
-        return executeGitTask(
-            context, appManifestMap, activity.getUuid(), k8sStateExecutor.commandName(), applyStepRemoteOverride);
+      } else if (valuesInGit || remoteParams || remotePatches) {
+        return executeGitTask(context, appManifestMap, activity.getUuid(), k8sStateExecutor.commandName());
       } else if (isCustomManifestFeatureEnabled && (valuesInCustomSource || customSourceParams)) {
         return executeCustomFetchValuesTask(context, appManifestMap, activity.getUuid(), k8sStateExecutor);
       } else {
@@ -1090,12 +1080,12 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
     }
 
     Map<K8sValuesLocation, ApplicationManifest> appManifestMap =
-        applicationManifestUtils.getApplicationManifests(context, AppManifestKind.VALUES);
+        applicationManifestUtils.getApplicationManifests(context, VALUES);
 
     boolean valuesInGit = isValuesInGit(appManifestMap);
     boolean valuesInCustomSource = isValuesInCustomSource(appManifestMap);
     if (valuesInGit) {
-      return executeGitTask(context, appManifestMap, activityId, k8sStateExecutor.commandName(), null);
+      return executeGitTask(context, appManifestMap, activityId, k8sStateExecutor.commandName());
     } else if (valuesInCustomSource) {
       return executeCustomFetchValuesTask(context, appManifestMap, activityId, k8sStateExecutor);
     } else {
@@ -1218,7 +1208,7 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
     if (applicationManifestUtils.isKustomizeSource(context) && isUseLatestKustomizeVersion(context.getAccountId())) {
       appManifestKind = AppManifestKind.KUSTOMIZE_PATCHES;
     } else {
-      appManifestKind = isOpenShiftManifestConfig ? AppManifestKind.OC_PARAMS : AppManifestKind.VALUES;
+      appManifestKind = isOpenShiftManifestConfig ? AppManifestKind.OC_PARAMS : VALUES;
     }
     return applicationManifestUtils.getApplicationManifests(context, appManifestKind);
   }

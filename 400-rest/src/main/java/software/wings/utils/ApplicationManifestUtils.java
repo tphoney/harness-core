@@ -396,12 +396,6 @@ public class ApplicationManifestUtils {
 
   private Collection<String> getGitOrderedFiles(
       K8sValuesLocation location, ApplicationManifest appManifest, Map<String, GitFile> gitFiles) {
-    // In case of K8sApplyState we can have step level override
-    if (K8sValuesLocation.Step == location) {
-      return isNotEmpty(gitFiles) ? gitFiles.values().stream().map(GitFile::getFileContent).collect(Collectors.toList())
-                                  : emptyList();
-    }
-
     // Will always expect to get only single file from application Service manifest or none if doesn't exists
     // In other cases will get the first file from the root repo
     if (K8sValuesLocation.Service == location || isEmpty(appManifest.getGitFileConfig().getFilePathList())) {
@@ -587,7 +581,7 @@ public class ApplicationManifestUtils {
         });
   }
 
-  public void splitGitFileConfigFilePath(GitFileConfig gitFileConfig) {
+  private void splitGitFileConfigFilePath(GitFileConfig gitFileConfig) {
     String filePath = gitFileConfig.getFilePath();
     gitFileConfig.setFilePath(null);
     gitFileConfig.setFilePathList(new ArrayList<>());

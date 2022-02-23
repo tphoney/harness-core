@@ -5141,6 +5141,11 @@ maven_install(
                 "org.slf4j:slf4j-log4j12",
             ],
         ),
+        maven.artifact(
+            group = "org.glassfish.corba",
+            artifact = "glassfish-corba-ommgapi",
+            version = "4.2.4",
+        ),
         maven_test_artifact("com.github.tomakehurst:wiremock-jre8-standalone:2.27.2"),
         maven_test_artifact("com.icegreen:greenmail:1.5.0"),
         maven_test_artifact("com.squareup.okhttp3:mockwebserver:3.6.0"),

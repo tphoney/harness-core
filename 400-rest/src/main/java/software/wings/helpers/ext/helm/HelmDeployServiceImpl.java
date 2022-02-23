@@ -738,7 +738,8 @@ public class HelmDeployServiceImpl implements HelmDeployService {
 
   @Override
   public HelmCommandResponse ensureHelm3Installed(HelmCommandRequest commandRequest) {
-    String helmPath = k8sGlobalConfigService.getHelmPath(commandRequest.getHelmVersion());
+    // String helmPath = k8sGlobalConfigService.getHelmPath(commandRequest.getHelmVersion());
+    String helmPath = k8sGlobalConfigService.getHelmPath(HelmVersion.V3);
     if (isNotBlank(helmPath)) {
       return new HelmCommandResponse(CommandExecutionStatus.SUCCESS, format("Helm3 is installed at [%s]", helmPath));
     }

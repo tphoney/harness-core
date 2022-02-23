@@ -219,7 +219,7 @@ public class HelmClientImpl implements HelmClient {
       throws Exception {
     String kubeConfigLocation = helmCommandData.getKubeConfigLocation();
     HelmCliCommandType commandType = HelmCliCommandType.VERSION;
-    String command = getHelmCommandTemplateWithHelmPath(commandType, null);
+    String command = getHelmCommandTemplateWithHelmPath(commandType, HelmVersion.V2);
 
     command = applyCommandFlags(command, commandType, helmCommandData.getCommandFlags(),
         helmCommandData.isHelmCmdFlagsNull(), helmCommandData.getValueMap(), helmCommandData.getHelmVersion());

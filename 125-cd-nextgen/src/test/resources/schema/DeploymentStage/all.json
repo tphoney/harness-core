@@ -1617,7 +1617,8 @@
               "type": "string",
               "enum": [
                 "V2",
-                "V3"
+                "V3",
+                "V380"
               ]
             },
             "metadata": {

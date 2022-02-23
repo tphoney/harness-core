@@ -112,6 +112,7 @@ Nasser Gonzalez Gonzalez nasser.gonzalez@harness.io
 Nataraja Maruthi nataraja@harness.io
 Nathan Nguyen nnguyen01@users.noreply.github.com
 Nathan Nguyen lenathan.nguyen@harness.io
+Navneet Das navneet.das@harness.io
 Nemanja Lukovic nemanja.lukovic@harness.io
 Nicolas Bantar nicolas.bantar@harness.io
 Nikhil Ranjan nikhil.ranjan@harness.io

@@ -13,6 +13,7 @@ import io.harness.cvng.migration.list.AddDefaultFieldsToMonitoredService;
 import io.harness.cvng.migration.list.AddDeploymentMonitoringSourcePerpetualTask;
 import io.harness.cvng.migration.list.AddEnvRefsToMonitoredServiceMigration;
 import io.harness.cvng.migration.list.AddMetricIdentifierInCVConfigsAndMetricPacks;
+import io.harness.cvng.migration.list.AddMetricIdentifierToTimeSeriesThreshold;
 import io.harness.cvng.migration.list.AddMonitoredServiceToActivityMigration;
 import io.harness.cvng.migration.list.AddMonitoredServiceToCVConfigMigration;
 import io.harness.cvng.migration.list.AddMonitoredServiceToChangeSourceMigration;
@@ -98,6 +99,8 @@ public class CVNGBackgroundMigrationList {
         .add(Pair.of(38, AddMonitoredServiceToHeatMapMigration.class))
         .add(Pair.of(39, AddMonitoredServiceToActivityMigration.class))
         .add(Pair.of(40, AddMetricIdentifierInCVConfigsAndMetricPacks.class))
+        .add(Pair.of(41, AddMetricIdentifierToTimeSeriesThreshold.class))
+
         .build();
   }
 }

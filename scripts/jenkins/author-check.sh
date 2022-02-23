@@ -120,6 +120,7 @@ git log -1000 --oneline --format='%aN <%aE>' | sort -u |\
     grep -iv "^Nataraja Maruthi <nataraja@harness.io>$" |\
     grep -iv "^Nathan Nguyen <nnguyen01@users.noreply.github.com>$" |\
     grep -iv "^Nathan Nguyen <lenathan.nguyen@harness.io>$" |\
+    grep -iv "^Navneet Das <navneet.das@harness.io>$" |\
     grep -iv "^Nasser Gonzalez Gonzalez <nasser.gonzalez@harness.io>$" |\
     grep -iv "^Nemanja Lukovic <nemanja.lukovic@harness.io>$" |\
     grep -iv "^New Joiner 1 <newjoiner1@News-MacBook-Pro.local>$" |\

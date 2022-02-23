@@ -8,45 +8,30 @@
 package io.harness.delegate.task.serverless;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.logging.LogLevel.ERROR;
-import static io.harness.logging.LogLevel.INFO;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.serverless.ServerlessAwsDeployResult;
+import io.harness.delegate.beans.serverless.ServerlessAwsManifestSchema;
 import io.harness.logging.LogCallback;
-import io.harness.logging.LogLevel;
-import io.harness.serverless.AbstractExecutable;
-import io.harness.serverless.ConfigCredentialCommand;
-import io.harness.serverless.DeployCommand;
-import io.harness.serverless.ServerlessClient;
+import io.harness.serializer.YamlUtils;
+import io.harness.serverless.*;
 import io.harness.serverless.model.ServerlessAwsConfig;
 import io.harness.serverless.model.ServerlessDelegateTaskParams;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.io.IOException;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.zeroturnaround.exec.ProcessResult;
-import org.zeroturnaround.exec.stream.LogOutputStream;
 
 @OwnedBy(CDP)
 @Singleton
 @Slf4j
 public class ServerlessAwsCommandTaskHelper {
-  public static LogOutputStream getExecutionLogOutputStream(LogCallback executionLogCallback, LogLevel logLevel) {
-    return new LogOutputStream() {
-      @Override
-      protected void processLine(String line) {
-        executionLogCallback.saveExecutionLog(line, logLevel);
-      }
-    };
-  }
-
-  public static ProcessResult executeCommand(AbstractExecutable command, String workingDirectory,
-      LogCallback executionLogCallback, boolean printCommand) throws Exception {
-    try (LogOutputStream logOutputStream = getExecutionLogOutputStream(executionLogCallback, INFO);
-         LogOutputStream logErrorStream = getExecutionLogOutputStream(executionLogCallback, ERROR)) {
-      return command.execute(workingDirectory, logOutputStream, logErrorStream, printCommand);
-    }
-  }
+  @Inject private ServerlessCommandTaskHelper serverlessCommandTaskHelper;
+  @Inject private ServerlessTaskPluginHelper serverlessTaskPluginHelper;
 
   public boolean setServerlessAwsConfigCredentials(ServerlessClient serverlessClient,
       ServerlessAwsConfig serverlessAwsConfig, ServerlessDelegateTaskParams serverlessDelegateTaskParams,
@@ -56,8 +41,8 @@ public class ServerlessAwsCommandTaskHelper {
                                           .key(serverlessAwsConfig.getAccessKey())
                                           .secret(serverlessAwsConfig.getSecretKey())
                                           .overwrite(overwrite);
-    ProcessResult result =
-        executeCommand(command, serverlessDelegateTaskParams.getWorkingDirectory(), executionLogCallback, true);
+    ProcessResult result = serverlessCommandTaskHelper.executeCommand(
+        command, serverlessDelegateTaskParams.getWorkingDirectory(), executionLogCallback, true);
     if (result.getExitValue() == 0) {
       return true;
     }
@@ -74,12 +59,37 @@ public class ServerlessAwsCommandTaskHelper {
                                 .awsS3Accelerate(serverlessAwsDeployConfig.isAwsS3AccelerateFlag())
                                 .noAwsS3Accelerate(serverlessAwsDeployConfig.isNoAwsS3AccelerateFlag());
     // todo: add other options for deploy command
-    ProcessResult result =
-        executeCommand(command, serverlessDelegateTaskParams.getWorkingDirectory(), executionLogCallback, true);
+    ProcessResult result = serverlessCommandTaskHelper.executeCommand(
+        command, serverlessDelegateTaskParams.getWorkingDirectory(), executionLogCallback, true);
     if (result.getExitValue() == 0) {
       // todo: parse result into java object
     }
     // todo: add error handling
     return null;
+  }
+
+  public ServerlessAwsManifestSchema parseServerlessManifest(ServerlessManifestConfig serverlessManifestConfig)
+      throws IOException {
+    String manifestContent = serverlessManifestConfig.getManifestContent();
+    YamlUtils yamlUtils = new YamlUtils();
+    ServerlessAwsManifestSchema serverlessAwsManifestSchema =
+        yamlUtils.read(manifestContent, ServerlessAwsManifestSchema.class);
+    return serverlessAwsManifestSchema;
+  }
+
+  public boolean installRequiredPlugins(ServerlessAwsManifestSchema serverlessAwsManifestSchema,
+      ServerlessDelegateTaskParams serverlessDelegateTaskParams, LogCallback executionLogCallback,
+      ServerlessClient serverlessClient) throws Exception {
+    // todo: validate serverless manifest
+    if (EmptyPredicate.isNotEmpty(serverlessAwsManifestSchema.getPlugins())) {
+      List<String> plugins = serverlessAwsManifestSchema.getPlugins();
+      for (String plugin : plugins) {
+        // todo: print statement
+        serverlessTaskPluginHelper.installServerlessPlugin(
+            serverlessDelegateTaskParams, serverlessClient, plugin, executionLogCallback);
+      }
+      return true;
+    }
+    return false;
   }
 }

@@ -48,24 +48,24 @@ public class PdcInstanceSyncPerpetualTaskCreator extends AbstractInstanceSyncPer
 
   private List<String> create(PdcPTClientParams clientParams, InfrastructureMapping infraMapping) {
     PerpetualTaskSchedule schedule = PerpetualTaskSchedule.newBuilder()
-                                         .setInterval(Durations.fromMinutes(InstanceSyncConstants.INTERVAL_MINUTES))
+                                         .setInterval(Durations.fromMinutes(1))
                                          .setTimeout(Durations.fromSeconds(InstanceSyncConstants.TIMEOUT_SECONDS))
                                          .build();
 
     List<String> hosts = ((PhysicalInfrastructureMappingBase) infraMapping).getHostNames();
     List<String> tasks = new ArrayList<>();
-    hosts.forEach(h -> {
-      Map<String, String> clientParamMap =
-          ImmutableMap.of(InstanceSyncConstants.INFRASTRUCTURE_MAPPING_ID, clientParams.getInframappingId(),
-              InstanceSyncConstants.HARNESS_APPLICATION_ID, clientParams.getAppId(), InstanceSyncConstants.HOSTNAME, h);
+    String concatenatedHosts = String.join(",", hosts);
 
-      PerpetualTaskClientContext clientContext =
-          PerpetualTaskClientContext.builder().clientParams(clientParamMap).build();
+    Map<String, String> clientParamMap = ImmutableMap.of(InstanceSyncConstants.INFRASTRUCTURE_MAPPING_ID,
+        clientParams.getInframappingId(), InstanceSyncConstants.HARNESS_APPLICATION_ID, clientParams.getAppId(),
+        InstanceSyncConstants.HOSTNAME, concatenatedHosts);
 
-      String task = perpetualTaskService.createTask(PerpetualTaskType.PDC_INSTANCE_SYNC, infraMapping.getAccountId(),
-          clientContext, schedule, false, getTaskDescription(infraMapping));
-      tasks.add(task);
-    });
+    PerpetualTaskClientContext clientContext =
+        PerpetualTaskClientContext.builder().clientParams(clientParamMap).build();
+
+    String task = perpetualTaskService.createTask(PerpetualTaskType.PDC_INSTANCE_SYNC, infraMapping.getAccountId(),
+        clientContext, schedule, false, getTaskDescription(infraMapping));
+    tasks.add(task);
 
     return tasks;
   }

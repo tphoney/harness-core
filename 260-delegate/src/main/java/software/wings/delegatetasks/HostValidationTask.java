@@ -90,7 +90,7 @@ public class HostValidationTask extends AbstractDelegateRunnableTask {
         String message =
             "Exception while running HostValidationTask " + hostValidationTaskParameters.getHostNames() + ex;
         log.error(message);
-        return HostReachabilityResponse.builder().executionStatus(ExecutionStatus.FAILED).build();
+        return HostReachabilityResponse.builder().executionStatus(ExecutionStatus.FAILED).errorMessage(message).build();
       }
     } else {
       Object methodReturnValue = null;

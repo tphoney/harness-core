@@ -12,7 +12,7 @@ import static io.harness.beans.DelegateTask.DELEGATE_QUEUE_TIMEOUT;
 
 import static software.wings.beans.CGConstants.GLOBAL_APP_ID;
 
-import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Cd1SetupFields;
@@ -47,6 +47,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -70,7 +71,7 @@ public class PdcPerpetualTaskServiceClient implements PerpetualTaskServiceClient
     ByteString encryptionDetailsBytes = ByteString.copyFrom(kryoSerializer.asBytes(taskData.getEncryptedDataDetails()));
 
     return PdcInstanceSyncPerpetualTaskParams.newBuilder()
-        .setHostName(taskData.getHostName())
+        .addAllHostNames(taskData.getHostNames())
         .setEncryptedData(encryptionDetailsBytes)
         .setSettingAttribute(settingAttributeBytes)
         .build();
@@ -81,7 +82,7 @@ public class PdcPerpetualTaskServiceClient implements PerpetualTaskServiceClient
     final PerpetualTaskData taskData = getPerpetualTaskData(clientContext);
 
     HostValidationTaskParameters parameters = HostValidationTaskParameters.builder()
-                                                  .hostNames(singletonList(taskData.getHostName()))
+                                                  .hostNames(taskData.getHostNames())
                                                   .connectionSetting(taskData.getSettingAttribute())
                                                   .encryptionDetails(taskData.getEncryptedDataDetails())
                                                   .checkOnlyReachability(true)
@@ -104,7 +105,7 @@ public class PdcPerpetualTaskServiceClient implements PerpetualTaskServiceClient
   private PerpetualTaskData getPerpetualTaskData(PerpetualTaskClientContext clientContext) {
     String infraMappingId = getInfraMappingId(clientContext);
     String appId = getAppId(clientContext);
-    String hostName = getHostName(clientContext);
+    List<String> hostNames = getHostNames(clientContext);
 
     InfrastructureMapping infrastructureMapping = infrastructureMappingService.get(appId, infraMappingId);
 
@@ -135,7 +136,7 @@ public class PdcPerpetualTaskServiceClient implements PerpetualTaskServiceClient
     }
 
     return PerpetualTaskData.builder()
-        .hostName(hostName)
+        .hostNames(hostNames)
         .settingAttribute(settingAttribute)
         .encryptedDataDetails(encryptedDataDetails)
         .build();
@@ -149,14 +150,15 @@ public class PdcPerpetualTaskServiceClient implements PerpetualTaskServiceClient
     return clientContext.getClientParams().get(InstanceSyncConstants.INFRASTRUCTURE_MAPPING_ID);
   }
 
-  private String getHostName(PerpetualTaskClientContext clientContext) {
-    return clientContext.getClientParams().get(InstanceSyncConstants.HOSTNAME);
+  private List<String> getHostNames(PerpetualTaskClientContext clientContext) {
+    String hostNames = clientContext.getClientParams().get(InstanceSyncConstants.HOSTNAME);
+    return Stream.of(hostNames.split(",")).map(String::trim).collect(toList());
   }
 
   @Data
   @Builder
   private static class PerpetualTaskData {
-    private String hostName;
+    private List<String> hostNames;
     private SettingAttribute settingAttribute;
     private List<EncryptedDataDetail> encryptedDataDetails;
   }

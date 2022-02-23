@@ -13,6 +13,7 @@ import static io.harness.network.SafeHttpCall.execute;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
+import io.harness.beans.ExecutionStatus;
 import io.harness.grpc.utils.AnyUtils;
 import io.harness.managerclient.DelegateAgentManagerClient;
 import io.harness.perpetualtask.instancesync.PdcInstanceSyncPerpetualTaskParams;
@@ -20,12 +21,12 @@ import io.harness.serializer.KryoSerializer;
 
 import software.wings.beans.HostReachabilityInfo;
 import software.wings.beans.SettingAttribute;
+import software.wings.service.impl.aws.model.response.HostReachabilityResponse;
 import software.wings.service.intfc.aws.delegate.AwsEc2HelperServiceDelegate;
 import software.wings.utils.HostValidationService;
 
 import com.google.inject.Inject;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.server.Response;
@@ -47,25 +48,37 @@ public class PdcInstanceSyncExecutor implements PerpetualTaskExecutor {
 
     final SettingAttribute settingAttribute =
         (SettingAttribute) kryoSerializer.asObject(instanceSyncParams.getSettingAttribute().toByteArray());
-    List<HostReachabilityInfo> hostReachabilityInfos = hostValidationService.validateReachability(
-        Collections.singletonList(instanceSyncParams.getHostName()), settingAttribute);
-    HostReachabilityInfo hostReachabilityInfo = hostReachabilityInfos.get(0);
+    HostReachabilityResponse response;
+    try {
+      List<HostReachabilityInfo> hostReachabilityInfos =
+          hostValidationService.validateReachability(instanceSyncParams.getHostNamesList(), settingAttribute);
+      response = HostReachabilityResponse.builder()
+                     .hostReachabilityInfoList(hostReachabilityInfos)
+                     .executionStatus(ExecutionStatus.SUCCESS)
+                     .build();
+    } catch (Exception ex) {
+      String message =
+          "Exception while running validateReachability for hosts: " + instanceSyncParams.getHostNamesList() + ex;
+      log.error(message);
+      response =
+          HostReachabilityResponse.builder().executionStatus(ExecutionStatus.FAILED).errorMessage(message).build();
+    }
     try {
       execute(delegateAgentManagerClient.publishInstanceSyncResult(
-          taskId.getId(), settingAttribute.getAccountId(), hostReachabilityInfo));
+          taskId.getId(), settingAttribute.getAccountId(), response));
     } catch (Exception e) {
       log.error(String.format("Failed to publish the instance collection result to manager for aws ssh for taskId [%s]",
                     taskId.getId()),
           e);
     }
 
-    return getPerpetualTaskResponse(hostReachabilityInfo);
+    return getPerpetualTaskResponse(response);
   }
 
-  private PerpetualTaskResponse getPerpetualTaskResponse(HostReachabilityInfo hostReachabilityInfo) {
+  private PerpetualTaskResponse getPerpetualTaskResponse(HostReachabilityResponse response) {
     String message = "success";
-    if (Boolean.FALSE.equals(hostReachabilityInfo.getReachable())) {
-      message = "failure";
+    if (response.getExecutionStatus() == ExecutionStatus.FAILED) {
+      message = response.getErrorMessage();
     }
 
     return PerpetualTaskResponse.builder().responseCode(Response.SC_OK).responseMessage(message).build();

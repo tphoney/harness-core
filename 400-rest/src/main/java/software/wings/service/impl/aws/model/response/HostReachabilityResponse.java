@@ -29,5 +29,6 @@ import lombok.Data;
 public class HostReachabilityResponse implements DelegateTaskNotifyResponseData {
   private DelegateMetaInfo delegateMetaInfo;
   private ExecutionStatus executionStatus;
+  private String errorMessage;
   private List<HostReachabilityInfo> hostReachabilityInfoList;
 }

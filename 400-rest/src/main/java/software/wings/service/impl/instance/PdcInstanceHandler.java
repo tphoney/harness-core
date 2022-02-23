@@ -17,6 +17,7 @@ import static software.wings.beans.CGConstants.GLOBAL_APP_ID;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Cd1SetupFields;
 import io.harness.beans.DelegateTask;
+import io.harness.beans.ExecutionStatus;
 import io.harness.beans.FeatureName;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.DelegateResponseData;
@@ -46,14 +47,10 @@ import software.wings.beans.artifact.Artifact;
 import software.wings.beans.infrastructure.instance.Instance;
 import software.wings.beans.infrastructure.instance.info.PhysicalHostInstanceInfo;
 import software.wings.beans.infrastructure.instance.key.deployment.DeploymentKey;
-import software.wings.delegatetasks.DelegateProxyFactory;
 import software.wings.service.InstanceSyncPerpetualTaskCreator;
 import software.wings.service.PdcInstanceSyncPerpetualTaskCreator;
 import software.wings.service.impl.aws.model.response.HostReachabilityResponse;
-import software.wings.service.intfc.ArtifactService;
 import software.wings.service.intfc.DelegateService;
-import software.wings.service.intfc.aws.manager.AwsLambdaHelperServiceManager;
-import software.wings.service.intfc.instance.ServerlessInstanceService;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -72,13 +69,10 @@ import lombok.extern.slf4j.Slf4j;
 @Singleton
 @OwnedBy(CDP)
 public class PdcInstanceHandler extends InstanceHandler implements InstanceSyncByPerpetualTaskHandler {
-  @Inject private AwsLambdaHelperServiceManager awsLambdaHelperServiceManager;
-  @Inject ArtifactService artifactService;
-  @Inject ServerlessInstanceService serverlessInstanceService;
-  @Inject DelegateProxyFactory delegateProxyFactory;
   @Inject DelegateService delegateService;
   @Inject private PdcInstanceSyncPerpetualTaskCreator perpetualTaskCreator;
 
+  // done
   @Override
   public void syncInstances(String appId, String infraMappingId, InstanceSyncFlow instanceSyncFlow) {
     InfrastructureMapping infrastructureMapping = infraMappingService.get(appId, infraMappingId);
@@ -87,6 +81,10 @@ public class PdcInstanceHandler extends InstanceHandler implements InstanceSyncB
           + infrastructureMapping.getInfraMappingType();
       log.error(msg);
       throw WingsException.builder().message(msg).build();
+    }
+    boolean canUpdateDb = canUpdateInstancesInDb(instanceSyncFlow, infrastructureMapping.getAccountId());
+    if (!canUpdateDb) {
+      return;
     }
 
     SettingAttribute settingAttribute;
@@ -108,7 +106,6 @@ public class PdcInstanceHandler extends InstanceHandler implements InstanceSyncB
       throw WingsException.builder().message(msg).build();
     }
 
-    boolean canUpdateDb = canUpdateInstancesInDb(instanceSyncFlow, infrastructureMapping.getAccountId());
     List<Instance> instances = getInstances(appId, infraMappingId);
     if (EmptyPredicate.isEmpty(instances)) {
       return;
@@ -121,26 +118,98 @@ public class PdcInstanceHandler extends InstanceHandler implements InstanceSyncB
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
-    if (instanceSyncFlow != InstanceSyncFlow.PERPETUAL_TASK) {
-      updateInstances(hosts, settingAttribute, encryptedDataDetails, instances, canUpdateDb);
-    } else {
+    updateInstances(hosts, settingAttribute, encryptedDataDetails, instances, instanceSyncFlow);
+  }
+
+  // done
+  @Override
+  public void handleNewDeployment(
+      List<DeploymentSummary> deploymentSummaries, boolean rollback, OnDemandRollbackInfo onDemandRollbackInfo) {
+    throw WingsException.builder().message("Deployments should be handled at InstanceHelper for PDC ssh type.").build();
+  }
+
+  // done
+  @Override
+  public FeatureName getFeatureFlagToStopIteratorBasedInstanceSync() {
+    return STOP_INSTANCE_SYNC_VIA_ITERATOR_FOR_SSH_DEPLOYMENTS;
+  }
+
+  // done
+  @Override
+  public Optional<List<DeploymentInfo>> getDeploymentInfo(PhaseExecutionData phaseExecutionData,
+      PhaseStepExecutionData phaseStepExecutionData, WorkflowExecution workflowExecution,
+      InfrastructureMapping infrastructureMapping, String stateExecutionInstanceId, Artifact artifact) {
+    throw WingsException.builder()
+        .message("Deployments should be handled at InstanceHelper for aws ssh type except for with ASG.")
+        .build();
+  }
+
+  // done
+  @Override
+  public DeploymentKey generateDeploymentKey(DeploymentInfo deploymentInfo) {
+    return null;
+  }
+
+  // done
+  @Override
+  protected void setDeploymentKey(DeploymentSummary deploymentSummary, DeploymentKey deploymentKey) {
+    // do nothing
+  }
+
+  // done
+  @Override
+  public FeatureName getFeatureFlagToEnablePerpetualTaskForInstanceSync() {
+    return SSH_PERPETUAL_TASK;
+  }
+
+  // done
+  @Override
+  public InstanceSyncPerpetualTaskCreator getInstanceSyncPerpetualTaskCreator() {
+    return perpetualTaskCreator;
+  }
+
+  // done
+  @Override
+  public void processInstanceSyncResponseFromPerpetualTask(
+      InfrastructureMapping infrastructureMapping, DelegateResponseData response) {
+    syncInstances(infrastructureMapping.getAppId(), infrastructureMapping.getUuid(), InstanceSyncFlow.PERPETUAL_TASK);
+  }
+
+  @Override
+  public Status getStatus(InfrastructureMapping infrastructureMapping, DelegateResponseData response) {
+    HostReachabilityResponse reachabilityResponse = (HostReachabilityResponse) response;
+    // If all instances are not reachable via same Delegate?
+    boolean allNotReachable =
+        reachabilityResponse.getHostReachabilityInfoList().stream().noneMatch(HostReachabilityInfo::getReachable);
+
+    boolean canDeleteTask = allNotReachable;
+    boolean success = reachabilityResponse.getExecutionStatus() == ExecutionStatus.SUCCESS;
+    String errorMessage = success ? null : reachabilityResponse.getErrorMessage();
+
+    if (canDeleteTask) {
+      List<String> hosts = reachabilityResponse.getHostReachabilityInfoList()
+                               .stream()
+                               .map(HostReachabilityInfo::getHostName)
+                               .collect(Collectors.toList());
+      log.info("Hosts {} unreachable. Infrastructure Mapping : [{}]", hosts, infrastructureMapping.getUuid());
     }
+
+    return Status.builder().success(success).errorMessage(errorMessage).retryable(!canDeleteTask).build();
   }
 
   private void updateInstances(List<String> hostNames, SettingAttribute settingAttribute,
-      List<EncryptedDataDetail> encryptedDataDetails, List<Instance> instances, boolean canUpdateDb) {
+      List<EncryptedDataDetail> encryptedDataDetails, List<Instance> instances, InstanceSyncFlow instanceSyncFlow) {
     Map<String, Boolean> reachableMap = checkReachability(hostNames, settingAttribute, encryptedDataDetails);
 
-    if (canUpdateDb) {
-      Set<String> instancesToRemove = instances.stream()
-                                          .filter(i -> {
-                                            String hostName = i.getHostInstanceKey().getHostName();
-                                            return !reachableMap.containsKey(hostName) || !reachableMap.get(hostName);
-                                          })
-                                          .map(Base::getUuid)
-                                          .collect(Collectors.toSet());
-      instanceService.delete(instancesToRemove);
-    }
+    Set<String> instancesToRemove = instances.stream()
+                                        .filter(i -> {
+                                          String hostName = i.getHostInstanceKey().getHostName();
+                                          return !reachableMap.containsKey(hostName) || !reachableMap.get(hostName);
+                                        })
+                                        .map(Base::getUuid)
+                                        .collect(Collectors.toSet());
+    log.info("[PDC Instance sync]: instances removed: {}, flow: {}", instancesToRemove, instanceSyncFlow);
+    instanceService.delete(instancesToRemove);
   }
 
   private Map<String, Boolean> checkReachability(
@@ -197,63 +266,5 @@ public class PdcInstanceHandler extends InstanceHandler implements InstanceSyncB
       Thread.currentThread().interrupt();
       throw new InvalidRequestException(ex.getMessage(), USER);
     }
-  }
-
-  // done
-  @Override
-  public void handleNewDeployment(
-      List<DeploymentSummary> deploymentSummaries, boolean rollback, OnDemandRollbackInfo onDemandRollbackInfo) {
-    throw WingsException.builder().message("Deployments should be handled at InstanceHelper for PDC ssh type.").build();
-  }
-
-  // done
-  @Override
-  public FeatureName getFeatureFlagToStopIteratorBasedInstanceSync() {
-    return STOP_INSTANCE_SYNC_VIA_ITERATOR_FOR_SSH_DEPLOYMENTS;
-  }
-
-  // done
-  @Override
-  public Optional<List<DeploymentInfo>> getDeploymentInfo(PhaseExecutionData phaseExecutionData,
-      PhaseStepExecutionData phaseStepExecutionData, WorkflowExecution workflowExecution,
-      InfrastructureMapping infrastructureMapping, String stateExecutionInstanceId, Artifact artifact) {
-    throw WingsException.builder()
-        .message("Deployments should be handled at InstanceHelper for aws ssh type except for with ASG.")
-        .build();
-  }
-
-  // done
-  @Override
-  public DeploymentKey generateDeploymentKey(DeploymentInfo deploymentInfo) {
-    return null;
-  }
-
-  // done
-  @Override
-  protected void setDeploymentKey(DeploymentSummary deploymentSummary, DeploymentKey deploymentKey) {
-    // do nothing
-  }
-
-  // done
-  @Override
-  public FeatureName getFeatureFlagToEnablePerpetualTaskForInstanceSync() {
-    return SSH_PERPETUAL_TASK;
-  }
-
-  // done
-  @Override
-  public InstanceSyncPerpetualTaskCreator getInstanceSyncPerpetualTaskCreator() {
-    return perpetualTaskCreator;
-  }
-
-  @Override
-  public void processInstanceSyncResponseFromPerpetualTask(
-      InfrastructureMapping infrastructureMapping, DelegateResponseData response) {
-    System.out.println("here");
-  }
-
-  @Override
-  public Status getStatus(InfrastructureMapping infrastructureMapping, DelegateResponseData response) {
-    return null;
   }
 }

@@ -68,6 +68,7 @@ import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 import io.harness.logging.LogLevel;
 import io.harness.logging.PlanJsonLogOutputStream;
+import io.harness.secret.SecretSanitizerThreadLocal;
 import io.harness.secretmanagerclient.EncryptDecryptHelper;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.security.encryption.EncryptedRecordData;
@@ -160,6 +161,7 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
   public TerraformProvisionTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override
@@ -216,12 +218,14 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
     EncryptedRecordData encryptedTfPlan = parameters.getEncryptedTfPlan();
     try {
       encryptionService.decrypt(gitConfig, parameters.getSourceRepoEncryptionDetails(), false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(gitConfig, parameters.getSourceRepoEncryptionDetails());
       gitClient.ensureRepoLocallyClonedAndUpdated(gitOperationContext);
     } catch (RuntimeException ex) {
-      log.error("Exception in processing git operation", ex);
+      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
+      log.error("Exception in processing git operation", sanitizedException);
       return TerraformExecutionData.builder()
           .executionStatus(ExecutionStatus.FAILED)
-          .errorMessage(TerraformTaskUtils.getGitExceptionMessageIfExists(ex))
+          .errorMessage(TerraformTaskUtils.getGitExceptionMessageIfExists(sanitizedException))
           .build();
     }
 
@@ -238,11 +242,12 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
     try {
       copyFilesToWorkingDirectory(gitClientHelper.getRepoDirectory(gitOperationContext), workingDir);
     } catch (Exception ex) {
-      log.error("Exception in copying files to provisioner specific directory", ex);
+      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
+      log.error("Exception in copying files to provisioner specific directory", sanitizedException);
       FileUtils.deleteQuietly(new File(baseDir));
       return TerraformExecutionData.builder()
           .executionStatus(ExecutionStatus.FAILED)
-          .errorMessage(ExceptionUtils.getMessage(ex))
+          .errorMessage(ExceptionUtils.getMessage(sanitizedException))
           .build();
     }
     String scriptDirectory = terraformBaseHelper.resolveScriptDirectory(workingDir, parameters.getScriptPath());
@@ -267,7 +272,7 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
         try {
           awsAuthEnvVariables = getAwsAuthVariables(parameters);
         } catch (Exception e) {
-          throw new InvalidRequestException(e.getMessage());
+          throw new InvalidRequestException(ExceptionMessageSanitizer.sanitizeException(e).getMessage());
         }
       }
 
@@ -327,7 +332,7 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
           code = executeWithTerraformClient(parameters, tfBackendConfigsFile, tfOutputsFile, scriptDirectory,
               workingDir, tfVarDirectory, inlineVarParams, uiLogs, envVars, logCallback, planJsonLogOutputStream);
         } catch (TerraformCommandExecutionException exception) {
-          log.warn(exception.getMessage());
+          log.warn(ExceptionMessageSanitizer.sanitizeException(exception).getMessage());
           code = 0;
         }
       } else {
@@ -573,7 +578,8 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
       return terraformExecutionDataBuilder.build();
 
     } catch (WingsException ex) {
-      return logErrorAndGetFailureResponse(ex, ExceptionUtils.getMessage(ex), logCallback);
+      return logErrorAndGetFailureResponse(
+          ex, ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ex)), logCallback);
     } catch (IOException ex) {
       return logErrorAndGetFailureResponse(ex, "IO Failure occurred while performing Terraform Task", logCallback);
     } catch (InterruptedException ex) {
@@ -598,13 +604,14 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
             log.info("Terraform Plan has been safely deleted from vault");
           }
         } catch (Exception ex) {
+          Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
           saveExecutionLog(color(format("Failed to delete secret: [%s] from vault: [%s], please clean it up",
                                      parameters.getEncryptedTfPlan().getEncryptionKey(),
                                      parameters.getSecretManagerConfig().getName()),
                                Yellow, Bold),
               CommandExecutionStatus.RUNNING, WARN, logCallback);
-          saveExecutionLog(ex.getMessage(), CommandExecutionStatus.RUNNING, WARN, logCallback);
-          log.error("Exception occurred while deleting Terraform Plan from vault", ex);
+          saveExecutionLog(sanitizedException.getMessage(), CommandExecutionStatus.RUNNING, WARN, logCallback);
+          log.error("Exception occurred while deleting Terraform Plan from vault", sanitizedException);
         }
       }
     }
@@ -612,6 +619,7 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
 
   private Map<String, String> getAwsAuthVariables(TerraformProvisionParameters parameters) {
     encryptionService.decrypt(parameters.getAwsConfig(), parameters.getAwsConfigEncryptionDetails(), false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(parameters.getAwsConfig(), parameters.getSourceRepoEncryptionDetails());
     Map<String, String> awsAuthEnvVariables = new HashMap<>();
     if (isNotEmpty(parameters.getAwsRoleArn())) {
       String region = isNotEmpty(parameters.getAwsRegion()) ? parameters.getAwsRegion() : AWS_DEFAULT_REGION;
@@ -698,6 +706,7 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
           CommandExecutionStatus.RUNNING, INFO, logCallback);
 
       encryptionService.decrypt(tfVarGitSource.getGitConfig(), tfVarGitSource.getEncryptedDataDetails(), false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(tfVarGitSource.getGitConfig(), tfVarGitSource.getEncryptedDataDetails());
       gitClient.downloadFiles(tfVarGitSource.getGitConfig(),
           GitFetchFilesRequest.builder()
               .branch(tfVarGitSource.getGitFileConfig().getBranch())
@@ -793,8 +802,9 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
   }
 
   private TerraformExecutionData logErrorAndGetFailureResponse(Exception ex, String message, LogCallback logCallback) {
+    Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
     saveExecutionLog(message, CommandExecutionStatus.FAILURE, ERROR, logCallback);
-    log.error("Exception in processing terraform operation", ex);
+    log.error("Exception in processing terraform operation", sanitizedException);
     return TerraformExecutionData.builder().executionStatus(ExecutionStatus.FAILED).errorMessage(message).build();
   }
 

@@ -23,6 +23,9 @@ import io.harness.delegate.task.TaskParameters;
 import io.harness.delegate.task.terraform.handlers.TerraformAbstractTaskHandler;
 import io.harness.exception.UnexpectedTypeException;
 import io.harness.logging.LogCallback;
+import io.harness.secret.SecretSanitizerThreadLocal;
+
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 
 import com.google.inject.Inject;
 import java.util.Map;
@@ -38,6 +41,7 @@ public class TerraformTaskNG extends AbstractDelegateRunnableTask {
   public TerraformTaskNG(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override
@@ -66,7 +70,8 @@ public class TerraformTaskNG extends AbstractDelegateRunnableTask {
       terraformTaskNGResponse.setUnitProgressData(UnitProgressDataMapper.toUnitProgressData(commandUnitsProgress));
       return terraformTaskNGResponse;
     } catch (Exception e) {
-      throw new TaskNGDataException(UnitProgressDataMapper.toUnitProgressData(commandUnitsProgress), e);
+      throw new TaskNGDataException(UnitProgressDataMapper.toUnitProgressData(commandUnitsProgress),
+          ExceptionMessageSanitizer.sanitizeException(e));
     }
   }
 

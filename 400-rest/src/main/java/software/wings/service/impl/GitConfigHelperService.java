@@ -41,6 +41,7 @@ import software.wings.beans.TaskType;
 import software.wings.beans.yaml.GitCommand.GitCommandType;
 import software.wings.beans.yaml.GitCommandExecutionResponse;
 import software.wings.beans.yaml.GitCommandExecutionResponse.GitCommandStatus;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.intfc.DelegateService;
 import software.wings.service.intfc.SettingsService;
 import software.wings.service.intfc.security.ManagerDecryptionService;
@@ -178,6 +179,7 @@ public class GitConfigHelperService {
         List<EncryptedDataDetail> encryptionDetails =
             secretManager.getEncryptionDetails(attributeValue, GLOBAL_APP_ID, null);
         managerDecryptionService.decrypt(attributeValue, encryptionDetails);
+        ExceptionMessageSanitizer.storeAllSecretsForSanitizing(attributeValue, encryptionDetails);
         gitConfig.setSshSettingAttribute(settingAttribute);
       }
     }

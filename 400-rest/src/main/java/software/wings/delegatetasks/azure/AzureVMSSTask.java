@@ -28,9 +28,11 @@ import io.harness.delegate.task.azure.request.AzureVMSSSetupTaskParameters;
 import io.harness.delegate.task.azure.request.AzureVMSSSwitchRouteTaskParameters;
 import io.harness.delegate.task.azure.request.AzureVMSSTaskParameters;
 import io.harness.delegate.task.azure.response.AzureVMSSTaskExecutionResponse;
+import io.harness.secret.SecretSanitizerThreadLocal;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.security.encryption.SecretDecryptionService;
 
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.delegatetasks.azure.taskhandler.AzureVMSSDeployTaskHandler;
 import software.wings.delegatetasks.azure.taskhandler.AzureVMSSRollbackTaskHandler;
 import software.wings.delegatetasks.azure.taskhandler.AzureVMSSSetupTaskHandler;
@@ -59,6 +61,7 @@ public class AzureVMSSTask extends AbstractDelegateRunnableTask {
   public AzureVMSSTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override
@@ -121,6 +124,8 @@ public class AzureVMSSTask extends AbstractDelegateRunnableTask {
   private AzureConfig createAzureConfigForDelegateTask(AzureVMSSCommandRequest azureVMSSCommandRequest) {
     AzureConfigDTO azureConfigDTO = azureVMSSCommandRequest.getAzureConfigDTO();
     secretDecryptionService.decrypt(azureConfigDTO, azureVMSSCommandRequest.getAzureConfigEncryptionDetails());
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
+        azureConfigDTO, azureVMSSCommandRequest.getAzureConfigEncryptionDetails());
 
     String clientId = azureConfigDTO.getClientId();
     String tenantId = azureConfigDTO.getTenantId();
@@ -139,6 +144,7 @@ public class AzureVMSSTask extends AbstractDelegateRunnableTask {
       AzureVMAuthDTO azureVmAuthDTO = setupTaskParameters.getAzureVmAuthDTO();
       List<EncryptedDataDetail> vmAuthDTOEncryptionDetails = setupTaskParameters.getVmAuthDTOEncryptionDetails();
       secretDecryptionService.decrypt(azureVmAuthDTO, vmAuthDTOEncryptionDetails);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(azureVmAuthDTO, vmAuthDTOEncryptionDetails);
     }
   }
 

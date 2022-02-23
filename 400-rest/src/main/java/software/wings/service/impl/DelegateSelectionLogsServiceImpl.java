@@ -14,6 +14,7 @@ import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.Cd1SetupFields;
+import io.harness.beans.DelegateTask;
 import io.harness.beans.FeatureName;
 import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.DelegateSelectionLogParams;
@@ -93,10 +94,13 @@ public class DelegateSelectionLogsServiceImpl implements DelegateSelectionLogsSe
   }
 
   @Override
-  public void logNoEligibleDelegatesToExecuteTask(final String accountId, final String taskId) {
+  public void logNoEligibleDelegatesToExecuteTask(DelegateTask delegateTask) {
+    if (!delegateTask.isSelectionLogsTrackingEnabled()) {
+      return;
+    }
     save(DelegateSelectionLog.builder()
-             .accountId(accountId)
-             .taskId(taskId)
+             .accountId(delegateTask.getAccountId())
+             .taskId(delegateTask.getUuid())
              .conclusion(REJECTED)
              .message(NO_ELIGIBLE_DELEGATES)
              .eventTimestamp(System.currentTimeMillis())
@@ -104,15 +108,18 @@ public class DelegateSelectionLogsServiceImpl implements DelegateSelectionLogsSe
   }
 
   @Override
-  public void logEligibleDelegatesToExecuteTask(Set<String> delegateIds, String accountId, String taskId) {
+  public void logEligibleDelegatesToExecuteTask(Set<String> delegateIds, DelegateTask delegateTask) {
+    if (!delegateTask.isSelectionLogsTrackingEnabled()) {
+      return;
+    }
     if (Objects.isNull(delegateIds)) {
       return;
     }
-    String message =
-        String.format("%s : [%s]", ELIGIBLE_DELEGATES, String.join(", ", getDelegateHostNames(accountId, delegateIds)));
+    String message = String.format("%s : [%s]", ELIGIBLE_DELEGATES,
+        String.join(", ", getDelegateHostNames(delegateTask.getAccountId(), delegateIds)));
     save(DelegateSelectionLog.builder()
-             .accountId(accountId)
-             .taskId(taskId)
+             .accountId(delegateTask.getAccountId())
+             .taskId(delegateTask.getUuid())
              .delegateIds(delegateIds)
              .conclusion(SELECTED)
              .message(message)
@@ -121,8 +128,10 @@ public class DelegateSelectionLogsServiceImpl implements DelegateSelectionLogsSe
   }
 
   @Override
-  public void logNonSelectedDelegates(
-      String accountId, String taskId, Map<String, List<String>> nonAssignableDelegates) {
+  public void logNonSelectedDelegates(DelegateTask delegateTask, Map<String, List<String>> nonAssignableDelegates) {
+    if (!delegateTask.isSelectionLogsTrackingEnabled()) {
+      return;
+    }
     if (Objects.isNull(nonAssignableDelegates)) {
       return;
     }
@@ -135,8 +144,8 @@ public class DelegateSelectionLogsServiceImpl implements DelegateSelectionLogsSe
             .collect(Collectors.toList());
     nonAssignables.forEach(msg
         -> save(DelegateSelectionLog.builder()
-                    .accountId(accountId)
-                    .taskId(taskId)
+                    .accountId(delegateTask.getAccountId())
+                    .taskId(delegateTask.getUuid())
                     .message(msg)
                     .conclusion(NON_SELECTED)
                     .eventTimestamp(System.currentTimeMillis())
@@ -144,15 +153,18 @@ public class DelegateSelectionLogsServiceImpl implements DelegateSelectionLogsSe
   }
 
   @Override
-  public void logBroadcastToDelegate(Set<String> delegateIds, String accountId, String taskId) {
+  public void logBroadcastToDelegate(Set<String> delegateIds, DelegateTask delegateTask) {
+    if (!delegateTask.isSelectionLogsTrackingEnabled()) {
+      return;
+    }
     if (Objects.isNull(delegateIds)) {
       return;
     }
-    String message = String.format(
-        "%s : [%s]", BROADCASTING_DELEGATES, String.join(", ", getDelegateHostNames(accountId, delegateIds)));
+    String message = String.format("%s : [%s]", BROADCASTING_DELEGATES,
+        String.join(", ", getDelegateHostNames(delegateTask.getAccountId(), delegateIds)));
     save(DelegateSelectionLog.builder()
-             .accountId(accountId)
-             .taskId(taskId)
+             .accountId(delegateTask.getAccountId())
+             .taskId(delegateTask.getUuid())
              .delegateIds(delegateIds)
              .conclusion(BROADCAST)
              .message(message)
@@ -161,15 +173,19 @@ public class DelegateSelectionLogsServiceImpl implements DelegateSelectionLogsSe
   }
 
   @Override
-  public void logTaskAssigned(String accountId, String delegateId, String taskId) {
-    Delegate delegate = delegateCache.get(accountId, delegateId, false);
+  public void logTaskAssigned(String delegateId, DelegateTask delegateTask) {
+    Objects.requireNonNull(delegateTask);
+    if (!delegateTask.isSelectionLogsTrackingEnabled()) {
+      return;
+    }
+    Delegate delegate = delegateCache.get(delegateTask.getAccountId(), delegateId, false);
     if (delegate != null) {
       delegateId = delegate.getHostName();
     }
     String message = String.format("%s : [%s]", TASK_ASSIGNED, delegateId);
     save(DelegateSelectionLog.builder()
-             .accountId(accountId)
-             .taskId(taskId)
+             .accountId(delegateTask.getAccountId())
+             .taskId(delegateTask.getUuid())
              .conclusion(ASSIGNED)
              .message(message)
              .eventTimestamp(System.currentTimeMillis())
@@ -177,10 +193,14 @@ public class DelegateSelectionLogsServiceImpl implements DelegateSelectionLogsSe
   }
 
   @Override
-  public void logTaskValidationFailed(String accountId, String taskId, String failureMessage) {
+  public void logTaskValidationFailed(DelegateTask delegateTask, String failureMessage) {
+    Objects.requireNonNull(delegateTask);
+    if (!delegateTask.isSelectionLogsTrackingEnabled()) {
+      return;
+    }
     save(DelegateSelectionLog.builder()
-             .accountId(accountId)
-             .taskId(taskId)
+             .accountId(delegateTask.getAccountId())
+             .taskId(delegateTask.getUuid())
              .conclusion(REJECTED)
              .message(failureMessage)
              .eventTimestamp(System.currentTimeMillis())

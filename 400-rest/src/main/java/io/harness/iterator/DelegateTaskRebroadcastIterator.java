@@ -161,8 +161,7 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
         persistence.update(query, updateOperations);
 
         delegateTask.setBroadcastToDelegateIds(broadcastToDelegates);
-        delegateSelectionLogsService.logBroadcastToDelegate(
-            Sets.newHashSet(broadcastToDelegates), delegateTask.getAccountId(), delegateTask.getUuid());
+        delegateSelectionLogsService.logBroadcastToDelegate(Sets.newHashSet(broadcastToDelegates), delegateTask);
         try (AutoLogContext ignore1 = new TaskLogContext(delegateTask.getUuid(), delegateTask.getData().getTaskType(),
                  TaskType.valueOf(delegateTask.getData().getTaskType()).getTaskGroup().name(), OVERRIDE_ERROR);
              AutoLogContext ignore2 = new AccountLogContext(delegateTask.getAccountId(), OVERRIDE_ERROR)) {

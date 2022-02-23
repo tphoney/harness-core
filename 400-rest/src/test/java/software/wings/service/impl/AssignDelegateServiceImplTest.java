@@ -1456,13 +1456,6 @@ public class AssignDelegateServiceImplTest extends WingsBaseTest {
     assertThat(activeDelegates).isNotNull();
     assertThat(activeDelegates.size()).isEqualTo(2);
     assertThat(activeDelegates.containsAll(asList(activeDelegate1Id, activeDelegate2Id))).isTrue();
-
-    activeDelegate1.setNg(true);
-
-    activeDelegates = assignDelegateService.retrieveActiveDelegates(accountId);
-    assertThat(activeDelegates).isNotNull();
-    assertThat(activeDelegates.size()).isEqualTo(1);
-    assertThat(activeDelegates).containsExactly(activeDelegate2Id);
   }
 
   @Test

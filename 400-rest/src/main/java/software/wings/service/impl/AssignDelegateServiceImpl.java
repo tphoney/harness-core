@@ -851,8 +851,7 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
                                 .map(Delegate::getUuid)
                                 .collect(Collectors.toList());
       if (task.isSelectionLogsTrackingEnabled()) {
-        delegateSelectionLogsService.logNonSelectedDelegates(
-            task.getAccountId(), task.getUuid(), nonAssignableDelegates);
+        delegateSelectionLogsService.logNonSelectedDelegates(task, nonAssignableDelegates);
       }
 
       List<String> nonAssignables =

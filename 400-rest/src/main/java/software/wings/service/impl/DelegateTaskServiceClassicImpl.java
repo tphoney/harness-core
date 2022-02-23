@@ -453,7 +453,7 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
         if (eligibleListOfDelegates.isEmpty()) {
           addToTaskActivityLog(task, NO_ELIGIBLE_DELEGATES);
           if (task.isSelectionLogsTrackingEnabled()) {
-            delegateSelectionLogsService.logNoEligibleDelegatesToExecuteTask(task.getAccountId(), task.getUuid());
+            delegateSelectionLogsService.logNoEligibleDelegatesToExecuteTask(task);
           }
           delegateMetricsService.recordDelegateTaskMetrics(task, DELEGATE_TASK_NO_ELIGIBLE_DELEGATES);
           throw new NoEligibleDelegatesInAccountException();
@@ -465,7 +465,7 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
 
         if (task.isSelectionLogsTrackingEnabled()) {
           delegateSelectionLogsService.logEligibleDelegatesToExecuteTask(
-              Sets.newHashSet(eligibleListOfDelegates), task.getAccountId(), task.getUuid());
+              Sets.newHashSet(eligibleListOfDelegates), task);
         }
         // save eligible delegate ids as part of task (will be used for rebroadcasting)
         task.setEligibleToExecuteDelegateIds(new LinkedList<>(eligibleListOfDelegates));
@@ -502,8 +502,7 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
         }
         persistence.save(task);
         if (task.isSelectionLogsTrackingEnabled()) {
-          delegateSelectionLogsService.logBroadcastToDelegate(
-              Sets.newHashSet(task.getBroadcastToDelegateIds()), task.getAccountId(), task.getUuid());
+          delegateSelectionLogsService.logBroadcastToDelegate(Sets.newHashSet(task.getBroadcastToDelegateIds()), task);
         }
         delegateMetricsService.recordDelegateTaskMetrics(task, DELEGATE_TASK_CREATION);
         log.info("Task {} marked as {} with first attempt broadcast to {}", task.getUuid(), taskStatus,
@@ -883,8 +882,7 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
       }
       String capabilitiesFailErrorMessage = TASK_VALIDATION_FAILED + generateCapabilitiesMessage(delegateTask);
       if (delegateTask.isSelectionLogsTrackingEnabled()) {
-        delegateSelectionLogsService.logTaskValidationFailed(
-            delegateTask.getAccountId(), delegateTask.getUuid(), capabilitiesFailErrorMessage);
+        delegateSelectionLogsService.logTaskValidationFailed(delegateTask, capabilitiesFailErrorMessage);
       }
 
       String errorMessage = generateValidationError(delegateTask, areClientToolsInstalled);
@@ -1240,7 +1238,7 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
       task.getData().setParameters(delegateTask.getData().getParameters());
 
       if (task.isSelectionLogsTrackingEnabled()) {
-        delegateSelectionLogsService.logTaskAssigned(task.getAccountId(), delegateId, taskId);
+        delegateSelectionLogsService.logTaskAssigned(delegateId, task);
       }
 
       delegateTaskStatusObserverSubject.fireInform(DelegateTaskStatusObserver::onTaskAssigned,

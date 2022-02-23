@@ -34,6 +34,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.Cd1SetupFields;
+import io.harness.beans.DelegateTask;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.beans.DelegateSelectionLogParams;
 import io.harness.ff.FeatureFlagService;
@@ -92,7 +93,9 @@ public class DelegateSelectionLogsServiceImplTest extends WingsBaseTest {
   public void shouldLogNoEligibleDelegates() {
     String taskId = generateUuid();
     String accountId = generateUuid();
-    delegateSelectionLogsService.logNoEligibleDelegatesToExecuteTask(accountId, taskId);
+    DelegateTask task =
+        DelegateTask.builder().uuid(taskId).accountId(accountId).selectionLogsTrackingEnabled(true).build();
+    delegateSelectionLogsService.logNoEligibleDelegatesToExecuteTask(task);
     List<DelegateSelectionLogParams> delegateSelectionLogParams =
         delegateSelectionLogsService.fetchTaskSelectionLogs(accountId, taskId);
 
@@ -111,8 +114,9 @@ public class DelegateSelectionLogsServiceImplTest extends WingsBaseTest {
     String accountId = generateUuid();
     String delegate = generateUuid();
     Set<String> delegateIds = Sets.newHashSet(delegate);
-
-    delegateSelectionLogsService.logEligibleDelegatesToExecuteTask(delegateIds, accountId, taskId);
+    DelegateTask task =
+        DelegateTask.builder().uuid(taskId).accountId(accountId).selectionLogsTrackingEnabled(true).build();
+    delegateSelectionLogsService.logEligibleDelegatesToExecuteTask(delegateIds, task);
     List<DelegateSelectionLogParams> delegateSelectionLogParams =
         delegateSelectionLogsService.fetchTaskSelectionLogs(accountId, taskId);
 
@@ -127,11 +131,12 @@ public class DelegateSelectionLogsServiceImplTest extends WingsBaseTest {
   @Owner(developers = JENNY)
   @Category(UnitTests.class)
   public void shouldNotLogEligibleDelegates() {
-    assertThatCode(() -> delegateSelectionLogsService.logEligibleDelegatesToExecuteTask(null, null, null))
-        .doesNotThrowAnyException();
-    assertThatCode(()
-                       -> delegateSelectionLogsService.logEligibleDelegatesToExecuteTask(
-                           Sets.newHashSet(), anyString(), anyString()))
+    DelegateTask task = DelegateTask.builder()
+                            .uuid(generateUuid())
+                            .accountId(generateUuid())
+                            .selectionLogsTrackingEnabled(true)
+                            .build();
+    assertThatCode(() -> delegateSelectionLogsService.logEligibleDelegatesToExecuteTask(Sets.newHashSet(), task))
         .doesNotThrowAnyException();
   }
 
@@ -156,7 +161,9 @@ public class DelegateSelectionLogsServiceImplTest extends WingsBaseTest {
     nonSelected.put(CAN_NOT_ASSIGN_TASK_GROUP, Lists.newArrayList(delegate5));
     nonSelected.put(CAN_NOT_ASSIGN_OWNER, Lists.newArrayList(delegate6));
 
-    delegateSelectionLogsService.logNonSelectedDelegates(accountId, taskId, nonSelected);
+    DelegateTask task =
+        DelegateTask.builder().uuid(taskId).selectionLogsTrackingEnabled(true).accountId(accountId).build();
+    delegateSelectionLogsService.logNonSelectedDelegates(task, nonSelected);
     List<DelegateSelectionLogParams> delegateSelectionLogParams =
         delegateSelectionLogsService.fetchTaskSelectionLogs(accountId, taskId);
 
@@ -186,7 +193,9 @@ public class DelegateSelectionLogsServiceImplTest extends WingsBaseTest {
     String taskId = generateUuid();
     String accountId = generateUuid();
     String delegateId = generateUuid();
-    delegateSelectionLogsService.logBroadcastToDelegate(Sets.newHashSet(delegateId), accountId, taskId);
+    DelegateTask task =
+        DelegateTask.builder().uuid(taskId).accountId(accountId).selectionLogsTrackingEnabled(true).build();
+    delegateSelectionLogsService.logBroadcastToDelegate(Sets.newHashSet(delegateId), task);
     List<DelegateSelectionLogParams> delegateSelectionLogParams =
         delegateSelectionLogsService.fetchTaskSelectionLogs(accountId, taskId);
     assertThat(delegateSelectionLogParams).isNotEmpty();
@@ -199,50 +208,12 @@ public class DelegateSelectionLogsServiceImplTest extends WingsBaseTest {
   @Test
   @Owner(developers = JENNY)
   @Category(UnitTests.class)
-  public void shouldNotLogNoEligibleDelegates() {
-    assertThatCode(() -> delegateSelectionLogsService.logNoEligibleDelegatesToExecuteTask(null, null))
-        .doesNotThrowAnyException();
-    assertThatCode(() -> delegateSelectionLogsService.logNoEligibleDelegatesToExecuteTask(anyString(), anyString()))
-        .doesNotThrowAnyException();
-  }
-
-  @Test
-  @Owner(developers = JENNY)
-  @Category(UnitTests.class)
   public void shouldNotGenerateSelectionLog() {
     String accountId = generateUuid();
     String taskId = generateUuid();
     when(featureFlagService.isEnabled(any(), anyString())).thenReturn(true);
     when(featureFlagService.isEnabled(DELEGATE_SELECTION_LOGS_DISABLED, accountId)).thenReturn(true);
     assertThat(persistence.get(DelegateSelectionLog.class, taskId)).isNull();
-  }
-
-  @Test
-  @Owner(developers = JENNY)
-  @Category(UnitTests.class)
-  public void shouldNotLogEligibleDelegatesToExecuteTask() {
-    assertThatCode(()
-                       -> delegateSelectionLogsService.logEligibleDelegatesToExecuteTask(
-                           Sets.newHashSet("delegateId"), anyString(), anyString()))
-        .doesNotThrowAnyException();
-    assertThatCode(() -> delegateSelectionLogsService.logEligibleDelegatesToExecuteTask(null, null, null))
-        .doesNotThrowAnyException();
-  }
-
-  @Test
-  @Owner(developers = JENNY)
-  @Category(UnitTests.class)
-  public void shouldNotLogBroadcastToDelegate() {
-    assertThatCode(() -> delegateSelectionLogsService.logBroadcastToDelegate(Sets.newHashSet("delegateId"), null, null))
-        .doesNotThrowAnyException();
-  }
-
-  @Test
-  @Owner(developers = JENNY)
-  @Category(UnitTests.class)
-  public void shouldNotLogBroadcastToDelegateWithEmptyDelegateIds() {
-    assertThatCode(() -> delegateSelectionLogsService.logBroadcastToDelegate(Sets.newHashSet(), null, null))
-        .doesNotThrowAnyException();
   }
 
   @Test

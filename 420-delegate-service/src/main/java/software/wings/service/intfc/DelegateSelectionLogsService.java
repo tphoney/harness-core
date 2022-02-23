@@ -10,6 +10,7 @@ package software.wings.service.intfc;
 import static io.harness.annotations.dev.HarnessTeam.DEL;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.DelegateTask;
 import io.harness.delegate.beans.DelegateSelectionLogParams;
 import io.harness.delegate.beans.DelegateSelectionLogResponse;
 import io.harness.selection.log.DelegateSelectionLog;
@@ -24,17 +25,17 @@ import org.apache.commons.lang3.tuple.Pair;
 public interface DelegateSelectionLogsService {
   void save(DelegateSelectionLog log);
 
-  void logNoEligibleDelegatesToExecuteTask(String accountId, String taskId);
+  void logNoEligibleDelegatesToExecuteTask(DelegateTask delegateTask);
 
-  void logEligibleDelegatesToExecuteTask(Set<String> delegateIds, String accountId, String taskId);
+  void logEligibleDelegatesToExecuteTask(Set<String> delegateIds, DelegateTask delegateTask);
 
-  void logNonSelectedDelegates(String accountId, String taskId, Map<String, List<String>> nonAssignableDelegates);
+  void logNonSelectedDelegates(DelegateTask delegateTask, Map<String, List<String>> nonAssignableDelegates);
 
-  void logBroadcastToDelegate(Set<String> delegateIds, String accountId, String taskId);
+  void logBroadcastToDelegate(Set<String> delegateIds, DelegateTask delegateTask);
 
-  void logTaskAssigned(String accountId, String delegateId, String taskId);
+  void logTaskAssigned(String delegateId, DelegateTask delegateTask);
 
-  void logTaskValidationFailed(String accountId, String taskId, String failureMessage);
+  void logTaskValidationFailed(DelegateTask delegateTask, String failureMessage);
 
   List<DelegateSelectionLogParams> fetchTaskSelectionLogs(String accountId, String taskId);
 

@@ -7,7 +7,7 @@
 
 package software.wings.delegatetasks.cv.service;
 
-import software.wings.delegatetasks.cv.beans.appd.AppDynamicsApplication;
+import io.harness.cv.beans.AppDynamicsApplication;
 import software.wings.delegatetasks.cv.beans.appd.AppDynamicsTier;
 import io.harness.delegate.beans.connector.appdynamicsconnector.AppDynamicsConnectorDTO;
 import io.harness.security.encryption.EncryptedDataDetail;

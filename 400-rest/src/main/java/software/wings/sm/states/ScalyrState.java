@@ -19,6 +19,7 @@ import io.harness.delegate.beans.TaskData;
 import software.wings.beans.ScalyrConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
+import software.wings.delegatetasks.DelegateStateType;
 import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
 import software.wings.service.intfc.scalyr.ScalyrService;
 import software.wings.sm.ExecutionContext;
@@ -96,7 +97,7 @@ public class ScalyrState extends AbstractLogAnalysisState {
             .encryptedDataDetails(secretManager.getEncryptionDetails(scalyrConfig, context.getAppId(), accountId))
             .query(getRenderedQuery())
             .hosts(hosts)
-            .stateType(StateType.SCALYR)
+            .stateType(DelegateStateType.SCALYR)
             .applicationId(context.getAppId())
             .stateExecutionId(context.getStateExecutionInstanceId())
             .workflowId(context.getWorkflowId())

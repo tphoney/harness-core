@@ -7,40 +7,6 @@
 
 package software.wings.service.impl.cloudwatch;
 
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.govern.Switch.unhandled;
-
-import static software.wings.common.VerificationConstants.DURATION_TO_ASK_MINUTES;
-import static software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask.PREDECTIVE_HISTORY_MINUTES;
-import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.COMPARE_WITH_CURRENT;
-import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.COMPARE_WITH_PREVIOUS;
-import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.PREDICTIVE;
-import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
-import static software.wings.sm.states.DynatraceState.CONTROL_HOST_NAME;
-import static software.wings.sm.states.DynatraceState.TEST_HOST_NAME;
-
-import io.harness.delegate.task.DataCollectionExecutorService;
-import io.harness.exception.InvalidRequestException;
-import io.harness.exception.WingsException;
-import io.harness.security.encryption.EncryptedDataDetail;
-import io.harness.serializer.JsonUtils;
-
-import software.wings.beans.AwsConfig;
-import software.wings.common.VerificationConstants;
-import software.wings.delegatetasks.DelegateLogService;
-import software.wings.service.impl.AwsHelperService;
-import software.wings.service.impl.ThirdPartyApiCallLog;
-import software.wings.service.impl.ThirdPartyApiCallLog.FieldType;
-import software.wings.service.impl.ThirdPartyApiCallLog.ThirdPartyApiCallField;
-import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
-import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
-import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse.VerificationLoadResponse;
-import software.wings.service.impl.aws.client.CloseableAmazonWebServiceClient;
-import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
-import software.wings.service.intfc.cloudwatch.CloudWatchDelegateService;
-import software.wings.service.intfc.security.EncryptionService;
-import software.wings.sm.StateType;
-
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient;
 import com.amazonaws.services.cloudwatch.model.Datapoint;
 import com.amazonaws.services.cloudwatch.model.Dimension;
@@ -50,6 +16,30 @@ import com.amazonaws.services.cloudwatch.model.StandardUnit;
 import com.google.common.collect.TreeBasedTable;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import io.harness.delegate.task.DataCollectionExecutorService;
+import io.harness.exception.InvalidRequestException;
+import io.harness.exception.WingsException;
+import io.harness.security.encryption.EncryptedDataDetail;
+import io.harness.serializer.JsonUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.http.HttpStatus;
+import software.wings.beans.AwsConfig;
+import software.wings.common.VerificationConstants;
+import software.wings.delegatetasks.DelegateLogService;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord;
+import software.wings.service.impl.AwsHelperService;
+import software.wings.service.impl.ThirdPartyApiCallLog;
+import software.wings.service.impl.ThirdPartyApiCallLog.FieldType;
+import software.wings.service.impl.ThirdPartyApiCallLog.ThirdPartyApiCallField;
+import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
+import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
+import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse.VerificationLoadResponse;
+import software.wings.service.impl.aws.client.CloseableAmazonWebServiceClient;
+import software.wings.service.intfc.cloudwatch.CloudWatchDelegateService;
+import software.wings.service.intfc.security.EncryptionService;
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,9 +49,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.http.HttpStatus;
+
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.govern.Switch.unhandled;
+import static software.wings.common.VerificationConstants.DURATION_TO_ASK_MINUTES;
+import static software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask.PREDECTIVE_HISTORY_MINUTES;
+import static software.wings.delegatetasks.cv.beans.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
+import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.COMPARE_WITH_CURRENT;
+import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.COMPARE_WITH_PREVIOUS;
+import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.PREDICTIVE;
+import static software.wings.sm.states.DynatraceState.CONTROL_HOST_NAME;
+import static software.wings.sm.states.DynatraceState.TEST_HOST_NAME;
 
 /**
  * Created by Pranjal on 09/04/2018
@@ -275,7 +273,7 @@ public class CloudWatchDelegateServiceImpl implements CloudWatchDelegateService 
     datapoints.forEach(datapoint -> {
       NewRelicMetricDataRecord newRelicMetricDataRecord =
           NewRelicMetricDataRecord.builder()
-              .stateType(StateType.CLOUD_WATCH)
+              .stateType(DelegateStateType.CLOUD_WATCH)
               .appId(appId)
               .name(metricName)
               .workflowId(dataCollectionInfo.getWorkflowId())

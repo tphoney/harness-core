@@ -11,18 +11,17 @@ import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
 import io.harness.expression.ExpressionEvaluator;
 import io.harness.security.encryption.EncryptedDataDetail;
-
-import software.wings.beans.ElkConfig;
-import software.wings.delegatetasks.delegatecapability.CapabilityHelper;
-import software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo;
-import software.wings.sm.StateType;
-
-import java.util.List;
-import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import software.wings.beans.ElkConfig;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.analysis.LogDataCollectionInfo;
+import software.wings.delegatetasks.delegatecapability.CapabilityHelper;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Elk Data collection Info that is shared for while initiating Data collection task
@@ -46,7 +45,7 @@ public class ElkDataCollectionInfo extends LogDataCollectionInfo implements Exec
       List<EncryptedDataDetail> encryptedDataDetails, ElkConfig elkConfig, String indices, String messageField,
       String timestampField, String timestampFieldFormat, ElkQueryType queryType, int initialDelayMinutes) {
     super(accountId, applicationId, stateExecutionId, cvConfigId, workflowId, workflowExecutionId, serviceId, query,
-        startTime, endTime, startMinute, collectionTime, hostnameField, hosts, StateType.ELK, encryptedDataDetails,
+        startTime, endTime, startMinute, collectionTime, hostnameField, hosts, DelegateStateType.ELK, encryptedDataDetails,
         initialDelayMinutes);
     this.elkConfig = elkConfig;
     this.indices = indices;

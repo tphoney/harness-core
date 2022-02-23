@@ -25,6 +25,8 @@ import io.harness.exception.WingsException;
 import software.wings.beans.BugsnagConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.CustomLogResponseMapper;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategyProvider;
 import software.wings.service.impl.analysis.AnalysisTolerance;
@@ -204,7 +206,7 @@ public class BugsnagState extends AbstractLogAnalysisState {
             .encryptedDataDetails(
                 secretManager.getEncryptionDetails(config, context.getAppId(), context.getWorkflowExecutionId()))
             .hosts(hosts)
-            .stateType(StateType.BUG_SNAG)
+            .stateType(DelegateStateType.BUG_SNAG)
             .applicationId(context.getAppId())
             .stateExecutionId(context.getStateExecutionInstanceId())
             .workflowId(getWorkflowId(context))
@@ -252,7 +254,7 @@ public class BugsnagState extends AbstractLogAnalysisState {
     return delegateService.queueTask(delegateTask);
   }
 
-  public static Map<String, Map<String, ResponseMapper>> constructLogDefinitions(
+  public static Map<String, Map<String, CustomLogResponseMapper>> constructLogDefinitions(
       String projectId, String releaseStage) {
     Map<String, Map<String, ResponseMapper>> logDefinition = new HashMap<>();
     if (isEmpty(projectId)) {

@@ -7,21 +7,20 @@
 
 package io.harness.delegate.service;
 
-import static io.harness.network.SafeHttpCall.execute;
-
-import io.harness.annotations.dev.HarnessModule;
-import io.harness.annotations.dev.TargetModule;
-import software.wings.delegatetasks.cv.client.VerificationServiceClient;
-
-import software.wings.delegatetasks.LogAnalysisStoreService;
-import software.wings.delegatetasks.cv.beans.analysis.LogElement;
-import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
-import software.wings.sm.StateType;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import java.util.List;
+import io.harness.annotations.dev.HarnessModule;
+import io.harness.annotations.dev.TargetModule;
 import lombok.extern.slf4j.Slf4j;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.LogAnalysisStoreService;
+import software.wings.delegatetasks.cv.beans.analysis.ClusterLevel;
+import software.wings.delegatetasks.cv.beans.analysis.LogElement;
+import software.wings.delegatetasks.cv.client.VerificationServiceClient;
+
+import java.util.List;
+
+import static io.harness.network.SafeHttpCall.execute;
 
 @Singleton
 @Slf4j
@@ -30,13 +29,13 @@ public class LogAnalysisStoreServiceImpl implements LogAnalysisStoreService {
   @Inject private VerificationServiceClient verificationServiceClient;
 
   @Override
-  public boolean save(StateType stateType, String accountId, String appId, String cvConfigId, String stateExecutionId,
-      String workflowId, String workflowExecutionId, String serviceId, String delegateTaskId, List<LogElement> logs) {
+  public boolean save(DelegateStateType stateType, String accountId, String appId, String cvConfigId, String stateExecutionId,
+                      String workflowId, String workflowExecutionId, String serviceId, String delegateTaskId, List<LogElement> logs) {
     try {
       switch (stateType) {
         case SPLUNKV2:
           return execute(verificationServiceClient.saveLogs(accountId, appId, cvConfigId, stateExecutionId, workflowId,
-                             workflowExecutionId, serviceId, ClusterLevel.L2, delegateTaskId, StateType.SPLUNKV2, logs))
+                             workflowExecutionId, serviceId, ClusterLevel.L2, delegateTaskId, DelegateStateType.SPLUNKV2, logs))
               .getResource();
         case SUMO:
         case ELK:

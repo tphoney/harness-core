@@ -7,8 +7,7 @@
 
 package io.harness.serializer.kryo;
 
-import static io.harness.annotations.dev.HarnessTeam.CV;
-
+import com.esotericsoftware.kryo.Kryo;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.beans.AppDynamicsDataCollectionInfo;
 import io.harness.cvng.beans.AppDynamicsDataCollectionInfo.AppMetricInfoDTO;
@@ -53,13 +52,11 @@ import io.harness.cvng.beans.activity.KubernetesActivitySourceDTO;
 import io.harness.cvng.beans.activity.KubernetesActivitySourceDTO.KubernetesActivitySourceConfig;
 import io.harness.cvng.beans.appd.AppDynamicFetchFileStructureRequest;
 import io.harness.cvng.beans.appd.AppDynamicSingleMetricDataRequest;
-import io.harness.cvng.beans.appd.AppDynamicsApplication;
 import io.harness.cvng.beans.appd.AppDynamicsDataCollectionRequest;
 import io.harness.cvng.beans.appd.AppDynamicsFetchAppRequest;
 import io.harness.cvng.beans.appd.AppDynamicsFetchTiersRequest;
 import io.harness.cvng.beans.appd.AppDynamicsFileDefinition;
 import io.harness.cvng.beans.appd.AppDynamicsMetricDataValidationRequest;
-import software.wings.delegatetasks.cv.beans.appd.AppDynamicsTier;
 import io.harness.cvng.beans.customhealth.CustomHealthFetchSampleDataRequest;
 import io.harness.cvng.beans.customhealth.TimestampInfo;
 import io.harness.cvng.beans.datadog.DatadogActiveMetricsRequest;
@@ -97,8 +94,10 @@ import io.harness.cvng.beans.stackdriver.StackdriverLogSampleDataRequest;
 import io.harness.cvng.beans.stackdriver.StackdriverSampleDataRequest;
 import io.harness.cvng.models.VerificationType;
 import io.harness.serializer.KryoRegistrar;
+import io.harness.cv.beans.AppDynamicsApplication;
+import software.wings.delegatetasks.cv.beans.appd.AppDynamicsTier;
 
-import com.esotericsoftware.kryo.Kryo;
+import static io.harness.annotations.dev.HarnessTeam.CV;
 
 @OwnedBy(CV)
 public class CvNextGenCommonsBeansKryoRegistrar implements KryoRegistrar {

@@ -147,6 +147,7 @@ public enum DelegateStateType {
     SUMO,
     LOGZ,
     LOG_VERIFICATION,
+    SCALYR,
 
     // cvng
     CVNG,

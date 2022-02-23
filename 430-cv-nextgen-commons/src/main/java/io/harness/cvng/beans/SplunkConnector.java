@@ -8,7 +8,7 @@
 package io.harness.cvng.beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.harness.delegate.beans.connector.cvng.Connector;
+import io.harness.delegate.beans.connector.cv.Connector;
 import lombok.Builder;
 import lombok.Value;
 

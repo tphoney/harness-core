@@ -7,14 +7,13 @@
 
 package software.wings.service.impl.newrelic;
 
-import software.wings.delegatetasks.cv.beans.analysis.SetupTestNodeData;
-import software.wings.sm.StateType;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.beans.analysis.SetupTestNodeData;
 
 /**
  * Created by rsingh on 8/3/18.
@@ -31,7 +30,7 @@ public class NewRelicSetupTestNodeData extends SetupTestNodeData {
       Instance instanceElement, String hostExpression, String workflowId, long fromTime, long toTime,
       long newRelicAppId, String guid) {
     super(appId, settingId, instanceName, isServiceLevel, instanceElement, hostExpression, workflowId, guid,
-        StateType.NEW_RELIC, fromTime, toTime);
+        DelegateStateType.NEW_RELIC, fromTime, toTime);
     this.newRelicAppId = newRelicAppId;
   }
 }

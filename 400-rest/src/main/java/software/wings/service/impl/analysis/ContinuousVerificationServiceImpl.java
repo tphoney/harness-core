@@ -84,6 +84,7 @@ import software.wings.app.MainConfiguration;
 import software.wings.beans.APMValidateCollectorConfig;
 import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.APMVerificationConfig.KeyValues;
+import software.wings.delegatetasks.DelegateStateType;
 import software.wings.delegatetasks.cv.beans.analysis.TimeSeriesMlAnalysisType;
 import software.wings.delegatetasks.cv.beans.appd.AppDynamicsConfig;
 import software.wings.beans.AwsConfig;
@@ -1978,7 +1979,7 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
             .query(config.getQuery())
             .encryptedDataDetails(secretManager.getEncryptionDetails(bugsnagConfig, config.getAppId(), null))
             .hosts(Sets.newHashSet(BUGSNAG_UI_DUMMY_HOST_NAME))
-            .stateType(StateType.BUG_SNAG)
+            .stateType(DelegateStateType.BUG_SNAG)
             .applicationId(config.getAppId())
             .serviceId(config.getServiceId())
             .startTime(startTime)
@@ -2257,7 +2258,7 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
                 .body(datadogConfig.fetchLogBodyMap(true))
                 .encryptedDataDetails(secretManager.getEncryptionDetails(datadogConfig, config.getAppId(), null))
                 .hosts(Sets.newHashSet(DUMMY_HOST_NAME))
-                .stateType(StateType.DATA_DOG_LOG)
+                .stateType(DelegateStateType.DATA_DOG_LOG)
                 .applicationId(config.getAppId())
                 .serviceId(config.getServiceId())
                 .shouldDoHostBasedFiltering(false)
@@ -2293,7 +2294,7 @@ public class ContinuousVerificationServiceImpl implements ContinuousVerification
                 .options(logConfig.collectionParams())
                 .encryptedDataDetails(encryptedDataDetails)
                 .query(customLogCVServiceConfiguration.getLogCollectionInfo().getCollectionUrl())
-                .stateType(StateType.LOG_VERIFICATION)
+                .stateType(DelegateStateType.LOG_VERIFICATION)
                 .applicationId(config.getAppId())
                 .stateExecutionId(CV_24x7_STATE_EXECUTION + "-" + config.getUuid())
                 .serviceId(config.getServiceId())

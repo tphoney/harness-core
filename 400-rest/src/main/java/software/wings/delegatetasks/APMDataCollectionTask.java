@@ -172,7 +172,7 @@ public class APMDataCollectionTask extends AbstractDelegateDataCollectionTask {
   }
 
   @Override
-  protected StateType getStateType() {
+  protected DelegateStateType getStateType() {
     return dataCollectionInfo.getStateType();
   }
 

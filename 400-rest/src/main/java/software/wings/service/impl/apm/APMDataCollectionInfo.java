@@ -7,9 +7,6 @@
 
 package software.wings.service.impl.apm;
 
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.delegate.task.mixin.HttpConnectionExecutionCapabilityGenerator.HttpCapabilityDetailsLevel.QUERY;
-
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
 import io.harness.delegate.capability.EncryptedDataDetailsCapabilityHelper;
@@ -17,16 +14,18 @@ import io.harness.delegate.task.TaskParameters;
 import io.harness.delegate.task.mixin.HttpConnectionExecutionCapabilityGenerator;
 import io.harness.expression.ExpressionEvaluator;
 import io.harness.security.encryption.EncryptedDataDetail;
-
+import lombok.Builder;
+import lombok.Data;
+import software.wings.delegatetasks.DelegateStateType;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
-import software.wings.sm.StateType;
 import software.wings.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import lombok.Builder;
-import lombok.Data;
+
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.delegate.task.mixin.HttpConnectionExecutionCapabilityGenerator.HttpCapabilityDetailsLevel.QUERY;
 
 @Data
 @Builder
@@ -39,7 +38,7 @@ public class APMDataCollectionInfo implements TaskParameters, ExecutionCapabilit
   private List<APMMetricInfo> canaryMetricInfos;
   private Map<String, List<APMMetricInfo>> metricEndpoints;
   private Map<String, String> hosts;
-  private StateType stateType;
+  private DelegateStateType stateType;
   private long startTime;
   private int dataCollectionMinute;
   private String applicationId;

@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
+import software.wings.delegatetasks.DelegateStateType;
 import software.wings.delegatetasks.cv.beans.analysis.CustomLogDataCollectionInfo;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategyProvider;
@@ -170,7 +171,7 @@ public class CustomLogVerificationState extends AbstractLogAnalysisState {
             .encryptedDataDetails(logConfig.encryptedDataDetails(secretManager))
             .hosts(hosts)
             .query(getRenderedQuery())
-            .stateType(StateType.LOG_VERIFICATION)
+            .stateType(DelegateStateType.LOG_VERIFICATION)
             .applicationId(context.getAppId())
             .stateExecutionId(context.getStateExecutionInstanceId())
             .workflowId(getWorkflowId(context))

@@ -7,19 +7,19 @@
 
 package software.wings.service.impl.log;
 
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-
+import com.google.common.collect.Multimap;
 import io.harness.exception.WingsException;
 import io.harness.time.Timestamp;
-
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import software.wings.delegatetasks.CustomDataCollectionUtils;
 import software.wings.delegatetasks.cv.DataCollectionException;
+import software.wings.delegatetasks.cv.beans.CustomLogResponseMapper;
 import software.wings.delegatetasks.cv.beans.analysis.LogElement;
 import software.wings.service.impl.apm.VerificationResponseParser;
-import software.wings.sm.states.CustomLogVerificationState.ResponseMapper;
 
-import com.google.common.collect.Multimap;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,10 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
+
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 @Slf4j
 public class LogResponseParser {
@@ -48,13 +47,13 @@ public class LogResponseParser {
     private Set<String> hostList;
     private boolean shouldDoHostBasedFiltering;
     private boolean fixedHostName;
-    private Map<String, ResponseMapper> responseMappers;
+    private Map<String, CustomLogResponseMapper> responseMappers;
   }
 
   public List<LogElement> extractLogs(LogResponseData data) {
     Map<String, LogElement> resultMap = new HashMap<>();
     VerificationResponseParser logsResponseParser = new VerificationResponseParser();
-    for (ResponseMapper responseMapper : data.getResponseMappers().values()) {
+    for (CustomLogResponseMapper responseMapper : data.getResponseMappers().values()) {
       if (!isEmpty(responseMapper.getJsonPath()) && !isEmpty(responseMapper.getJsonPath().get(0))) {
         logsResponseParser.put(responseMapper.getJsonPath().get(0).split("\\."), responseMapper.getFieldName(),
             responseMapper.getRegexs());

@@ -33,6 +33,7 @@ import io.harness.time.Timestamp;
 import software.wings.beans.TaskType;
 import software.wings.delegatetasks.cv.AbstractDelegateDataCollectionTask;
 import software.wings.delegatetasks.cv.RequestExecutor;
+import software.wings.delegatetasks.cv.beans.CustomLogResponseMapper;
 import software.wings.helpers.ext.apm.APMRestClient;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.analysis.AzureLogAnalyticsConnectionDetails;
@@ -363,7 +364,7 @@ public class CustomLogDataCollectionTask extends AbstractDelegateDataCollectionT
             logCollectionMinute = (int) (TimeUnit.MILLISECONDS.toMinutes(endTime - collectionStartTime) - 1);
           }
 
-          for (Map.Entry<String, Map<String, ResponseMapper>> logDataInfo :
+          for (Map.Entry<String, Map<String, CustomLogResponseMapper>> logDataInfo :
               dataCollectionInfo.getLogResponseDefinition().entrySet()) {
             List<LogElement> logs = new ArrayList<>();
             String tempHost = dataCollectionInfo.getHosts().iterator().next();

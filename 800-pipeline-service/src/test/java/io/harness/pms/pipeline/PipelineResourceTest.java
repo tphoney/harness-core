@@ -91,8 +91,8 @@ public class PipelineResourceTest extends CategoryTest {
   @Before
   public void setUp() throws IOException {
     MockitoAnnotations.initMocks(this);
-    pipelineResource = new PipelineResource(pmsPipelineService, pmsYamlSchemaService, nodeExecutionService,
-        nodeExecutionToExecutioNodeMapper, pipelineTemplateHelper, mockGovernanceService, null);
+    pipelineResource = new PipelineResource(
+        pmsPipelineService, nodeExecutionService, nodeExecutionToExecutioNodeMapper, pipelineTemplateHelper, null);
     ClassLoader classLoader = this.getClass().getClassLoader();
     String filename = "failure-strategy.yaml";
     yaml = Resources.toString(Objects.requireNonNull(classLoader.getResource(filename)), StandardCharsets.UTF_8);

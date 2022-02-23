@@ -1039,6 +1039,36 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
   }
 
   @Test
+  @Owner(developers = KAPIL)
+  @Category(UnitTests.class)
+  public void testGetHealthSourcesWithMonitoredServiceIdentifier() {
+    MonitoredServiceDTO monitoredServiceDTO = createMonitoredServiceDTO();
+    monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
+    List<HealthSourceDTO> healthSourceDTOS =
+        monitoredServiceService.getHealthSources(projectParams, monitoredServiceIdentifier);
+    assertThat(healthSourceDTOS.size()).isEqualTo(1);
+    assertThat(healthSourceDTOS.get(0).getIdentifier())
+        .isEqualTo(HealthSourceService.getNameSpacedIdentifier(monitoredServiceIdentifier, healthSourceIdentifier));
+    assertThat(healthSourceDTOS.get(0).getType()).isEqualTo(DataSourceType.APP_DYNAMICS);
+    assertThat(healthSourceDTOS.get(0).getVerificationType()).isEqualTo(VerificationType.TIME_SERIES);
+    assertThat(healthSourceDTOS.get(0).getName()).isEqualTo(healthSourceName);
+  }
+
+  @Test
+  @Owner(developers = KAPIL)
+  @Category(UnitTests.class)
+  public void testGetHealthSourcesWithMonitoredServiceIdentifier_zeroHealthSources() {
+    MonitoredServiceDTO monitoredServiceDTO = builderFactory.monitoredServiceDTOBuilder()
+                                                  .identifier(monitoredServiceIdentifier)
+                                                  .sources(Sources.builder().build())
+                                                  .build();
+    monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
+    List<HealthSourceDTO> healthSourceDTOS =
+        monitoredServiceService.getHealthSources(projectParams, monitoredServiceIdentifier);
+    assertThat(healthSourceDTOS).isEmpty();
+  }
+
+  @Test
   @Owner(developers = ANJAN)
   @Category(UnitTests.class)
   public void testGetYamlTemplate() {
@@ -1119,7 +1149,8 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     monitoredServiceDTO.setIdentifier(identifier3);
     monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
 
-    PageResponse pageResponse = monitoredServiceService.getList(projectParams, environmentIdentifier, 0, 10, null);
+    PageResponse pageResponse =
+        monitoredServiceService.getList(projectParams, Collections.singletonList(environmentIdentifier), 0, 10, null);
     assertThat(pageResponse.getPageSize()).isEqualTo(10);
     assertThat(pageResponse.getPageItemCount()).isEqualTo(3);
     assertThat(pageResponse.getTotalItems()).isEqualTo(3);
@@ -1200,6 +1231,17 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     List<MonitoredServiceWithHealthSources> monitoredServiceWithHealthSourcesList =
         monitoredServiceService.getAllWithTimeSeriesHealthSources(projectParams);
     assertThat(monitoredServiceWithHealthSourcesList.get(0).getHealthSources()).isEmpty();
+  }
+
+  @Test
+  @Owner(developers = DEEPAK_CHHIKARA)
+  @Category(UnitTests.class)
+  public void testGetAll_noMonitoredService() {
+    String serviceRef1 = "service1";
+    String identifier1 = "monitoredService1";
+    List<MonitoredServiceWithHealthSources> monitoredServiceWithHealthSourcesList =
+        monitoredServiceService.getAllWithTimeSeriesHealthSources(projectParams);
+    assertThat(monitoredServiceWithHealthSourcesList).isEmpty();
   }
 
   @Test

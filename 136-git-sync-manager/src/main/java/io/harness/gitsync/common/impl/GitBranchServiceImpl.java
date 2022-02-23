@@ -197,12 +197,14 @@ public class GitBranchServiceImpl implements GitBranchService {
 
   @Override
   public boolean isBranchExists(
-      String accountIdentifier, String repoURL, String branch, BranchSyncStatus branchSyncStatus) {
-    GitBranch gitBranch = get(accountIdentifier, repoURL, branch);
-    if (gitBranch != null) {
-      return gitBranch.getBranchSyncStatus().equals(branchSyncStatus);
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String yamlGitConfigId, String branch) {
+    YamlGitConfigDTO yamlGitConfig =
+        yamlGitConfigService.get(projectIdentifier, orgIdentifier, accountIdentifier, yamlGitConfigId);
+    GitBranch gitBranch = get(accountIdentifier, yamlGitConfig.getRepo(), branch);
+    if (gitBranch == null) {
+      return false;
     }
-    return false;
+    return true;
   }
 
   @Override

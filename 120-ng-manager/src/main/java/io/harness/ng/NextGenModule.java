@@ -58,7 +58,21 @@ import io.harness.cdng.NGModule;
 import io.harness.cdng.expressions.CDExpressionEvaluatorProvider;
 import io.harness.cdng.fileservice.FileServiceClient;
 import io.harness.cdng.fileservice.FileServiceClientFactory;
+import io.harness.cdng.helm.HelmDeployStepNode;
+import io.harness.cdng.helm.HelmRollbackStepNode;
+import io.harness.cdng.k8s.K8sApplyStepNode;
+import io.harness.cdng.k8s.K8sBGSwapServicesStepNode;
+import io.harness.cdng.k8s.K8sBlueGreenStepNode;
+import io.harness.cdng.k8s.K8sCanaryDeleteStepNode;
 import io.harness.cdng.k8s.K8sCanaryStepNode;
+import io.harness.cdng.k8s.K8sDeleteStepNode;
+import io.harness.cdng.k8s.K8sRollingRollbackStepNode;
+import io.harness.cdng.k8s.K8sRollingStepNode;
+import io.harness.cdng.k8s.K8sScaleStepNode;
+import io.harness.cdng.provision.terraform.TerraformApplyStepNode;
+import io.harness.cdng.provision.terraform.TerraformDestroyStepNode;
+import io.harness.cdng.provision.terraform.TerraformPlanStepNode;
+import io.harness.cdng.provision.terraform.TerraformRollbackStepNode;
 import io.harness.connector.ConnectorModule;
 import io.harness.connector.ConnectorResourceClientModule;
 import io.harness.connector.events.ConnectorEventHandler;
@@ -112,6 +126,8 @@ import io.harness.ng.core.DelegateServiceModule;
 import io.harness.ng.core.InviteModule;
 import io.harness.ng.core.NGAggregateModule;
 import io.harness.ng.core.SecretManagementModule;
+import io.harness.ng.core.accountsetting.services.NGAccountSettingService;
+import io.harness.ng.core.accountsetting.services.NGAccountSettingServiceImpl;
 import io.harness.ng.core.api.ApiKeyService;
 import io.harness.ng.core.api.NGModulesService;
 import io.harness.ng.core.api.NGSecretServiceV2;
@@ -122,6 +138,7 @@ import io.harness.ng.core.api.impl.NGModulesServiceImpl;
 import io.harness.ng.core.api.impl.NGSecretServiceV2Impl;
 import io.harness.ng.core.api.impl.TokenServiceImpl;
 import io.harness.ng.core.api.impl.UserGroupServiceImpl;
+import io.harness.ng.core.delegate.client.DelegateTokenNgClientModule;
 import io.harness.ng.core.encryptors.NGManagerKmsEncryptor;
 import io.harness.ng.core.encryptors.NGManagerVaultEncryptor;
 import io.harness.ng.core.entityactivity.event.EntityActivityCrudEventMessageListener;
@@ -137,6 +154,9 @@ import io.harness.ng.core.event.SecretEntityCRUDStreamListener;
 import io.harness.ng.core.event.UserGroupEntityCRUDStreamListener;
 import io.harness.ng.core.event.UserMembershipReconciliationMessageProcessor;
 import io.harness.ng.core.event.UserMembershipStreamListener;
+import io.harness.ng.core.globalkms.client.NgConnectorManagerClientModule;
+import io.harness.ng.core.globalkms.impl.NgGlobalKmsServiceImpl;
+import io.harness.ng.core.globalkms.services.NgGlobalKmsService;
 import io.harness.ng.core.impl.OrganizationServiceImpl;
 import io.harness.ng.core.impl.ProjectServiceImpl;
 import io.harness.ng.core.outbox.ApiKeyEventHandler;
@@ -157,7 +177,9 @@ import io.harness.ng.core.services.ProjectService;
 import io.harness.ng.core.smtp.NgSMTPSettingsHttpClientModule;
 import io.harness.ng.core.smtp.SmtpNgService;
 import io.harness.ng.core.smtp.SmtpNgServiceImpl;
+import io.harness.ng.core.user.service.LastAdminCheckService;
 import io.harness.ng.core.user.service.NgUserService;
+import io.harness.ng.core.user.service.impl.LastAdminCheckServiceImpl;
 import io.harness.ng.core.user.service.impl.NgUserServiceImpl;
 import io.harness.ng.core.user.service.impl.UserEntityCrudStreamListener;
 import io.harness.ng.eventsframework.EventsFrameworkModule;
@@ -276,7 +298,23 @@ public class NextGenModule extends AbstractModule {
   public static final String SECRET_MANAGER_CONNECTOR_SERVICE = "secretManagerConnectorService";
   public static final String CONNECTOR_DECORATOR_SERVICE = "connectorDecoratorService";
   public static Set<Class<?>> cdStepsMovedToNewSchema = new HashSet() {
-    { add(K8sCanaryStepNode.class); }
+    {
+      add(K8sCanaryStepNode.class);
+      add(K8sApplyStepNode.class);
+      add(K8sBlueGreenStepNode.class);
+      add(K8sRollingStepNode.class);
+      add(K8sRollingRollbackStepNode.class);
+      add(K8sScaleStepNode.class);
+      add(K8sDeleteStepNode.class);
+      add(K8sBGSwapServicesStepNode.class);
+      add(K8sCanaryDeleteStepNode.class);
+      add(TerraformApplyStepNode.class);
+      add(TerraformPlanStepNode.class);
+      add(TerraformDestroyStepNode.class);
+      add(TerraformRollbackStepNode.class);
+      add(HelmDeployStepNode.class);
+      add(HelmRollbackStepNode.class);
+    }
   };
   private final NextGenConfiguration appConfig;
   public NextGenModule(NextGenConfiguration appConfig) {
@@ -542,6 +580,11 @@ public class NextGenModule extends AbstractModule {
     install(new AuthenticationSettingsModule(
         this.appConfig.getManagerClientConfig(), this.appConfig.getNextGenConfig().getManagerServiceSecret()));
     install(ConnectorModule.getInstance(appConfig.getNextGenConfig(), appConfig.getCeNextGenClientConfig()));
+    install(new NgConnectorManagerClientModule(
+        appConfig.getManagerClientConfig(), appConfig.getNextGenConfig().getManagerServiceSecret()));
+    install(new DelegateTokenNgClientModule(appConfig.getManagerClientConfig(),
+        appConfig.getNextGenConfig().getManagerServiceSecret(), NG_MANAGER.getServiceId()));
+    bind(NgGlobalKmsService.class).to(NgGlobalKmsServiceImpl.class);
     install(new ProviderModule() {
       @Provides
       @Singleton
@@ -626,14 +669,17 @@ public class NextGenModule extends AbstractModule {
     bind(ProjectService.class).to(ProjectServiceImpl.class);
     bind(OrganizationService.class).to(OrganizationServiceImpl.class);
     bind(NGModulesService.class).to(NGModulesServiceImpl.class);
+    bind(NGAccountSettingService.class).to(NGAccountSettingServiceImpl.class);
     bind(NGSecretServiceV2.class).to(NGSecretServiceV2Impl.class);
     bind(ScheduledExecutorService.class)
         .annotatedWith(Names.named("taskPollExecutor"))
         .toInstance(new ManagedScheduledExecutorService("TaskPoll-Thread"));
     bind(ConnectorService.class).annotatedWith(Names.named(CONNECTOR_DECORATOR_SERVICE)).to(ConnectorServiceImpl.class);
+
     bind(ConnectorService.class)
         .annotatedWith(Names.named(SECRET_MANAGER_CONNECTOR_SERVICE))
         .to(SecretManagerConnectorServiceImpl.class);
+    bind(LastAdminCheckService.class).to(LastAdminCheckServiceImpl.class);
     bind(NgUserService.class).to(NgUserServiceImpl.class);
     bind(UserGroupService.class).to(UserGroupServiceImpl.class);
     bind(YamlBaseUrlService.class).to(YamlBaseUrlServiceImpl.class);

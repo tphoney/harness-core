@@ -90,6 +90,9 @@ public class ExceptionMessageSanitizer {
       }
       try {
         f.setAccessible(true);
+        if (null == f.get(object)) {
+          continue;
+        }
         if (f.getType() == SecretRefData.class) {
           SecretRefData secretRefData = (SecretRefData) f.get(object);
           SecretSanitizerThreadLocal.add(String.valueOf(secretRefData.getDecryptedValue()));
@@ -98,7 +101,7 @@ public class ExceptionMessageSanitizer {
         }
 
         f.setAccessible(false);
-      } catch (IllegalAccessException ex) {
+      } catch (Exception ex) {
         log.error("Error while trying to store secret", ex);
       }
     }

@@ -17,6 +17,8 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnexpectedException;
 import io.harness.exception.ngexception.NGTemplateException;
 import io.harness.exception.ngexception.beans.templateservice.TemplateInputsErrorMetadataDTO;
+import io.harness.gitsync.helpers.GitContextHelper;
+import io.harness.gitsync.interceptor.GitEntityInfo;
 import io.harness.ng.core.template.TemplateApplyRequestDTO;
 import io.harness.ng.core.template.TemplateMergeResponseDTO;
 import io.harness.ng.core.template.exception.NGTemplateResolveException;
@@ -56,7 +58,17 @@ public class PMSPipelineTemplateHelper {
         && pipelineEnforcementService.isFeatureRestricted(accountId, FeatureRestrictionName.TEMPLATE_SERVICE.name())) {
       String TEMPLATE_RESOLVE_EXCEPTION_MSG = "Exception in resolving template refs in given pipeline yaml.";
       try {
+        GitEntityInfo gitEntityInfo = GitContextHelper.getGitEntityInfo();
+        if (gitEntityInfo != null) {
+          return NGRestUtils.getResponse(templateResourceClient.applyTemplatesOnGivenYaml(accountId, orgId, projectId,
+              gitEntityInfo.getBranch(), gitEntityInfo.getYamlGitConfigId(), true,
+              TemplateApplyRequestDTO.builder()
+                  .originalEntityYaml(yaml)
+                  .checkForAccess(checkForTemplateAccess)
+                  .build()));
+        }
         return NGRestUtils.getResponse(templateResourceClient.applyTemplatesOnGivenYaml(accountId, orgId, projectId,
+            null, null, null,
             TemplateApplyRequestDTO.builder().originalEntityYaml(yaml).checkForAccess(checkForTemplateAccess).build()));
       } catch (InvalidRequestException e) {
         if (e.getMetadata() instanceof TemplateInputsErrorMetadataDTO) {

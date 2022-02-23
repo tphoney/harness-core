@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,7 +25,6 @@ import io.harness.OrchestrationTestBase;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.engine.ExecutionEngineDispatcher;
 import io.harness.engine.OrchestrationEngine;
 import io.harness.engine.executions.node.NodeExecutionService;
 import io.harness.engine.executions.plan.PlanService;
@@ -112,8 +112,11 @@ public class IdentityNodeExecutionStrategyTest extends OrchestrationTestBase {
                                             .identifier("test")
                                             .stepType(TEST_STEP_TYPE)
                                             .build();
+    doReturn(NodeExecution.builder().build())
+        .when(executionStrategy)
+        .createNodeExecution(ambiance, identityPlanNode, null, null, null, null);
     executionStrategy.triggerNode(ambiance, identityPlanNode, null);
-    verify(executorService).submit(any(ExecutionEngineDispatcher.class));
+    verify(executorService).submit(any(Runnable.class));
   }
 
   @Test
@@ -146,6 +149,7 @@ public class IdentityNodeExecutionStrategyTest extends OrchestrationTestBase {
                                       .ambiance(ambiance)
                                       .adviserResponse(adviserResponse)
                                       .planNode(planNode)
+                                      .originalNodeExecutionId(originalNodeExecutionId)
                                       .mode(ExecutionMode.SYNC)
                                       .build();
 
@@ -160,8 +164,7 @@ public class IdentityNodeExecutionStrategyTest extends OrchestrationTestBase {
     when(planService.fetchNode(planId, planNode.getUuid())).thenReturn(planNode);
     when(nodeExecutionService.get(eq(nodeExecutionId))).thenReturn(nodeExecution);
     when(nodeExecutionService.get(eq(originalNodeExecutionId))).thenReturn(originalExecution);
-    when(nodeExecutionService.update(eq(nodeExecutionId), any())).thenReturn(nodeExecution);
-    when(nodeExecutionService.updateStatusWithUpdate(eq(nodeExecutionId), any(), any(), any()))
+    when(nodeExecutionService.updateStatusWithOps(eq(nodeExecutionId), eq(Status.SKIPPED), any(), any()))
         .thenReturn(nodeExecution);
 
     executionStrategy.startExecution(ambiance);

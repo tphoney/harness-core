@@ -8,7 +8,6 @@
 package io.harness.cvng.analysis.services.impl;
 
 import static io.harness.cvng.beans.DataSourceType.APP_DYNAMICS;
-import static io.harness.data.encoding.EncodingUtils.compressString;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.rule.OwnerRule.KAMAL;
 import static io.harness.rule.OwnerRule.KANHAIYA;
@@ -57,7 +56,6 @@ import io.harness.cvng.core.entities.SplunkCVConfig;
 import io.harness.cvng.core.services.api.CVConfigService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.cvng.dashboard.entities.HeatMap;
-import io.harness.cvng.dashboard.services.api.HeatMapService;
 import io.harness.cvng.models.VerificationType;
 import io.harness.cvng.statemachine.beans.AnalysisInput;
 import io.harness.cvng.verificationjob.entities.TestVerificationJob;
@@ -68,12 +66,10 @@ import io.harness.cvng.verificationjob.services.api.VerificationJobService;
 import io.harness.ng.core.environment.beans.EnvironmentType;
 import io.harness.persistence.HPersistence;
 import io.harness.rule.Owner;
-import io.harness.serializer.JsonUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -101,7 +97,6 @@ public class LogAnalysisServiceImplTest extends CvNextGenTestBase {
   @Inject private DeploymentLogAnalysisService deploymentLogAnalysisService;
   @Inject private VerificationJobInstanceService verificationJobInstanceService;
   @Inject private VerificationJobService verificationJobService;
-  @Inject private HeatMapService heatMapService;
   @Mock private NextGenService nextGenService;
   private Instant instant;
   private String accountId;
@@ -118,8 +113,6 @@ public class LogAnalysisServiceImplTest extends CvNextGenTestBase {
     instant = Instant.parse("2020-07-27T10:44:11.000Z");
     verificationTaskId = verificationTaskService.getServiceGuardVerificationTaskId(cvConfig.getAccountId(), cvConfigId);
     FieldUtils.writeField(cvConfigService, "nextGenService", nextGenService, true);
-    FieldUtils.writeField(heatMapService, "cvConfigService", cvConfigService, true);
-    FieldUtils.writeField(logAnalysisService, "heatMapService", heatMapService, true);
   }
 
   @Test
@@ -191,7 +184,7 @@ public class LogAnalysisServiceImplTest extends CvNextGenTestBase {
   @Test
   @Owner(developers = PRAVEEN)
   @Category(UnitTests.class)
-  public void testGetFrequencyPattern_hasPreviousAnalysis() throws IOException {
+  public void testGetFrequencyPattern_hasPreviousAnalysis() {
     Instant start = Instant.now().minus(10, ChronoUnit.MINUTES).truncatedTo(ChronoUnit.MINUTES);
     Instant end = start.plus(5, ChronoUnit.MINUTES);
     List<LogAnalysisCluster> analysisClusters = buildAnalysisClusters(12345l);
@@ -208,7 +201,6 @@ public class LogAnalysisServiceImplTest extends CvNextGenTestBase {
     assertThat(patterns).isNotNull();
     assertThat(patterns.size()).isEqualTo(1);
     assertThat(patterns.get(0).getText()).isEqualTo("exception message");
-    assertThat(patterns.get(0).getCompressedText()).isEqualTo(compressString(JsonUtils.asJson("exception message")));
   }
 
   @Test

@@ -47,6 +47,8 @@ public class HelmChartConfigParams implements ExecutionCapabilityDemander {
   private HelmVersion helmVersion;
   private boolean useLatestChartMuseumVersion;
   private boolean useRepoFlags;
+  private boolean checkIncorrectChartVersion;
+  private boolean bypassHelmFetch;
 
   @Override
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {

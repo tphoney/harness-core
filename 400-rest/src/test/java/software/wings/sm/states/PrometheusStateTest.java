@@ -8,6 +8,7 @@
 package software.wings.sm.states;
 
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
+import static io.harness.rule.OwnerRule.ANJAN;
 import static io.harness.rule.OwnerRule.KAMAL;
 
 import static software.wings.beans.SettingAttribute.Builder.aSettingAttribute;
@@ -46,6 +47,7 @@ import software.wings.verification.VerificationStateAnalysisExecutionData;
 
 import com.google.inject.Inject;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,5 +164,63 @@ public class PrometheusStateTest extends APMStateVerificationTestBase {
     assertThat(TaskType.APM_METRIC_DATA_COLLECTION_TASK.name()).isEqualTo(taskData.getTaskType());
     APMDataCollectionInfo prometheusDataCollectionInfo = (APMDataCollectionInfo) parameters[0];
     assertThat(prometheusDataCollectionInfo.getBaseUrl()).isEqualTo(prometheusConfig.getUrl());
+    assertThat(prometheusDataCollectionInfo.isBase64EncodingRequired()).isFalse();
+    assertThat(prometheusDataCollectionInfo.getHeaders()).isEqualTo(Collections.emptyMap());
+  }
+
+  @Test
+  @Owner(developers = ANJAN)
+  @Category(UnitTests.class)
+  public void testTriggerAnalysisDataCollection_forBaseEncodedHeader() throws IllegalAccessException {
+    AnalysisContext analysisContext = mock(AnalysisContext.class);
+    VerificationStateAnalysisExecutionData executionData = mock(VerificationStateAnalysisExecutionData.class);
+    Map<String, String> hosts = new HashMap<>();
+    hosts.put("prometheus.host", "default");
+    String resolvedAnalysisServerConfigId = generateUuid();
+
+    PrometheusConfig prometheusConfig = PrometheusConfig.builder()
+                                            .username("user")
+                                            .password(new char[] {'p', 'a', 's', 's'})
+                                            .url(generateUuid())
+                                            .build();
+
+    prometheusConfig.setUsername("user");
+
+    SettingAttribute settingAttribute = aSettingAttribute()
+                                            .withUuid(resolvedAnalysisServerConfigId)
+                                            .withValue(prometheusConfig)
+                                            .withName("prometheus")
+                                            .build();
+    wingsPersistence.save(settingAttribute);
+
+    when(settingsService.get(eq(resolvedAnalysisServerConfigId))).thenReturn(settingAttribute);
+    when(appService.get(anyString())).thenReturn(application);
+    String analysisServerConfigId = "${workflow.variables.connectorName}";
+    prometheusState.setAnalysisServerConfigId(analysisServerConfigId);
+    List<TimeSeries> timeSeriesToAnalyze = new ArrayList<>();
+    String testUrl = "jvm_memory_max_bytes{pod_name=\"$hostName\"}";
+    TimeSeries timeSeries =
+        TimeSeries.builder().metricName("testMetric").url(testUrl).metricType(MetricType.INFRA.name()).build();
+    timeSeriesToAnalyze.add(timeSeries);
+    FieldUtils.writeField(prometheusState, "timeSeriesToAnalyze", timeSeriesToAnalyze, true);
+
+    PrometheusState spyState = spy(prometheusState);
+    when(spyState.getResolvedConnectorId(any(), eq("analysisServerConfigId"), eq(analysisServerConfigId)))
+        .thenReturn(resolvedAnalysisServerConfigId);
+
+    spyState.triggerAnalysisDataCollection(executionContext, analysisContext, executionData, hosts);
+    ArgumentCaptor<DelegateTask> argument = ArgumentCaptor.forClass(DelegateTask.class);
+    verify(delegateService).queueTask(argument.capture());
+    TaskData taskData = argument.getValue().getData();
+    Object parameters[] = taskData.getParameters();
+    assertThat(1).isEqualTo(parameters.length);
+    assertThat(TaskType.APM_METRIC_DATA_COLLECTION_TASK.name()).isEqualTo(taskData.getTaskType());
+    APMDataCollectionInfo prometheusDataCollectionInfo = (APMDataCollectionInfo) parameters[0];
+    assertThat(prometheusDataCollectionInfo.getBaseUrl()).isEqualTo(prometheusConfig.getUrl());
+
+    HashMap<String, String> headersMap = new HashMap<>();
+    headersMap.put("Authorization", "Basic encodeWithBase64(user:${password})");
+    assertThat(prometheusDataCollectionInfo.isBase64EncodingRequired()).isTrue();
+    assertThat(prometheusDataCollectionInfo.getHeaders()).isEqualTo(headersMap);
   }
 }

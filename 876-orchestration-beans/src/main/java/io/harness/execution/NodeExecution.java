@@ -96,7 +96,7 @@ public class NodeExecution implements PersistentEntity, UuidAccess, PmsNodeExecu
   @Deprecated Map<String, Object> resolvedStepParameters;
   @Deprecated PmsStepParameters resolvedInputs;
 
-  PmsStepParameters resolvedParams;
+  @Wither PmsStepParameters resolvedParams;
 
   // For Wait Notify
   String notifyId;
@@ -190,6 +190,10 @@ public class NodeExecution implements PersistentEntity, UuidAccess, PmsNodeExecu
   }
 
   public String getPlanExecutionId() {
+    return ambiance.getPlanExecutionId();
+  }
+
+  public String getPlanId() {
     return ambiance.getPlanExecutionId();
   }
 

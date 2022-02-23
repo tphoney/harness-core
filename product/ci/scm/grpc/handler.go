@@ -6,11 +6,11 @@
 package grpc
 
 import (
-	"github.com/wings-software/portal/product/ci/scm/file"
-	"github.com/wings-software/portal/product/ci/scm/git"
-	"github.com/wings-software/portal/product/ci/scm/parser"
-	pb "github.com/wings-software/portal/product/ci/scm/proto"
-	"github.com/wings-software/portal/product/ci/scm/repo"
+	"github.com/harness/harness-core/product/ci/scm/file"
+	"github.com/harness/harness-core/product/ci/scm/git"
+	"github.com/harness/harness-core/product/ci/scm/parser"
+	pb "github.com/harness/harness-core/product/ci/scm/proto"
+	"github.com/harness/harness-core/product/ci/scm/repo"
 	"go.uber.org/zap"
 	"golang.org/x/net/context"
 )
@@ -152,6 +152,11 @@ func (h *handler) ListBranches(ctx context.Context, in *pb.ListBranchesRequest) 
 // ListCommits is used to return a list of commit ids given a ref or branch.
 func (h *handler) ListCommits(ctx context.Context, in *pb.ListCommitsRequest) (*pb.ListCommitsResponse, error) {
 	return git.ListCommits(ctx, in, h.log)
+}
+
+// GetLatestCommitOnFile is used to return latest commit id of a file given a branch.
+func (h *handler) GetLatestCommitOnFile(ctx context.Context, in *pb.GetLatestCommitOnFileRequest) (*pb.GetLatestCommitOnFileResponse, error) {
+	return git.GetLatestCommitOnFile(ctx, in, h.log)
 }
 
 // ListCommitsInPR is used to return a list of commit details given pr number.

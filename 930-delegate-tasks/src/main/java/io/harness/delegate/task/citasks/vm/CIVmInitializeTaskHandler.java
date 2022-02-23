@@ -17,6 +17,7 @@ import static io.harness.delegate.task.citasks.vm.helper.CIVMConstants.DRONE_REM
 import static io.harness.delegate.task.citasks.vm.helper.CIVMConstants.DRONE_SOURCE_BRANCH;
 import static io.harness.delegate.task.citasks.vm.helper.CIVMConstants.DRONE_TARGET_BRANCH;
 import static io.harness.delegate.task.citasks.vm.helper.CIVMConstants.NETWORK_ID;
+import static io.harness.delegate.task.citasks.vm.helper.CIVMConstants.RUN_STEP_KIND;
 
 import static java.lang.String.format;
 
@@ -25,14 +26,18 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.ci.CIInitializeTaskParams;
 import io.harness.delegate.beans.ci.pod.SecretParams;
 import io.harness.delegate.beans.ci.vm.CIVmInitializeTaskParams;
+import io.harness.delegate.beans.ci.vm.VmServiceStatus;
 import io.harness.delegate.beans.ci.vm.VmTaskExecutionResponse;
+import io.harness.delegate.beans.ci.vm.runner.ExecuteStepRequest;
 import io.harness.delegate.beans.ci.vm.runner.SetupVmRequest;
 import io.harness.delegate.beans.ci.vm.runner.SetupVmResponse;
+import io.harness.delegate.beans.ci.vm.steps.VmServiceDependency;
 import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
 import io.harness.delegate.task.citasks.CIInitializeTaskHandler;
 import io.harness.delegate.task.citasks.cik8handler.SecretSpecBuilder;
 import io.harness.delegate.task.citasks.cik8handler.helper.ProxyVariableHelper;
 import io.harness.delegate.task.citasks.vm.helper.HttpHelper;
+import io.harness.delegate.task.citasks.vm.helper.StepExecutionHelper;
 import io.harness.logging.CommandExecutionStatus;
 
 import com.google.inject.Inject;
@@ -51,6 +56,7 @@ public class CIVmInitializeTaskHandler implements CIInitializeTaskHandler {
   @Inject private HttpHelper httpHelper;
   @Inject private SecretSpecBuilder secretSpecBuilder;
   @Inject private ProxyVariableHelper proxyVariableHelper;
+  @Inject private StepExecutionHelper stepExecutionHelper;
 
   @Override
   public Type getType() {
@@ -62,13 +68,22 @@ public class CIVmInitializeTaskHandler implements CIInitializeTaskHandler {
     CIVmInitializeTaskParams ciVmInitializeTaskParams = (CIVmInitializeTaskParams) ciInitializeTaskParams;
     log.info(
         "Received request to initialize stage with stage runtime ID {}", ciVmInitializeTaskParams.getStageRuntimeId());
-    return callRunnerForSetup(ciVmInitializeTaskParams, taskId);
+    VmTaskExecutionResponse response = callRunnerForSetup(ciVmInitializeTaskParams, taskId);
+    List<VmServiceStatus> serviceStatuses = new ArrayList<>();
+    if (isNotEmpty(ciVmInitializeTaskParams.getServiceDependencies())) {
+      for (VmServiceDependency serviceDependency : ciVmInitializeTaskParams.getServiceDependencies()) {
+        serviceStatuses.add(startService(serviceDependency, taskId, response.getIpAddress(), ciVmInitializeTaskParams));
+      }
+    }
+    response.setServiceStatuses(serviceStatuses);
+    return response;
   }
 
   private VmTaskExecutionResponse callRunnerForSetup(CIVmInitializeTaskParams ciVmInitializeTaskParams, String taskId) {
     String errMessage = "";
     try {
-      Response<SetupVmResponse> response = httpHelper.setupStageWithRetries(convert(ciVmInitializeTaskParams, taskId));
+      Response<SetupVmResponse> response =
+          httpHelper.setupStageWithRetries(convertSetup(ciVmInitializeTaskParams, taskId));
       if (response.isSuccessful()) {
         return VmTaskExecutionResponse.builder()
             .ipAddress(response.body().getIpAddress())
@@ -89,7 +104,7 @@ public class CIVmInitializeTaskHandler implements CIInitializeTaskHandler {
         .build();
   }
 
-  private SetupVmRequest convert(CIVmInitializeTaskParams params, String taskId) {
+  private SetupVmRequest convertSetup(CIVmInitializeTaskParams params, String taskId) {
     Map<String, String> env = new HashMap<>();
     List<String> secrets = new ArrayList<>();
     if (isNotEmpty(params.getSecrets())) {
@@ -170,5 +185,64 @@ public class CIVmInitializeTaskHandler implements CIInitializeTaskHandler {
                       .build());
     }
     return volumes;
+  }
+
+  private VmServiceStatus startService(VmServiceDependency serviceDependency, String taskId, String ipAddress,
+      CIVmInitializeTaskParams initializeTaskParams) {
+    ExecuteStepRequest request = convertService(serviceDependency, taskId, ipAddress, initializeTaskParams.getPoolID(),
+        initializeTaskParams.getWorkingDir(), initializeTaskParams.getVolToMountPath());
+    VmTaskExecutionResponse serviceResponse = stepExecutionHelper.callRunnerForStepExecution(request);
+    VmServiceStatus.Status status = VmServiceStatus.Status.ERROR;
+    if (serviceResponse.getCommandExecutionStatus() == CommandExecutionStatus.SUCCESS) {
+      status = VmServiceStatus.Status.RUNNING;
+    }
+    return VmServiceStatus.builder()
+        .identifier(serviceDependency.getIdentifier())
+        .name(serviceDependency.getName())
+        .image(serviceDependency.getImage())
+        .logKey(serviceDependency.getLogKey())
+        .errorMessage(serviceResponse.getErrorMessage())
+        .status(status)
+        .build();
+  }
+
+  private ExecuteStepRequest convertService(VmServiceDependency params, String taskId, String ipAddress, String poolId,
+      String workDir, Map<String, String> volToMountPath) {
+    ExecuteStepRequest.Config.ConfigBuilder configBuilder =
+        ExecuteStepRequest.Config.builder()
+            .id(params.getIdentifier())
+            .name(params.getIdentifier())
+            .logKey(params.getLogKey())
+            .workingDir(workDir)
+            .volumeMounts(stepExecutionHelper.getVolumeMounts(volToMountPath))
+            .image(params.getImage())
+            .pull(params.getPullPolicy())
+            .user(params.getRunAsUser())
+            .envs(params.getEnvVariables())
+            .detach(true)
+            .kind(RUN_STEP_KIND);
+    ExecuteStepRequest.ImageAuth imageAuth =
+        stepExecutionHelper.getImageAuth(params.getImage(), params.getImageConnector());
+
+    List<String> secrets = new ArrayList<>();
+    if (isNotEmpty(params.getSecrets())) {
+      secrets.addAll(params.getSecrets());
+    }
+    if (imageAuth != null) {
+      configBuilder.imageAuth(imageAuth);
+      secrets.add(imageAuth.getPassword());
+    }
+    configBuilder.secrets(secrets);
+
+    if (isNotEmpty(params.getPortBindings())) {
+      configBuilder.portBindings(params.getPortBindings());
+    }
+
+    return ExecuteStepRequest.builder()
+        .correlationID(taskId)
+        .poolId(poolId)
+        .ipAddress(ipAddress)
+        .config(configBuilder.build())
+        .build();
   }
 }

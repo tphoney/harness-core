@@ -22,9 +22,9 @@ import io.harness.gitsync.FileInfo;
 import io.harness.gitsync.HarnessToGitPushInfoServiceGrpc.HarnessToGitPushInfoServiceBlockingStub;
 import io.harness.gitsync.Principal;
 import io.harness.gitsync.PushFileResponse;
-import io.harness.gitsync.UserPrincipal;
 import io.harness.gitsync.common.helper.ChangeTypeMapper;
 import io.harness.gitsync.common.helper.GitSyncGrpcClientUtils;
+import io.harness.gitsync.common.helper.UserPrincipalMapper;
 import io.harness.gitsync.exceptions.GitSyncException;
 import io.harness.gitsync.interceptor.GitEntityInfo;
 import io.harness.gitsync.persistance.GitSyncSdkService;
@@ -35,6 +35,7 @@ import io.harness.ng.core.EntityDetail;
 import io.harness.ng.core.entitydetail.EntityDetailRestToProtoMapper;
 import io.harness.security.SourcePrincipalContextBuilder;
 import io.harness.security.dto.ServicePrincipal;
+import io.harness.security.dto.UserPrincipal;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -95,6 +96,13 @@ public class SCMGitSyncHelper {
                                    .setYamlGitConfigId(gitBranchInfo.getYamlGitConfigId())
                                    .putAllContextMap(MDC.getCopyOfContextMap())
                                    .setYaml(emptyIfNull(yaml));
+
+    if (gitBranchInfo.getIsFullSyncFlow() != null) {
+      builder.setIsFullSyncFlow(gitBranchInfo.getIsFullSyncFlow());
+    } else {
+      builder.setIsFullSyncFlow(false);
+    }
+
     if (gitBranchInfo.getBaseBranch() != null) {
       builder.setBaseBranch(StringValue.of(gitBranchInfo.getBaseBranch()));
     }
@@ -137,14 +145,8 @@ public class SCMGitSyncHelper {
     final Principal.Builder principalBuilder = Principal.newBuilder();
     switch (sourcePrincipal.getType()) {
       case USER:
-        io.harness.security.dto.UserPrincipal userPrincipalFromContext =
-            (io.harness.security.dto.UserPrincipal) sourcePrincipal;
-        final UserPrincipal userPrincipal = UserPrincipal.newBuilder()
-                                                .setEmail(StringValue.of(userPrincipalFromContext.getEmail()))
-                                                .setUserId(StringValue.of(userPrincipalFromContext.getName()))
-                                                .setUserName(StringValue.of(userPrincipalFromContext.getUsername()))
-                                                .build();
-        return principalBuilder.setUserPrincipal(userPrincipal).build();
+        UserPrincipal userPrincipalFromContext = (UserPrincipal) sourcePrincipal;
+        return principalBuilder.setUserPrincipal(UserPrincipalMapper.toProto(userPrincipalFromContext)).build();
       case SERVICE:
         final ServicePrincipal servicePrincipalFromContext = (ServicePrincipal) sourcePrincipal;
         final io.harness.gitsync.ServicePrincipal servicePrincipal =

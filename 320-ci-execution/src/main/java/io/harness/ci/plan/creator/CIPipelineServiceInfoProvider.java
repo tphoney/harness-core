@@ -9,6 +9,7 @@ package io.harness.ci.plan.creator;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.FeatureName;
 import io.harness.beans.steps.StepSpecTypeConstants;
 import io.harness.ci.creator.variables.CIStageVariableCreator;
 import io.harness.ci.creator.variables.CIStepVariableCreator;
@@ -17,7 +18,22 @@ import io.harness.ci.plan.creator.filter.CIStageFilterJsonCreator;
 import io.harness.ci.plan.creator.stage.IntegrationStagePMSPlanCreator;
 import io.harness.ci.plan.creator.step.CIPMSStepFilterJsonCreator;
 import io.harness.ci.plan.creator.step.CIPMSStepPlanCreator;
+import io.harness.ci.plan.creator.step.CIStepFilterJsonCreatorV2;
 import io.harness.enforcement.constants.FeatureRestrictionName;
+import io.harness.plancreator.ArtifactoryUploadStepPlanCreator;
+import io.harness.plancreator.BuildAndPushECRStepPlanCreator;
+import io.harness.plancreator.BuildAndPushGCRStepPlanCreator;
+import io.harness.plancreator.DockerStepPlanCreator;
+import io.harness.plancreator.GCSUploadStepPlanCreator;
+import io.harness.plancreator.PluginStepPlanCreator;
+import io.harness.plancreator.RestoreCacheGCSStepPlanCreator;
+import io.harness.plancreator.RestoreCacheS3StepPlanCreator;
+import io.harness.plancreator.RunStepPlanCreator;
+import io.harness.plancreator.RunTestStepPlanCreator;
+import io.harness.plancreator.S3UploadStepPlanCreator;
+import io.harness.plancreator.SaveCacheGCSStepPlanCreator;
+import io.harness.plancreator.SaveCacheS3StepPlanCreator;
+import io.harness.plancreator.SecurityStepPlanCreator;
 import io.harness.pms.contracts.steps.StepInfo;
 import io.harness.pms.contracts.steps.StepMetaData;
 import io.harness.pms.sdk.core.pipeline.filters.FilterJsonCreator;
@@ -43,6 +59,20 @@ public class CIPipelineServiceInfoProvider implements PipelineServiceInfoProvide
     List<PartialPlanCreator<?>> planCreators = new LinkedList<>();
     planCreators.add(new IntegrationStagePMSPlanCreator());
     planCreators.add(new CIPMSStepPlanCreator());
+    planCreators.add(new RunStepPlanCreator());
+    planCreators.add(new RunTestStepPlanCreator());
+    planCreators.add(new S3UploadStepPlanCreator());
+    planCreators.add(new SaveCacheGCSStepPlanCreator());
+    planCreators.add(new GCSUploadStepPlanCreator());
+    planCreators.add(new RestoreCacheGCSStepPlanCreator());
+    planCreators.add(new RestoreCacheS3StepPlanCreator());
+    planCreators.add(new PluginStepPlanCreator());
+    planCreators.add(new DockerStepPlanCreator());
+    planCreators.add(new ArtifactoryUploadStepPlanCreator());
+    planCreators.add(new BuildAndPushECRStepPlanCreator());
+    planCreators.add(new BuildAndPushGCRStepPlanCreator());
+    planCreators.add(new SaveCacheS3StepPlanCreator());
+    planCreators.add(new SecurityStepPlanCreator());
     injectorUtils.injectMembers(planCreators);
     return planCreators;
   }
@@ -52,6 +82,7 @@ public class CIPipelineServiceInfoProvider implements PipelineServiceInfoProvide
     List<FilterJsonCreator> filterJsonCreators = new ArrayList<>();
     filterJsonCreators.add(new CIStageFilterJsonCreator());
     filterJsonCreators.add(new CIPMSStepFilterJsonCreator());
+    filterJsonCreators.add(new CIStepFilterJsonCreatorV2());
     injectorUtils.injectMembers(filterJsonCreators);
 
     return filterJsonCreators;
@@ -111,6 +142,14 @@ public class CIPipelineServiceInfoProvider implements PipelineServiceInfoProvide
                                   .setStepMetaData(StepMetaData.newBuilder().addFolderPaths("Build").build())
                                   .build();
 
+    StepInfo securityStepInfo = StepInfo.newBuilder()
+                                    .setName("Security")
+                                    .setType(StepSpecTypeConstants.SECURITY)
+                                    .setFeatureFlag(FeatureName.SECURITY.name())
+                                    .setFeatureRestrictionName(FeatureRestrictionName.SECURITY.name())
+                                    .setStepMetaData(StepMetaData.newBuilder().addFolderPaths("Security").build())
+                                    .build();
+
     StepInfo ecrPushBuilds =
         StepInfo.newBuilder()
             .setName("Build and Push to ECR")
@@ -161,6 +200,7 @@ public class CIPipelineServiceInfoProvider implements PipelineServiceInfoProvide
     stepInfos.add(restoreCacheFromGCS);
     stepInfos.add(runTestsStepInfo);
     stepInfos.add(pluginStepInfo);
+    stepInfos.add(securityStepInfo);
     stepInfos.add(restoreCacheFromS3);
     stepInfos.add(dockerPushBuild);
     stepInfos.add(uploadArtifactsToJfrogBuild);

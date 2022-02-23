@@ -490,7 +490,7 @@ public class GovernanceConfigServiceImpl implements GovernanceConfigService {
           }
         } else if (entry.isApplicable() != oldWindow.isApplicable()) {
           if (entry.checkWindowExpired()) {
-            throw new InvalidRequestException("Cannot update expired freeze window");
+            throw new InvalidRequestException("Cannot update expired freeze window: " + entry.getName());
           }
         }
         validateUserGroups(entry.getUserGroups(), accountId);

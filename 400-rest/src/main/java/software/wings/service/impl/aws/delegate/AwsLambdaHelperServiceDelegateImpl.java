@@ -53,6 +53,7 @@ import software.wings.beans.artifact.ArtifactFile;
 import software.wings.beans.artifact.ArtifactStreamType;
 import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.delegatetasks.DelegateFileManager;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.impl.aws.client.CloseableAmazonWebServiceClient;
 import software.wings.service.impl.aws.model.AwsLambdaExecuteFunctionRequest;
 import software.wings.service.impl.aws.model.AwsLambdaExecuteFunctionResponse;
@@ -170,6 +171,7 @@ public class AwsLambdaHelperServiceDelegateImpl
     AwsConfig awsConfig = request.getAwsConfig();
     List<EncryptedDataDetail> encryptionDetails = request.getEncryptionDetails();
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AWSLambdaClient> closeableAWSLambdaClient =
              new CloseableAmazonWebServiceClient(getAmazonLambdaClient(request.getRegion(), request.getAwsConfig()))) {
       InvokeRequest invokeRequest = new InvokeRequest()
@@ -204,7 +206,7 @@ public class AwsLambdaHelperServiceDelegateImpl
     } catch (AmazonClientException amazonClientException) {
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return null;
   }
@@ -214,6 +216,7 @@ public class AwsLambdaHelperServiceDelegateImpl
     AwsConfig awsConfig = request.getAwsConfig();
     List<EncryptedDataDetail> encryptionDetails = request.getEncryptionDetails();
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AWSLambdaClient> closeableAWSLambdaClient =
              new CloseableAmazonWebServiceClient(getAmazonLambdaClient(request.getRegion(), request.getAwsConfig()))) {
       AwsLambdaFunctionResponseBuilder response = AwsLambdaFunctionResponse.builder();
@@ -238,7 +241,7 @@ public class AwsLambdaHelperServiceDelegateImpl
     } catch (AmazonClientException amazonClientException) {
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return null;
   }
@@ -252,6 +255,7 @@ public class AwsLambdaHelperServiceDelegateImpl
     responseBuilder.region(request.getRegion());
     List<EncryptedDataDetail> encryptionDetails = request.getEncryptionDetails();
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
 
     try (CloseableAmazonWebServiceClient<AWSLambdaClient> closeableAWSLambdaClient =
              new CloseableAmazonWebServiceClient(getAmazonLambdaClient(request.getRegion(), request.getAwsConfig()))) {
@@ -305,10 +309,10 @@ public class AwsLambdaHelperServiceDelegateImpl
           CommandExecutionStatus.FAILURE);
       return AwsLambdaExecuteWfResponse.builder()
           .executionStatus(FAILED)
-          .errorMessage(ExceptionUtils.getMessage(ioException))
+          .errorMessage(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ioException)))
           .build();
     } catch (Exception e) {
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return responseBuilder.build();
   }
@@ -849,6 +853,7 @@ public class AwsLambdaHelperServiceDelegateImpl
     final AwsConfig awsConfig = request.getAwsConfig();
     final List<EncryptedDataDetail> encryptionDetails = request.getEncryptionDetails();
     encryptionService.decrypt(awsConfig, encryptionDetails, isInstanceSync);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
 
     try (CloseableAmazonWebServiceClient<AWSLambdaClient> closeableAWSLambdaClient =
              new CloseableAmazonWebServiceClient(getAmazonLambdaClient(request.getRegion(), request.getAwsConfig()))) {
@@ -877,7 +882,7 @@ public class AwsLambdaHelperServiceDelegateImpl
     } catch (AmazonClientException amazonClientException) {
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return null;
   }

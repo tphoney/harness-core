@@ -38,6 +38,7 @@ import software.wings.beans.infrastructure.instance.info.KubernetesContainerInfo
 import software.wings.cloudprovider.aws.AwsClusterService;
 import software.wings.cloudprovider.aws.EcsContainerService;
 import software.wings.cloudprovider.gke.GkeClusterService;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.helpers.ext.azure.AzureHelperService;
 import software.wings.service.intfc.ContainerService;
 import software.wings.service.intfc.security.EncryptionService;
@@ -115,6 +116,7 @@ public class ContainerServiceImpl implements ContainerService {
       KubernetesClusterConfig kubernetesClusterConfig =
           (KubernetesClusterConfig) containerServiceParams.getSettingAttribute().getValue();
       encryptionService.decrypt(kubernetesClusterConfig, containerServiceParams.getEncryptionDetails(), isInstanceSync);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(kubernetesClusterConfig, containerServiceParams.getEncryptionDetails());
       kubernetesConfig = kubernetesClusterConfig.createKubernetesConfig(containerServiceParams.getNamespace());
     }
 
@@ -296,7 +298,7 @@ public class ContainerServiceImpl implements ContainerService {
     } else if (value instanceof KubernetesClusterConfig) {
       KubernetesClusterConfig kubernetesClusterConfig = (KubernetesClusterConfig) value;
       encryptionService.decrypt(kubernetesClusterConfig, containerServiceParams.getEncryptionDetails(), false);
-
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(kubernetesClusterConfig, containerServiceParams.getEncryptionDetails());
       KubernetesConfig kubernetesConfig = kubernetesClusterConfig.createKubernetesConfig(namespace);
       kubernetesContainerService.validate(kubernetesConfig, useNewKubectlVersion);
       return true;

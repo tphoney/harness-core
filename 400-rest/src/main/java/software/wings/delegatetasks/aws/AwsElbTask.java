@@ -25,6 +25,8 @@ import io.harness.delegate.task.aws.AwsLoadBalancerDetails;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 
+import io.harness.secret.SecretSanitizerThreadLocal;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.impl.aws.model.AwsElbListAppElbsResponse;
 import software.wings.service.impl.aws.model.AwsElbListClassicElbsResponse;
 import software.wings.service.impl.aws.model.AwsElbListListenerRequest;
@@ -53,6 +55,7 @@ public class AwsElbTask extends AbstractDelegateRunnableTask {
   public AwsElbTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override
@@ -105,7 +108,7 @@ public class AwsElbTask extends AbstractDelegateRunnableTask {
     } catch (WingsException exception) {
       throw exception;
     } catch (Exception exception) {
-      throw new InvalidRequestException(exception.getMessage(), WingsException.USER);
+      throw new InvalidRequestException(ExceptionMessageSanitizer.sanitizeException(exception).getMessage(), WingsException.USER);
     }
   }
 

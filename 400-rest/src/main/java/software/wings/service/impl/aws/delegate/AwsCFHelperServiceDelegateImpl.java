@@ -25,6 +25,7 @@ import software.wings.beans.CloudFormationSourceType;
 import software.wings.beans.GitConfig;
 import software.wings.beans.GitFileConfig;
 import software.wings.beans.GitOperationContext;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.impl.aws.client.CloseableAmazonWebServiceClient;
 import software.wings.service.impl.aws.model.AwsCFTemplateParamsData;
 import software.wings.service.intfc.aws.delegate.AwsCFHelperServiceDelegate;
@@ -66,6 +67,8 @@ public class AwsCFHelperServiceDelegateImpl extends AwsHelperServiceDelegateBase
       String region, String data, String type, GitFileConfig gitFileConfig, GitConfig gitConfig,
       List<EncryptedDataDetail> sourceRepoEncryptedDetail) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
+
     try (CloseableAmazonWebServiceClient<AmazonCloudFormationClient> closeableAmazonCloudFormationClient =
              new CloseableAmazonWebServiceClient(getAmazonCloudFormationClient(Regions.fromName(region), awsConfig))) {
       GetTemplateSummaryRequest request = new GetTemplateSummaryRequest();
@@ -99,7 +102,7 @@ public class AwsCFHelperServiceDelegateImpl extends AwsHelperServiceDelegateBase
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception getParamsData", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -119,7 +122,7 @@ public class AwsCFHelperServiceDelegateImpl extends AwsHelperServiceDelegateBase
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception getStackBody", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return "";
   }
@@ -143,7 +146,7 @@ public class AwsCFHelperServiceDelegateImpl extends AwsHelperServiceDelegateBase
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception getCapabilities", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }

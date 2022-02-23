@@ -24,6 +24,7 @@ import io.harness.delegate.task.TaskParameters;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.TimeoutException;
 import io.harness.logging.LogLevel;
+import io.harness.secret.SecretSanitizerThreadLocal;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.AwsConfig;
@@ -57,6 +58,7 @@ public class EcsSteadyStateCheckTask extends AbstractDelegateRunnableTask {
       ILogStreamingTaskClient logStreamingTaskClient, Consumer<DelegateTaskResponse> consumer,
       BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   private Service getService(String region, AwsConfig awsConfig, List<EncryptedDataDetail> encryptedDataDetails,
@@ -133,7 +135,7 @@ public class EcsSteadyStateCheckTask extends AbstractDelegateRunnableTask {
           .build();
     } catch (TimeoutException ex) {
       String errorMessage = String.format("Timeout Exception: %s while waiting for ECS steady state for activity: %s",
-          ex.getMessage(), params.getActivityId());
+              ExceptionMessageSanitizer.sanitizeException(ex).getMessage(), params.getActivityId());
       executionLogCallback.saveExecutionLog(errorMessage, LogLevel.ERROR);
       log.error(errorMessage, ex);
       EcsSteadyStateCheckResponse response = EcsSteadyStateCheckResponse.builder()
@@ -147,7 +149,7 @@ public class EcsSteadyStateCheckTask extends AbstractDelegateRunnableTask {
       return response;
     } catch (Exception ex) {
       String errorMessage = String.format(
-          "Exception: %s while waiting for ECS steady state for activity: %s", ex.getMessage(), params.getActivityId());
+          "Exception: %s while waiting for ECS steady state for activity: %s", ExceptionMessageSanitizer.sanitizeException(ex).getMessage(), params.getActivityId());
       executionLogCallback.saveExecutionLog(errorMessage, LogLevel.ERROR);
       log.error(errorMessage, ex);
       return EcsSteadyStateCheckResponse.builder()

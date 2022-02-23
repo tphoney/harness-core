@@ -15,6 +15,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.AwsConfig;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.impl.aws.client.CloseableAmazonWebServiceClient;
 import software.wings.service.impl.aws.model.request.AwsCloudWatchMetricDataRequest;
 import software.wings.service.impl.aws.model.request.AwsCloudWatchStatisticsRequest;
@@ -90,6 +91,7 @@ public class AwsCloudWatchHelperServiceDelegateImpl
   private GetMetricStatisticsResult getMetricStatistics(GetMetricStatisticsRequest request, final AwsConfig awsConfig,
       List<EncryptedDataDetail> encryptionDetails, String region) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonCloudWatchClient> closeableAmazonCloudWatchClient =
              new CloseableAmazonWebServiceClient(getAwsCloudWatchClient(region, awsConfig))) {
       tracker.trackCloudWatchCall("Get Metric Statistics");
@@ -100,7 +102,7 @@ public class AwsCloudWatchHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception getMetricStatistics", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return null;
   }
@@ -108,6 +110,7 @@ public class AwsCloudWatchHelperServiceDelegateImpl
   private GetMetricDataResult getMetricData(
       GetMetricDataRequest request, AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonCloudWatchClient> closeableAmazonCloudWatchClient =
              new CloseableAmazonWebServiceClient(getAwsCloudWatchClient(region, awsConfig))) {
       return closeableAmazonCloudWatchClient.getClient().getMetricData(request);
@@ -117,7 +120,7 @@ public class AwsCloudWatchHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception getMetricData", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return null;
   }

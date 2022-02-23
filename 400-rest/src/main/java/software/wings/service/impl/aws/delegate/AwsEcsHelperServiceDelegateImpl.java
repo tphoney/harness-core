@@ -24,6 +24,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.AwsConfig;
 import software.wings.beans.SettingAttribute;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.impl.aws.client.CloseableAmazonWebServiceClient;
 import software.wings.service.intfc.aws.delegate.AwsEcsHelperServiceDelegate;
 
@@ -79,6 +80,7 @@ public class AwsEcsHelperServiceDelegateImpl
   @Override
   public List<String> listClusters(AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonECSClient> closeableAmazonECSClient =
              new CloseableAmazonWebServiceClient(getAmazonEcsClient(region, awsConfig))) {
       List<String> result = new ArrayList<>();
@@ -96,7 +98,7 @@ public class AwsEcsHelperServiceDelegateImpl
     } catch (AmazonClientException amazonClientException) {
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -105,6 +107,7 @@ public class AwsEcsHelperServiceDelegateImpl
   public List<Service> listServicesForCluster(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region, String cluster) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonECSClient> closeableAmazonECSClient =
              new CloseableAmazonWebServiceClient(getAmazonEcsClient(region, awsConfig))) {
       List<String> serviceArns = newArrayList();
@@ -142,7 +145,7 @@ public class AwsEcsHelperServiceDelegateImpl
     } catch (AmazonClientException amazonClientException) {
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -152,6 +155,7 @@ public class AwsEcsHelperServiceDelegateImpl
       String region, String cluster, String service, DesiredStatus desiredStatus) {
     List<String> taskArns = newArrayList();
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonECSClient> closeableAmazonECSClient =
              new CloseableAmazonWebServiceClient(getAmazonEcsClient(region, awsConfig))) {
       String nextToken = null;
@@ -174,7 +178,7 @@ public class AwsEcsHelperServiceDelegateImpl
     } catch (AmazonClientException amazonClientException) {
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return taskArns;
   }
@@ -183,6 +187,7 @@ public class AwsEcsHelperServiceDelegateImpl
   public List<Task> listTasksForService(AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region,
       String cluster, String service, DesiredStatus desiredStatus) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonECSClient> closeableAmazonECSClient =
              new CloseableAmazonWebServiceClient(getAmazonEcsClient(region, awsConfig))) {
       List<String> taskArns =
@@ -209,7 +214,7 @@ public class AwsEcsHelperServiceDelegateImpl
     } catch (AmazonClientException amazonClientException) {
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -219,6 +224,7 @@ public class AwsEcsHelperServiceDelegateImpl
       List<EncryptedDataDetail> encryptionDetails, String region, String cluster,
       ContainerInstanceStatus containerInstanceStatus) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonECSClient> closeableAmazonECSClient =
              new CloseableAmazonWebServiceClient(getAmazonEcsClient(region, awsConfig))) {
       List<String> containerInstanceArns = newArrayList();
@@ -261,7 +267,7 @@ public class AwsEcsHelperServiceDelegateImpl
     } catch (AmazonClientException amazonClientException) {
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }

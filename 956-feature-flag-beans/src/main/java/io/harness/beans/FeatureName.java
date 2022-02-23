@@ -273,6 +273,7 @@ public enum FeatureName {
   SECURITY,
   GIT_SYNC_WITH_BITBUCKET,
   REFACTOR_ARTIFACT_SELECTION;
+  DEBEZIUM_ENABLED;
 
   FeatureName() {
     scope = Scope.PER_ACCOUNT;

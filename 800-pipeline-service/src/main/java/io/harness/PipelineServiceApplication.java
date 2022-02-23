@@ -25,6 +25,7 @@ import io.harness.cache.CacheModule;
 import io.harness.configuration.DeployVariant;
 import io.harness.consumers.GraphUpdateRedisConsumer;
 import io.harness.controller.PrimaryVersionChangeScheduler;
+import io.harness.debezium.DebeziumController;
 import io.harness.delay.DelayEventListener;
 import io.harness.engine.events.NodeExecutionStatusUpdateEventHandler;
 import io.harness.engine.executions.node.NodeExecutionService;
@@ -41,6 +42,7 @@ import io.harness.event.OrchestrationLogPublisher;
 import io.harness.event.OrchestrationStartEventHandler;
 import io.harness.exception.GeneralException;
 import io.harness.execution.consumers.SdkResponseEventRedisConsumer;
+import io.harness.ff.FeatureFlagService;
 import io.harness.gitsync.AbstractGitSyncSdkModule;
 import io.harness.gitsync.GitSdkConfiguration;
 import io.harness.gitsync.GitSyncEntitiesConfiguration;
@@ -171,6 +173,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ServiceManager;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Guice;
+import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
@@ -206,6 +209,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -226,6 +230,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 public class PipelineServiceApplication extends Application<PipelineServiceConfiguration> {
   private static final SecureRandom random = new SecureRandom();
   private static final String APPLICATION_NAME = "Pipeline Service Application";
+  @Inject FeatureFlagService featureFlagService;
 
   private final MetricRegistry metricRegistry = new MetricRegistry();
   private HarnessMetricRegistry harnessMetricRegistry;
@@ -270,6 +275,12 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
 
   @Override
   public void run(PipelineServiceConfiguration appConfig, Environment environment) {
+    //    if(featureFlagService.isEnabledForAllAccounts(FeatureName.DEBEZIUM_ENABLED)){
+    ExecutorService debeziumExecutorService =
+        Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("debezium-controller-main").build());
+    DebeziumController debeziumController = new DebeziumController(appConfig.getDebeziumConfig());
+    debeziumExecutorService.submit(debeziumController);
+    //  }
     log.info("Starting Pipeline Service Application ...");
     MaintenanceController.forceMaintenance(true);
 

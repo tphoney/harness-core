@@ -19,6 +19,4 @@ import lombok.Data;
 @Builder
 public class DebeziumConfiguration {
   @JsonProperty("debezium") private DebeziumConfig debeziumConfig;
-  private boolean enabled;
-  private boolean exportMetricsToStackDriver;
 }

@@ -8,7 +8,7 @@
 package io.harness.debezium;
 
 import io.harness.exception.DuplicateFieldException;
-import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity;
+import io.harness.persistence.PersistentEntity;
 
 import com.google.inject.Singleton;
 import io.debezium.embedded.EmbeddedEngineChangeEvent;
@@ -31,12 +31,12 @@ public class DebeziumChangeConsumer implements DebeziumEngine.ChangeConsumer<Cha
   private static final String OP_FIELD = "__op";
   private final Deserializer<String> idDeserializer;
   private final Retry retry;
-  private final Map<String, Deserializer<? extends PipelineExecutionSummaryEntity>> collectionToDeserializerMap;
-  private final Map<String, ChangeConsumer<? extends PipelineExecutionSummaryEntity>> collectionToConsumerMap;
+  private final Map<String, Deserializer<? extends PersistentEntity>> collectionToDeserializerMap;
+  private final Map<String, ChangeConsumer<? extends PersistentEntity>> collectionToConsumerMap;
 
   public DebeziumChangeConsumer(Deserializer<String> idDeserializer,
-      Map<String, Deserializer<? extends PipelineExecutionSummaryEntity>> collectionToDeserializerMap,
-      Map<String, ChangeConsumer<? extends PipelineExecutionSummaryEntity>> collectionToConsumerMap) {
+      Map<String, Deserializer<? extends PersistentEntity>> collectionToDeserializerMap,
+      Map<String, ChangeConsumer<? extends PersistentEntity>> collectionToConsumerMap) {
     this.idDeserializer = idDeserializer;
     this.collectionToDeserializerMap = collectionToDeserializerMap;
     this.collectionToConsumerMap = collectionToConsumerMap;
@@ -56,8 +56,7 @@ public class DebeziumChangeConsumer implements DebeziumEngine.ChangeConsumer<Cha
         getOperationType(((EmbeddedEngineChangeEvent<String, String>) changeEvent).sourceRecord());
     if (opType.isPresent() && collectionName.isPresent()) {
       log.info("Handling {} event for entity: {}.{}", opType.get(), collectionName.get(), id);
-      ChangeConsumer<? extends PipelineExecutionSummaryEntity> changeConsumer =
-          collectionToConsumerMap.get(collectionName.get());
+      ChangeConsumer<? extends PersistentEntity> changeConsumer = collectionToConsumerMap.get(collectionName.get());
       changeConsumer.consumeEvent(opType.get(), id, deserialize(collectionName.get(), changeEvent));
     }
     return true;
@@ -75,15 +74,13 @@ public class DebeziumChangeConsumer implements DebeziumEngine.ChangeConsumer<Cha
                 "Exception caught when trying to process event: [%s]. Retrying this event with exponential backoff now...",
                 changeEvent),
             exception);
-        //        changeEventFailureHandler.handle(changeEvent, exception);
       }
       recordCommitter.markProcessed(changeEvent);
     }
     recordCommitter.markBatchFinished();
   }
 
-  private <T extends PipelineExecutionSummaryEntity> T deserialize(
-      String collectionName, ChangeEvent<String, String> changeEvent) {
+  private <T extends PersistentEntity> T deserialize(String collectionName, ChangeEvent<String, String> changeEvent) {
     return (T) collectionToDeserializerMap.get(collectionName).deserialize(null, getValue(changeEvent));
   }
 

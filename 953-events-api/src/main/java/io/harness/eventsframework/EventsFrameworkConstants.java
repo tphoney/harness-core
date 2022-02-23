@@ -97,6 +97,10 @@ public final class EventsFrameworkConstants {
   public static final int CD_DEPLOYMENT_EVENT_BATCH_SIZE = 1;
   public static final int CD_DEPLOYMENT_EVENT_MAX_TOPIC_SIZE = 5000;
 
+  public static final String SRM_STATEMACHINE_EVENT = "srm_statemachine_event";
+  public static final int SRM_STATEMACHINE_EVENT_BATCH_SIZE = 1;
+  public static final int SRM_STATEMACHINE_EVENT_MAX_TOPIC_SIZE = 5000;
+
   public static final int DEFAULT_TOPIC_SIZE = 10000;
   public static final int USER_MEMBERSHIP_TOPIC_SIZE = 100000;
   public static final int ENTITY_CRUD_MAX_TOPIC_SIZE = 100000;

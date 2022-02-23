@@ -66,7 +66,10 @@ public interface MonitoredServiceService extends DeleteEntityByHandler<Monitored
 
   HistoricalTrend getOverAllHealthScore(
       ProjectParams projectParams, String identifier, DurationDTO duration, Instant endTime);
-
+  /**
+   * use #getOverAllHealthScore with monitored service identifier instead
+   */
+  @Deprecated
   HistoricalTrend getOverAllHealthScore(
       ServiceEnvironmentParams serviceEnvironmentParams, DurationDTO duration, Instant endTime);
 
@@ -74,7 +77,12 @@ public interface MonitoredServiceService extends DeleteEntityByHandler<Monitored
 
   String getYamlTemplate(ProjectParams projectParams, MonitoredServiceType type);
 
-  List<HealthSourceDTO> getHealthSources(ServiceEnvironmentParams serviceEnvironmentParams);
+  List<HealthSourceDTO> getHealthSources(ProjectParams projectParams, String monitoredServiceIdentifier);
+  /**
+   * use #getHealthSources with monitored service identifier instead
+   */
+  @Deprecated List<HealthSourceDTO> getHealthSources(ServiceEnvironmentParams serviceEnvironmentParams);
+
   List<ChangeEventDTO> getChangeEvents(ProjectParams projectParams, String monitoredServiceIdentifier,
       Instant startTime, Instant endTime, List<ChangeCategory> changeCategories);
   ChangeSummaryDTO getChangeSummary(

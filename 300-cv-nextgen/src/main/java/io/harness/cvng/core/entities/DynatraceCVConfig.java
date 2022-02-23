@@ -106,6 +106,7 @@ public class DynatraceCVConfig extends MetricCVConfig {
                                   .thresholds(new ArrayList<>(thresholds))
                                   .type(metricInfo.getMetricType())
                                   .name(metricInfo.getMetricName())
+                                  .identifier(metricInfo.getIdentifier())
                                   .included(true)
                                   .build());
     });

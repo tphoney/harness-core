@@ -1055,7 +1055,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(UserInviteSource.SourceType.class, 5507);
     kryo.register(UserInviteSource.class, 5506);
     kryo.register(Variable.class, 5378);
-    kryo.register(WinRmConnectionAttributes.AuthenticationScheme.class, 5256);
     kryo.register(WinRmConnectionAttributes.class, 5255);
     kryo.register(ChangeContext.class, 5199);
     kryo.register(GitFetchFilesFromMultipleRepoResult.class, 5615);

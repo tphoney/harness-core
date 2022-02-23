@@ -306,6 +306,15 @@ public class ApplicationManifestServiceImpl implements ApplicationManifestServic
   }
 
   @Override
+  public List<ApplicationManifest> getApplicationManifestByIds(String appId, Set<String> appManifestIds) {
+    return wingsPersistence.createQuery(ApplicationManifest.class)
+        .filter(ApplicationKeys.appId, appId)
+        .field(ApplicationManifest.ID)
+        .in(appManifestIds)
+        .asList();
+  }
+
+  @Override
   public ApplicationManifest getManifestByServiceId(String appId, String serviceId) {
     List<ApplicationManifest> applicationManifests = getManifestsByServiceId(appId, serviceId, K8S_MANIFEST);
     if (isNotEmpty(applicationManifests)) {

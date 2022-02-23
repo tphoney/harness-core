@@ -22,6 +22,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.AwsConfig;
 import software.wings.beans.AwsInfrastructureMapping;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.impl.AwsUtils;
 import software.wings.service.impl.aws.client.CloseableAmazonWebServiceClient;
 import software.wings.service.impl.aws.model.AwsCodeDeployS3LocationData;
@@ -77,6 +78,7 @@ public class AwsCodeDeployHelperServiceDelegateImpl
   public List<String> listApplications(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonCodeDeployClient> closeableAmazonCodeDeployClient =
              new CloseableAmazonWebServiceClient(getAmazonCodeDeployClient(Regions.fromName(region), awsConfig))) {
       List<String> applications = new ArrayList<>();
@@ -97,7 +99,7 @@ public class AwsCodeDeployHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listApplications", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -106,6 +108,7 @@ public class AwsCodeDeployHelperServiceDelegateImpl
   public List<String> listDeploymentConfiguration(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptedDataDetails, String region) {
     encryptionService.decrypt(awsConfig, encryptedDataDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptedDataDetails);
     try (CloseableAmazonWebServiceClient<AmazonCodeDeployClient> closeableAmazonCodeDeployClient =
              new CloseableAmazonWebServiceClient(getAmazonCodeDeployClient(Regions.fromName(region), awsConfig))) {
       String nextToken = null;
@@ -127,7 +130,7 @@ public class AwsCodeDeployHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listDeploymentConfiguration", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -136,6 +139,7 @@ public class AwsCodeDeployHelperServiceDelegateImpl
   public List<String> listDeploymentGroups(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptedDataDetails, String region, String appName) {
     encryptionService.decrypt(awsConfig, encryptedDataDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptedDataDetails);
     try (CloseableAmazonWebServiceClient<AmazonCodeDeployClient> closeableAmazonCodeDeployClient =
              new CloseableAmazonWebServiceClient(getAmazonCodeDeployClient(Regions.fromName(region), awsConfig))) {
       String nextToken = null;
@@ -158,7 +162,7 @@ public class AwsCodeDeployHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listDeploymentGroups", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -167,6 +171,7 @@ public class AwsCodeDeployHelperServiceDelegateImpl
   public List<Instance> listDeploymentInstances(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptedDataDetails, String region, String deploymentId) {
     encryptionService.decrypt(awsConfig, encryptedDataDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptedDataDetails);
     try (CloseableAmazonWebServiceClient<AmazonCodeDeployClient> closeableAmazonCodeDeployClient =
              new CloseableAmazonWebServiceClient(getAmazonCodeDeployClient(Regions.fromName(region), awsConfig))) {
       String nextToken = null;
@@ -203,7 +208,7 @@ public class AwsCodeDeployHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listDeploymentInstances", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -212,6 +217,7 @@ public class AwsCodeDeployHelperServiceDelegateImpl
   public AwsCodeDeployS3LocationData listAppRevision(AwsConfig awsConfig,
       List<EncryptedDataDetail> encryptedDataDetails, String region, String appName, String deploymentGroupName) {
     encryptionService.decrypt(awsConfig, encryptedDataDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptedDataDetails);
     try (CloseableAmazonWebServiceClient<AmazonCodeDeployClient> closeableAmazonCodeDeployClient =
              new CloseableAmazonWebServiceClient(getAmazonCodeDeployClient(Regions.fromName(region), awsConfig))) {
       GetDeploymentGroupRequest getDeploymentGroupRequest =
@@ -236,7 +242,7 @@ public class AwsCodeDeployHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listAppRevision", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return null;
   }

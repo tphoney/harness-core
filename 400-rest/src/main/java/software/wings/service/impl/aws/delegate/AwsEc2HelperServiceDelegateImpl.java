@@ -26,6 +26,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.AwsConfig;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.impl.aws.client.CloseableAmazonWebServiceClient;
 import software.wings.service.impl.aws.model.AwsEc2ValidateCredentialsResponse;
 import software.wings.service.impl.aws.model.AwsEc2ValidateCredentialsResponse.AwsEc2ValidateCredentialsResponseBuilder;
@@ -98,6 +99,7 @@ public class AwsEc2HelperServiceDelegateImpl
   public AwsEc2ValidateCredentialsResponse validateAwsAccountCredential(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonEC2Client> closeableAmazonEC2Client =
              new CloseableAmazonWebServiceClient(getAmazonEc2Client(awsConfig))) {
       tracker.trackEC2Call("Get Ec2 client");
@@ -120,7 +122,7 @@ public class AwsEc2HelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception validateAwsAccountCredential", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
 
     return AwsEc2ValidateCredentialsResponse.builder().valid(true).executionStatus(SUCCESS).build();
@@ -129,6 +131,7 @@ public class AwsEc2HelperServiceDelegateImpl
   @Override
   public List<String> listRegions(AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonEC2Client> closeableAmazonEC2Client =
              new CloseableAmazonWebServiceClient(getAmazonEc2Client(awsConfig))) {
       tracker.trackEC2Call("List Ec2 regions");
@@ -144,7 +147,7 @@ public class AwsEc2HelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listRegions", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -152,6 +155,7 @@ public class AwsEc2HelperServiceDelegateImpl
   @Override
   public List<AwsVPC> listVPCs(AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonEC2Client> closeableAmazonEC2Client =
              new CloseableAmazonWebServiceClient(getAmazonEc2Client(region, awsConfig))) {
       tracker.trackEC2Call("List VPCs");
@@ -176,7 +180,7 @@ public class AwsEc2HelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listVPCs", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -185,6 +189,7 @@ public class AwsEc2HelperServiceDelegateImpl
   public List<AwsSubnet> listSubnets(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region, List<String> vpcIds) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonEC2Client> closeableAmazonEC2Client =
              new CloseableAmazonWebServiceClient(getAmazonEc2Client(region, awsConfig))) {
       List<Filter> filters = new ArrayList<>();
@@ -214,7 +219,7 @@ public class AwsEc2HelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listSubnets", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -224,6 +229,7 @@ public class AwsEc2HelperServiceDelegateImpl
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region, List<String> vpcIds) {
     List<AwsSecurityGroup> result = new ArrayList<>();
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonEC2Client> closeableAmazonEC2Client =
              new CloseableAmazonWebServiceClient(getAmazonEc2Client(region, awsConfig))) {
       String nextToken = null;
@@ -252,7 +258,7 @@ public class AwsEc2HelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listSGs", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return result;
   }
@@ -263,6 +269,7 @@ public class AwsEc2HelperServiceDelegateImpl
     String nextToken = null;
     Set<String> tags = new HashSet<>();
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonEC2Client> closeableAmazonEC2Client =
              new CloseableAmazonWebServiceClient(getAmazonEc2Client(region, awsConfig))) {
       do {
@@ -281,7 +288,7 @@ public class AwsEc2HelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listTags", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return tags;
   }
@@ -290,6 +297,7 @@ public class AwsEc2HelperServiceDelegateImpl
   public List<Instance> listEc2Instances(AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails,
       String region, List<Filter> filters, boolean isInstanceSync) {
     encryptionService.decrypt(awsConfig, encryptionDetails, isInstanceSync);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonEC2Client> closeableAmazonEC2Client =
              new CloseableAmazonWebServiceClient(getAmazonEc2Client(region, awsConfig))) {
       List<Instance> result = new ArrayList<>();
@@ -310,7 +318,7 @@ public class AwsEc2HelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listEc2Instances", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -319,6 +327,7 @@ public class AwsEc2HelperServiceDelegateImpl
   public List<Instance> listEc2Instances(AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails,
       List<String> instanceIds, String region, boolean isInstanceSync) {
     encryptionService.decrypt(awsConfig, encryptionDetails, isInstanceSync);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonEC2Client> closeableAmazonEC2Client =
              new CloseableAmazonWebServiceClient(getAmazonEc2Client(region, awsConfig))) {
       if (instanceIds.isEmpty()) {
@@ -342,7 +351,7 @@ public class AwsEc2HelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listEc2Instances", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -351,6 +360,7 @@ public class AwsEc2HelperServiceDelegateImpl
   public Set<String> listBlockDeviceNamesOfAmi(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region, String amiId) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonEC2Client> closeableAmazonEC2Client =
              new CloseableAmazonWebServiceClient(getAmazonEc2Client(region, awsConfig))) {
       if (isEmpty(amiId)) {
@@ -375,7 +385,7 @@ public class AwsEc2HelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listBlockDeviceNamesOfAmi", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptySet();
   }
@@ -384,6 +394,7 @@ public class AwsEc2HelperServiceDelegateImpl
   public LaunchTemplateVersion getLaunchTemplateVersion(AwsConfig awsConfig,
       List<EncryptedDataDetail> encryptionDetails, String region, String launchTemplateId, String version) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonEC2Client> closeableAmazonEC2Client =
              new CloseableAmazonWebServiceClient(getAmazonEc2Client(region, awsConfig))) {
       tracker.trackEC2Call("Get Launch Template Version");
@@ -401,7 +412,7 @@ public class AwsEc2HelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception getLaunchTemplateVersion", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
 
     return null;
@@ -412,6 +423,7 @@ public class AwsEc2HelperServiceDelegateImpl
       CreateLaunchTemplateVersionRequest createLaunchTemplateVersionRequest, AwsConfig awsConfig,
       List<EncryptedDataDetail> encryptionDetails, String region) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonEC2Client> closeableAmazonEC2Client =
              new CloseableAmazonWebServiceClient(getAmazonEc2Client(region, awsConfig))) {
       tracker.trackEC2Call("Create Launch Template Version");
@@ -422,7 +434,7 @@ public class AwsEc2HelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception createLaunchTemplateVersion", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
 
     return null;

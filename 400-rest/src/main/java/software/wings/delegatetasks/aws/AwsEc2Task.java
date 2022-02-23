@@ -21,6 +21,8 @@ import io.harness.delegate.task.TaskParameters;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 
+import io.harness.secret.SecretSanitizerThreadLocal;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.impl.aws.model.AwsEc2ListInstancesRequest;
 import software.wings.service.impl.aws.model.AwsEc2ListInstancesResponse;
 import software.wings.service.impl.aws.model.AwsEc2ListRegionsResponse;
@@ -56,6 +58,7 @@ public class AwsEc2Task extends AbstractDelegateRunnableTask {
   public AwsEc2Task(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override
@@ -112,7 +115,7 @@ public class AwsEc2Task extends AbstractDelegateRunnableTask {
     } catch (WingsException exception) {
       throw exception;
     } catch (Exception ex) {
-      throw new InvalidRequestException(ex.getMessage(), WingsException.USER);
+      throw new InvalidRequestException(ExceptionMessageSanitizer.sanitizeException(ex).getMessage(), WingsException.USER);
     }
   }
 }

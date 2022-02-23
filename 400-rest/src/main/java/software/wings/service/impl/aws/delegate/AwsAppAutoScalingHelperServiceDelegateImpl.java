@@ -23,6 +23,7 @@ import io.harness.exception.WingsException;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.AwsConfig;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.impl.aws.client.CloseableAmazonWebServiceClient;
 import software.wings.service.intfc.aws.delegate.AwsAppAutoScalingHelperServiceDelegate;
 
@@ -85,6 +86,7 @@ public class AwsAppAutoScalingHelperServiceDelegateImpl
       List<EncryptedDataDetail> encryptionDetails, RegisterScalableTargetRequest scalableTargetRequest) {
     tracker.trackAPPASGCall("Register Scalable Target");
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     return getAWSApplicationAutoScalingClient(region, awsConfig).registerScalableTarget(scalableTargetRequest);
   }
 
@@ -93,6 +95,7 @@ public class AwsAppAutoScalingHelperServiceDelegateImpl
       List<EncryptedDataDetail> encryptionDetails, DeregisterScalableTargetRequest deregisterTargetRequest) {
     tracker.trackAPPASGCall("Deregister Scalable Target");
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     return getAWSApplicationAutoScalingClient(region, awsConfig).deregisterScalableTarget(deregisterTargetRequest);
   }
 
@@ -101,6 +104,7 @@ public class AwsAppAutoScalingHelperServiceDelegateImpl
       List<EncryptedDataDetail> encryptionDetails, DescribeScalableTargetsRequest request) {
     tracker.trackAPPASGCall("List Scalable Targets");
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     return getAWSApplicationAutoScalingClient(region, awsConfig).describeScalableTargets(request);
   }
 
@@ -109,6 +113,7 @@ public class AwsAppAutoScalingHelperServiceDelegateImpl
       List<EncryptedDataDetail> encryptionDetails, DescribeScalingPoliciesRequest request) {
     tracker.trackAPPASGCall("List Scaling Policies");
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     return getAWSApplicationAutoScalingClient(region, awsConfig).describeScalingPolicies(request);
   }
 
@@ -117,6 +122,7 @@ public class AwsAppAutoScalingHelperServiceDelegateImpl
       List<EncryptedDataDetail> encryptionDetails, PutScalingPolicyRequest putScalingPolicyRequest) {
     tracker.trackAPPASGCall("Put Scaling Policy");
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     return getAWSApplicationAutoScalingClient(region, awsConfig).putScalingPolicy(putScalingPolicyRequest);
   }
 
@@ -127,6 +133,7 @@ public class AwsAppAutoScalingHelperServiceDelegateImpl
       return Collections.EMPTY_LIST;
     }
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonCloudWatchClient> closeableAmazonCloudWatchClient =
              new CloseableAmazonWebServiceClient(getAmazonCloudWatchClient(region, awsConfig))) {
       tracker.trackCloudWatchCall("Fetch Alarm by Name");
@@ -137,7 +144,7 @@ public class AwsAppAutoScalingHelperServiceDelegateImpl
       return describeAlarmsResult.getMetricAlarms();
     } catch (Exception e) {
       log.error("Exception fetchAlarmsByName", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 
@@ -148,6 +155,7 @@ public class AwsAppAutoScalingHelperServiceDelegateImpl
       return null;
     }
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonCloudWatchClient> closeableAmazonCloudWatchClient =
              new CloseableAmazonWebServiceClient(getAmazonCloudWatchClient(region, awsConfig))) {
       tracker.trackCloudWatchCall("Put Metric Alarm");
@@ -176,7 +184,7 @@ public class AwsAppAutoScalingHelperServiceDelegateImpl
               .withUnit(alarm.getUnit()));
     } catch (Exception e) {
       log.error("Exception putMetricAlarm", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 
@@ -185,6 +193,7 @@ public class AwsAppAutoScalingHelperServiceDelegateImpl
       List<EncryptedDataDetail> encryptionDetails, DeleteScalingPolicyRequest deleteScalingPolicyRequest) {
     tracker.trackAPPASGCall("Delete Scaling Policy");
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     return getAWSApplicationAutoScalingClient(region, awsConfig).deleteScalingPolicy(deleteScalingPolicyRequest);
   }
 
@@ -199,7 +208,7 @@ public class AwsAppAutoScalingHelperServiceDelegateImpl
         return Arrays.asList(mapper.readValue(json, ScalingPolicy.class));
       }
     } catch (IOException e) {
-      String errorMsg = "Failed to Deserialize json into AWS Service object" + e;
+      String errorMsg = "Failed to Deserialize json into AWS Service object" + ExceptionMessageSanitizer.sanitizeException(e);
       throw new WingsException(ErrorCode.GENERAL_ERROR, errorMsg, USER).addParam("message", errorMsg);
     }
   }
@@ -211,7 +220,7 @@ public class AwsAppAutoScalingHelperServiceDelegateImpl
     try {
       return mapper.readValue(json, ScalableTarget.class);
     } catch (IOException e) {
-      String errorMsg = "Failed to Deserialize json into AWS Service object" + e;
+      String errorMsg = "Failed to Deserialize json into AWS Service object" + ExceptionMessageSanitizer.sanitizeException(e);
       throw new WingsException(ErrorCode.GENERAL_ERROR, errorMsg, USER).addParam("message", errorMsg);
     }
   }

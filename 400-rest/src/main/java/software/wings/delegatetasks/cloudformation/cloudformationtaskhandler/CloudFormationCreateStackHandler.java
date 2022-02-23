@@ -33,6 +33,7 @@ import software.wings.beans.AwsConfig;
 import software.wings.beans.NameValuePair;
 import software.wings.beans.ServiceVariable.Type;
 import software.wings.beans.command.ExecutionLogCallback;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.helpers.ext.cloudformation.request.CloudFormationCommandRequest;
 import software.wings.helpers.ext.cloudformation.request.CloudFormationCreateStackRequest;
 import software.wings.helpers.ext.cloudformation.response.CloudFormationCommandExecutionResponse;
@@ -84,6 +85,7 @@ public class CloudFormationCreateStackHandler extends CloudFormationCommandTaskH
       List<EncryptedDataDetail> details, ExecutionLogCallback executionLogCallback) {
     AwsConfig awsConfig = request.getAwsConfig();
     encryptionService.decrypt(awsConfig, details, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, details);
 
     CloudFormationCreateStackRequest upsertRequest = (CloudFormationCreateStackRequest) request;
 
@@ -172,7 +174,7 @@ public class CloudFormationCreateStackHandler extends CloudFormationCommandTaskH
       }
     } catch (Exception ex) {
       String errorMessage =
-          format("# Exception: %s while Updating stack: %s", ExceptionUtils.getMessage(ex), stack.getStackName());
+          format("# Exception: %s while Updating stack: %s", ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ex)), stack.getStackName());
       executionLogCallback.saveExecutionLog(errorMessage, LogLevel.ERROR, CommandExecutionStatus.FAILURE);
       builder.errorMessage(errorMessage).commandExecutionStatus(CommandExecutionStatus.FAILURE);
     }
@@ -253,7 +255,7 @@ public class CloudFormationCreateStackHandler extends CloudFormationCommandTaskH
         }
       }
     } catch (Exception ex) {
-      String errorMessage = format("Exception: %s while creating stack: %s", ExceptionUtils.getMessage(ex), stackName);
+      String errorMessage = format("Exception: %s while creating stack: %s", ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ex)), stackName);
       executionLogCallback.saveExecutionLog(errorMessage, LogLevel.ERROR, CommandExecutionStatus.FAILURE);
       builder.errorMessage(errorMessage).commandExecutionStatus(CommandExecutionStatus.FAILURE);
     }

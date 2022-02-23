@@ -23,8 +23,10 @@ import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 
+import io.harness.secret.SecretSanitizerThreadLocal;
 import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.delegatetasks.DelegateLogService;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.impl.aws.model.AwsLambdaExecuteFunctionRequest;
 import software.wings.service.impl.aws.model.AwsLambdaExecuteFunctionResponse;
 import software.wings.service.impl.aws.model.AwsLambdaExecuteWfRequest;
@@ -53,6 +55,7 @@ public class AwsLambdaTask extends AbstractDelegateRunnableTask {
   public AwsLambdaTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override
@@ -71,7 +74,7 @@ public class AwsLambdaTask extends AbstractDelegateRunnableTask {
         } catch (Exception ex) {
           return AwsLambdaExecuteFunctionResponse.builder()
               .executionStatus(ExecutionStatus.FAILED)
-              .errorMessage(ExceptionUtils.getMessage(ex))
+              .errorMessage(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ex)))
               .build();
         }
       }
@@ -85,7 +88,7 @@ public class AwsLambdaTask extends AbstractDelegateRunnableTask {
         } catch (Exception ex) {
           return AwsLambdaExecuteWfResponse.builder()
               .executionStatus(FAILED)
-              .errorMessage(ExceptionUtils.getMessage(ex))
+              .errorMessage(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ex)))
               .build();
         }
       }
@@ -95,7 +98,7 @@ public class AwsLambdaTask extends AbstractDelegateRunnableTask {
         } catch (Exception ex) {
           return AwsLambdaFunctionResponse.builder()
               .executionStatus(FAILED)
-              .errorMessage(ExceptionUtils.getMessage(ex))
+              .errorMessage(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ex)))
               .build();
         }
       }
@@ -105,7 +108,7 @@ public class AwsLambdaTask extends AbstractDelegateRunnableTask {
         } catch (Exception ex) {
           return AwsLambdaFunctionResponse.builder()
               .executionStatus(FAILED)
-              .errorMessage(ExceptionUtils.getMessage(ex))
+              .errorMessage(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ex)))
               .build();
         }
       }

@@ -23,6 +23,8 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 import io.harness.logging.ExceptionLogger;
 
+import io.harness.secret.SecretSanitizerThreadLocal;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.impl.aws.model.AwsIamListInstanceRolesResponse;
 import software.wings.service.impl.aws.model.AwsIamListRolesResponse;
 import software.wings.service.impl.aws.model.AwsIamRequest;
@@ -47,6 +49,7 @@ public class AwsIamTask extends AbstractDelegateRunnableTask {
   public AwsIamTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override
@@ -81,7 +84,7 @@ public class AwsIamTask extends AbstractDelegateRunnableTask {
       ExceptionLogger.logProcessedMessages(exception, DELEGATE, log);
       throw exception;
     } catch (Exception ex) {
-      throw new InvalidRequestException(ex.getMessage(), WingsException.USER);
+      throw new InvalidRequestException(ExceptionMessageSanitizer.sanitizeException(ex).getMessage(), WingsException.USER);
     }
   }
 }

@@ -22,8 +22,10 @@ import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 
+import io.harness.secret.SecretSanitizerThreadLocal;
 import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.delegatetasks.DelegateLogService;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.impl.aws.model.AwsAmiRequest;
 import software.wings.service.impl.aws.model.AwsAmiRequest.AwsAmiRequestType;
 import software.wings.service.impl.aws.model.AwsAmiServiceDeployRequest;
@@ -50,6 +52,7 @@ public class AwsAmiAsyncTask extends AbstractDelegateRunnableTask {
   public AwsAmiAsyncTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, consumer, preExecute);
+    SecretSanitizerThreadLocal.addAll(delegateTaskPackage.getSecrets());
   }
 
   @Override
@@ -105,7 +108,7 @@ public class AwsAmiAsyncTask extends AbstractDelegateRunnableTask {
     } catch (Exception ex) {
       return AwsAmiServiceSetupResponse.builder()
           .executionStatus(FAILED)
-          .errorMessage(ExceptionUtils.getMessage(ex))
+          .errorMessage(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ex)))
           .build();
     }
   }

@@ -50,6 +50,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.AwsConfig;
 import software.wings.beans.command.ExecutionLogCallback;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.impl.aws.client.CloseableAmazonWebServiceClient;
 import software.wings.service.intfc.aws.delegate.AwsAsgHelperServiceDelegate;
 import software.wings.service.intfc.aws.delegate.AwsElbHelperServiceDelegate;
@@ -141,6 +142,7 @@ public class AwsElbHelperServiceDelegateImpl
   public List<String> listClassicLoadBalancers(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient>
              closeableAmazonElasticLoadBalancingClient =
                  new CloseableAmazonWebServiceClient(getClassicElbClient(Regions.fromName(region), awsConfig))) {
@@ -167,7 +169,7 @@ public class AwsElbHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listClassicLoadBalancers", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -193,6 +195,7 @@ public class AwsElbHelperServiceDelegateImpl
   private List<AwsLoadBalancerDetails> generateLoadBalancersList(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region, Set<String> neededTypes) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -227,7 +230,7 @@ public class AwsElbHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception generateLoadBalancersList", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyList();
   }
@@ -241,6 +244,7 @@ public class AwsElbHelperServiceDelegateImpl
   public Map<String, String> listTargetGroupsForAlb(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region, String loadBalancerName) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -277,7 +281,7 @@ public class AwsElbHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception listTargetGroupsForAlb", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return emptyMap();
   }
@@ -286,6 +290,7 @@ public class AwsElbHelperServiceDelegateImpl
   public Optional<TargetGroup> getTargetGroup(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region, String targetGroupArn) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -306,7 +311,7 @@ public class AwsElbHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception getTargetGroup", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
 
     return Optional.empty();
@@ -316,6 +321,7 @@ public class AwsElbHelperServiceDelegateImpl
   public Optional<TargetGroup> getTargetGroupByName(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region, String targetGroupName) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -338,7 +344,7 @@ public class AwsElbHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception getTargetGroupByName", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
 
     return Optional.empty();
@@ -348,6 +354,7 @@ public class AwsElbHelperServiceDelegateImpl
   public Optional<LoadBalancer> getLoadBalancer(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region, String loadBalancerName) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -366,7 +373,7 @@ public class AwsElbHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception getLoadBalancer", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
 
     return Optional.empty();
@@ -610,6 +617,7 @@ public class AwsElbHelperServiceDelegateImpl
   public List<Rule> getListenerRuleFromListenerRuleArn(AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails,
       String region, String listenerRuleArn, ExecutionLogCallback logCallback) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -632,7 +640,7 @@ public class AwsElbHelperServiceDelegateImpl
       return listenerRules;
     } catch (Exception e) {
       log.error("Exception getListenerRuleFromListenerRuleArn", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 
@@ -640,6 +648,7 @@ public class AwsElbHelperServiceDelegateImpl
   public List<Rule> getListenerRulesFromListenerArn(AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails,
       String region, String listenerArn, ExecutionLogCallback logCallback) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -662,7 +671,7 @@ public class AwsElbHelperServiceDelegateImpl
       return listenerRules;
     } catch (Exception e) {
       log.error("Exception getListenerRulesFromListenerArn", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 
@@ -670,6 +679,7 @@ public class AwsElbHelperServiceDelegateImpl
   public List<AwsElbListener> getElbListenersForLoadBalaner(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region, String loadBalancerName) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -742,7 +752,7 @@ public class AwsElbHelperServiceDelegateImpl
       return listenerDetails;
     } catch (Exception e) {
       log.error("Exception getElbListenersForLoadBalaner", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 
@@ -750,6 +760,7 @@ public class AwsElbHelperServiceDelegateImpl
   public Listener getElbListener(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region, String listenerArn) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -765,7 +776,7 @@ public class AwsElbHelperServiceDelegateImpl
       return listenerResult.getListeners().get(0);
     } catch (Exception e) {
       log.error("Exception getElbListener", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 
@@ -773,6 +784,7 @@ public class AwsElbHelperServiceDelegateImpl
   public TargetGroup cloneTargetGroup(AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region,
       String targetGroupArn, String newTargetGroupName) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -819,7 +831,7 @@ public class AwsElbHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception cloneTargetGroup", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
 
     return null;
@@ -840,6 +852,7 @@ public class AwsElbHelperServiceDelegateImpl
     createListenerRequest.withDefaultActions(new Action().withType(Forward).withTargetGroupArn(targetGroupArn));
 
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -850,7 +863,7 @@ public class AwsElbHelperServiceDelegateImpl
       return result.getListeners().get(0);
     } catch (Exception e) {
       log.error("Exception createStageListener", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 
@@ -872,6 +885,7 @@ public class AwsElbHelperServiceDelegateImpl
       String stageListenerRuleArn, String targetGroupArn1, String targetGroupArn2, String region,
       ExecutionLogCallback logCallback) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -912,7 +926,7 @@ public class AwsElbHelperServiceDelegateImpl
       }
     } catch (Exception e) {
       log.error("Exception swapListenersForEcsBG", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 
@@ -945,6 +959,7 @@ public class AwsElbHelperServiceDelegateImpl
   public void updateDefaultListenersForSpotInstBG(AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails,
       String prodListenerArn, String stageListenerArn, String region) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -970,7 +985,7 @@ public class AwsElbHelperServiceDelegateImpl
               .withDefaultActions(prodListener.getDefaultActions()));
     } catch (Exception e) {
       log.error("Exception updateDefaultListenersForSpotInstBG", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 
@@ -978,6 +993,7 @@ public class AwsElbHelperServiceDelegateImpl
   public void updateListenersForEcsBG(AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails,
       String prodListenerArn, String stageListenerArn, String region) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -1003,7 +1019,7 @@ public class AwsElbHelperServiceDelegateImpl
               .withDefaultActions(prodListener.getDefaultActions()));
     } catch (Exception e) {
       log.error("Exception updateListenersForEcsBG", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 
@@ -1012,6 +1028,7 @@ public class AwsElbHelperServiceDelegateImpl
       List<LoadBalancerDetailsForBGDeployment> lbDetailsForBGDeployments, String region,
       ExecutionLogCallback logCallback) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -1056,7 +1073,7 @@ public class AwsElbHelperServiceDelegateImpl
       });
     } catch (Exception e) {
       log.error("Exception updateListenersForBGDeployment", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 
@@ -1102,6 +1119,7 @@ public class AwsElbHelperServiceDelegateImpl
       List<LoadBalancerDetailsForBGDeployment> lbDetailsForBGDeployments, String region,
       ExecutionLogCallback logCallback) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -1116,7 +1134,7 @@ public class AwsElbHelperServiceDelegateImpl
       });
     } catch (Exception e) {
       log.error("Exception updateListenersForSpotInstBGDeployment", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 
@@ -1124,6 +1142,7 @@ public class AwsElbHelperServiceDelegateImpl
   public DescribeListenersResult describeListenerResult(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String listenerArn, String region) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -1132,7 +1151,7 @@ public class AwsElbHelperServiceDelegateImpl
           new DescribeListenersRequest().withListenerArns(listenerArn));
     } catch (Exception e) {
       log.error("Exception describeListenerResult", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 
@@ -1185,6 +1204,7 @@ public class AwsElbHelperServiceDelegateImpl
   public void modifySpecificRule(AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String region,
       String ruleArn, String targetGroupArn, ExecutionLogCallback logCallback) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -1195,7 +1215,7 @@ public class AwsElbHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception modifySpecificRule", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 
@@ -1205,6 +1225,7 @@ public class AwsElbHelperServiceDelegateImpl
       List<EncryptedDataDetail> encryptionDetails) {
     try {
       encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
       List<AwsElbListenerRuleData> rules = listener.getRules();
       if (isEmpty(rules)) {
         String errorMessage = format("Did not find any rules for Listener: [%s]", listener.getListenerArn());
@@ -1310,6 +1331,7 @@ public class AwsElbHelperServiceDelegateImpl
       List<EncryptedDataDetail> encryptionDetails, LbDetailsForAlbTrafficShift originalLbDetails,
       ExecutionLogCallback logCallback) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -1365,7 +1387,7 @@ public class AwsElbHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception loadTrafficShiftTargetGroupData", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
     return null;
   }
@@ -1375,6 +1397,7 @@ public class AwsElbHelperServiceDelegateImpl
       List<EncryptedDataDetail> encryptionDetails, List<LbDetailsForAlbTrafficShift> details,
       ExecutionLogCallback logCallback, int newServiceTrafficWeight, String groupType) {
     encryptionService.decrypt(awsConfig, encryptionDetails, false);
+    ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
     try (CloseableAmazonWebServiceClient<AmazonElasticLoadBalancingClient> closeableAmazonElasticLoadBalancingClient =
              new CloseableAmazonWebServiceClient(
                  getAmazonElasticLoadBalancingClientV2(Regions.fromName(region), awsConfig))) {
@@ -1417,7 +1440,7 @@ public class AwsElbHelperServiceDelegateImpl
       handleAmazonClientException(amazonClientException);
     } catch (Exception e) {
       log.error("Exception updateRulesForAlbTrafficShift", e);
-      throw new InvalidRequestException(ExceptionUtils.getMessage(e), e);
+      throw new InvalidRequestException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), e);
     }
   }
 }

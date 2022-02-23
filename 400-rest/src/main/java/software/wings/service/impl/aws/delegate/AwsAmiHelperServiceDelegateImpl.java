@@ -51,6 +51,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 import software.wings.beans.AwsConfig;
 import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.delegatetasks.DelegateLogService;
+import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.service.impl.aws.model.AwsAmiPreDeploymentData;
 import software.wings.service.impl.aws.model.AwsAmiResizeData;
 import software.wings.service.impl.aws.model.AwsAmiServiceDeployRequest;
@@ -129,6 +130,7 @@ public class AwsAmiHelperServiceDelegateImpl
       AwsConfig awsConfig = request.getAwsConfig();
       List<EncryptedDataDetail> encryptionDetails = request.getEncryptionDetails();
       encryptionService.decrypt(awsConfig, encryptionDetails, false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
       String region = request.getRegion();
       logCallback.saveExecutionLog("Starting to switch routes in AMI Deploy", INFO);
       List<String> primaryClassicLBs = request.getPrimaryClassicLBs();
@@ -254,7 +256,7 @@ public class AwsAmiHelperServiceDelegateImpl
       logCallback.saveExecutionLog("Completed switch routes", INFO, CommandExecutionStatus.SUCCESS);
       return AwsAmiSwitchRoutesResponse.builder().executionStatus(SUCCESS).build();
     } catch (Exception ex) {
-      String errorMessage = ExceptionUtils.getMessage(ex);
+      String errorMessage = ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ex));
       logCallback.saveExecutionLog(format("Exception: [%s].", errorMessage), ERROR, CommandExecutionStatus.FAILURE);
       log.error(errorMessage, ex);
       return AwsAmiSwitchRoutesResponse.builder().errorMessage(errorMessage).executionStatus(FAILED).build();
@@ -268,6 +270,7 @@ public class AwsAmiHelperServiceDelegateImpl
       AwsConfig awsConfig = request.getAwsConfig();
       List<EncryptedDataDetail> encryptionDetails = request.getEncryptionDetails();
       encryptionService.decrypt(awsConfig, encryptionDetails, false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
       String region = request.getRegion();
       logCallback.saveExecutionLog("Starting to switch routes in AMI Deploy", INFO);
       List<String> primaryClassicLBs = request.getPrimaryClassicLBs();
@@ -385,7 +388,7 @@ public class AwsAmiHelperServiceDelegateImpl
       logCallback.saveExecutionLog("Completed rollback switch routes", INFO, CommandExecutionStatus.SUCCESS);
       return AwsAmiSwitchRoutesResponse.builder().executionStatus(SUCCESS).build();
     } catch (Exception ex) {
-      String errorMessage = ExceptionUtils.getMessage(ex);
+      String errorMessage = ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ex));
       logCallback.saveExecutionLog(format("Exception: [%s].", errorMessage), ERROR, CommandExecutionStatus.FAILURE);
       log.error(errorMessage, ex);
       return AwsAmiSwitchRoutesResponse.builder().errorMessage(errorMessage).executionStatus(FAILED).build();
@@ -399,6 +402,7 @@ public class AwsAmiHelperServiceDelegateImpl
       AwsConfig awsConfig = request.getAwsConfig();
       List<EncryptedDataDetail> encryptionDetails = request.getEncryptionDetails();
       encryptionService.decrypt(awsConfig, encryptionDetails, false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
       logCallback.saveExecutionLog("Starting AWS AMI Deploy", INFO);
 
       logCallback.saveExecutionLog("Getting existing instance Ids");
@@ -433,7 +437,7 @@ public class AwsAmiHelperServiceDelegateImpl
           .executionStatus(SUCCESS)
           .build();
     } catch (Exception ex) {
-      String errorMessage = ExceptionUtils.getMessage(ex);
+      String errorMessage = ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(ex));
       logCallback.saveExecutionLog(format("Exception: [%s].", errorMessage), ERROR);
       log.error(errorMessage, ex);
       return AwsAmiServiceDeployResponse.builder().errorMessage(errorMessage).executionStatus(FAILED).build();
@@ -454,7 +458,7 @@ public class AwsAmiHelperServiceDelegateImpl
       }
       return successResponse(awsAmiServiceSetupResponse, lbDetailsForAlbTrafficShifts);
     } catch (Exception ex) {
-      return failureResponse(ex, logCallback);
+      return failureResponse(ExceptionMessageSanitizer.sanitizeException(ex), logCallback);
     }
   }
 
@@ -474,7 +478,7 @@ public class AwsAmiHelperServiceDelegateImpl
       assignMinTrafficWeightToNewAsg(request);
       downScaleNewAsg(request);
     } catch (Exception exception) {
-      return trafficShiftFailureResponse(request, exception);
+      return trafficShiftFailureResponse(request, ExceptionMessageSanitizer.sanitizeException(exception));
     }
     return AwsAmiSwitchRoutesResponse.builder().executionStatus(SUCCESS).build();
   }
@@ -492,7 +496,7 @@ public class AwsAmiHelperServiceDelegateImpl
       }
       downScaleAsg(request, request.getOldAsgName(), false);
     } catch (Exception exception) {
-      return trafficShiftFailureResponse(request, exception);
+      return trafficShiftFailureResponse(request, ExceptionMessageSanitizer.sanitizeException(exception));
     }
     return AwsAmiSwitchRoutesResponse.builder().executionStatus(SUCCESS).build();
   }
@@ -1021,6 +1025,7 @@ public class AwsAmiHelperServiceDelegateImpl
       AwsConfig awsConfig = request.getAwsConfig();
       List<EncryptedDataDetail> encryptionDetails = request.getEncryptionDetails();
       encryptionService.decrypt(awsConfig, encryptionDetails, false);
+      ExceptionMessageSanitizer.storeAllSecretsForSanitizing(awsConfig, encryptionDetails);
       logCallback.saveExecutionLog("Starting AWS AMI Setup", INFO);
 
       logCallback.saveExecutionLog("Getting base auto scaling group");
@@ -1133,10 +1138,11 @@ public class AwsAmiHelperServiceDelegateImpl
           CommandExecutionStatus.SUCCESS);
       return builder.build();
     } catch (Exception exception) {
-      logCallback.saveExecutionLog(format("Exception: [%s].", exception.getMessage()), ERROR);
-      log.error(exception.getMessage(), exception);
+      Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(exception);
+      logCallback.saveExecutionLog(format("Exception: [%s].", sanitizedException.getMessage()), ERROR);
+      log.error(sanitizedException.getMessage(), exception);
       return AwsAmiServiceSetupResponse.builder()
-          .errorMessage(ExceptionUtils.getMessage(exception))
+          .errorMessage(ExceptionUtils.getMessage(sanitizedException))
           .executionStatus(FAILED)
           .build();
     }

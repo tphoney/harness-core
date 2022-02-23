@@ -7,7 +7,7 @@
 # > docker build -t harness/ci-addon:<tag> -f product/ci/addon/Dockerfile $(bazel info bazel-bin)/product/ci/addon/
 
 
-FROM alpine:3.12
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.5-230
 # Copy ci-addon binary
 COPY ci-addon_/ci-addon /usr/local/bin/ci-addon-linux-amd64
 RUN chmod +x /usr/local/bin/ci-addon-linux-amd64

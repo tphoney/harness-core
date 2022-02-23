@@ -104,25 +104,25 @@ Official steps to install docker on mac: [docker.com](https://docs.docker.com/de
    
     NOTE: If you have regular bazel installed, please uninstall bazel and install bazelisk. It allows us to use the git repo to synchronize everyone's installation of bazel.
 
-4. Setup the build purpose
+   1. Setup the build purpose
    
-   You need to set environment variable BUILD_PURPOSE with one of the following values:
-   *   DEVELOPMENT - set this when you building for development purposes
-   *   PR_CHECK    - set this when you building for executing check for the pr
-   *   FEATURE     - set this when you building for internal feature testing
-   *   RELEASE     - set this when you building for release
+      You need to set environment variable BUILD_PURPOSE with one of the following values:
+      *   DEVELOPMENT - set this when you building for development purposes
+      *   PR_CHECK    - set this when you building for executing check for the pr
+      *   FEATURE     - set this when you building for internal feature testing
+      *   RELEASE     - set this when you building for release
    
-   if you seting up the project to build locally, you should simply add to your .bash_profile file: 
-   ```
-   export BUILD_PURPOSE=DEVELOPMENT
-   ```
+      if you seting up the project to build locally, you should simply add to your .bash_profile file: 
+      ```
+      export BUILD_PURPOSE=DEVELOPMENT
+      ```
    
-4. Go to `harness-core` directory and run
+2. Go to `harness-core` directory and run
 
     `scripts/bazel/generate_credentials.sh`
     `bazel build //...` or `bazel build :all`
 
-5. If Global Search is not required:
+3. If Global Search is not required:
 
     Install and start MongoDB Docker Image (v4.2):
     ```
@@ -132,7 +132,7 @@ Official steps to install docker on mac: [docker.com](https://docs.docker.com/de
 
     Install & use [RoboMongo](https://robomongo.org/download) client to test MongoDB connection.
 
-6. If Global search has to be enabled (OPTIONAL):
+4. If Global search has to be enabled (OPTIONAL):
 
     Install and start Elasticsearch Docker Image for Search(v7.3):
     ```
@@ -169,7 +169,7 @@ Official steps to install docker on mac: [docker.com](https://docs.docker.com/de
     In `360-cg-manager/config.yml` set `mongo.uri` to `mongodb://mongo1:30001,mongo2:30002,mongo3:30003/harness`.
     Do the same in `config-datagen.yml` and `verification-config.yml`.
 
-7. If TimeScaleDB has to be enabled (Optional for now)
+5. If TimeScaleDB has to be enabled (Optional for now)
 
    a. Start TimeScaleDB using the following docker command: `docker run -d --name harness-timescaledb -v ~/timescaledb/data:/var/lib/postgresql/data -p 5432:5432 --rm -e POSTGRES_USER=admin -e POSTGRES_DB=harness -e POSTGRES_PASSWORD=password timescale/timescaledb:latest-pg14`
 

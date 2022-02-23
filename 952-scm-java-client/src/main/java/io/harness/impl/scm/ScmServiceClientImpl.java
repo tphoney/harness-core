@@ -23,7 +23,6 @@ import io.harness.beans.gitsync.GitFilePathDetails;
 import io.harness.beans.gitsync.GitPRCreateRequest;
 import io.harness.beans.gitsync.GitWebhookDetails;
 import io.harness.constants.Constants;
-import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 import io.harness.eraro.ErrorCode;
 import io.harness.exception.ExceptionUtils;
@@ -767,16 +766,14 @@ public class ScmServiceClientImpl implements ScmServiceClient {
   private Optional<UpdateFileResponse> runUpdateFileOpsPreChecks(
       ScmConnector scmConnector, SCMGrpc.SCMBlockingStub scmBlockingStub, GitFileDetails gitFileDetails) {
     // Check if current file commit is same as latest commit on file on remote
-    if (ConnectorType.BITBUCKET.equals(scmConnector.getConnectorType())) {
-      GetLatestCommitOnFileResponse latestCommitResponse = getLatestCommitOnFile(
-          scmConnector, scmBlockingStub, gitFileDetails.getBranch(), gitFileDetails.getFilePath());
-      if (!latestCommitResponse.getCommitId().equals(gitFileDetails.getCommitId())) {
-        return Optional.of(UpdateFileResponse.newBuilder()
-                               .setStatus(Constants.SCM_CONFLICT_ERROR_CODE)
-                               .setError(Constants.SCM_CONFLICT_ERROR_MESSAGE)
-                               .setCommitId(latestCommitResponse.getCommitId())
-                               .build());
-      }
+    GetLatestCommitOnFileResponse latestCommitResponse =
+        getLatestCommitOnFile(scmConnector, scmBlockingStub, gitFileDetails.getBranch(), gitFileDetails.getFilePath());
+    if (!latestCommitResponse.getCommitId().equals(gitFileDetails.getCommitId())) {
+      return Optional.of(UpdateFileResponse.newBuilder()
+                             .setStatus(Constants.SCM_CONFLICT_ERROR_CODE)
+                             .setError(Constants.SCM_CONFLICT_ERROR_MESSAGE)
+                             .setCommitId(latestCommitResponse.getCommitId())
+                             .build());
     }
     return Optional.empty();
   }

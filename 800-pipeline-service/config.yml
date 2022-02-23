@@ -374,6 +374,7 @@ pipelineSdkRedisEventsConfig:
     maxTopicSize: ${PIPELINE_SDK_RESPONSE_EVENT_MAX_TOPIC_SIZE:-5000}
 
 debeziumConfig:
+  isEnabled: false
   name: ${DEBEZIUM_NAME:-pipeline}
   key.converter.schemas.enable: ${KEY_CONVERTER_SCHEMAS_ENABLE:-false}
   value.converter.schemas.enable: ${VALUE_CONVERTER_SCHEMAS_ENABLE:-false}

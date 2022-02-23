@@ -14,6 +14,7 @@ import lombok.Data;
 @Data
 @Builder
 public class DebeziumConfig {
+  @JsonProperty("isEnabled") private boolean isEnabled;
   /**
    * Unique name for the connector. Attempting to register again with the same name will fail.
    * (This property is required by all Kafka Connect connectors.)

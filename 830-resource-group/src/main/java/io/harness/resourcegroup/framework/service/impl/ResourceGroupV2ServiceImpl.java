@@ -18,6 +18,10 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageRequest;
 import io.harness.ng.core.common.beans.NGTag;
 import io.harness.outbox.api.OutboxService;
+import io.harness.remote.NGObjectMapperHelper;
+import io.harness.resourcegroup.framework.events.ResourceGroupV2CreateEvent;
+import io.harness.resourcegroup.framework.events.ResourceGroupV2DeleteEvent;
+import io.harness.resourcegroup.framework.events.ResourceGroupV2UpdateEvent;
 import io.harness.resourcegroup.framework.remote.mapper.ResourceGroupV2Mapper;
 import io.harness.resourcegroup.framework.repositories.spring.ResourceGroupV2Repository;
 import io.harness.resourcegroup.framework.service.ResourceGroupV2Service;
@@ -73,9 +77,8 @@ public class ResourceGroupV2ServiceImpl implements ResourceGroupV2Service {
   private ResourceGroupV2 createInternal(ResourceGroupV2 resourceGroup) {
     return Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
       ResourceGroupV2 savedResourceGroup = resourceGroupV2Repository.save(resourceGroup);
-      //            outboxService.save(new ResourceGroupCreateEvent(
-      //                    savedResourceGroup.getAccountIdentifier(),
-      //                    ResourceGroupV2Mapper.toDTO(savedResourceGroup)));
+      outboxService.save(new ResourceGroupV2CreateEvent(
+          savedResourceGroup.getAccountIdentifier(), ResourceGroupV2Mapper.toDTO(savedResourceGroup)));
       return savedResourceGroup;
     }));
   }
@@ -198,16 +201,20 @@ public class ResourceGroupV2ServiceImpl implements ResourceGroupV2Service {
       throw new InvalidRequestException(
           String.format("Resource group with Identifier [{%s}] does not exist", resourceGroupDTO.getIdentifier()));
     }
-    if (resourceGroupOpt.get().getHarnessManaged().equals(TRUE) && !harnessManaged) {
+    ResourceGroupV2 savedResourceGroup = resourceGroupOpt.get();
+    if (savedResourceGroup.getHarnessManaged().equals(TRUE) && !harnessManaged) {
       throw new InvalidRequestException("Can't update managed resource group");
     }
+
+    ResourceGroupV2DTO oldResourceGroup =
+        (ResourceGroupV2DTO) NGObjectMapperHelper.clone(ResourceGroupV2Mapper.toDTO(savedResourceGroup));
+
     ResourceGroupV2 updatedResourceGroup =
         Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
           ResourceGroupV2 resourceGroup = resourceGroupV2Repository.save(
               ResourceGroupV2Mapper.fromDTO(resourceGroupDTO, resourceGroupOpt.get().getHarnessManaged()));
-          //              outboxService.save(new ResourceGroupUpdateEvent(
-          //                      savedResourceGroup.getAccountIdentifier(), ResourceGroupMapper.toDTO(resourceGroup),
-          //                      oldResourceGroup));
+          outboxService.save(new ResourceGroupV2UpdateEvent(
+              savedResourceGroup.getAccountIdentifier(), ResourceGroupV2Mapper.toDTO(resourceGroup), oldResourceGroup));
           return resourceGroup;
         }));
     return Optional.ofNullable(ResourceGroupV2Mapper.toResponseWrapper(updatedResourceGroup));
@@ -223,7 +230,7 @@ public class ResourceGroupV2ServiceImpl implements ResourceGroupV2Service {
 
     Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
       resourceGroupV2Repository.delete(resourceGroup);
-      //      outboxService.save(new ResourceGroupDeleteEvent(null, ResourceGroupMapper.toDTO(resourceGroup)));
+      outboxService.save(new ResourceGroupV2DeleteEvent(null, ResourceGroupV2Mapper.toDTO(resourceGroup)));
       return true;
     }));
   }
@@ -237,11 +244,11 @@ public class ResourceGroupV2ServiceImpl implements ResourceGroupV2Service {
       List<ResourceGroupV2> deletedResourceGroups =
           resourceGroupV2Repository.deleteByAccountIdentifierAndOrgIdentifierAndProjectIdentifier(
               scope.getAccountIdentifier(), scope.getOrgIdentifier(), scope.getProjectIdentifier());
-      //      if (isNotEmpty(deletedResourceGroups)) {
-      //        deletedResourceGroups.forEach(rg
-      //                -> outboxService.save(
-      //                new ResourceGroupDeleteEvent(rg.getAccountIdentifier(), ResourceGroupMapper.toDTO(rg))));
-      //      }
+      if (isNotEmpty(deletedResourceGroups)) {
+        deletedResourceGroups.forEach(rg
+            -> outboxService.save(
+                new ResourceGroupV2DeleteEvent(rg.getAccountIdentifier(), ResourceGroupV2Mapper.toDTO(rg))));
+      }
       return true;
     }));
   }
@@ -260,9 +267,8 @@ public class ResourceGroupV2ServiceImpl implements ResourceGroupV2Service {
 
     return Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
       resourceGroupV2Repository.delete(resourceGroup);
-      //      outboxService.save(
-      //              new ResourceGroupDeleteEvent(scope.getAccountIdentifier(),
-      //              ResourceGroupV2Mapper.toDTO(resourceGroup)));
+      outboxService.save(
+          new ResourceGroupV2DeleteEvent(scope.getAccountIdentifier(), ResourceGroupV2Mapper.toDTO(resourceGroup)));
       return true;
     }));
   }

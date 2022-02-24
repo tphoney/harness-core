@@ -5,6 +5,8 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.WingsException.USER_SRE;
 import static io.harness.outbox.TransactionOutboxModule.OUTBOX_TRANSACTION_TEMPLATE;
+import static io.harness.resourcegroup.model.ResourceFilter.ResourceFilterKeys;
+import static io.harness.resourcegroup.model.ResourceGroupV2.ResourceGroupV2Keys;
 import static io.harness.springdata.TransactionUtils.DEFAULT_TRANSACTION_RETRY_POLICY;
 import static io.harness.utils.PageUtils.getPageRequest;
 
@@ -98,25 +100,23 @@ public class ResourceGroupV2ServiceImpl implements ResourceGroupV2Service {
   private Criteria getResourceGroupFilterCriteria(ResourceGroupFilterDTO resourceGroupFilterDTO) {
     Criteria criteria = new Criteria();
     if (isNotEmpty(resourceGroupFilterDTO.getIdentifierFilter())) {
-      criteria.and(ResourceGroupV2.ResourceGroupV2Keys.identifier).in(resourceGroupFilterDTO.getIdentifierFilter());
+      criteria.and(ResourceGroupV2Keys.identifier).in(resourceGroupFilterDTO.getIdentifierFilter());
     }
     Criteria scopeCriteria = getBaseScopeCriteria(resourceGroupFilterDTO.getAccountIdentifier(),
         resourceGroupFilterDTO.getOrgIdentifier(), resourceGroupFilterDTO.getProjectIdentifier())
-                                 .and(ResourceGroupV2.ResourceGroupV2Keys.harnessManaged)
+                                 .and(ResourceGroupV2Keys.harnessManaged)
                                  .ne(true);
-    Criteria managedCriteria =
-        getBaseScopeCriteria(null, null, null).and(ResourceGroupV2.ResourceGroupV2Keys.harnessManaged).is(true);
+    Criteria managedCriteria = getBaseScopeCriteria(null, null, null).and(ResourceGroupV2Keys.harnessManaged).is(true);
 
     if (isNotEmpty(resourceGroupFilterDTO.getAccountIdentifier())) {
-      managedCriteria.and(ResourceGroupV2.ResourceGroupV2Keys.allowedScopeLevels)
+      managedCriteria.and(ResourceGroupV2Keys.allowedScopeLevels)
           .is(ScopeLevel
                   .of(resourceGroupFilterDTO.getAccountIdentifier(), resourceGroupFilterDTO.getOrgIdentifier(),
                       resourceGroupFilterDTO.getProjectIdentifier())
                   .toString()
                   .toLowerCase());
     } else if (isNotEmpty(resourceGroupFilterDTO.getScopeLevelFilter())) {
-      criteria.and(ResourceGroupV2.ResourceGroupV2Keys.allowedScopeLevels)
-          .in(resourceGroupFilterDTO.getScopeLevelFilter());
+      criteria.and(ResourceGroupV2Keys.allowedScopeLevels).in(resourceGroupFilterDTO.getScopeLevelFilter());
     }
 
     List<Criteria> andOperatorCriteriaList = new ArrayList<>();
@@ -131,22 +131,21 @@ public class ResourceGroupV2ServiceImpl implements ResourceGroupV2Service {
 
     if (isNotEmpty(resourceGroupFilterDTO.getSearchTerm())) {
       andOperatorCriteriaList.add(new Criteria().orOperator(
-          Criteria.where(ResourceGroupV2.ResourceGroupV2Keys.name).regex(resourceGroupFilterDTO.getSearchTerm(), "i"),
-          Criteria.where(ResourceGroupV2.ResourceGroupV2Keys.identifier)
+          Criteria.where(ResourceGroupV2Keys.name).regex(resourceGroupFilterDTO.getSearchTerm(), "i"),
+          Criteria.where(ResourceGroupV2Keys.identifier).regex(resourceGroupFilterDTO.getSearchTerm(), "i"),
+          Criteria.where(ResourceGroupV2Keys.tags + "." + NGTag.NGTagKeys.key)
               .regex(resourceGroupFilterDTO.getSearchTerm(), "i"),
-          Criteria.where(ResourceGroupV2.ResourceGroupV2Keys.tags + "." + NGTag.NGTagKeys.key)
-              .regex(resourceGroupFilterDTO.getSearchTerm(), "i"),
-          Criteria.where(ResourceGroupV2.ResourceGroupV2Keys.tags + "." + NGTag.NGTagKeys.value)
+          Criteria.where(ResourceGroupV2Keys.tags + "." + NGTag.NGTagKeys.value)
               .regex(resourceGroupFilterDTO.getSearchTerm(), "i")));
     }
 
     if (isNotEmpty(resourceGroupFilterDTO.getResourceSelectorFilterList())) {
       List<Criteria> resourceSelectorCriteria = new ArrayList<>();
       resourceGroupFilterDTO.getResourceSelectorFilterList().forEach(resourceSelectorFilter
-          -> resourceSelectorCriteria.add(Criteria.where(ResourceGroupV2.ResourceGroupV2Keys.resourceFilter)
-                                              .elemMatch(Criteria.where(ResourceFilter.ResourceFilterKeys.resourceType)
+          -> resourceSelectorCriteria.add(Criteria.where(ResourceGroupV2Keys.resourceFilter)
+                                              .elemMatch(Criteria.where(ResourceFilterKeys.resourceType)
                                                              .is(resourceSelectorFilter.getResourceType())
-                                                             .and(ResourceFilter.ResourceFilterKeys.identifiers)
+                                                             .and(ResourceFilterKeys.identifiers)
                                                              .is(resourceSelectorFilter.getResourceIdentifier()))));
       andOperatorCriteriaList.add(new Criteria().orOperator(resourceSelectorCriteria.toArray(new Criteria[0])));
     }
@@ -166,14 +165,12 @@ public class ResourceGroupV2ServiceImpl implements ResourceGroupV2Service {
   @Override
   public Page<ResourceGroupV2Response> list(Scope scope, PageRequest pageRequest, String searchTerm) {
     if (isEmpty(pageRequest.getSortOrders())) {
-      SortOrder harnessManagedOrder =
-          SortOrder.Builder.aSortOrder()
-              .withField(ResourceGroupV2.ResourceGroupV2Keys.harnessManaged, SortOrder.OrderType.DESC)
-              .build();
-      SortOrder lastModifiedOrder =
-          SortOrder.Builder.aSortOrder()
-              .withField(ResourceGroupV2.ResourceGroupV2Keys.lastModifiedAt, SortOrder.OrderType.DESC)
-              .build();
+      SortOrder harnessManagedOrder = SortOrder.Builder.aSortOrder()
+                                          .withField(ResourceGroupV2Keys.harnessManaged, SortOrder.OrderType.DESC)
+                                          .build();
+      SortOrder lastModifiedOrder = SortOrder.Builder.aSortOrder()
+                                        .withField(ResourceGroupV2Keys.lastModifiedAt, SortOrder.OrderType.DESC)
+                                        .build();
       pageRequest.setSortOrders(ImmutableList.of(harnessManagedOrder, lastModifiedOrder));
     }
     Pageable page = getPageRequest(pageRequest);
@@ -194,32 +191,29 @@ public class ResourceGroupV2ServiceImpl implements ResourceGroupV2Service {
 
   private Optional<ResourceGroupV2> getResourceGroup(Scope scope, String identifier, ManagedFilter managedFilter) {
     Criteria criteria = new Criteria();
-    criteria.and(ResourceGroupV2.ResourceGroupV2Keys.identifier).is(identifier);
+    criteria.and(ResourceGroupV2Keys.identifier).is(identifier);
     if ((scope == null || isEmpty(scope.getAccountIdentifier())) && !ManagedFilter.ONLY_MANAGED.equals(managedFilter)) {
       throw new InvalidRequestException(
           "Either managed filter should be set to only managed, or scope filter should be non-empty");
     }
 
-    Criteria managedCriteria =
-        getBaseScopeCriteria(null, null, null).and(ResourceGroupV2.ResourceGroupV2Keys.harnessManaged).is(true);
+    Criteria managedCriteria = getBaseScopeCriteria(null, null, null).and(ResourceGroupV2Keys.harnessManaged).is(true);
 
     if (ManagedFilter.ONLY_MANAGED.equals(managedFilter)) {
       if (scope != null && isNotEmpty(scope.getAccountIdentifier())) {
-        managedCriteria.and(ResourceGroupV2.ResourceGroupV2Keys.allowedScopeLevels)
-            .is(ScopeLevel.of(scope).toString().toLowerCase());
+        managedCriteria.and(ResourceGroupV2Keys.allowedScopeLevels).is(ScopeLevel.of(scope).toString().toLowerCase());
       }
       criteria.andOperator(managedCriteria);
     } else if (ManagedFilter.ONLY_CUSTOM.equals(managedFilter)) {
       criteria.andOperator(
           getBaseScopeCriteria(scope.getAccountIdentifier(), scope.getOrgIdentifier(), scope.getProjectIdentifier())
-              .and(ResourceGroupV2.ResourceGroupV2Keys.harnessManaged)
+              .and(ResourceGroupV2Keys.harnessManaged)
               .ne(true));
     } else {
-      managedCriteria.and(ResourceGroupV2.ResourceGroupV2Keys.allowedScopeLevels)
-          .is(ScopeLevel.of(scope).toString().toLowerCase());
+      managedCriteria.and(ResourceGroupV2Keys.allowedScopeLevels).is(ScopeLevel.of(scope).toString().toLowerCase());
       criteria.orOperator(
           getBaseScopeCriteria(scope.getAccountIdentifier(), scope.getOrgIdentifier(), scope.getProjectIdentifier())
-              .and(ResourceGroupV2.ResourceGroupV2Keys.harnessManaged)
+              .and(ResourceGroupV2Keys.harnessManaged)
               .ne(true),
           managedCriteria);
     }
@@ -228,11 +222,11 @@ public class ResourceGroupV2ServiceImpl implements ResourceGroupV2Service {
   }
 
   private Criteria getBaseScopeCriteria(String accountIdentifier, String orgIdentifier, String projectIdentifier) {
-    return Criteria.where(ResourceGroupV2.ResourceGroupV2Keys.accountIdentifier)
+    return Criteria.where(ResourceGroupV2Keys.accountIdentifier)
         .is(accountIdentifier)
-        .and(ResourceGroupV2.ResourceGroupV2Keys.orgIdentifier)
+        .and(ResourceGroupV2Keys.orgIdentifier)
         .is(orgIdentifier)
-        .and(ResourceGroupV2.ResourceGroupV2Keys.projectIdentifier)
+        .and(ResourceGroupV2Keys.projectIdentifier)
         .is(projectIdentifier);
   }
 
@@ -269,8 +263,7 @@ public class ResourceGroupV2ServiceImpl implements ResourceGroupV2Service {
 
     updatedResourceGroup =
         Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
-          ResourceGroupV2 resourceGroup = resourceGroupV2Repository.save(
-              ResourceGroupV2Mapper.fromDTO(resourceGroupDTO, resourceGroupOpt.get().getHarnessManaged()));
+          ResourceGroupV2 resourceGroup = resourceGroupV2Repository.save(savedResourceGroup);
           outboxService.save(new ResourceGroupV2UpdateEvent(
               savedResourceGroup.getAccountIdentifier(), ResourceGroupV2Mapper.toDTO(resourceGroup), oldResourceGroup));
           return resourceGroup;

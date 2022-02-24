@@ -47,29 +47,6 @@ public class ResourceGroupV2Mapper {
     return resourceGroupV2;
   }
 
-  public static ResourceGroupV2 fromDTO(ResourceGroupV2DTO resourceGroupDTO, boolean harnessManaged) {
-    if (resourceGroupDTO == null) {
-      return null;
-    }
-    ResourceGroupV2 resourceGroupV2 =
-        ResourceGroupV2.builder()
-            .accountIdentifier(resourceGroupDTO.getAccountIdentifier())
-            .orgIdentifier(resourceGroupDTO.getOrgIdentifier())
-            .projectIdentifier(resourceGroupDTO.getProjectIdentifier())
-            .identifier(resourceGroupDTO.getIdentifier())
-            .name(resourceGroupDTO.getName())
-            .color(isBlank(resourceGroupDTO.getColor()) ? HARNESS_BLUE : resourceGroupDTO.getColor())
-            .tags(convertToList(resourceGroupDTO.getTags()))
-            .description(resourceGroupDTO.getDescription())
-            .includedScopes(
-                resourceGroupDTO.getIncludedScopes() == null ? new ArrayList<>() : resourceGroupDTO.getIncludedScopes())
-            .resourceFilter(resourceGroupDTO.getResourceFilter())
-            .harnessManaged(harnessManaged)
-            .build();
-
-    return resourceGroupV2;
-  }
-
   public static ResourceGroupV2DTO toDTO(ResourceGroupV2 resourceGroup) {
     if (resourceGroup == null) {
       return null;

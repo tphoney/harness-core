@@ -180,8 +180,7 @@ public class HarnessResourceGroupResourceV2 {
   @POST
   @Path("filter")
   @ApiOperation(value = "Get filtered resource group list", nickname = "getFilterResourceGroupListV2")
-  @Operation(operationId = "getFilterResourceGroupListV2",
-      description = "This fetches a filtered list of Resource Groups",
+  @Operation(operationId = "getFilterResourceGroupListV2", summary = "This fetches a filtered list of Resource Groups",
       responses =
       {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "default",

@@ -22,6 +22,7 @@ import software.wings.api.DeploymentSummary;
 import software.wings.api.PhaseExecutionData;
 import software.wings.api.PhaseStepExecutionData;
 import software.wings.api.ondemandrollback.OnDemandRollbackInfo;
+import software.wings.beans.AzureConfig;
 import software.wings.beans.AzureInfrastructureMapping;
 import software.wings.beans.InfrastructureMapping;
 import software.wings.beans.SettingAttribute;
@@ -29,7 +30,6 @@ import software.wings.beans.WorkflowExecution;
 import software.wings.beans.artifact.Artifact;
 import software.wings.beans.infrastructure.Host;
 import software.wings.beans.infrastructure.instance.Instance;
-import software.wings.beans.infrastructure.instance.info.AzureVMSSInstanceInfo;
 import software.wings.beans.infrastructure.instance.info.HostInstanceInfo;
 import software.wings.beans.infrastructure.instance.info.InstanceInfo;
 import software.wings.beans.infrastructure.instance.key.deployment.DeploymentKey;
@@ -64,14 +64,18 @@ public class AzureInstanceHandler extends InstanceHandler {
 
     loadInstanceMapBasedOnType(appId, infraMappingId, azureInstanceIdInstanceMap);
 
-    log.info("Found {} azure instances for app {}", azureInstanceIdInstanceMap.size(), appId);
+    log.info("Found {} azure instances for app {}",
+        azureInstanceIdInstanceMap != null ? azureInstanceIdInstanceMap.size() : 0, appId);
 
     SettingAttribute cloudProviderSetting = settingsService.get(infrastructureMapping.getComputeProviderSettingId());
+    AzureConfig azureConfig = (AzureConfig) cloudProviderSetting.getValue();
     List<EncryptedDataDetail> encryptedDataDetails =
         secretManager.getEncryptionDetails((EncryptableSetting) cloudProviderSetting.getValue(), null, null);
 
-    if (azureInstanceIdInstanceMap.size() > 0) {
-      handleInstanceSync(azureInstanceIdInstanceMap, encryptedDataDetails, azureInfrastructureMapping);
+    String subscriptionId = azureInfrastructureMapping.getSubscriptionId();
+
+    if (azureInstanceIdInstanceMap != null && azureInstanceIdInstanceMap.size() > 0) {
+      handleInstanceSync(azureInstanceIdInstanceMap, azureConfig, encryptedDataDetails, subscriptionId);
     }
   }
 
@@ -82,21 +86,20 @@ public class AzureInstanceHandler extends InstanceHandler {
       InstanceInfo instanceInfo = instance.getInstanceInfo();
       if (instanceInfo instanceof HostInstanceInfo) {
         HostInstanceInfo hostInstanceInfo = (HostInstanceInfo) instanceInfo;
-        String hostName = hostInstanceInfo.getHostName();
-        azureInstanceIdInstanceMap.put(hostName, instance);
-      }
-
-      if (instanceInfo instanceof AzureVMSSInstanceInfo) {
-        AzureVMSSInstanceInfo hostInstanceInfo = (AzureVMSSInstanceInfo) instanceInfo;
-        String hostName = hostInstanceInfo.getHost();
-        azureInstanceIdInstanceMap.put(hostName, instance);
+        if (hostInstanceInfo != null) {
+          String hostName = hostInstanceInfo.getHostName();
+          azureInstanceIdInstanceMap.put(hostName, instance);
+        }
       }
     });
   }
 
-  protected void handleInstanceSync(Map<String, Instance> azureInstanceIdInstanceMap,
-      List<EncryptedDataDetail> encryptedDataDetails, AzureInfrastructureMapping azureInfrastructureMapping) {
+  protected void handleInstanceSync(Map<String, Instance> azureInstanceIdInstanceMap, AzureConfig azureConfig,
+      List<EncryptedDataDetail> encryptedDataDetails, String subscriptionId) {
     if (azureInstanceIdInstanceMap.size() > 0) {
+      AzureInfrastructureMapping azureInfrastructureMapping =
+          AzureInfrastructureMapping.Builder.anAzureInfrastructureMapping().withSubscriptionId(subscriptionId).build();
+
       SettingAttribute settingAttribute = settingsService.get(azureInfrastructureMapping.getComputeProviderSettingId());
 
       List<Host> activeHostList =

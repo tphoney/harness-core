@@ -22,7 +22,6 @@ import static io.harness.validation.Validator.notNullCheck;
 import static software.wings.beans.infrastructure.Host.Builder.aHost;
 
 import static com.google.common.base.Charsets.UTF_8;
-import static com.microsoft.azure.management.compute.PowerState.RUNNING;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -267,7 +266,7 @@ public class AzureHelperService {
       listVms = listVms.stream()
                     .filter(vm -> {
                       OSType vmOSType = getVmOSType(vm);
-                      return vmOSType != null && vmOSType.equals(osType) && isVmRunning(vm);
+                      return vmOSType != null && vmOSType.equals(osType);
                     })
                     .collect(Collectors.toList());
     }
@@ -285,10 +284,6 @@ public class AzureHelperService {
     }
 
     return matchingVMs;
-  }
-
-  private boolean isVmRunning(VirtualMachine vm) {
-    return vm.powerState().equals(RUNNING);
   }
 
   public PageResponse<Host> listHosts(AzureInfrastructureMapping azureInfrastructureMapping,

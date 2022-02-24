@@ -190,7 +190,6 @@ public class IdentityNodeExecutionStrategy
                                                 .nodeUuid(level.getSetupId())
                                                 .failureInfo(nodeExecution.getFailureInfo())
                                                 .identifier(level.getIdentifier())
-                                                .group(level.getGroup())
                                                 .status(nodeExecution.getStatus())
                                                 .adviserResponse(nodeExecution.getAdviserResponse())
                                                 .build();

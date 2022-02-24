@@ -9,6 +9,7 @@ package io.harness.pms.triggers;
 
 import static io.harness.AuthorizationServiceHeader.PIPELINE_SERVICE;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.ngtriggers.Constants.EVENT_CORRELATION_ID;
 import static io.harness.ngtriggers.Constants.GIT_USER;
@@ -142,6 +143,15 @@ public class TriggerExecutionHelper {
 
         if (sender != null) {
           builder.putExtraInfo(GIT_USER, sender.getLogin());
+          if (isNotEmpty(sender.getEmail())) {
+            builder.putExtraInfo("email", sender.getEmail());
+          }
+          if (isNotEmpty(sender.getLogin())) {
+            builder.setIdentifier(sender.getLogin());
+          }
+          if (isNotEmpty(sender.getName())) {
+            builder.setUuid(sender.getName());
+          }
         }
       }
     }

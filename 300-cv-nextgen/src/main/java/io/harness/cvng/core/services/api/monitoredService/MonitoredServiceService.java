@@ -8,8 +8,6 @@
 package io.harness.cvng.core.services.api.monitoredService;
 
 import io.harness.cvng.beans.MonitoredServiceType;
-import io.harness.cvng.beans.change.ChangeCategory;
-import io.harness.cvng.beans.change.ChangeEventDTO;
 import io.harness.cvng.core.beans.HealthMonitoringFlagResponse;
 import io.harness.cvng.core.beans.change.ChangeSummaryDTO;
 import io.harness.cvng.core.beans.monitoredService.AnomaliesSummaryDTO;
@@ -83,8 +81,6 @@ public interface MonitoredServiceService extends DeleteEntityByHandler<Monitored
    */
   @Deprecated List<HealthSourceDTO> getHealthSources(ServiceEnvironmentParams serviceEnvironmentParams);
 
-  List<ChangeEventDTO> getChangeEvents(ProjectParams projectParams, String monitoredServiceIdentifier,
-      Instant startTime, Instant endTime, List<ChangeCategory> changeCategories);
   ChangeSummaryDTO getChangeSummary(
       ProjectParams projectParams, String monitoredServiceIdentifier, Instant startTime, Instant endTime);
 
@@ -96,4 +92,7 @@ public interface MonitoredServiceService extends DeleteEntityByHandler<Monitored
       ProjectParams projectParams, String monitoredServiceIdentifier, String healthSourceIdentifier);
 
   MonitoredServiceListItemDTO getMonitoredServiceDetails(ServiceEnvironmentParams serviceEnvironmentParams);
+
+  List<String> getMonitoredServiceIdentifiers(
+      ProjectParams projectParams, List<String> services, List<String> environments);
 }

@@ -66,25 +66,25 @@ public class OrchestrationEngineTest extends OrchestrationTestBase {
   @Test
   @Owner(developers = PRASHANT)
   @Category(UnitTests.class)
-  public void shouldTestTriggerNode() {
+  public void shouldTestRunNode() {
     Ambiance ambiance = Ambiance.newBuilder().build();
     Plan plan = Plan.builder().build();
-    when(planExecutionStrategy.triggerNode(ambiance, plan, null)).thenReturn(PlanExecution.builder().build());
-    orchestrationEngine.triggerNode(ambiance, plan, null);
-    verify(planExecutionStrategy).triggerNode(ambiance, plan, null);
+    when(planExecutionStrategy.runNode(ambiance, plan, null)).thenReturn(PlanExecution.builder().build());
+    orchestrationEngine.runNode(ambiance, plan, null);
+    verify(planExecutionStrategy).runNode(ambiance, plan, null);
   }
 
   @Test
   @Owner(developers = PRASHANT)
   @Category(UnitTests.class)
-  public void shouldTestTriggerNextNode() {
+  public void shouldTestRunNextNode() {
     Ambiance ambiance = Ambiance.newBuilder().build();
     PlanNode node = PlanNode.builder().build();
     NodeExecution nodeExecution = NodeExecution.builder().build();
-    when(planNodeExecutionStrategy.triggerNextNode(ambiance, node, nodeExecution, null))
+    when(planNodeExecutionStrategy.runNextNode(ambiance, node, nodeExecution, null))
         .thenReturn(NodeExecution.builder().build());
-    orchestrationEngine.triggerNextNode(ambiance, node, nodeExecution, null);
-    verify(planNodeExecutionStrategy).triggerNextNode(ambiance, node, nodeExecution, null);
+    orchestrationEngine.runNextNode(ambiance, node, nodeExecution, null);
+    verify(planNodeExecutionStrategy).runNextNode(ambiance, node, nodeExecution, null);
   }
 
   @Test

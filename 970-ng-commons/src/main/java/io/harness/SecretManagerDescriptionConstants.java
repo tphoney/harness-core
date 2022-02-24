@@ -9,7 +9,7 @@ package io.harness;
 
 public class SecretManagerDescriptionConstants {
   public static final String HARNESS_MANAGED =
-      "This is true if this Secret Manager is managed by Harness. Harness can manage and edit this Secret Manager in this case.";
+      "Set this to true if the Secret Manager is to be managed by Harness. Harness can manage and edit this Secret Manager in this case.";
   public static final String DEFAULT =
       "Boolean value to indicate if the Secret Manager is your default Secret Manager.";
   public static final String DELEGATE_SELECTORS =
@@ -24,7 +24,7 @@ public class SecretManagerDescriptionConstants {
   public static final String AWS_REGION = "This is the Aws region where aws iam auth will happen.";
   public static final String VAULT_AWS_IAM_HEADER =
       "This is the Aws Iam Header Server ID that has been configured for this Aws Iam instance.";
-  public static final String VAULT_URL = "URL of the Vault.";
+  public static final String VAULT_URL = "URL of the HashiCorp Vault.";
   public static final String READ_ONLY = "Boolean value to indicate if the Secret Manager created is read only.";
   public static final String RENEWAL_INTERVAL_MINUTES = "This is the time interval for token renewal.";
   public static final String SECRET_ENGINE_NAME = "Name of the Secret Engine.";

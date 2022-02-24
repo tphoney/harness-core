@@ -42,6 +42,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -63,7 +64,7 @@ public class VaultConnectorDTO extends ConnectorConfigDTO implements DelegateSel
   @Schema(description = SecretManagerDescriptionConstants.AUTH_TOKEN)
   private SecretRefData authToken;
   @Schema(description = SecretManagerDescriptionConstants.BASE_PATH) private String basePath;
-  @Schema(description = SecretManagerDescriptionConstants.VAULT_URL) private String vaultUrl;
+  @NotNull @Schema(description = SecretManagerDescriptionConstants.VAULT_URL) private String vaultUrl;
   @Schema(description = SecretManagerDescriptionConstants.READ_ONLY) private boolean isReadOnly;
   @Schema(description = SecretManagerDescriptionConstants.RENEWAL_INTERVAL_MINUTES) private long renewalIntervalMinutes;
   @Schema(description = SecretManagerDescriptionConstants.ENGINE_ENTERED_MANUALLY)
@@ -74,10 +75,10 @@ public class VaultConnectorDTO extends ConnectorConfigDTO implements DelegateSel
   @SecretReference
   @ApiModelProperty(dataType = "string")
   private SecretRefData secretId;
-  private boolean isDefault;
+  @Schema private boolean isDefault;
   @Schema(description = SecretManagerDescriptionConstants.SECRET_ENGINE_VERSION) private int secretEngineVersion;
   @Schema(description = SecretManagerDescriptionConstants.DELEGATE_SELECTORS) private Set<String> delegateSelectors;
-  @Schema(description = SecretManagerDescriptionConstants.NAMESPACE) private String namespace;
+  @NotNull @Schema(description = SecretManagerDescriptionConstants.NAMESPACE) private String namespace;
   @Schema(description = SINK_PATH) private String sinkPath;
   @Schema(description = SecretManagerDescriptionConstants.USE_VAULT_AGENT) private boolean useVaultAgent;
   @Schema(description = USE_AWS_IAM) private boolean useAwsIam;
@@ -89,6 +90,7 @@ public class VaultConnectorDTO extends ConnectorConfigDTO implements DelegateSel
   @JsonProperty(value = "xvaultAwsIamServerId")
   private SecretRefData headerAwsIam;
 
+  @NotNull
   public AccessType getAccessType() {
     if (useVaultAgent) {
       return AccessType.VAULT_AGENT;

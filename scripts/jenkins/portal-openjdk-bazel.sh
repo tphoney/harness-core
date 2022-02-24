@@ -12,6 +12,8 @@ source "${SCRIPT_DIR}/portal-openjdk-bazel-commons.sh"
 
 prepare_to_copy_jars
 
+copy_cg_manager_jars
+
 mkdir -p dist/platform-service
 cd dist/platform-service
 

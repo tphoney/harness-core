@@ -36,7 +36,7 @@ import io.harness.testsupport.BaseTaskletTest;
 import software.wings.security.authentication.BatchQueryConfig;
 
 import com.google.common.collect.ImmutableList;
-import com.sun.istack.internal.NotNull;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

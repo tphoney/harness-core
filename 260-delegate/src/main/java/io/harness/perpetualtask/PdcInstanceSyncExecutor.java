@@ -67,8 +67,8 @@ public class PdcInstanceSyncExecutor implements PerpetualTaskExecutor {
       execute(delegateAgentManagerClient.publishInstanceSyncResult(
           taskId.getId(), settingAttribute.getAccountId(), response));
     } catch (Exception e) {
-      log.error(String.format("Failed to publish the instance collection result to manager for aws ssh for taskId [%s]",
-                    taskId.getId()),
+      log.error(String.format(
+                    "Failed to publish the instance collection result to manager for PDC taskId [%s]", taskId.getId()),
           e);
     }
 

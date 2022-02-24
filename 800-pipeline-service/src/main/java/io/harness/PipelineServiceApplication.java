@@ -25,6 +25,7 @@ import io.harness.cache.CacheModule;
 import io.harness.configuration.DeployVariant;
 import io.harness.consumers.GraphUpdateRedisConsumer;
 import io.harness.controller.PrimaryVersionChangeScheduler;
+import io.harness.debezium.DebeziumConfiguration;
 import io.harness.debezium.DebeziumController;
 import io.harness.delay.DelayEventListener;
 import io.harness.engine.events.NodeExecutionStatusUpdateEventHandler;
@@ -273,9 +274,12 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
   @Override
   public void run(PipelineServiceConfiguration appConfig, Environment environment) {
     if (appConfig.getDebeziumConfig().isEnabled()) {
+      DebeziumConfiguration debeziumConfiguration = new DebeziumConfiguration();
       ExecutorService debeziumExecutorService = Executors.newSingleThreadExecutor(
           new ThreadFactoryBuilder().setNameFormat("debezium-controller-main").build());
-      DebeziumController debeziumController = new DebeziumController(appConfig.getDebeziumConfig());
+      DebeziumController debeziumController =
+          new DebeziumController(debeziumConfiguration.getDebeziumProperties(appConfig.getDebeziumConfig()),
+              debeziumConfiguration.configureChangeConsumer());
       debeziumExecutorService.submit(debeziumController);
     }
     log.info("Starting Pipeline Service Application ...");

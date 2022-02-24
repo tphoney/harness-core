@@ -14,47 +14,51 @@ import lombok.Data;
 @Data
 @Builder
 public class DebeziumConfig {
-  @JsonProperty("isEnabled") private boolean isEnabled;
+  @JsonProperty("isEnabled") boolean isEnabled;
   /**
    * Unique name for the connector. Attempting to register again with the same name will fail.
    * (This property is required by all Kafka Connect connectors.)
    */
-  @JsonProperty("name") private String connectorName;
+  @JsonProperty("name") String connectorName;
+  /**
+   * path where the offset will be stored, this contains a a mongodb uri string in our case
+   */
+  @JsonProperty("offset.storage.file.filename") String offsetStorageFileName;
   /**
    * whether to include schema for keys as a part of the event
    */
-  @JsonProperty("key.converter.schemas.enable") private String keyConverterSchemasEnable;
+  @JsonProperty("key.converter.schemas.enable") String keyConverterSchemasEnable;
   /**
    * whether to include schema for values as a part of the event
    */
-  @JsonProperty("value.converter.schemas.enable") private String valueConverterSchemasEnable;
+  @JsonProperty("value.converter.schemas.enable") String valueConverterSchemasEnable;
   /**
    * Interval at which offset will be flushed to offset store
    */
-  @JsonProperty("offset.flush.interval.ms") private String offsetFlushIntervalMillis;
+  @JsonProperty("offset.flush.interval.ms") String offsetFlushIntervalMillis;
 
   /**
    * The name of the Java class for the connector. Always use a value of io.debezium.connector.mongodb.MongoDbConnector
    * for the MongoDB connector.
    */
-  @JsonProperty("connector.class") private String connectorClass;
+  @JsonProperty("connector.class") String connectorClass;
   /**
    * The comma-separated list of hostname and port pairs (in the form 'host' or 'host:port') of the MongoDB servers in
    * the replica set. The list can contain a single hostname and port pair. If mongodb.members.auto.discover is set to
    * false, then the host and port pair should be prefixed with the replica set name (e.g., rs0/localhost:27017)
    */
-  @JsonProperty("mongodb.hosts") private String mongodbHosts;
+  @JsonProperty("mongodb.hosts") String mongodbHosts;
   /**
    * A unique name that identifies the connector and/or MongoDB replica set or sharded cluster that this connector
    * monitors. Each server should be monitored by at most one Debezium connector, since this server name prefixes
    * all persisted Kafka topics emanating from the MongoDB replica set or cluster. Only alphanumeric characters
    * and underscores should be used.
    */
-  @JsonProperty("mongodb.name") private String mongodbName;
-  @JsonProperty("mongodb.user") private String mongodbUser;
-  @JsonProperty("mongodb.password") private String mongodbPassword;
+  @JsonProperty("mongodb.name") String mongodbName;
+  @JsonProperty("mongodb.user") String mongodbUser;
+  @JsonProperty("mongodb.password") String mongodbPassword;
   /** Connector will use SSL to connect to MongoDB instances. */
-  @JsonProperty("mongodb.ssl.enabled") private String sslEnabled;
+  @JsonProperty("mongodb.ssl.enabled") String sslEnabled;
   /**
    * An optional comma-separated list of regular expressions that match database names to be monitored; any database
    * name not included in database.include.list is excluded from monitoring. By default all databases are monitored.

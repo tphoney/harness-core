@@ -6,12 +6,8 @@
  */
 
 package io.harness.debezium;
-import io.harness.annotations.dev.HarnessTeam;
-import io.harness.annotations.dev.OwnedBy;
-import io.harness.persistence.PersistentEntity;
 
-@OwnedBy(HarnessTeam.PIPELINE)
-public interface ChangeConsumer<T extends PersistentEntity> {
+public interface ChangeConsumer<T> {
   void consumeUpdateEvent(String id, T updatedEntity);
 
   void consumeDeleteEvent(String id);

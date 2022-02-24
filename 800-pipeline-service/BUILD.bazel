@@ -48,6 +48,7 @@ java_binary(
         "//955-outbox-sdk:module",
         "//956-feature-flag-beans:module",
         "//958-migration-sdk:module",
+        "//958-debezium-engine:module",
         "//959-psql-database-models:module",
         "//959-timeout-engine:module",
         "//960-ng-core-beans:module",

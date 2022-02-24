@@ -31,12 +31,8 @@ public class DebeziumConfiguration {
   private static final String KEY_CONVERTER_SCHEMAS_ENABLE = "key.converter.schemas.enable";
   private static final String VALUE_CONVERTER_SCHEMAS_ENABLE = "value.converter.schemas.enable";
   private static final String OFFSET_FLUSH_INTERVAL_MS = "offset.flush.interval.ms";
-  private static final String CONNECT_BACKOFF_INITIAL_DELAY_MS = "connect.backoff.initial.delay.ms";
-  private static final String CONNECT_BACKOFF_MAX_DELAY_MS = "connect.backoff.max.delay.ms";
-  private static final String CONNECT_MAX_ATTEMPTS = "connect.max.attempts";
   private static final String CONNECTOR_CLASS = "connector.class";
   private static final String MONGODB_HOSTS = "mongodb.hosts";
-  private static final String MONGODB_HOSTS_DELIMITER = ",";
   private static final String MONGODB_NAME = "mongodb.name";
   private static final String MONGODB_USER = "mongodb.user";
   private static final String MONGODB_PASSWORD = "mongodb.password";

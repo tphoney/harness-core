@@ -39,6 +39,7 @@ import com.google.inject.AbstractModule;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -54,8 +55,13 @@ public class DelegateAgentModule extends AbstractModule {
     install(new DelegateKryoModule());
     install(new MetricRegistryModule(new MetricRegistry()));
 
+    String accountSecret = configuration.getAccountSecret();
+    if (StringUtils.isEmpty(accountSecret)) {
+      accountSecret = configuration.getDelegateToken();
+    }
+
     install(new DelegateManagerClientModule(configuration.getManagerUrl(), configuration.getVerificationServiceUrl(),
-        configuration.getCvNextGenUrl(), configuration.getAccountId(), configuration.getAccountSecret()));
+        configuration.getCvNextGenUrl(), configuration.getAccountId(), accountSecret));
 
     install(new LogStreamingModule(configuration.getLogStreamingServiceBaseUrl()));
     install(new DelegateGrpcClientModule(configuration));
@@ -83,8 +89,7 @@ public class DelegateAgentModule extends AbstractModule {
 
     if (configuration.isGrpcServiceEnabled()) {
       install(DelegateServiceGrpcAgentClientModule.getInstance());
-      install(
-          new DelegateGrpcServiceModule(configuration.getGrpcServiceConnectorPort(), configuration.getAccountSecret()));
+      install(new DelegateGrpcServiceModule(configuration.getGrpcServiceConnectorPort(), accountSecret));
     }
 
     install(new DelegateTokensModule(configuration));
@@ -92,11 +97,15 @@ public class DelegateAgentModule extends AbstractModule {
 
   private void configureCcmEventTailer(final String queueFilePath) {
     final String managerHostAndPort = System.getenv("MANAGER_HOST_AND_PORT");
+    String accountSecret = configuration.getAccountSecret();
+    if (StringUtils.isEmpty(accountSecret)) {
+      accountSecret = configuration.getDelegateToken();
+    }
     if (isNotBlank(managerHostAndPort)) {
       final DelegateTailerModule.Config tailerConfig =
           DelegateTailerModule.Config.builder()
               .accountId(configuration.getAccountId())
-              .accountSecret(configuration.getAccountSecret())
+              .accountSecret(accountSecret)
               .queueFilePath(queueFilePath)
               .publishTarget(extractTarget(managerHostAndPort))
               .publishAuthority(extractAuthority(managerHostAndPort, "events"))

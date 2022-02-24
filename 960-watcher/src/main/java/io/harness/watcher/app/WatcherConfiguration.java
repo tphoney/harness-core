@@ -16,6 +16,7 @@ import lombok.Data;
 public class WatcherConfiguration {
   private String accountId;
   private String accountSecret;
+  private String delegateToken;
   private String managerUrl;
   private boolean doUpgrade;
   private String upgradeCheckLocation;

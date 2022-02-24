@@ -13,6 +13,7 @@ import io.harness.security.ServiceTokenGenerator;
 
 import com.google.inject.AbstractModule;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 @RequiredArgsConstructor
 public class DelegateTokensModule extends AbstractModule {
@@ -20,10 +21,14 @@ public class DelegateTokensModule extends AbstractModule {
 
   @Override
   protected void configure() {
+    String accountSecret = configuration.getAccountSecret();
+    if (StringUtils.isEmpty(accountSecret)) {
+      accountSecret = configuration.getDelegateToken();
+    }
     bind(DelegateServiceTokenHelper.class)
         .toInstance(DelegateServiceTokenHelper.builder()
                         .serviceTokenGenerator(new ServiceTokenGenerator())
-                        .accountSecret(configuration.getAccountSecret())
+                        .accountSecret(accountSecret)
                         .build());
   }
 }

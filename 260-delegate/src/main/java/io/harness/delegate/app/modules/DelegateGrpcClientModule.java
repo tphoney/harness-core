@@ -17,6 +17,7 @@ import io.harness.grpc.client.ManagerGrpcClientModule;
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 @RequiredArgsConstructor
 public class DelegateGrpcClientModule extends AbstractManagerGrpcClientModule {
@@ -24,6 +25,10 @@ public class DelegateGrpcClientModule extends AbstractManagerGrpcClientModule {
 
   @Override
   public ManagerGrpcClientModule.Config config() {
+    String accountSecret = configuration.getAccountSecret();
+    if (StringUtils.isEmpty(accountSecret)) {
+      accountSecret = configuration.getDelegateToken();
+    }
     return ManagerGrpcClientModule.Config.builder()
         .target(Optional.ofNullable(configuration.getManagerTarget())
                     .orElseGet(() -> extractTarget(configuration.getManagerUrl())))
@@ -31,7 +36,7 @@ public class DelegateGrpcClientModule extends AbstractManagerGrpcClientModule {
                        .orElseGet(() -> extractAuthority(configuration.getManagerUrl(), "manager")))
         .scheme(extractScheme(configuration.getManagerUrl()))
         .accountId(configuration.getAccountId())
-        .accountSecret(configuration.getAccountSecret())
+        .accountSecret(accountSecret)
         .build();
   }
 

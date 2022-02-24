@@ -48,13 +48,6 @@ if [[ "" != "$NG_MANAGER_URL" ]]; then
   yq write -i $CONFIG_FILE ngManagerClientConfig.baseUrl "$NG_MANAGER_URL"
 fi
 
-if [[ "" != "$ADDON_IMAGE" ]]; then
-  yq write -i $CONFIG_FILE ciExecutionServiceConfig.addonImage "$ADDON_IMAGE"
-fi
-if [[ "" != "$LE_IMAGE" ]]; then
-  yq write -i $CONFIG_FILE ciExecutionServiceConfig.liteEngineImage "$LE_IMAGE"
-fi
-
 if [[ "" != "$GIT_CLONE_IMAGE" ]]; then
   yq write -i $CONFIG_FILE ciExecutionServiceConfig.stepConfig.gitCloneConfig.image "$GIT_CLONE_IMAGE"
 fi

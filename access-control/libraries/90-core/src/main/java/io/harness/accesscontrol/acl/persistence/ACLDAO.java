@@ -9,7 +9,7 @@ package io.harness.accesscontrol.acl.persistence;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
 
-import io.harness.accesscontrol.Principal;
+import io.harness.accesscontrol.acl.api.Principal;
 import io.harness.accesscontrol.acl.PermissionCheck;
 import io.harness.annotations.dev.OwnedBy;
 

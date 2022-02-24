@@ -5,9 +5,8 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.accesscontrol.clients;
+package io.harness.accesscontrol.acl.api;
 
-import io.harness.accesscontrol.Principal;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 

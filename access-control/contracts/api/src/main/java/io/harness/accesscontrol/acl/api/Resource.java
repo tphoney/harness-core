@@ -5,14 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.accesscontrol.clients;
+package io.harness.accesscontrol.acl.api;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.swagger.annotations.ApiModel;
-import io.swagger.v3.oas.annotations.media.Schema;
+import javax.annotation.Nullable;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -20,15 +18,14 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.validator.constraints.NotEmpty;
 
 @Data
-@Builder(builderClassName = "Builder")
-@JsonIgnoreProperties(ignoreUnknown = true)
-@ApiModel(value = "PermissionCheck")
-@Schema(name = "PermissionCheck")
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(HarnessTeam.PL)
-public class PermissionCheckDTO {
-  ResourceScope resourceScope;
-  @NotEmpty String resourceType;
+public class Resource {
+  String resourceType;
   String resourceIdentifier;
-  @NotEmpty String permission;
+
+  public static Resource of(@NotEmpty String resourceType, @Nullable String resourceIdentifier) {
+    return Resource.builder().resourceType(resourceType).resourceIdentifier(resourceIdentifier).build();
+  }
 }

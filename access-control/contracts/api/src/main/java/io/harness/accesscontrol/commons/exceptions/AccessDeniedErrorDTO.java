@@ -5,9 +5,9 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.accesscontrol;
+package io.harness.accesscontrol.commons.exceptions;
 
-import io.harness.accesscontrol.clients.PermissionCheckDTO;
+import io.harness.accesscontrol.acl.api.PermissionCheckDTO;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.eraro.ErrorCode;

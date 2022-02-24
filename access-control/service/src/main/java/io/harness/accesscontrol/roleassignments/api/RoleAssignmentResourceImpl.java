@@ -7,7 +7,6 @@
 
 package io.harness.accesscontrol.roleassignments.api;
 
-import static io.harness.NGCommonEntityConstants.IDENTIFIER_KEY;
 import static io.harness.accesscontrol.AccessControlPermissions.EDIT_SERVICEACCOUNT_PERMISSION;
 import static io.harness.accesscontrol.AccessControlPermissions.MANAGE_USERGROUP_PERMISSION;
 import static io.harness.accesscontrol.AccessControlPermissions.MANAGE_USER_PERMISSION;
@@ -21,7 +20,6 @@ import static io.harness.accesscontrol.resources.resourcegroups.HarnessResourceG
 import static io.harness.accesscontrol.roleassignments.api.RoleAssignmentDTO.MODEL_NAME;
 import static io.harness.accesscontrol.roleassignments.api.RoleAssignmentDTOMapper.fromDTO;
 import static io.harness.accesscontrol.roleassignments.api.RoleAssignmentDTOMapper.toDTO;
-import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.eraro.ErrorCode.USER_NOT_AUTHORIZED;
@@ -33,10 +31,9 @@ import static lombok.AccessLevel.PRIVATE;
 
 import io.harness.accesscontrol.AccessControlPermissions;
 import io.harness.accesscontrol.AccessControlResourceTypes;
-import io.harness.accesscontrol.AccessDeniedErrorDTO;
 import io.harness.accesscontrol.clients.AccessControlClient;
-import io.harness.accesscontrol.clients.Resource;
-import io.harness.accesscontrol.clients.ResourceScope;
+import io.harness.accesscontrol.acl.api.Resource;
+import io.harness.accesscontrol.acl.api.ResourceScope;
 import io.harness.accesscontrol.common.validation.ValidationResult;
 import io.harness.accesscontrol.commons.validation.HarnessActionValidator;
 import io.harness.accesscontrol.principals.Principal;
@@ -69,91 +66,40 @@ import io.harness.accesscontrol.scopes.core.ScopeService;
 import io.harness.accesscontrol.scopes.harness.HarnessScopeParams;
 import io.harness.accesscontrol.scopes.harness.HarnessScopeService;
 import io.harness.accesscontrol.scopes.harness.ScopeMapper;
+import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnauthorizedException;
 import io.harness.exception.WingsException;
 import io.harness.ng.beans.PageRequest;
 import io.harness.ng.beans.PageResponse;
-import io.harness.ng.core.dto.ErrorDTO;
-import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.outbox.api.OutboxService;
-import io.harness.security.annotations.InternalApi;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
+import javax.validation.executable.ValidateOnExecution;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.transaction.support.TransactionTemplate;
-import retrofit2.http.Body;
 
-@OwnedBy(PL)
-@Api("roleassignments")
-@Path("roleassignments")
-@Produces({"application/json", "application/yaml"})
-@Consumes({"application/json", "application/yaml"})
-@ApiResponses(value =
-    {
-      @ApiResponse(code = 400, response = FailureDTO.class, message = "Bad Request")
-      , @ApiResponse(code = 500, response = ErrorDTO.class, message = "Internal server error"),
-          @ApiResponse(code = 403, response = AccessDeniedErrorDTO.class, message = "Unauthorized")
-    })
-@Tag(name = "Role Assignments", description = "This contains APIs for CRUD on role assignments")
-@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Bad Request",
-    content =
-    {
-      @Content(mediaType = "application/json", schema = @Schema(implementation = FailureDTO.class))
-      , @Content(mediaType = "application/yaml", schema = @Schema(implementation = FailureDTO.class))
-    })
-@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error",
-    content =
-    {
-      @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class))
-      , @Content(mediaType = "application/yaml", schema = @Schema(implementation = ErrorDTO.class))
-    })
-@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Unauthorized",
-    content =
-    {
-      @Content(mediaType = "application/json", schema = @Schema(implementation = AccessDeniedErrorDTO.class))
-      , @Content(mediaType = "application/yaml", schema = @Schema(implementation = AccessDeniedErrorDTO.class))
-    })
+@ValidateOnExecution
+@Singleton
 @FieldDefaults(level = PRIVATE, makeFinal = true)
+@OwnedBy(HarnessTeam.PL)
 @Slf4j
-public class RoleAssignmentResource {
+public class RoleAssignmentResourceImpl implements RoleAssignmentResource {
   RoleAssignmentService roleAssignmentService;
   HarnessResourceGroupService harnessResourceGroupService;
   HarnessUserGroupService harnessUserGroupService;
@@ -176,7 +122,7 @@ public class RoleAssignmentResource {
   RetryPolicy<Object> transactionRetryPolicy = DEFAULT_TRANSACTION_RETRY_POLICY;
 
   @Inject
-  public RoleAssignmentResource(RoleAssignmentService roleAssignmentService,
+  public RoleAssignmentResourceImpl(RoleAssignmentService roleAssignmentService,
       HarnessResourceGroupService harnessResourceGroupService, HarnessUserGroupService harnessUserGroupService,
       HarnessUserService harnessUserService, HarnessServiceAccountService harnessServiceAccountService,
       HarnessScopeService harnessScopeService, ScopeService scopeService, RoleService roleService,
@@ -205,16 +151,9 @@ public class RoleAssignmentResource {
     this.accessControlClient = accessControlClient;
   }
 
-  @GET
-  @ApiOperation(value = "Get Role Assignments", nickname = "getRoleAssignmentList")
-  @Operation(operationId = "getRoleAssignmentList", summary = "List role assignments in the given scope",
-      responses =
-      {
-        @io.swagger.v3.oas.annotations.responses.
-        ApiResponse(description = "Paginated list of role assignments in the given scope")
-      })
-  public ResponseDTO<PageResponse<RoleAssignmentResponseDTO>>
-  get(@BeanParam PageRequest pageRequest, @BeanParam HarnessScopeParams harnessScopeParams) {
+  @Override
+  public ResponseDTO<PageResponse<RoleAssignmentResponseDTO>> get(
+      PageRequest pageRequest, HarnessScopeParams harnessScopeParams) {
     String scopeIdentifier = ScopeMapper.fromParams(harnessScopeParams).toString();
     RoleAssignmentFilterBuilder roleAssignmentFilterBuilder =
         RoleAssignmentFilter.builder().scopeFilter(scopeIdentifier);
@@ -242,20 +181,9 @@ public class RoleAssignmentResource {
     return ResponseDTO.newResponse(pageResponse.map(roleAssignmentDTOMapper::toResponseDTO));
   }
 
-  @POST
-  @Path("filter")
-  @ApiOperation(value = "Get Filtered Role Assignments", nickname = "getFilteredRoleAssignmentList")
-  @Operation(operationId = "getFilteredRoleAssignmentList",
-      summary = "List role assignments in the scope according to the given filter",
-      responses =
-      {
-        @io.swagger.v3.oas.annotations.responses.
-        ApiResponse(description = "Paginated list of role assignments in the scope according to the given filter")
-      })
-  public ResponseDTO<PageResponse<RoleAssignmentResponseDTO>>
-  get(@BeanParam PageRequest pageRequest, @BeanParam HarnessScopeParams harnessScopeParams,
-      @RequestBody(description = "Filter role assignments based on multiple parameters.",
-          required = true) @Body RoleAssignmentFilterDTO roleAssignmentFilter) {
+  @Override
+  public ResponseDTO<PageResponse<RoleAssignmentResponseDTO>> get(
+      PageRequest pageRequest, HarnessScopeParams harnessScopeParams, RoleAssignmentFilterDTO roleAssignmentFilter) {
     Optional<RoleAssignmentFilter> filter =
         buildRoleAssignmentFilterWithPermissionFilter(harnessScopeParams, roleAssignmentFilter);
     if (!filter.isPresent()) {
@@ -266,21 +194,9 @@ public class RoleAssignmentResource {
     return ResponseDTO.newResponse(pageResponse.map(roleAssignmentDTOMapper::toResponseDTO));
   }
 
-  @POST
-  @Path("aggregate")
-  @ApiOperation(value = "Get Role Assignments Aggregate", nickname = "getRoleAssignmentsAggregate")
-  @Operation(operationId = "getRoleAssignmentAggregateList",
-      summary = "List role assignments in the scope according to the given filter with added metadata",
-      responses =
-      {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            description =
-                "Paginated list of role assignments in the scope according to the given filter with added metadata.")
-      })
-  public ResponseDTO<RoleAssignmentAggregateResponseDTO>
-  getAggregated(@BeanParam HarnessScopeParams harnessScopeParams,
-      @RequestBody(description = "Filter role assignments based on multiple parameters.",
-          required = true) @Body RoleAssignmentFilterDTO roleAssignmentFilter) {
+  @Override
+  public ResponseDTO<RoleAssignmentAggregateResponseDTO> getAggregated(
+      HarnessScopeParams harnessScopeParams, RoleAssignmentFilterDTO roleAssignmentFilter) {
     Scope scope = ScopeMapper.fromParams(harnessScopeParams);
     Optional<RoleAssignmentFilter> filter =
         buildRoleAssignmentFilterWithPermissionFilter(harnessScopeParams, roleAssignmentFilter);
@@ -315,18 +231,9 @@ public class RoleAssignmentResource {
         RoleAssignmentAggregateResponseDTOMapper.toDTO(roleAssignmentDTOs, scope, roleResponseDTOs, resourceGroupDTOs));
   }
 
-  @POST
-  @ApiOperation(value = "Create Role Assignment", nickname = "postRoleAssignment")
-  @Operation(operationId = "postRoleAssignment", summary = "Creates role assignment within the specified scope.",
-      responses =
-      {
-        @io.swagger.v3.oas.annotations.responses.
-        ApiResponse(description = "These are details of the created role assignment.")
-      })
-  public ResponseDTO<RoleAssignmentResponseDTO>
-  create(@BeanParam HarnessScopeParams harnessScopeParams,
-      @RequestBody(description = "These are details for the role assignment to create.",
-          required = true) @Body RoleAssignmentDTO roleAssignmentDTO) {
+  @Override
+  public ResponseDTO<RoleAssignmentResponseDTO> create(
+      HarnessScopeParams harnessScopeParams, RoleAssignmentDTO roleAssignmentDTO) {
     Scope scope = ScopeMapper.fromParams(harnessScopeParams);
     validateDeprecatedResourceGroupNotUsed(roleAssignmentDTO.getResourceGroupIdentifier(), scope.getLevel().toString());
     RoleAssignment roleAssignment = fromDTO(scope, roleAssignmentDTO);
@@ -350,22 +257,9 @@ public class RoleAssignmentResource {
     }
   }
 
-  @PUT
-  @Path("{identifier}")
-  @ApiOperation(value = "Update Role Assignment", nickname = "putRoleAssignment")
-  @Operation(operationId = "putRoleAssignment",
-      summary =
-          "Update existing role assignment by identifier and scope. Only changing the disabled/enabled state is allowed.",
-      responses =
-      {
-        @io.swagger.v3.oas.annotations.responses.
-        ApiResponse(description = "This has the details of the updated Role Assignment.")
-      })
-  public ResponseDTO<RoleAssignmentResponseDTO>
-  update(@Parameter(description = "Identifier of the role assignment to update") @NotNull @PathParam(IDENTIFIER_KEY)
-         String identifier, @BeanParam HarnessScopeParams harnessScopeParams,
-      @RequestBody(description = "This has the details of the updated role assignment.",
-          required = true) @Body RoleAssignmentDTO roleAssignmentDTO) {
+  @Override
+  public ResponseDTO<RoleAssignmentResponseDTO> update(
+      String identifier, HarnessScopeParams harnessScopeParams, RoleAssignmentDTO roleAssignmentDTO) {
     Scope scope = ScopeMapper.fromParams(harnessScopeParams);
     if (!identifier.equals(roleAssignmentDTO.getIdentifier())) {
       throw new InvalidRequestException("Role assignment identifier in the request body and the url do not match.");
@@ -386,18 +280,9 @@ public class RoleAssignmentResource {
     }));
   }
 
-  @POST
-  @Path("/multi")
-  @ApiOperation(value = "Create Multiple Role Assignments", nickname = "postRoleAssignments")
-  @Operation(operationId = "postRoleAssignments",
-      summary =
-          "Create multiple role assignments in a scope. Returns all successfully created role assignments. Ignores failures and duplicates.",
-      responses =
-      { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Successfully created role assignments") })
-  public ResponseDTO<List<RoleAssignmentResponseDTO>>
-  create(@BeanParam HarnessScopeParams harnessScopeParams,
-      @RequestBody(description = "List of role assignments to create",
-          required = true) @Body RoleAssignmentCreateRequestDTO roleAssignmentCreateRequestDTO) {
+  @Override
+  public ResponseDTO<List<RoleAssignmentResponseDTO>> create(
+      HarnessScopeParams harnessScopeParams, RoleAssignmentCreateRequestDTO roleAssignmentCreateRequestDTO) {
     Scope scope = ScopeMapper.fromParams(harnessScopeParams);
     roleAssignmentCreateRequestDTO.getRoleAssignments().forEach(roleAssignmentDTO -> {
       validateDeprecatedResourceGroupNotUsed(
@@ -406,20 +291,9 @@ public class RoleAssignmentResource {
     return ResponseDTO.newResponse(createRoleAssignments(harnessScopeParams, roleAssignmentCreateRequestDTO, false));
   }
 
-  @POST
-  @Path("/multi/internal")
-  @InternalApi
-  @ApiOperation(value = "Create Multiple Role Assignments", nickname = "createRoleAssignmentsInternal", hidden = true)
-  @Operation(operationId = "createRoleAssignmentsInternal",
-      summary =
-          "Create multiple role assignments in a scope. Returns all successfully created role assignments. Ignores failures and duplicates.",
-      responses =
-      { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Successfully created role assignments") },
-      hidden = true)
-  public ResponseDTO<List<RoleAssignmentResponseDTO>>
-  create(@BeanParam HarnessScopeParams harnessScopeParams,
-      @Body RoleAssignmentCreateRequestDTO roleAssignmentCreateRequestDTO,
-      @QueryParam("managed") @DefaultValue("false") Boolean managed) {
+  @Override
+  public ResponseDTO<List<RoleAssignmentResponseDTO>> create(HarnessScopeParams harnessScopeParams,
+      RoleAssignmentCreateRequestDTO roleAssignmentCreateRequestDTO, Boolean managed) {
     // TODO: remove this deprecated resource group handling
     List<RoleAssignmentDTO> roleAssignmentDTOs = new ArrayList<>();
     roleAssignmentCreateRequestDTO.getRoleAssignments().forEach(roleAssignmentDTO -> {
@@ -452,33 +326,16 @@ public class RoleAssignmentResource {
     }
   }
 
-  @POST
-  @Path("/validate")
-  @ApiOperation(value = "Validate Role Assignment", nickname = "validateRoleAssignment")
-  @Operation(operationId = "validateRoleAssignment", summary = "Check whether a proposed role assignment is valid.",
-      responses =
-      {
-        @io.swagger.v3.oas.annotations.responses.
-        ApiResponse(description = "This is the result of the role assignment validation request.")
-      })
-  public ResponseDTO<RoleAssignmentValidationResponseDTO>
-  validate(@BeanParam HarnessScopeParams harnessScopeParams,
-      @RequestBody(description = "This is the details of the role assignment for validation.",
-          required = true) @Body RoleAssignmentValidationRequestDTO validationRequest) {
+  @Override
+  public ResponseDTO<RoleAssignmentValidationResponseDTO> validate(
+      HarnessScopeParams harnessScopeParams, RoleAssignmentValidationRequestDTO validationRequest) {
     Scope scope = ScopeMapper.fromParams(harnessScopeParams);
     harnessResourceGroupService.sync(validationRequest.getRoleAssignment().getResourceGroupIdentifier(), scope);
     return ResponseDTO.newResponse(toDTO(roleAssignmentService.validate(fromDTO(scope, validationRequest))));
   }
 
-  @DELETE
-  @Path("{identifier}")
-  @ApiOperation(value = "Delete Role Assignment", nickname = "deleteRoleAssignment")
-  @Operation(operationId = "deleteRoleAssignment", summary = "Delete an existing role assignment by identifier",
-      responses = { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Deleted role assignment") })
-  public ResponseDTO<RoleAssignmentResponseDTO>
-  delete(@BeanParam HarnessScopeParams harnessScopeParams,
-      @Parameter(description = "Identifier for role assignment") @NotEmpty @PathParam(
-          IDENTIFIER_KEY) String identifier) {
+  @Override
+  public ResponseDTO<RoleAssignmentResponseDTO> delete(HarnessScopeParams harnessScopeParams, String identifier) {
     String scopeIdentifier = ScopeMapper.fromParams(harnessScopeParams).toString();
     RoleAssignment roleAssignment =
         roleAssignmentService.get(identifier, scopeIdentifier).<InvalidRequestException>orElseThrow(() -> {

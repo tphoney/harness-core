@@ -5,34 +5,37 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.accesscontrol;
+package io.harness.accesscontrol.acl.api;
 
-import io.harness.accesscontrol.principals.PrincipalType;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModel;
-import javax.validation.constraints.NotNull;
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
+import javax.annotation.Nullable;
+import javax.validation.Valid;
+import javax.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.FieldNameConstants;
-import org.hibernate.validator.constraints.NotEmpty;
 
-@OwnedBy(HarnessTeam.PL)
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@FieldNameConstants(innerTypeName = "PrincipalKeys")
 @JsonIgnoreProperties(ignoreUnknown = true)
-@ApiModel(value = "Principal")
-public class Principal {
-  @NotEmpty String principalIdentifier;
-  @NotNull PrincipalType principalType;
-
-  public static Principal of(PrincipalType principalType, String principalIdentifier) {
-    return Principal.builder().principalIdentifier(principalIdentifier).principalType(principalType).build();
-  }
+@ApiModel(value = "AccessCheckRequest")
+@Schema(name = "AccessCheckRequest")
+@OwnedBy(HarnessTeam.PL)
+public class AccessCheckRequestDTO {
+  @Schema(description = "List of permission checks to perform", required = true)
+  @Size(max = 1000)
+  @Valid
+  List<PermissionCheckDTO> permissions;
+  @Schema(description = "Principal (user/service account) to check the access for", required = true)
+  @Valid
+  @Nullable
+  Principal principal;
 }

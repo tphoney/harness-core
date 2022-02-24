@@ -1,22 +1,19 @@
 /*
- * Copyright 2021 Harness Inc. All rights reserved.
+ * Copyright 2022 Harness Inc. All rights reserved.
  * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.accesscontrol.preference.api;
+package io.harness.accesscontrol.acl.api;
 
-import io.harness.accesscontrol.preference.services.AccessControlPreferenceService;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
-import io.harness.security.annotations.InternalApi;
 import io.harness.security.annotations.NextGenManagerAuth;
 
-import com.google.inject.Inject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -24,27 +21,25 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.PUT;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.NotEmpty;
 
-@Path("/aclPreferences")
-@Api(value = "/aclPreferences", hidden = true)
+@Path("/acl")
+@Api("/acl")
 @Produces({"application/json", "application/yaml"})
 @Consumes({"application/json", "application/yaml"})
-@AllArgsConstructor(onConstructor = @__({ @Inject }))
-@Slf4j
 @ApiResponses(value =
     {
       @ApiResponse(code = 400, response = FailureDTO.class, message = "Bad Request")
       , @ApiResponse(code = 500, response = ErrorDTO.class, message = "Internal server error")
     })
+@Tag(name = "Access Control List", description = "This contains the APIs to perform access control checks")
 @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Bad Request",
     content =
     {
@@ -59,17 +54,13 @@ import org.hibernate.validator.constraints.NotEmpty;
     })
 @NextGenManagerAuth
 @OwnedBy(HarnessTeam.PL)
-public class AccessControlPreferenceResource {
-  private final AccessControlPreferenceService accessControlPreferenceService;
-
-  @PUT
-  @InternalApi
-  @ApiOperation(value = "Update access control preference for an account", hidden = true)
-  @Operation(hidden = true)
-  public ResponseDTO<Boolean> upsertAccessControlPreference(
-      @QueryParam("accountIdentifier") @NotEmpty String accountIdentifier,
-      @QueryParam("enabled") @DefaultValue("true") boolean enabled) {
-    return ResponseDTO.newResponse(
-        accessControlPreferenceService.upsertAccessControlEnabled(accountIdentifier, enabled));
-  }
+public interface ACLResource {
+  @POST
+  @ApiOperation(value = "Check for access to resources", nickname = "getAccessControlList")
+  @Operation(operationId = "getAccessControlList", summary = "Check for permission on resource(s) for a principal",
+      responses =
+      { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Result of the access check request") })
+  ResponseDTO<AccessCheckResponseDTO>
+  get(@RequestBody(description = "These are the checks to perform for Access Control.",
+      required = true) @Valid @NotNull AccessCheckRequestDTO dto);
 }

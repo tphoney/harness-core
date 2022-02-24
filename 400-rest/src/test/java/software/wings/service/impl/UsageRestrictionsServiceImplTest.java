@@ -11,6 +11,7 @@ import static io.harness.beans.PageResponse.PageResponseBuilder.aPageResponse;
 import static io.harness.eraro.ErrorCode.NOT_ACCOUNT_MGR_NOR_HAS_ALL_APP_ACCESS;
 import static io.harness.eraro.ErrorCode.USER_NOT_AUTHORIZED_DUE_TO_USAGE_RESTRICTIONS;
 import static io.harness.rule.OwnerRule.DEEPAK;
+import static io.harness.rule.OwnerRule.KARAN;
 import static io.harness.rule.OwnerRule.RAMA;
 import static io.harness.rule.OwnerRule.UTKARSH;
 import static io.harness.rule.OwnerRule.VIKAS;
@@ -1325,6 +1326,29 @@ public class UsageRestrictionsServiceImplTest extends CategoryTest {
     } finally {
       UserThreadLocal.unset();
     }
+  }
+
+  @Test
+  @Owner(developers = KARAN)
+  @Category(UnitTests.class)
+  public void shouldHaveAccessForNewApp() {
+    UsageRestrictions usageRestrictions = getUsageRestrictionsWithAllAppsAndEnvTypes(newHashSet());
+    boolean hasAccess = usageRestrictionsService.hasAccess(
+        ACCOUNT_ID, true, null, null, true, usageRestrictions, null, null, null, false);
+    assertThat(hasAccess).isTrue();
+  }
+
+  @Test
+  @Owner(developers = KARAN)
+  @Category(UnitTests.class)
+  public void shouldNotHaveAccessForNewApp() {
+    GenericEntityFilter appFilter = GenericEntityFilter.builder().filterType(FilterType.SELECTED).build();
+    AppEnvRestriction appEnvRestriction = AppEnvRestriction.builder().appFilter(appFilter).build();
+    UsageRestrictions usageRestrictions = new UsageRestrictions();
+    usageRestrictions.setAppEnvRestrictions(newHashSet(appEnvRestriction));
+    boolean hasAccess = usageRestrictionsService.hasAccess(
+        ACCOUNT_ID, true, null, null, true, usageRestrictions, null, null, null, false);
+    assertThat(hasAccess).isFalse();
   }
 
   private UsageRestrictions getUsageRestrictionsWithAllAppsAndEnvTypes(Set<String> envFilters) {

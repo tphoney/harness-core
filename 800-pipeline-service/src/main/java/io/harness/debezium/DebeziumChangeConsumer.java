@@ -29,11 +29,8 @@ public class DebeziumChangeConsumer implements DebeziumEngine.ChangeConsumer<Cha
       try {
         handleEvent(changeEvent);
       } catch (Exception exception) {
-        log.error(
-            String.format(
-                "Exception caught when trying to process event: [%s]. Retrying this event with exponential backoff now...",
-                changeEvent),
-            exception);
+        // TODO: Handle Failure
+        log.error(String.format("Exception caught when trying to process event: [%s].", changeEvent), exception);
       }
       recordCommitter.markProcessed(changeEvent);
     }

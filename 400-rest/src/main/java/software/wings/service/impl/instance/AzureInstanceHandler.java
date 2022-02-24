@@ -7,12 +7,14 @@
 
 package software.wings.service.impl.instance;
 
+import static io.harness.beans.FeatureName.AZURE_INFRA_PERPETUAL_TASK;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.validation.Validator.notNullCheck;
 
 import static java.util.stream.Collectors.toSet;
 
 import io.harness.beans.FeatureName;
+import io.harness.delegate.beans.DelegateResponseData;
 import io.harness.exception.WingsException;
 import io.harness.security.encryption.EncryptedDataDetail;
 
@@ -34,6 +36,9 @@ import software.wings.beans.infrastructure.instance.info.HostInstanceInfo;
 import software.wings.beans.infrastructure.instance.info.InstanceInfo;
 import software.wings.beans.infrastructure.instance.key.deployment.DeploymentKey;
 import software.wings.helpers.ext.azure.AzureHelperService;
+import software.wings.service.AzureInfraInstanceSyncPerpetualTaskCreator;
+import software.wings.service.InstanceSyncPerpetualTaskCreator;
+import software.wings.service.PdcInstanceSyncPerpetualTaskCreator;
 
 import com.google.inject.Inject;
 import java.util.HashMap;
@@ -43,9 +48,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
-public class AzureInstanceHandler extends InstanceHandler {
+public class AzureInstanceHandler extends InstanceHandler implements InstanceSyncByPerpetualTaskHandler {
   @Inject protected AzureHelperService azureHelperService;
+  @Inject private AzureInfraInstanceSyncPerpetualTaskCreator perpetualTaskCreator;
 
   @Override
   public void syncInstances(String appId, String infraMappingId, InstanceSyncFlow instanceSyncFlow) {
@@ -153,5 +160,24 @@ public class AzureInstanceHandler extends InstanceHandler {
   @Override
   protected void setDeploymentKey(DeploymentSummary deploymentSummary, DeploymentKey deploymentKey) {
     // Do Nothing
+  }
+
+  @Override
+  public FeatureName getFeatureFlagToEnablePerpetualTaskForInstanceSync() {
+    return AZURE_INFRA_PERPETUAL_TASK;
+  }
+
+  @Override
+  public InstanceSyncPerpetualTaskCreator getInstanceSyncPerpetualTaskCreator() {
+    return perpetualTaskCreator;
+  }
+
+  @Override
+  public void processInstanceSyncResponseFromPerpetualTask(
+      InfrastructureMapping infrastructureMapping, DelegateResponseData response) {}
+
+  @Override
+  public Status getStatus(InfrastructureMapping infrastructureMapping, DelegateResponseData response) {
+    return null;
   }
 }

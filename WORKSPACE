@@ -5069,7 +5069,6 @@ powermock_artifacts = [
 
 maven_install(
     name = "maven",
-    resolve_timeout = 9000,
     artifacts = plain_artifacts + amazon_artifacts + powermock_artifacts + [
         maven.artifact(
             group = "io.netty",

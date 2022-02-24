@@ -23,7 +23,9 @@ import static io.harness.template.beans.NGTemplateConstants.TEMPLATE_VERSION_LAB
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.IdentifierRef;
+import io.harness.common.EntityReferenceHelper;
 import io.harness.common.NGExpressionUtils;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.ngexception.NGTemplateException;
 import io.harness.exception.ngexception.beans.templateservice.TemplateInputsErrorDTO;
 import io.harness.exception.ngexception.beans.templateservice.TemplateInputsErrorMetadataDTO;
@@ -56,6 +58,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -576,12 +579,15 @@ public class TemplateMergeHelper {
       versionMarker = versionLabel;
     }
 
-    String templateUniqueIdentifier = identifier + "-" + versionMarker;
+    IdentifierRef templateIdentifierRef = IdentifierRefHelper.getIdentifierRef(identifier, accountId, orgId, projectId);
+
+    String templateUniqueIdentifier = generateUniqueTemplateIdentifier(templateIdentifierRef.getAccountIdentifier(),
+        templateIdentifierRef.getOrgIdentifier(), templateIdentifierRef.getProjectIdentifier(),
+        templateIdentifierRef.getIdentifier(), versionMarker);
     if (templateCacheMap.containsKey(templateUniqueIdentifier)) {
       return templateCacheMap.get(templateUniqueIdentifier);
     }
 
-    IdentifierRef templateIdentifierRef = IdentifierRefHelper.getIdentifierRef(identifier, accountId, orgId, projectId);
     Optional<TemplateEntity> templateEntity = templateService.getOrThrowExceptionIfInvalid(
         templateIdentifierRef.getAccountIdentifier(), templateIdentifierRef.getOrgIdentifier(),
         templateIdentifierRef.getProjectIdentifier(), templateIdentifierRef.getIdentifier(), versionLabel, false);
@@ -597,5 +603,21 @@ public class TemplateMergeHelper {
 
   private boolean isTemplatePresent(String fieldName, JsonNode templateValue) {
     return TEMPLATE.equals(fieldName) && templateValue.isObject() && templateValue.get(TEMPLATE_REF) != null;
+  }
+
+  private String generateUniqueTemplateIdentifier(
+      String accountId, String orgId, String projectId, String templateIdentifier, String versionLabel) {
+    List<String> fqnList = new LinkedList<>();
+    fqnList.add(accountId);
+    if (EmptyPredicate.isNotEmpty(orgId)) {
+      fqnList.add(orgId);
+    }
+    if (EmptyPredicate.isNotEmpty(projectId)) {
+      fqnList.add(projectId);
+    }
+    fqnList.add(templateIdentifier);
+    fqnList.add(versionLabel);
+
+    return EntityReferenceHelper.createFQN(fqnList);
   }
 }

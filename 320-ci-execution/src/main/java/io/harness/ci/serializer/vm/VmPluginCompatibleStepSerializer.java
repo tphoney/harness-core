@@ -10,6 +10,7 @@ package io.harness.ci.serializer.vm;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.beans.plugin.compatible.PluginCompatibleStep;
+import io.harness.execution.CIExecutionConfigService;
 import io.harness.steps.CIStepInfoUtils;
 import io.harness.beans.sweepingoutputs.StageInfraDetails.Type;
 import io.harness.ci.config.CIExecutionServiceConfig;
@@ -32,7 +33,7 @@ import java.util.Map;
 
 @Singleton
 public class VmPluginCompatibleStepSerializer {
-  @Inject private CIExecutionServiceConfig ciExecutionServiceConfig;
+  @Inject private CIExecutionConfigService ciExecutionConfigService;
   @Inject private ConnectorUtils connectorUtils;
 
   public VmPluginStep serialize(Ambiance ambiance, PluginCompatibleStep pluginCompatibleStep, String identifier,
@@ -40,7 +41,7 @@ public class VmPluginCompatibleStepSerializer {
     long timeout = TimeoutUtils.getTimeoutInSeconds(parameterFieldTimeout, pluginCompatibleStep.getDefaultTimeout());
     Map<String, String> envVars =
         PluginSettingUtils.getPluginCompatibleEnvVariables(pluginCompatibleStep, identifier, timeout, Type.VM);
-    String image = CIStepInfoUtils.getPluginCustomStepImage(pluginCompatibleStep, ciExecutionServiceConfig, Type.VM);
+    String image = CIStepInfoUtils.getPluginCustomStepImage(pluginCompatibleStep, ciExecutionConfigService, Type.VM, AmbianceUtils.getAccountId(ambiance));
 
     String connectorRef = PluginSettingUtils.getConnectorRef(pluginCompatibleStep);
     NGAccess ngAccess = AmbianceUtils.getNgAccess(ambiance);
@@ -50,7 +51,7 @@ public class VmPluginCompatibleStepSerializer {
     connectorDetails.setEnvToSecretsMap(connectorSecretEnvMap);
 
     ConnectorDetails imageConnector = null;
-    if (isNotEmpty(ciExecutionServiceConfig.getDefaultInternalImageConnector())) {
+    if (isNotEmpty(ciExecutionConfigService.getCiExecutionServiceConfig().getDefaultInternalImageConnector())) {
       imageConnector = connectorUtils.getDefaultInternalConnector(ngAccess);
     }
     return VmPluginStep.builder()

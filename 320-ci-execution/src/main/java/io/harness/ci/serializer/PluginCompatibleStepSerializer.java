@@ -12,6 +12,7 @@ import static io.harness.common.CIExecutionConstants.PLUGIN_ARTIFACT_FILE_VALUE;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.plugin.compatible.PluginCompatibleStep;
+import io.harness.execution.CIExecutionConfigService;
 import io.harness.steps.CIStepInfoUtils;
 import io.harness.beans.sweepingoutputs.StageInfraDetails.Type;
 import io.harness.callback.DelegateCallbackToken;
@@ -33,7 +34,7 @@ import java.util.function.Supplier;
 @OwnedBy(CI)
 public class PluginCompatibleStepSerializer implements ProtobufStepSerializer<PluginCompatibleStep> {
   @Inject private Supplier<DelegateCallbackToken> delegateCallbackTokenSupplier;
-  @Inject private CIExecutionServiceConfig ciExecutionServiceConfig;
+  @Inject private CIExecutionConfigService ciExecutionConfigService;
 
   public UnitStep serializeStepWithStepParameters(PluginCompatibleStep pluginCompatibleStep, Integer port,
       String callbackId, String logKey, String identifier, ParameterField<Timeout> parameterFieldTimeout,
@@ -55,9 +56,9 @@ public class PluginCompatibleStepSerializer implements ProtobufStepSerializer<Pl
     PluginStep pluginStep =
         PluginStep.newBuilder()
             .setContainerPort(port)
-            .setImage(CIStepInfoUtils.getPluginCustomStepImage(pluginCompatibleStep, ciExecutionServiceConfig, Type.K8))
+            .setImage(CIStepInfoUtils.getPluginCustomStepImage(pluginCompatibleStep, ciExecutionConfigService, Type.K8, accountId))
             .addAllEntrypoint(
-                CIStepInfoUtils.getK8PluginCustomStepEntrypoint(pluginCompatibleStep, ciExecutionServiceConfig))
+                CIStepInfoUtils.getK8PluginCustomStepEntrypoint(pluginCompatibleStep, ciExecutionConfigService, accountId))
             .setContext(stepContext)
             .addAllEnvVarOutputs(outputVarNames)
             .putAllEnvironment(envVarMap)

@@ -49,6 +49,7 @@ import io.harness.beans.quantity.unit.MemoryQuantityUnit;
 import io.harness.beans.serializer.RunTimeInputHandler;
 import io.harness.beans.stages.IntegrationStageConfig;
 import io.harness.beans.steps.CIStepInfo;
+import io.harness.execution.CIExecutionConfigService;
 import io.harness.steps.CIStepInfoUtils;
 import io.harness.beans.steps.stepinfo.PluginStepInfo;
 import io.harness.beans.steps.stepinfo.RunStepInfo;
@@ -105,7 +106,7 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
   static final String SOURCE = "123456789bcdfghjklmnpqrstvwxyz";
   static final Integer RANDOM_LENGTH = 8;
   private static final SecureRandom random = new SecureRandom();
-  @Inject private CIExecutionServiceConfig ciExecutionServiceConfig;
+  @Inject private CIExecutionConfigService ciExecutionConfigService;
   @Inject private CIFeatureFlagService featureFlagService;
 
   @Override
@@ -155,7 +156,7 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
     PortFinder portFinder = PortFinder.builder().startingPort(PORT_STARTING_RANGE).usedPorts(usedPorts).build();
     String workDirPath = STEP_WORK_DIR;
     List<ContainerDefinitionInfo> serviceContainerDefinitionInfos =
-        CIServiceBuilder.createServicesContainerDefinition(stageElementConfig, portFinder, ciExecutionServiceConfig);
+        CIServiceBuilder.createServicesContainerDefinition(stageElementConfig, portFinder, ciExecutionConfigService.getCiExecutionServiceConfig());
     List<ContainerDefinitionInfo> stepContainerDefinitionInfos =
         createStepsContainerDefinition(steps, stageElementConfig, ciExecutionArgs, portFinder, accountId);
 
@@ -200,7 +201,7 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
                             .claimName(claimName)
                             .volumeName(volumeName)
                             .isPresent(!isFirstPod)
-                            .sizeMib(ciExecutionServiceConfig.getPvcDefaultStorageSize())
+                            .sizeMib(ciExecutionConfigService.getCiExecutionServiceConfig().getPvcDefaultStorageSize())
                             .storageClass(PVC_DEFAULT_STORAGE_CLASS)
                             .build());
     }
@@ -335,7 +336,7 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
         .containerImageDetails(
             ContainerImageDetails.builder()
                 .imageDetails(IntegrationStageUtils.getImageInfo(
-                    CIStepInfoUtils.getPluginCustomStepImage(stepInfo, ciExecutionServiceConfig, Type.K8)))
+                    CIStepInfoUtils.getPluginCustomStepImage(stepInfo, ciExecutionConfigService, Type.K8, accountId)))
                 .build())
         .isHarnessManagedImage(true)
         .containerResourceParams(getStepContainerResource(stepInfo.getResources(), stepType, identifier, accountId))
@@ -588,7 +589,7 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
 
   private Integer getContainerMemoryLimit(
       ContainerResource resource, String stepType, String stepId, String accountID) {
-    Integer memoryLimit = ciExecutionServiceConfig.getDefaultMemoryLimit();
+    Integer memoryLimit = ciExecutionConfigService.getCiExecutionServiceConfig().getDefaultMemoryLimit();
 
     if (featureFlagService.isEnabled(FeatureName.CI_INCREASE_DEFAULT_RESOURCES, accountID)) {
       log.info("Increase default resources FF is enabled for accountID: {}", accountID);
@@ -606,7 +607,7 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
   }
 
   private Integer getContainerCpuLimit(ContainerResource resource, String stepType, String stepId, String accountID) {
-    Integer cpuLimit = ciExecutionServiceConfig.getDefaultCPULimit();
+    Integer cpuLimit = ciExecutionConfigService.getCiExecutionServiceConfig().getDefaultCPULimit();
 
     if (featureFlagService.isEnabled(FeatureName.CI_INCREASE_DEFAULT_RESOURCES, accountID)) {
       log.info("Increase default resources FF is enabled for accountID: {}", accountID);

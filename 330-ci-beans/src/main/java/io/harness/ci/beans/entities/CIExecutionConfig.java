@@ -27,8 +27,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class CIExecutionConfig implements PersistentEntity, UuidAware, CreatedAtAware {
   @Id @org.mongodb.morphia.annotations.Id String uuid;
   @NotEmpty String accountIdentifier;
-  @NotEmpty String ciContainerTag;
+  @NotEmpty String addOnTag;
+  @NotEmpty String liteEngineTag;
   @NotEmpty String gitCloneTag;
+  @NotEmpty String securityTag;
   @NotEmpty String buildAndPushDockerRegistryTag;
   @NotEmpty String buildAndPushECRTag;
   @NotEmpty String buildAndPushGCRTag;

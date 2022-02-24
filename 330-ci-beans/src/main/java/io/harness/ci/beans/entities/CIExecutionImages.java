@@ -9,7 +9,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Builder
 @Singleton
 public class CIExecutionImages {
-  @NotEmpty String ciContainerTag;
+  @NotEmpty String addonTag;
+  @NotEmpty String liteEngineTag;
   @NotEmpty String gitCloneTag;
   @NotEmpty String buildAndPushDockerRegistryTag;
   @NotEmpty String buildAndPushECRTag;
@@ -19,4 +20,5 @@ public class CIExecutionImages {
   @NotEmpty String artifactoryUploadTag;
   @NotEmpty String cacheGCSTag;
   @NotEmpty String cacheS3Tag;
+  @NotEmpty String securityTag;
 }

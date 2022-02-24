@@ -27,11 +27,13 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.category.element.UnitTests;
 import io.harness.eraro.ErrorCode;
+import io.harness.exception.IllegalArgumentException;
 import io.harness.exception.WingsException;
 import io.harness.ng.core.account.AuthenticationMechanism;
 import io.harness.rule.Owner;
 import io.harness.security.encryption.EncryptedDataDetail;
 
+import org.apache.commons.codec.binary.Base64;
 import software.wings.WingsBaseTest;
 import software.wings.beans.Account;
 import software.wings.beans.User;
@@ -47,8 +49,7 @@ import com.coveo.saml.SamlClient;
 import com.coveo.saml.SamlException;
 import com.coveo.saml.SamlResponse;
 import com.google.inject.Inject;
-import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -378,7 +379,7 @@ public class SamlBasedAuthHandlerTest extends WingsBaseTest {
   public void
   testUserGroupsExtractionForAzureShouldSucceed()
       throws IOException, SamlException, XMLParserException, UnmarshallingException, InitializationException,
-             Base64DecodingException {
+          IllegalArgumentException {
     String samlResponseString =
         IOUtils.toString(getClass().getResourceAsStream("/SamlResponse-2.txt"), Charset.defaultCharset());
     final String accountId = "kmpySmUISimoRrJL6NL73w";
@@ -420,7 +421,7 @@ public class SamlBasedAuthHandlerTest extends WingsBaseTest {
   }
 
   private Assertion getSamlAssertion(String samlResponse)
-      throws IOException, XMLParserException, UnmarshallingException, InitializationException, Base64DecodingException {
+      throws IOException, XMLParserException, UnmarshallingException, InitializationException, IllegalArgumentException {
     InitializationService.initialize();
     SAMLConfigurationInitializer samlInitializer = new SAMLConfigurationInitializer();
     samlInitializer.init();
@@ -430,8 +431,7 @@ public class SamlBasedAuthHandlerTest extends WingsBaseTest {
 
     GlobalParserPoolInitializer parserPoolInitializer = new GlobalParserPoolInitializer();
     parserPoolInitializer.init();
-
-    byte[] decode = Base64.decode(samlResponse);
+    byte[] decode = new Base64().decode(samlResponse);
     String decodedSAMLStr = new String(decode, StandardCharsets.UTF_8);
     Response response = (Response) XMLObjectSupport.unmarshallFromInputStream(
         XMLObjectProviderRegistrySupport.getParserPool(), new StringInputStream(decodedSAMLStr));

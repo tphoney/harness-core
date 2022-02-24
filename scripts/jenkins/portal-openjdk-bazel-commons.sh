@@ -37,7 +37,6 @@ function copy_cg_manager_jars(){
 	cp ../../360-cg-manager/newrelic.yml .
 	cp ../../360-cg-manager/config.yml .
 	cp ../../400-rest/src/main/resources/redisson-jcache.yaml .
-	cp ../../alpn-boot-8.1.13.v20181017.jar .
 
 	cp ../../dockerization/manager/Dockerfile-manager-jenkins-k8-openjdk ./Dockerfile
 	cp ../../dockerization/manager/Dockerfile-manager-jenkins-k8-gcr-openjdk ./Dockerfile-gcr

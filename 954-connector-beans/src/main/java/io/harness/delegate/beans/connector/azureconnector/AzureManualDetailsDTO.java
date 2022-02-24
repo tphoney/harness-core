@@ -7,12 +7,10 @@
 
 package io.harness.delegate.beans.connector.azureconnector;
 
-import io.harness.beans.DecryptableEntity;
 import io.harness.encryption.SecretRefData;
 import io.harness.encryption.SecretReference;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.google.common.base.Preconditions;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,7 +29,7 @@ public class AzureManualDetailsDTO implements AzureCredentialSpecDTO {
   @ApiModelProperty(dataType = "string")
   @Schema(description = "This is the Harness text secret with the Azure authentication key as its value.")
   @NotNull
-  private SecretRefData secretKey;
+  private SecretRefData secretKeyRef;
   @NotNull
   @Schema(description = "The Azure Active Directory (AAD) directory ID where you created your application.")
   private String tenantId;

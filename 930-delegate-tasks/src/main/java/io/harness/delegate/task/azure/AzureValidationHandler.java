@@ -70,7 +70,7 @@ public class AzureValidationHandler implements ConnectorValidationHandler {
     return AzureConfig.builder()
         .clientId(config.getClientId())
         .tenantId(config.getTenantId())
-        .key(config.getSecretKey().getDecryptedValue())
+        .key(config.getSecretKeyRef().getDecryptedValue())
         .azureEnvironmentType(AzureEnvironmentType.AZURE)
         .build();
   }

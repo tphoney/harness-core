@@ -619,7 +619,7 @@ public class AzureManagementClientImpl extends AzureClient implements AzureManag
       throw new IllegalArgumentException(SUBSCRIPTION_ID_NULL_VALIDATION_MSG);
     }
 
-    getAzureClient(azureConfig, subscriptionId);
+    getAzureClient(azureConfig, subscriptionId).getCurrentSubscription();
 
     log.debug("Azure connection validated for clientId {} tenantId {} subscriptionId {}", azureConfig.getClientId(),
         azureConfig.getTenantId(), subscriptionId);

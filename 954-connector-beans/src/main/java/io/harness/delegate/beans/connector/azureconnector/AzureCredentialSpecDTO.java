@@ -8,13 +8,12 @@
 package io.harness.delegate.beans.connector.azureconnector;
 
 import io.harness.beans.DecryptableEntity;
-import io.harness.delegate.beans.connector.gcpconnector.GcpManualDetailsDTO;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import io.swagger.annotations.ApiModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@JsonSubTypes({ @JsonSubTypes.Type(value = GcpManualDetailsDTO.class, name = AzureConstants.MANUAL_CONFIG) })
+@JsonSubTypes({ @JsonSubTypes.Type(value = AzureManualDetailsDTO.class, name = AzureConstants.MANUAL_CONFIG) })
 @ApiModel("AzureCredentialSpec")
 @Schema(name = "AzureCredentialSpec", description = "This contains Azure connector credentials spec")
 public interface AzureCredentialSpecDTO extends DecryptableEntity {}

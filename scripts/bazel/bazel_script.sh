@@ -55,6 +55,8 @@ if [ "${RUN_PMDS}" == "true" ]; then
 fi
 
 BAZEL_MODULES="\
+  //360-cg-manager:module \
+  //360-cg-manager:module_deploy.jar \
   //820-platform-service:module \
   //820-platform-service:module_deploy.jar \
   //access-control/service:module \
@@ -149,3 +151,5 @@ build_protocol_info(){
 }
 
 build_bazel_application 820-platform-service
+
+

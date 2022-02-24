@@ -25,6 +25,7 @@ import io.harness.cache.CacheModule;
 import io.harness.configuration.DeployVariant;
 import io.harness.consumers.GraphUpdateRedisConsumer;
 import io.harness.controller.PrimaryVersionChangeScheduler;
+import io.harness.debezium.DebeziumConfig;
 import io.harness.debezium.DebeziumConfiguration;
 import io.harness.debezium.DebeziumController;
 import io.harness.delay.DelayEventListener;
@@ -271,17 +272,17 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
     mapper.registerModule(new PipelineServiceJacksonModule());
   }
 
+  public static void startDebeziumEngine(DebeziumConfig debeziumConfig) {
+    DebeziumConfiguration debeziumConfiguration = new DebeziumConfiguration();
+    ExecutorService debeziumExecutorService =
+        Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("debezium-controller").build());
+    DebeziumController debeziumController = new DebeziumController(
+        debeziumConfiguration.getDebeziumProperties(debeziumConfig), debeziumConfiguration.configureChangeConsumer());
+    debeziumExecutorService.submit(debeziumController);
+  }
+
   @Override
   public void run(PipelineServiceConfiguration appConfig, Environment environment) {
-    if (appConfig.getDebeziumConfig().isEnabled()) {
-      DebeziumConfiguration debeziumConfiguration = new DebeziumConfiguration();
-      ExecutorService debeziumExecutorService = Executors.newSingleThreadExecutor(
-          new ThreadFactoryBuilder().setNameFormat("debezium-controller-main").build());
-      DebeziumController debeziumController =
-          new DebeziumController(debeziumConfiguration.getDebeziumProperties(appConfig.getDebeziumConfig()),
-              debeziumConfiguration.configureChangeConsumer());
-      debeziumExecutorService.submit(debeziumController);
-    }
     log.info("Starting Pipeline Service Application ...");
     MaintenanceController.forceMaintenance(true);
 
@@ -325,6 +326,9 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
           return null;
         }
       });
+    }
+    if (appConfig.getDebeziumConfig().isEnabled()) {
+      startDebeziumEngine(appConfig.getDebeziumConfig());
     }
 
     // Pipeline Service Modules

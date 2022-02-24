@@ -262,10 +262,12 @@ For other cases, next = request.pageRequest.page + 1 // basically it corresponds
  */
 message PageResponse {
   int32 next = 1;
+  string next_url = 2;
 }
 
 message PageRequest {
   int32 page = 1;
+  string url = 2;
 }
 
 message GetFileRequest {

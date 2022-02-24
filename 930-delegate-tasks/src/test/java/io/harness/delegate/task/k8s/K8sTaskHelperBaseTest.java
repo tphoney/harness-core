@@ -3116,16 +3116,10 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
         .when(mockK8sYamlToDelegateDTOMapper)
         .createKubernetesConfigFromClusterConfig(clusterConfigDTO);
 
-    doThrow(InvalidRequestException.builder().message("Unable to retrieve k8s version. Code: 401").build())
-        .when(mockKubernetesContainerService)
-        .getVersion(kubernetesConfig);
-    try {
-      k8sTaskHelperBase.validate(clusterConfigDTO, emptyList());
-    } catch (HintException he) {
-      assertThat(he.getMessage()).contains(K8sExceptionConstants.KUBERNETES_CLUSTER_CONNECTION_VALIDATION_FAILED);
-      assertThat(he.getCause()).isInstanceOf(ExplanationException.class);
-      assertThat(he.getCause().getMessage()).contains("Unable to retrieve k8s version. Code: 401");
-    }
+    InvalidRequestException exception = new InvalidRequestException("Unable to retrieve k8s version. Code: 401");
+
+    doThrow(exception).when(mockKubernetesContainerService).getVersion(kubernetesConfig);
+    assertThatThrownBy(() -> k8sTaskHelperBase.validate(clusterConfigDTO, emptyList())).isSameAs(exception);
   }
 
   @Test

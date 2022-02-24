@@ -8,13 +8,13 @@
 package software.wings.delegatetasks;
 
 import static io.harness.delegate.beans.TaskData.DEFAULT_ASYNC_CALL_TIMEOUT;
+import static io.harness.delegate.task.winrm.AuthenticationScheme.NTLM;
 import static io.harness.rule.OwnerRule.AADITI;
 import static io.harness.rule.OwnerRule.PRABU;
 import static io.harness.shell.AccessType.KEY;
 import static io.harness.shell.ScriptType.BASH;
 import static io.harness.shell.ScriptType.POWERSHELL;
 
-import static software.wings.beans.WinRmConnectionAttributes.AuthenticationScheme.NTLM;
 import static software.wings.sm.states.ShellScriptState.ConnectionType.SSH;
 import static software.wings.sm.states.ShellScriptState.ConnectionType.WINRM;
 import static software.wings.utils.WingsTestConstants.ACCOUNT_ID;
@@ -42,6 +42,8 @@ import io.harness.delegate.beans.DelegateTaskPackage;
 import io.harness.delegate.beans.TaskData;
 import io.harness.delegate.command.CommandExecutionResult;
 import io.harness.delegate.service.ExecutionConfigOverrideFromFileOnDelegate;
+import io.harness.delegate.task.winrm.DefaultWinRmExecutor;
+import io.harness.delegate.task.winrm.WinRmSessionConfig;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.rule.Owner;
 import io.harness.security.encryption.EncryptedDataDetail;
@@ -60,9 +62,7 @@ import software.wings.beans.WinRmConnectionAttributes;
 import software.wings.beans.delegation.ShellScriptParameters;
 import software.wings.core.local.executors.ShellExecutorFactory;
 import software.wings.core.ssh.executors.SshExecutorFactory;
-import software.wings.core.winrm.executors.DefaultWinRmExecutor;
 import software.wings.core.winrm.executors.WinRmExecutorFactory;
-import software.wings.core.winrm.executors.WinRmSessionConfig;
 import software.wings.helpers.ext.container.ContainerDeploymentDelegateHelper;
 import software.wings.service.intfc.security.EncryptionService;
 

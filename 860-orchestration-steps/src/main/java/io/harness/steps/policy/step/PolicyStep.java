@@ -12,6 +12,7 @@ import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.eraro.ErrorCode;
+import io.harness.exception.InvalidRequestException;
 import io.harness.network.SafeHttpCall;
 import io.harness.opaclient.OpaServiceClient;
 import io.harness.opaclient.model.OpaConstants;
@@ -81,8 +82,10 @@ public class PolicyStep implements SyncExecutable<StepElementParameters> {
     OpaEvaluationResponseHolder opaEvaluationResponseHolder;
     try {
       String policySetsQueryParam = PolicyStepHelper.getPolicySetsStringForQueryParam(policySets);
-      opaEvaluationResponseHolder = SafeHttpCall.executeWithExceptions(opaServiceClient.evaluateWithCredentialsByID(
+      opaEvaluationResponseHolder = SafeHttpCall.executeWithErrorMessage(opaServiceClient.evaluateWithCredentialsByID(
           accountId, orgIdentifier, projectIdentifier, policySetsQueryParam, YamlUtils.readTree(payload)));
+    } catch (InvalidRequestException ex) {
+      return PolicyStepHelper.buildPolicyEvaluationErrorStepResponse(ex.getMessage());
     } catch (Exception ex) {
       log.error("Exception while evaluating OPA rules", ex);
       return PolicyStepHelper.buildFailureStepResponse(ErrorCode.HTTP_RESPONSE_EXCEPTION,

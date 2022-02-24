@@ -27,6 +27,7 @@ import io.harness.delegate.utils.DelegateEntityOwnerHelper;
 import io.harness.exception.InvalidRequestException;
 import io.harness.outbox.api.OutboxService;
 import io.harness.persistence.HPersistence;
+import io.harness.security.SourcePrincipalContextBuilder;
 import io.harness.utils.Misc;
 
 import software.wings.beans.Account;
@@ -74,6 +75,7 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
                                       .isNg(true)
                                       .status(DelegateTokenStatus.ACTIVE)
                                       .value(encodeBase64(Misc.generateSecretKey()))
+                                      .createdByNgUser(SourcePrincipalContextBuilder.getSourcePrincipal())
                                       .build();
 
     persistence.save(delegateToken);
@@ -111,12 +113,11 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
 
   @Override
   public DelegateTokenDetails getDelegateToken(String accountId, String name) {
-    return matchNameTokenQuery(accountId, name)
-        .asList()
-        .stream()
-        .map(token -> getDelegateTokenDetails(token, false))
-        .findFirst()
-        .orElse(null);
+    DelegateToken delegateToken = matchNameTokenQuery(accountId, name).get();
+    if (delegateToken != null) {
+      return getDelegateTokenDetails(delegateToken, false);
+    }
+    return null;
   }
 
   @Override
@@ -214,7 +215,7 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
                                                                   .accountId(delegateToken.getAccountId())
                                                                   .name(delegateToken.getName())
                                                                   .createdAt(delegateToken.getCreatedAt())
-                                                                  .createdBy(delegateToken.getCreatedBy())
+                                                                  .createdByNgUser(delegateToken.getCreatedByNgUser())
                                                                   .status(delegateToken.getStatus());
 
     if (includeTokenValue) {

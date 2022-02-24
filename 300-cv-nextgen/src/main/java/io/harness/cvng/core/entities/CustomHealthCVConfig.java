@@ -119,7 +119,7 @@ public class CustomHealthCVConfig extends MetricCVConfig {
     }
   }
 
-  public MetricPack generateMetricPack(String metricName, RiskProfile riskProfile) {
+  public MetricPack generateMetricPack(String identifier, String metricName, RiskProfile riskProfile) {
     Set<TimeSeriesThreshold> timeSeriesThresholds = getThresholdsToCreateOnSaveForCustomProviders(
         metricName, riskProfile.getMetricType(), riskProfile.getThresholdTypes());
     MetricPack metricPack = MetricPack.builder()
@@ -134,6 +134,7 @@ public class CustomHealthCVConfig extends MetricCVConfig {
                                 .thresholds(new ArrayList<>(timeSeriesThresholds))
                                 .type(riskProfile.getMetricType())
                                 .name(metricName)
+                                .identifier(identifier)
                                 .included(true)
                                 .build());
 

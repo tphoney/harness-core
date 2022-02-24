@@ -121,6 +121,7 @@ public class OwnerRule implements TestRule {
   public static final String JUHI = "juhi.agrawal";
   public static final String KAMAL = "kamal.joshi";
   public static final String KARAN = "karan.siwach";
+  public static final String MANKRIT = "mankrit.singh";
   public static final String MARKO = "marko.barjaktarovic";
   public static final String MLUKIC = "marko.lukic";
   public static final String MARKOM = "marko.milic";
@@ -131,6 +132,7 @@ public class OwnerRule implements TestRule {
   public static final String MOHIT = "mohit.kurani";
   public static final String NATHAN = "nathan.nguyen";
   public static final String NATARAJA = "nataraja";
+  public static final String NAVNEET = "navneet.das";
   public static final String NGONZALEZ = "nasser.gonzalez";
   public static final String NEMANJA = "nemanja.lukovic";
   public static final String NIKOLA = "nikola.obucina";
@@ -151,6 +153,7 @@ public class OwnerRule implements TestRule {
   public static final String RAMA = "rama";
   public static final String RAUNAK = "raunak.agrawal";
   public static final String REETIKA = "mallavarapu.reetika";
+  public static final String RICHA = "richa.jajoo";
   public static final String ROGER = "roger.simms";
   public static final String ROHIT = "rohit.reddy";
   public static final String ROHIT_KUMAR = "rohit.kumar";
@@ -302,6 +305,7 @@ public class OwnerRule implements TestRule {
           .put(MOHIT, defaultUserInfo(MOHIT).slack("USB6NTE22").team(PL).build())
           .put(NATHAN, defaultUserInfo(NATHAN).slack("U01NNN1T4CV").team(GTM).build())
           .put(NATARAJA, defaultUserInfo(NATARAJA).slack("UDQAS9J5C").team(PL).build())
+          .put(NAVNEET, defaultUserInfo(NAVNEET).slack("U02SWLDJDPT").team(CDP).build())
           .put(NEMANJA, defaultUserInfo(NEMANJA).slack("U016F8DDQSC").team(CV).build())
           .put(NICOLAS, defaultUserInfo(NICOLAS).slack("U01C8MPQVQE").team(DEL).build())
           .put(NIKOLA, defaultUserInfo(NIKOLA).slack("U011CFJ4YDV").team(PL).build())
@@ -320,6 +324,7 @@ public class OwnerRule implements TestRule {
           .put(RAUNAK, defaultUserInfo(RAUNAK).slack("UU06GNQ0M").team(CDP).build())
           .put(RAMA, defaultUserInfo(RAMA).slack("U69BLRG72").team(DX).build())
           .put(REETIKA, defaultUserInfo(REETIKA).slack("U0164D4BV0A").team(PL).build())
+          .put(RICHA, defaultUserInfo(RICHA).slack("U02SF3HLXEZ").team(PL).build())
           .put(ROHIT, defaultUserInfo(ROHIT).slack("UKLSUUCAC").team(CE).build())
           .put(ROHIT_KUMAR, defaultUserInfo(ROHIT_KUMAR).slack("UL92UJN4S").team(DX).build())
           .put(ROHITKARELIA, defaultUserInfo(ROHITKARELIA).slack("UP48HU3T9").team(SWAT).build())

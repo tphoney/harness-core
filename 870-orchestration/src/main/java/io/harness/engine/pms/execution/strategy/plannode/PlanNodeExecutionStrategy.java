@@ -273,7 +273,6 @@ public class PlanNodeExecutionStrategy extends AbstractNodeExecutionStrategy<Pla
                                                 .stepOutcomeRefs(outcomeService.fetchOutcomeRefs(nodeExecutionId))
                                                 .failureInfo(nodeExecution.getFailureInfo())
                                                 .identifier(level.getIdentifier())
-                                                .group(level.getGroup())
                                                 .status(nodeExecution.getStatus())
                                                 .adviserResponse(nodeExecution.getAdviserResponse())
                                                 .build();

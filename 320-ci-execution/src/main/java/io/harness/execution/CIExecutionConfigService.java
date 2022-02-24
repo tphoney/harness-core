@@ -25,6 +25,7 @@ public class CIExecutionConfigService {
     } else {
       executionConfig = CIExecutionConfig.builder().accountIdentifier(accountId).build();
     }
+    executionConfig.setGitCloneTag(ciExecutionImages.getGitCloneTag());
     executionConfig.setCiContainerTag(ciExecutionImages.getCiContainerTag());
     executionConfig.setArtifactoryUploadTag(ciExecutionImages.getArtifactoryUploadTag());
     executionConfig.setBuildAndPushDockerRegistryTag(ciExecutionImages.getBuildAndPushDockerRegistryTag());

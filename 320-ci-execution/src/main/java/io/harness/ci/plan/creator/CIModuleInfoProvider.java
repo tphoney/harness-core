@@ -211,16 +211,12 @@ public class CIModuleInfoProvider implements ExecutionSummaryModuleInfoProvider 
       }
     }
 
-    List<DeprecatedImageInfo> deprecatedImages =
-        executionConfigService.getDeprecatedTags(baseNGAccess.getAccountIdentifier());
-
     return CIPipelineModuleInfo.builder()
         .branch(branch)
         .triggerRepoName(triggerRepoName)
         .prNumber(prNumber)
         .buildType(buildType)
         .tag(tag)
-        .deprecatedImages(deprecatedImages)
         .repoName(repoName)
         .ciExecutionInfoDTO(getCiExecutionInfoDTO(codebaseSweepingOutput, author, prNumber, triggerCommits))
         .isPrivateRepo(isPrivateRepo)

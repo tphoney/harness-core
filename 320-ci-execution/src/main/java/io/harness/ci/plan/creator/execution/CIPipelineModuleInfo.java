@@ -29,5 +29,4 @@ public class CIPipelineModuleInfo implements PipelineModuleInfo {
   private String prNumber;
   private String buildType;
   private Boolean isPrivateRepo;
-  private List<DeprecatedImageInfo> deprecatedImages;
 }

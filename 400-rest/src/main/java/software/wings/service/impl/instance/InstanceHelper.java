@@ -527,14 +527,12 @@ public class InstanceHelper {
       InfrastructureMappingType infrastructureMappingType =
           Utils.getEnumFromString(InfrastructureMappingType.class, infraMapping.getInfraMappingType());
       Preconditions.checkNotNull(infrastructureMappingType, "InfrastructureMappingType should not be null");
-      if (isSupported(infrastructureMappingType)) {
-        InstanceHandler instanceHandler = instanceHandlerFactory.getInstanceHandler(infraMapping);
-        instanceHandler.handleNewDeployment(deploymentSummaries, isRollback, onDemandRollbackInfo);
-        createPerpetualTaskForNewDeploymentIfEnabled(infraMapping, deploymentSummaries);
-        log.info("Handled deployment event for infraMappingId [{}] successfully", infraMappingId);
-      } else {
-        log.info("Skipping deployment event for infraMappingId [{}]", infraMappingId);
-      }
+
+      InstanceHandler instanceHandler = instanceHandlerFactory.getInstanceHandler(infraMapping);
+      instanceHandler.handleNewDeployment(deploymentSummaries, isRollback, onDemandRollbackInfo);
+      createPerpetualTaskForNewDeploymentIfEnabled(infraMapping, deploymentSummaries);
+      log.info("Handled deployment event for infraMappingId [{}] successfully", infraMappingId);
+
     } catch (Exception ex) {
       // We have to catch all kinds of runtime exceptions, log it and move on, otherwise the queue impl keeps retrying
       // forever in case of exception
@@ -544,17 +542,7 @@ public class InstanceHelper {
   }
 
   private Optional<InstanceHandler> getInstanceHandler(InfrastructureMapping infraMapping) {
-    InfrastructureMappingType infrastructureMappingType =
-        Utils.getEnumFromString(InfrastructureMappingType.class, infraMapping.getInfraMappingType());
-    if (isSupported(infrastructureMappingType)) {
-      return Optional.of(instanceHandlerFactory.getInstanceHandler(infraMapping));
-    }
-    return Optional.empty();
-  }
-
-  @VisibleForTesting
-  boolean isSupported(InfrastructureMappingType infrastructureMappingType) {
-    return true;
+    return Optional.of(instanceHandlerFactory.getInstanceHandler(infraMapping));
   }
 
   public boolean isDeployPhaseStep(PhaseStepType phaseStepType) {

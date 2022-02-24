@@ -11,7 +11,6 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.rule.OwnerRule.ACASIAN;
 import static io.harness.rule.OwnerRule.ADWAIT;
 import static io.harness.rule.OwnerRule.ANKIT;
-import static io.harness.rule.OwnerRule.GEORGE;
 import static io.harness.rule.OwnerRule.RAMA;
 import static io.harness.rule.OwnerRule.ROHIT_KUMAR;
 
@@ -911,20 +910,6 @@ public class InstanceHelperTest extends WingsBaseTest {
                 .releaseName("release")
                 .build())
         .build();
-  }
-
-  @Test
-  @Owner(developers = GEORGE)
-  @Category(UnitTests.class)
-  public void testIsSupported() throws Exception {
-    assertThat(instanceHelper.isSupported(InfrastructureMappingType.PHYSICAL_DATA_CENTER_SSH)).isFalse();
-    assertThat(instanceHelper.isSupported(InfrastructureMappingType.PHYSICAL_DATA_CENTER_WINRM)).isFalse();
-    assertThat(instanceHelper.isSupported(InfrastructureMappingType.AWS_AWS_LAMBDA)).isTrue();
-    assertThat(instanceHelper.isSupported(InfrastructureMappingType.AWS_ECS)).isTrue();
-    assertThat(instanceHelper.isSupported(InfrastructureMappingType.AWS_AMI)).isTrue();
-    assertThat(instanceHelper.isSupported(InfrastructureMappingType.AWS_AWS_CODEDEPLOY)).isTrue();
-    assertThat(instanceHelper.isSupported(InfrastructureMappingType.GCP_KUBERNETES)).isTrue();
-    assertThat(instanceHelper.isSupported(InfrastructureMappingType.AWS_SSH)).isTrue();
   }
 
   @Test

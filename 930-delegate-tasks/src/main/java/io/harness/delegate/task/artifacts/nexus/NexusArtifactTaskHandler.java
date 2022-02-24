@@ -39,9 +39,10 @@ public class NexusArtifactTaskHandler extends DelegateArtifactTaskHandler<NexusA
     BuildDetailsInternal lastSuccessfulBuild;
     NexusRequest nexusConfig = NexusRequestResponseMapper.toNexusInternalConfig(attributesRequest);
     if (isRegex(attributesRequest)) {
-      lastSuccessfulBuild = nexusRegistryService.getLastSuccessfulBuildFromRegex(nexusConfig,
-          attributesRequest.getRepositoryName(), attributesRequest.getRepositoryPort(),
-          attributesRequest.getArtifactPath(), attributesRequest.getRepositoryFormat(), attributesRequest.getTagRegex());
+      lastSuccessfulBuild =
+          nexusRegistryService.getLastSuccessfulBuildFromRegex(nexusConfig, attributesRequest.getRepositoryName(),
+              attributesRequest.getRepositoryPort(), attributesRequest.getArtifactPath(),
+              attributesRequest.getRepositoryFormat(), attributesRequest.getTagRegex());
     } else {
       lastSuccessfulBuild = nexusRegistryService.verifyBuildNumber(nexusConfig, attributesRequest.getRepositoryName(),
           attributesRequest.getRepositoryPort(), attributesRequest.getArtifactPath(),

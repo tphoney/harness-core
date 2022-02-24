@@ -25,6 +25,7 @@ import io.harness.queue.QueueController;
 import io.harness.service.GraphGenerationService;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.time.Duration;
@@ -40,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @OwnedBy(PIPELINE)
+@Singleton
 public class GraphUpdateRedisConsumer implements PmsRedisConsumer {
   private static final int WAIT_TIME_IN_SECONDS = 30;
 

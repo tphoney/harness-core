@@ -23,9 +23,11 @@ import io.harness.pms.yaml.YamlUtils;
 import java.io.IOException;
 import java.util.List;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(PIPELINE)
 @UtilityClass
+@Slf4j
 public class PolicyStepHelper {
   public String getPolicySetsStringForQueryParam(List<String> policySets) {
     return policySets.toString().replace("[", "").replace("]", "").replace(" ", "");
@@ -38,6 +40,20 @@ public class PolicyStepHelper {
       return !yamlField.getNode().isObject();
     } catch (IOException e) {
       return true;
+    }
+  }
+
+  public StepResponse buildPolicyEvaluationErrorStepResponse(String errorResponseString) {
+    try {
+      PolicyEvaluationErrorResponse policyEvaluationErrorResponse =
+          YamlUtils.read(errorResponseString, PolicyEvaluationErrorResponse.class);
+      String errorMessage = policyEvaluationErrorResponse.getMessage().replace("policy set", "Policy Set");
+      return buildFailureStepResponse(ErrorCode.POLICY_SET_ERROR, errorMessage, FailureType.UNKNOWN_FAILURE);
+
+    } catch (IOException e) {
+      log.error("Unable to parse error response from Policy Manager. Error response:\n" + errorResponseString, e);
+      return PolicyStepHelper.buildFailureStepResponse(ErrorCode.HTTP_RESPONSE_EXCEPTION,
+          "Unexpected error occurred while evaluating Policies.", FailureType.APPLICATION_FAILURE);
     }
   }
 

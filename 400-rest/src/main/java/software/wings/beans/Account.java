@@ -109,12 +109,12 @@ public class Account extends Base implements PersistentRegularIterable {
   @JsonIgnore private boolean emailSentToSales;
 
   @Getter(onMethod = @__({ @JsonIgnore }))
-  @Setter(onMethod = @__({ @JsonIgnore }))
+  @Setter
   @JsonIgnore
   private long lastLicenseExpiryReminderSentAt;
 
   @Getter(onMethod = @__({ @JsonIgnore }))
-  @Setter(onMethod = @__({ @JsonIgnore }))
+  @Setter
   @JsonIgnore
   private List<Long> licenseExpiryRemindersSentAt;
 

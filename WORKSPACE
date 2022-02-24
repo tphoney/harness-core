@@ -4862,6 +4862,7 @@ plain_artifacts = [
     "org.elasticsearch:jna:4.5.1",
     "org.freemarker:freemarker:2.3.28",
     "org.glassfish.corba:glassfish-corba-omgapi:4.2.4",
+    "org.glassfish.corba:glassfish-corba-orb:4.2.4",
     "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b32",
     "org.glassfish.hk2.external:javax.inject:2.5.0-b32",
     "org.glassfish.hk2:hk2-api:2.5.0-b32",

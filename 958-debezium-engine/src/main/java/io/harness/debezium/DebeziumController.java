@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DebeziumController implements Runnable {
   protected final ExecutorService executorService =
-      Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("debezium-controller-class").build());
+      Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("debezium-engine").build());
   private Properties props;
   private DebeziumEngine.ChangeConsumer<ChangeEvent<String, String>> changeConsumer;
 

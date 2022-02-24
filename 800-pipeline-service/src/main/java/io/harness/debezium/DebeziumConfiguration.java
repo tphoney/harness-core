@@ -7,22 +7,14 @@
 
 package io.harness.debezium;
 
-import io.harness.persistence.PersistentEntity;
-import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import io.debezium.serde.DebeziumSerdes;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
-import org.apache.kafka.common.serialization.Deserializer;
-import org.apache.kafka.common.serialization.Serde;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class DebeziumConfiguration {
-  private final String PLAN_EXECUTIONS_SUMMARY = "planExecutionsSummary";
-  private final String UNKNOWN_PROPERTIES_IGNORED = "unknown.properties.ignored";
   private static final String MONGO_DB_CONNECTOR = "io.debezium.connector.mongodb.MongoDbConnector";
   private static final String CONNECTOR_NAME = "name";
   private static final String OFFSET_STORAGE = "offset.storage";
@@ -47,11 +39,18 @@ public class DebeziumConfiguration {
       "io.debezium.connector.mongodb.transforms.ExtractNewDocumentState";
 
   public Properties getDebeziumProperties(DebeziumConfig debeziumConfig) {
+    File offsetStorageTempFile = null;
+    try {
+      offsetStorageTempFile = File.createTempFile("offsets_", ".dat");
+    } catch (IOException e) {
+      log.error("Error creating file");
+    }
     Properties props = new Properties();
     String offsetCollection = "offset_collection";
     props.setProperty(CONNECTOR_NAME, debeziumConfig.getConnectorName());
-    props.setProperty(OFFSET_STORAGE, MongoOffsetBackingStore.class.getName());
-    props.setProperty(OFFSET_STORAGE_FILE_FILENAME, debeziumConfig.getOffsetStorageFileName());
+    // TODO: replacing local offset storage with Mongo or Redis
+    props.setProperty(OFFSET_STORAGE, "org.apache.kafka.connect.storage.FileOffsetBackingStore");
+    props.setProperty(OFFSET_STORAGE_FILE_FILENAME, offsetStorageTempFile.getAbsolutePath());
     props.setProperty(OFFSET_STORAGE_COLLECTION, offsetCollection);
     props.setProperty(KEY_CONVERTER_SCHEMAS_ENABLE, debeziumConfig.getKeyConverterSchemasEnable());
     props.setProperty(VALUE_CONVERTER_SCHEMAS_ENABLE, debeziumConfig.getValueConverterSchemasEnable());
@@ -78,22 +77,6 @@ public class DebeziumConfiguration {
   }
 
   public DebeziumChangeConsumer configureChangeConsumer() {
-    Map<String, ChangeConsumer<? extends PersistentEntity>> collectionToConsumerMap = new HashMap<>();
-    ChangeConsumer<PipelineExecutionSummaryEntity> pipelineExecutionSummaryEntityChangeConsumer =
-        new PipelineExecutionSummaryConsumer();
-    collectionToConsumerMap.put(PLAN_EXECUTIONS_SUMMARY, pipelineExecutionSummaryEntityChangeConsumer);
-    Map<String, Deserializer<? extends PersistentEntity>> collectionToDeserializerMap = new HashMap<>();
-    Map<String, String> valueDeserializerConfig = Maps.newHashMap(ImmutableMap.of(UNKNOWN_PROPERTIES_IGNORED, "true"));
-    // configuring id deserializer
-    Serde<String> idSerde = DebeziumSerdes.payloadJson(String.class);
-    idSerde.configure(Maps.newHashMap(ImmutableMap.of("from.field", "id")), true);
-    Deserializer<String> idDeserializer = idSerde.deserializer();
-    // configuring pipeline deserializer
-    Serde<PipelineExecutionSummaryEntity> pipelineSerde =
-        DebeziumSerdes.payloadJson(PipelineExecutionSummaryEntity.class);
-    pipelineSerde.configure(valueDeserializerConfig, false);
-    collectionToDeserializerMap.put(PLAN_EXECUTIONS_SUMMARY, pipelineSerde.deserializer());
-    // configuring debezium change consumer
-    return new DebeziumChangeConsumer(idDeserializer, collectionToDeserializerMap, collectionToConsumerMap);
+    return new DebeziumChangeConsumer();
   }
 }

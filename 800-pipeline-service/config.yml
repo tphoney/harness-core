@@ -376,7 +376,6 @@ pipelineSdkRedisEventsConfig:
 debeziumConfig:
   isEnabled: false
   name: ${DEBEZIUM_NAME:-pipeline}
-  offset.storage.file.filename: ${OFFSET_STORAGE_FILE_FILENAME:-mongodb://127.0.0.1:27017/pms-harness?replicaSet=rs0}
   key.converter.schemas.enable: ${KEY_CONVERTER_SCHEMAS_ENABLE:-false}
   value.converter.schemas.enable: ${VALUE_CONVERTER_SCHEMAS_ENABLE:-false}
   offset.flush.interval.ms: ${OFFSET_FLUSH_INTERVAL_MS:-5000}

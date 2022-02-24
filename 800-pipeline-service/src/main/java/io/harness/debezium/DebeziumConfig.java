@@ -21,10 +21,6 @@ public class DebeziumConfig {
    */
   @JsonProperty("name") String connectorName;
   /**
-   * path where the offset will be stored, this contains a a mongodb uri string in our case
-   */
-  @JsonProperty("offset.storage.file.filename") String offsetStorageFileName;
-  /**
    * whether to include schema for keys as a part of the event
    */
   @JsonProperty("key.converter.schemas.enable") String keyConverterSchemasEnable;

@@ -13,6 +13,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.gitsync.sdk.EntityGitDetails;
 import io.harness.gitsync.sdk.EntityValidityDetails;
 import io.harness.pms.inputset.InputSetErrorWrapperDTOPMS;
+import io.harness.pms.inputset.InputSetSchemaConstants;
 import io.harness.pms.pipeline.PipelineResourceConstants;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -39,21 +40,21 @@ public class InputSetResponseDTOPMS {
   @Schema(description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE) String accountId;
   @Schema(description = PipelineResourceConstants.ORG_PARAM_MESSAGE) String orgIdentifier;
   @Schema(description = PipelineResourceConstants.PROJECT_PARAM_MESSAGE) String projectIdentifier;
-  @Schema(description = PipelineResourceConstants.PIPELINE_ID_FOR_INPUT_SET_PARAM_MESSAGE) String pipelineIdentifier;
-  @Schema(description = PipelineResourceConstants.INPUT_SET_ID_MESSAGE) String identifier;
-  @Schema(description = PipelineResourceConstants.INPUT_SET_YAML_MESSAGE) String inputSetYaml;
-  @Schema(description = PipelineResourceConstants.INPUT_SET_NAME_MESSAGE) String name;
-  @Schema(description = PipelineResourceConstants.INPUT_SET_DESCRIPTION_MESSAGE) String description;
-  @Schema(description = PipelineResourceConstants.INPUT_SET_TAGS_MESSAGE) Map<String, String> tags;
-  @Schema(description = PipelineResourceConstants.INPUT_SET_OUTDATED_MESSAGE) boolean isOutdated;
+  @Schema(description = InputSetSchemaConstants.PIPELINE_ID_FOR_INPUT_SET_PARAM_MESSAGE) String pipelineIdentifier;
+  @Schema(description = InputSetSchemaConstants.INPUT_SET_ID_MESSAGE) String identifier;
+  @Schema(description = InputSetSchemaConstants.INPUT_SET_YAML_MESSAGE) String inputSetYaml;
+  @Schema(description = InputSetSchemaConstants.INPUT_SET_NAME_MESSAGE) String name;
+  @Schema(description = InputSetSchemaConstants.INPUT_SET_DESCRIPTION_MESSAGE) String description;
+  @Schema(description = InputSetSchemaConstants.INPUT_SET_TAGS_MESSAGE) Map<String, String> tags;
+  @Schema(description = InputSetSchemaConstants.INPUT_SET_OUTDATED_MESSAGE) boolean isOutdated;
 
-  @Schema(description = PipelineResourceConstants.INPUT_SET_ERROR_MESSAGE)
+  @Schema(description = InputSetSchemaConstants.INPUT_SET_ERROR_MESSAGE)
   @ApiModelProperty(name = "isErrorResponse")
   boolean isErrorResponse;
-  @Schema(description = PipelineResourceConstants.INPUT_SET_ERROR_WRAPPER_MESSAGE)
+  @Schema(description = InputSetSchemaConstants.INPUT_SET_ERROR_WRAPPER_MESSAGE)
   InputSetErrorWrapperDTOPMS inputSetErrorWrapper;
 
-  @Schema(description = PipelineResourceConstants.INPUT_SET_VERSION_MESSAGE) @JsonIgnore Long version;
+  @Schema(description = InputSetSchemaConstants.INPUT_SET_VERSION_MESSAGE) @JsonIgnore Long version;
 
   @Schema(description = PipelineResourceConstants.GIT_DETAILS_MESSAGE) EntityGitDetails gitDetails;
   @Schema(description = PipelineResourceConstants.GIT_VALIDITY_MESSAGE) EntityValidityDetails entityValidityDetails;

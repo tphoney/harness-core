@@ -10,7 +10,7 @@ package io.harness.pms.ngpipeline.inputset.beans.resource;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.pms.pipeline.PipelineResourceConstants;
+import io.harness.pms.inputset.InputSetSchemaConstants;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -33,8 +33,8 @@ import lombok.experimental.FieldDefaults;
 @Schema(name = "InputSetTemplateWithReplacedExpressionsResponse",
     description = "This is the Runtime Input Template for a Pipeline defined in Harness.")
 public class InputSetTemplateResponseDTOPMS {
-  @Schema(description = PipelineResourceConstants.RUNTIME_INPUT_TEMPLATE_MESSAGE) String inputSetTemplateYaml;
-  @Schema(description = PipelineResourceConstants.INPUT_SET_REPLACED_EXPRESSIONS_MESSAGE)
+  @Schema(description = InputSetSchemaConstants.RUNTIME_INPUT_TEMPLATE_MESSAGE) String inputSetTemplateYaml;
+  @Schema(description = InputSetSchemaConstants.INPUT_SET_REPLACED_EXPRESSIONS_MESSAGE)
   List<String> replacedExpressions;
-  @Schema(description = PipelineResourceConstants.INPUT_SET_MODULES_MESSAGE) Set<String> modules;
+  @Schema(description = InputSetSchemaConstants.INPUT_SET_MODULES_MESSAGE) Set<String> modules;
 }

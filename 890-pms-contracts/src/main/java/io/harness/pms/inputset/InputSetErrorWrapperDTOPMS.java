@@ -8,7 +8,6 @@
 package io.harness.pms.inputset;
 
 import io.harness.exception.ngexception.ErrorMetadataDTO;
-import io.harness.pms.pipeline.PipelineResourceConstants;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -23,10 +22,10 @@ import lombok.Value;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ApiModel("InputSetErrorWrapper")
-@Schema(name = "InputSetErrorWrapper", description = PipelineResourceConstants.INPUT_SET_ERROR_WRAPPER_MESSAGE)
+@Schema(name = "InputSetErrorWrapper", description = InputSetSchemaConstants.INPUT_SET_ERROR_WRAPPER_MESSAGE)
 public class InputSetErrorWrapperDTOPMS implements ErrorMetadataDTO {
-  @Schema(description = PipelineResourceConstants.INPUT_SET_ERROR_PIPELINE_YAML_MESSAGE) String errorPipelineYaml;
-  @Schema(description = PipelineResourceConstants.INPUT_SET_UUID_TO_ERROR_YAML_MESSAGE)
+  @Schema(description = InputSetSchemaConstants.INPUT_SET_ERROR_PIPELINE_YAML_MESSAGE) String errorPipelineYaml;
+  @Schema(description = InputSetSchemaConstants.INPUT_SET_UUID_TO_ERROR_YAML_MESSAGE)
   Map<String, InputSetErrorResponseDTOPMS> uuidToErrorResponseMap;
 
   @Override

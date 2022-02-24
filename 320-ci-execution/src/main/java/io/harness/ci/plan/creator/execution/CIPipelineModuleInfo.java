@@ -10,10 +10,7 @@ package io.harness.ci.plan.creator.execution;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ci.pipeline.executions.beans.CIWebhookInfoDTO;
-import io.harness.execution.DeprecatedImageInfo;
 import io.harness.pms.sdk.execution.beans.PipelineModuleInfo;
-
-import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 

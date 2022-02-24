@@ -33,8 +33,6 @@ import io.harness.ci.plan.creator.execution.CIPipelineModuleInfo;
 import io.harness.ci.plan.creator.execution.CIStageModuleInfo;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.exception.ngexception.CIStageExecutionException;
-import io.harness.execution.CIExecutionConfigService;
-import io.harness.execution.DeprecatedImageInfo;
 import io.harness.ng.core.BaseNGAccess;
 import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.contracts.ambiance.Ambiance;
@@ -66,7 +64,10 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +77,6 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(HarnessTeam.CI)
 public class CIModuleInfoProvider implements ExecutionSummaryModuleInfoProvider {
   @Inject private ExecutionSweepingOutputService executionSweepingOutputService;
-  @Inject private CIExecutionConfigService executionConfigService;
   @Inject private ConnectorUtils connectorUtils;
 
   @Override

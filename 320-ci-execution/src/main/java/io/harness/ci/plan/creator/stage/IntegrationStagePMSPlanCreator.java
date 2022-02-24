@@ -218,7 +218,6 @@ public class IntegrationStagePMSPlanCreator extends GenericStagePlanCreator {
       //  code base is not mandatory in case git clone is false, Sending status won't be possible
       return null;
     }
-
     ExecutionTriggerInfo triggerInfo = planCreationContextValue.getMetadata().getTriggerInfo();
     TriggerPayload triggerPayload = planCreationContextValue.getTriggerPayload();
 

@@ -49,7 +49,7 @@ import io.harness.beans.quantity.unit.MemoryQuantityUnit;
 import io.harness.beans.serializer.RunTimeInputHandler;
 import io.harness.beans.stages.IntegrationStageConfig;
 import io.harness.beans.steps.CIStepInfo;
-import io.harness.beans.steps.CIStepInfoUtils;
+import io.harness.steps.CIStepInfoUtils;
 import io.harness.beans.steps.stepinfo.PluginStepInfo;
 import io.harness.beans.steps.stepinfo.RunStepInfo;
 import io.harness.beans.steps.stepinfo.RunTestsStepInfo;

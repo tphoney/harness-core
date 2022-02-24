@@ -10,7 +10,7 @@ package io.harness.ci.serializer.vm;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.beans.plugin.compatible.PluginCompatibleStep;
-import io.harness.beans.steps.CIStepInfoUtils;
+import io.harness.steps.CIStepInfoUtils;
 import io.harness.beans.sweepingoutputs.StageInfraDetails.Type;
 import io.harness.ci.config.CIExecutionServiceConfig;
 import io.harness.ci.integrationstage.IntegrationStageUtils;

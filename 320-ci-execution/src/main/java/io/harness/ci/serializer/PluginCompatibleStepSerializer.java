@@ -12,7 +12,7 @@ import static io.harness.common.CIExecutionConstants.PLUGIN_ARTIFACT_FILE_VALUE;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.plugin.compatible.PluginCompatibleStep;
-import io.harness.beans.steps.CIStepInfoUtils;
+import io.harness.steps.CIStepInfoUtils;
 import io.harness.beans.sweepingoutputs.StageInfraDetails.Type;
 import io.harness.callback.DelegateCallbackToken;
 import io.harness.ci.config.CIExecutionServiceConfig;

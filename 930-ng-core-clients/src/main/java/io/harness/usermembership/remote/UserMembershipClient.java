@@ -32,6 +32,10 @@ public interface UserMembershipClient {
       @Query(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Query(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier);
 
+  @GET(USER_API + "/admin")
+  Call<ResponseDTO<Boolean>> isUserAdmin(@Query(NGCommonEntityConstants.USER_ID) String userId,
+      @Query(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier);
+
   @DELETE(USER_API + "/internal/{userId}")
   Call<ResponseDTO<Boolean>> removeUserInternal(@Path("userId") String userId,
       @Query(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,

@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -49,6 +50,7 @@ public abstract class OASModule extends AbstractModule {
   public static final String PARAM_DESCRIPTION_EXCLUSION = "param-description-exclusion";
   public static final String HIDDEN_EXCLUSION = "hidden-exclusion";
   public static final String PARAM_EXCLUSION = "param-exclusion";
+  public static final String OPERATION_EXCLUSION = "operation-exclusion";
 
   public abstract Collection<Class<?>> getResourceClasses();
 
@@ -59,6 +61,7 @@ public abstract class OASModule extends AbstractModule {
     List<String> methodsWithoutDescriptionToParam = new ArrayList<>();
     List<String> methodsHiddenFromSwaggerButNotOpenApi = new ArrayList<>();
     List<String> methodsWithoutParameter = new ArrayList<>();
+    List<String> methodsWithoutFilledOperation = new ArrayList<>();
 
     if (classes == null) {
       return;
@@ -72,6 +75,7 @@ public abstract class OASModule extends AbstractModule {
               methodsWithoutDescriptionToParam.addAll(checkParamAnnotation(method));
               dtoWithoutDescriptionToField.addAll(checkDtoFieldsDescription(method));
               endpointsWithoutAccountParam.addAll(checkAccountIdentifierParam(method));
+              methodsWithoutFilledOperation.addAll(checkOperationAnnotation(method));
             }
             methodsHiddenFromSwaggerButNotOpenApi.addAll(checkHiddenMethod(method));
             methodsWithoutParameter.addAll(checkParameter(method));
@@ -91,6 +95,8 @@ public abstract class OASModule extends AbstractModule {
         "All the methods hidden in Swagger should also be hidden from OpenApi, but found below : ");
     finalAssertion(methodsWithoutParameter, PARAM_EXCLUSION,
         "All the methods with QueryParam or PathParam should also have Parameter annotation, but found below : ");
+    finalAssertion(methodsWithoutFilledOperation, OPERATION_EXCLUSION,
+        "All the methods with Operation Annotation should have filled fields, but found below : ");
   }
 
   private void finalAssertion(List<String> listFromCheck, String exclusionType, String message) {
@@ -160,6 +166,27 @@ public abstract class OASModule extends AbstractModule {
       }
     }
     return false;
+  }
+
+  private List<String> checkOperationAnnotation(Method method) {
+    List<String> methodsWithoutFilledOperationAnnotation = new ArrayList<>();
+    Annotation[] annotations = method.getAnnotations();
+    for (Annotation parameterAnnotation : annotations) {
+      if (parameterAnnotation.annotationType() == Operation.class) {
+        Operation operation = (Operation) parameterAnnotation;
+        if (operation.operationId().isEmpty() || operation.summary().isEmpty()) {
+          methodsWithoutFilledOperationAnnotation.add(method.getName());
+        } else {
+          ApiResponse[] innerAnnotationArr = operation.responses();
+          for (ApiResponse innerAnnotation : innerAnnotationArr) {
+            if (innerAnnotation.responseCode().isEmpty() || innerAnnotation.description().isEmpty()) {
+              methodsWithoutFilledOperationAnnotation.add(method.getName());
+            }
+          }
+        }
+      }
+    }
+    return methodsWithoutFilledOperationAnnotation;
   }
 
   private List<String> checkParamAnnotation(Method method) {

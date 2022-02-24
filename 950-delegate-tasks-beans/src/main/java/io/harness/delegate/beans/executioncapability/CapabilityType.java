@@ -47,5 +47,6 @@ public enum CapabilityType {
   GIT_CONNECTION_NG,
   GIT_INSTALLATION,
   LITE_ENGINE,
-  CI_VM;
+  CI_VM,
+  ARTIFACTORY;
 }

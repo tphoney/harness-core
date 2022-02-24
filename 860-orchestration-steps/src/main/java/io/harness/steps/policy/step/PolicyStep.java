@@ -24,7 +24,6 @@ import io.harness.pms.contracts.execution.failure.FailureType;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.utils.AmbianceUtils;
-import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
 import io.harness.pms.sdk.core.steps.executables.SyncExecutable;
 import io.harness.pms.sdk.core.steps.io.PassThroughData;
 import io.harness.pms.sdk.core.steps.io.StepInputPackage;
@@ -98,7 +97,7 @@ public class PolicyStep implements SyncExecutable<StepElementParameters> {
     }
     PolicyStepOutcome outcome = PolicyStepOutcomeMapper.toOutcome(opaEvaluationResponseHolder);
     StepOutcome stepOutcome = StepOutcome.builder()
-                                  .group(StepOutcomeGroup.STEP.name())
+                                  .group(StepCategory.STEP.name())
                                   .name(YAMLFieldNameConstants.OUTPUT)
                                   .outcome(outcome)
                                   .build();

@@ -525,4 +525,35 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
         .map(key -> (String) key.getId())
         .collect(toList());
   }
+
+  @Override
+  public DelegateGroup updateDelegateGroupTags(String accountId, String delegateGroupName, List<String> tags) {
+    Query<DelegateGroup> updateQuery = persistence.createQuery(DelegateGroup.class)
+                                           .filter(DelegateGroupKeys.accountId, accountId)
+                                           .filter(DelegateGroupKeys.name, delegateGroupName)
+                                           .filter(DelegateGroupKeys.ng, true);
+
+    final UpdateOperations<DelegateGroup> updateOperations = persistence.createUpdateOperations(DelegateGroup.class);
+    setUnset(updateOperations, DelegateGroupKeys.tags, tags);
+
+    DelegateGroup updatedDelegateGroup =
+        persistence.findAndModify(updateQuery, updateOperations, HPersistence.returnNewOptions);
+    delegateCache.invalidateDelegateGroupCache(accountId, updatedDelegateGroup.getUuid());
+
+    Query<Delegate> delegatesToBeUpdated = persistence.createQuery(Delegate.class)
+                                               .filter(DelegateKeys.accountId, accountId)
+                                               .filter(DelegateKeys.delegateName, delegateGroupName)
+                                               .filter(DelegateKeys.ng, true);
+    final UpdateOperations<Delegate> updateOperationsForDelegates = persistence.createUpdateOperations(Delegate.class);
+    setUnset(updateOperationsForDelegates, DelegateKeys.tags, tags);
+    persistence.update(delegatesToBeUpdated, updateOperationsForDelegates);
+    final List<String> updatedUuid = delegatesToBeUpdated.asList()
+                                         .stream()
+                                         .peek(delegate -> delegateCache.get(accountId, delegate.getUuid(), true))
+                                         .map(delegate -> delegate.getUuid())
+                                         .collect(toList());
+    log.info(
+        "Updating tags for delegate group: {} Delegate:{} tags:{}", delegateGroupName, updatedUuid, tags.toString());
+    return updatedDelegateGroup;
+  }
 }

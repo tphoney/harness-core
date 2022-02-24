@@ -54,4 +54,6 @@ public interface DelegateSetupService {
 
   DelegateGroupListing listDelegateGroupDetails(
       String accountId, String orgId, String projectId, String delegateTokenName);
+
+  DelegateGroup updateDelegateGroupTags(String accountId, String delegateGroupName, List<String> tags);
 }

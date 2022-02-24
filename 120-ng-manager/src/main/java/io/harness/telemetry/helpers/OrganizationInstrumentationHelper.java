@@ -13,6 +13,7 @@ import io.harness.data.structure.EmptyPredicate;
 import io.harness.ng.core.entities.Organization;
 import io.harness.telemetry.Category;
 import io.harness.telemetry.Destination;
+import io.harness.telemetry.TelemetryOption;
 import io.harness.telemetry.TelemetryReporter;
 
 import com.google.common.collect.ImmutableMap;
@@ -49,7 +50,7 @@ public class OrganizationInstrumentationHelper {
                 .put(Destination.AMPLITUDE, true)
                 .put(Destination.ALL, false)
                 .build(),
-            Category.COMMUNITY);
+            Category.COMMUNITY, TelemetryOption.builder().sendForCommunity(true).build());
       } else {
         log.info("There is no account found for account ID = " + accountId
             + "!. Cannot send Organization Creation Finished event.");
@@ -73,7 +74,7 @@ public class OrganizationInstrumentationHelper {
                 .put(Destination.AMPLITUDE, true)
                 .put(Destination.ALL, false)
                 .build(),
-            Category.COMMUNITY);
+            Category.COMMUNITY, TelemetryOption.builder().sendForCommunity(true).build());
       } else {
         log.info(
             "There is no account found for account ID = " + accountId + "!. Cannot send Organization Deletion event.");

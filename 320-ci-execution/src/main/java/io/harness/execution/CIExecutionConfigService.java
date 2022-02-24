@@ -51,7 +51,7 @@ public class CIExecutionConfigService {
     if (configOptional.isPresent()) {
       image = configOptional.get().getAddOnTag();
     } else {
-      image = ciExecutionServiceConfig.getCiImageTag();
+      image = ciExecutionServiceConfig.getAddonImage();
     }
     return image;
   }
@@ -62,7 +62,7 @@ public class CIExecutionConfigService {
     if (configOptional.isPresent()) {
       tag = configOptional.get().getAddOnTag();
     } else {
-      tag = ciExecutionServiceConfig.getCiImageTag();
+      tag = ciExecutionServiceConfig.getLiteEngineImage();
     }
     return tag;
   }
@@ -72,11 +72,11 @@ public class CIExecutionConfigService {
     List<DeprecatedImageInfo> deprecatedTags = new ArrayList();
     if (configOptional.isPresent()) {
       CIExecutionConfig ciExecutionConfig = configOptional.get();
-      if (checkForCIImage(ciExecutionServiceConfig.getAddonImageTag(), ciExecutionConfig.getAddOnTag())) {
+      if (!checkForCIImage(ciExecutionServiceConfig.getAddonImage(), ciExecutionConfig.getAddOnTag())) {
         deprecatedTags.add(
             DeprecatedImageInfo.builder().tag("AddonImage").version(ciExecutionConfig.getAddOnTag()).build());
       }
-      if (checkForCIImage(ciExecutionServiceConfig.getLiteEngineImageTag(), ciExecutionConfig.getLiteEngineTag())) {
+      if (!checkForCIImage(ciExecutionServiceConfig.getLiteEngineImage(), ciExecutionConfig.getLiteEngineTag())) {
         deprecatedTags.add(
                 DeprecatedImageInfo.builder().tag("LiteEngineTag").version(ciExecutionConfig.getLiteEngineTag()).build());
       }

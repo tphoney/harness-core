@@ -31,6 +31,26 @@ if [ ! -z ${PURPOSE} ]
 then
     echo ${PURPOSE} > purpose.txt
 fi
-java -jar platform-service-capsule.jar scan-classpath-metadata
+#java -jar platform-service-capsule.jar scan-classpath-metadata
+
+cd ../..
+
+mkdir -p dist/accesscontrol-service
+cd dist/accesscontrol-service
+
+cp ${HOME}/.bazel-dirs/bin/access-control/service/module_deploy.jar accesscontrol-service-capsule.jar
+cp ../../access-control/service/config.yml .
+cp ../../access-control/service/keystore.jks .
+cp ../../access-control/container/Dockerfile-accesscontrol-service-jenkins-k8-openjdk ./Dockerfile
+cp ../../access-control/container/Dockerfile-accesscontrol-service-jenkins-k8-gcr-openjdk ./Dockerfile-gcr
+cp -r ../../access-control/container/scripts/ .
+cp ../../protocol.info .
+echo ${JDK} > jdk.txt
+echo ${VERSION} > version.txt
+if [ ! -z ${PURPOSE} ]
+then
+    echo ${PURPOSE} > purpose.txt
+fi
+#java -jar accesscontrol-service-capsule.jar scan-classpath-metadata
 
 cd ../..

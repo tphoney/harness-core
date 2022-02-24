@@ -526,7 +526,7 @@ public class NGTemplateResource {
       @QueryParam(NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgId,
       @QueryParam(NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectId,
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo, @NotNull TemplateApplyRequestDTO templateApplyRequestDTO) {
-    TemplateMergeResponseDTO templateMergeResponseDTO = templateMergeHelper.mergeTemplateSpecToPipelineYaml(
+    TemplateMergeResponseDTO templateMergeResponseDTO = templateMergeHelper.applyTemplatesToYaml(
         accountId, orgId, projectId, templateApplyRequestDTO.getOriginalEntityYaml());
     if (templateApplyRequestDTO.isCheckForAccess() && templateMergeResponseDTO != null
         && EmptyPredicate.isNotEmpty(templateMergeResponseDTO.getTemplateReferenceSummaries())) {

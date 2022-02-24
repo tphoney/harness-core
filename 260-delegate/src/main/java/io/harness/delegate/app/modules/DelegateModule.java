@@ -14,6 +14,8 @@ import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
+import io.harness.artifactory.ArtifactoryNgService;
+import io.harness.artifactory.ArtifactoryNgServiceImpl;
 import io.harness.artifacts.docker.client.DockerRestClientFactory;
 import io.harness.artifacts.docker.client.DockerRestClientFactoryImpl;
 import io.harness.artifacts.docker.service.DockerRegistryService;
@@ -179,6 +181,7 @@ import io.harness.delegate.task.k8s.K8sTaskNG;
 import io.harness.delegate.task.k8s.K8sTaskType;
 import io.harness.delegate.task.k8s.KubernetesTestConnectionDelegateTask;
 import io.harness.delegate.task.k8s.KubernetesValidationHandler;
+import io.harness.delegate.task.k8s.exception.KubernetesApiClientRuntimeExceptionHandler;
 import io.harness.delegate.task.k8s.exception.KubernetesApiExceptionHandler;
 import io.harness.delegate.task.k8s.exception.KubernetesCliRuntimeExceptionHandler;
 import io.harness.delegate.task.manifests.CustomManifestFetchTask;
@@ -261,6 +264,7 @@ import io.harness.pcf.CfSdkClient;
 import io.harness.pcf.cfcli.client.CfCliClientImpl;
 import io.harness.pcf.cfsdk.CfSdkClientImpl;
 import io.harness.perpetualtask.internal.AssignmentTask;
+import io.harness.perpetualtask.manifest.ArtifactoryHelmRepositoryService;
 import io.harness.perpetualtask.manifest.HelmRepositoryService;
 import io.harness.perpetualtask.manifest.ManifestRepositoryService;
 import io.harness.perpetualtask.polling.manifest.HelmChartCollectionService;
@@ -404,6 +408,7 @@ import software.wings.delegatetasks.cvng.K8InfoDataService;
 import software.wings.delegatetasks.helm.HelmCollectChartTask;
 import software.wings.delegatetasks.helm.HelmCommandTask;
 import software.wings.delegatetasks.helm.HelmValuesFetchTask;
+import software.wings.delegatetasks.helm.ManifestRepoServiceType;
 import software.wings.delegatetasks.jira.JiraTask;
 import software.wings.delegatetasks.jira.ShellScriptApprovalTask;
 import software.wings.delegatetasks.k8s.K8sTask;
@@ -1098,7 +1103,12 @@ public class DelegateModule extends AbstractModule {
     bind(AzureWebClient.class).to(AzureWebClientImpl.class);
     bind(NGGitService.class).to(NGGitServiceImpl.class);
     bind(GcpClient.class).to(GcpClientImpl.class);
-    bind(ManifestRepositoryService.class).to(HelmRepositoryService.class);
+    bind(ManifestRepositoryService.class)
+        .annotatedWith(Names.named(ManifestRepoServiceType.HELM_COMMAND_SERVICE))
+        .to(HelmRepositoryService.class);
+    bind(ManifestRepositoryService.class)
+        .annotatedWith(Names.named(ManifestRepoServiceType.ARTIFACTORY_HELM_SERVICE))
+        .to(ArtifactoryHelmRepositoryService.class);
     bind(AwsClient.class).to(AwsClientImpl.class);
     bind(CVNGDataCollectionDelegateService.class).to(CVNGDataCollectionDelegateServiceImpl.class);
     bind(AzureManagementClient.class).to(AzureManagementClientImpl.class);
@@ -1109,6 +1119,7 @@ public class DelegateModule extends AbstractModule {
     bind(ScmServiceClient.class).to(ScmServiceClientImpl.class);
     bind(ManifestCollectionService.class).to(HelmChartCollectionService.class);
     bind(AzureKubernetesClient.class).to(AzureKubernetesClientImpl.class);
+    bind(ArtifactoryNgService.class).to(ArtifactoryNgServiceImpl.class);
 
     // NG Delegate
     MapBinder<String, K8sRequestHandler> k8sTaskTypeToRequestHandler =
@@ -1696,6 +1707,8 @@ public class DelegateModule extends AbstractModule {
         exception -> exceptionHandlerMapBinder.addBinding(exception).to(HelmClientRuntimeExceptionHandler.class));
     KubernetesApiExceptionHandler.exceptions().forEach(
         exception -> exceptionHandlerMapBinder.addBinding(exception).to(KubernetesApiExceptionHandler.class));
+    KubernetesApiClientRuntimeExceptionHandler.exceptions().forEach(exception
+        -> exceptionHandlerMapBinder.addBinding(exception).to(KubernetesApiClientRuntimeExceptionHandler.class));
     TerraformRuntimeExceptionHandler.exceptions().forEach(
         exception -> exceptionHandlerMapBinder.addBinding(exception).to(TerraformRuntimeExceptionHandler.class));
     KubernetesCliRuntimeExceptionHandler.exceptions().forEach(

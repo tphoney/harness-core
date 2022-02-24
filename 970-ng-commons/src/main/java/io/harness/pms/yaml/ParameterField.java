@@ -146,7 +146,8 @@ public class ParameterField<T> {
     if (isNull(actualField)) {
       return true;
     }
-    return actualField.isTypeString() && StringUtils.isBlank((String) actualField.getValue());
+    return actualField.isTypeString() && StringUtils.isBlank((String) actualField.getValue())
+        && StringUtils.isBlank(actualField.getExpressionValue());
   }
 
   public static boolean containsInputSetValidator(String value) {

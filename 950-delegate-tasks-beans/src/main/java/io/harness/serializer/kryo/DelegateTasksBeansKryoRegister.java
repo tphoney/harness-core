@@ -35,7 +35,8 @@ import io.harness.delegate.beans.ErrorNotifyResponseData;
 import io.harness.delegate.beans.RemoteMethodReturnValueData;
 import io.harness.delegate.beans.SecretDetail;
 import io.harness.delegate.beans.TaskData;
-import io.harness.delegate.beans.artifact.ArtifactFileMetadata;
+import io.harness.delegate.beans.artifactory.ArtifactoryFetchBuildsResponse;
+import io.harness.delegate.beans.artifactory.ArtifactoryFetchRepositoriesResponse;
 import io.harness.delegate.beans.artifactory.ArtifactoryTaskParams;
 import io.harness.delegate.beans.artifactory.ArtifactoryTaskResponse;
 import io.harness.delegate.beans.aws.codecommit.AwsCodeCommitApiConfirmSubParams;
@@ -206,6 +207,7 @@ import io.harness.delegate.beans.polling.ArtifactPollingDelegateResponse;
 import io.harness.delegate.beans.polling.ManifestPollingDelegateResponse;
 import io.harness.delegate.beans.polling.PollingDelegateResponse;
 import io.harness.delegate.beans.secrets.SSHConfigValidationTaskResponse;
+import io.harness.delegate.beans.storeconfig.ArtifactoryStoreDelegateConfig;
 import io.harness.delegate.beans.storeconfig.FetchType;
 import io.harness.delegate.beans.storeconfig.GcsHelmStoreDelegateConfig;
 import io.harness.delegate.beans.storeconfig.GitStoreDelegateConfig;
@@ -498,7 +500,6 @@ import software.wings.helpers.ext.ecs.response.EcsCommandResponse;
 import software.wings.helpers.ext.ecs.response.EcsServiceDeployResponse;
 import software.wings.helpers.ext.helm.response.HelmInstallCommandResponse;
 import software.wings.helpers.ext.helm.response.ReleaseInfo;
-import software.wings.helpers.ext.jenkins.BuildDetails;
 import software.wings.service.impl.analysis.ElkConnector;
 import software.wings.service.impl.analysis.ElkValidationType;
 import software.wings.service.impl.analysis.VerificationNodeDataSetupResponse;
@@ -542,7 +543,6 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(YamlGitConfig.class, 5547);
     kryo.register(YamlGitConfig.SyncMode.class, 5548);
     kryo.register(SettingAttribute.SettingCategory.class, 5069);
-    kryo.register(BuildDetails.class, 5120);
     kryo.register(JenkinsExecutionResponse.class, 5146);
 
     kryo.register(software.wings.beans.yaml.GitCommand.GitCommandType.class, 5190);
@@ -570,14 +570,12 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(ConnectivityValidationAttributes.class, 5567);
     kryo.register(AwsElbListener.class, 5600);
     kryo.register(ShellScriptProvisionParameters.class, 7151);
-    kryo.register(BuildDetails.BuildStatus.class, 7174);
     kryo.register(CCMConfig.class, 7248);
     kryo.register(GitConfig.UrlType.class, 7460);
     kryo.register(GitConfig.ProviderType.class, 40022);
     kryo.register(AlwaysFalseValidationCapability.class, 19036);
     kryo.register(AppDynamicsConnectionTaskParams.class, 19107);
     kryo.register(AppDynamicsConnectionTaskResponse.class, 19108);
-    kryo.register(ArtifactFileMetadata.class, 19034);
     kryo.register(AwsElbListenerRuleData.class, 19035);
     kryo.register(AwsLoadBalancerDetails.class, 19024);
     kryo.register(AwsRegionCapability.class, 19008);
@@ -1103,5 +1101,8 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(VmServiceDependency.class, 543474);
     kryo.register(VmServiceStatus.class, 543475);
     kryo.register(VmServiceStatus.Status.class, 543476);
+    kryo.register(ArtifactoryFetchRepositoriesResponse.class, 543477);
+    kryo.register(ArtifactoryFetchBuildsResponse.class, 543478);
+    kryo.register(ArtifactoryStoreDelegateConfig.class, 543479);
   }
 }

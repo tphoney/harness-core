@@ -14,8 +14,6 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import io.harness.cvng.analysis.beans.Risk;
 import io.harness.cvng.analysis.entities.LogAnalysisResult.LogAnalysisTag;
 import io.harness.cvng.beans.MonitoredServiceType;
-import io.harness.cvng.beans.change.ChangeCategory;
-import io.harness.cvng.beans.change.ChangeEventDTO;
 import io.harness.cvng.beans.change.ChangeSourceType;
 import io.harness.cvng.client.NextGenService;
 import io.harness.cvng.core.beans.HealthMonitoringFlagResponse;
@@ -140,8 +138,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                                                      .build();
 
     validate(monitoredServiceDTO);
-    checkIfAlreadyPresent(
-        accountId, environmentParams, monitoredServiceDTO.getIdentifier(), monitoredServiceDTO.getSources());
+    checkIfAlreadyPresent(accountId, environmentParams, monitoredServiceDTO.getIdentifier(),
+        monitoredServiceDTO.getSources(), monitoredServiceDTO.getType());
 
     if (monitoredServiceDTO.getSources() != null && isNotEmpty(monitoredServiceDTO.getSources().getHealthSources())) {
       healthSourceService.create(accountId, monitoredServiceDTO.getOrgIdentifier(),
@@ -591,27 +589,29 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     return monitoredServices;
   }
 
-  private void checkIfAlreadyPresent(
-      String accountId, ServiceEnvironmentParams serviceEnvironmentParams, String identifier, Sources sources) {
+  private void checkIfAlreadyPresent(String accountId, ServiceEnvironmentParams serviceEnvironmentParams,
+      String identifier, Sources sources, MonitoredServiceType monitoredServiceType) {
     MonitoredService monitoredServiceEntity = getMonitoredService(serviceEnvironmentParams, identifier);
     if (monitoredServiceEntity != null) {
       throw new DuplicateFieldException(String.format(
           "Monitored Source Entity  with identifier %s and orgIdentifier %s and projectIdentifier %s is already present",
           identifier, serviceEnvironmentParams.getOrgIdentifier(), serviceEnvironmentParams.getProjectIdentifier()));
     }
-    monitoredServiceEntity =
-        hPersistence.createQuery(MonitoredService.class)
-            .filter(MonitoredServiceKeys.accountId, accountId)
-            .filter(MonitoredServiceKeys.orgIdentifier, serviceEnvironmentParams.getOrgIdentifier())
-            .filter(MonitoredServiceKeys.projectIdentifier, serviceEnvironmentParams.getProjectIdentifier())
-            .filter(MonitoredServiceKeys.serviceIdentifier, serviceEnvironmentParams.getServiceIdentifier())
-            .filter(MonitoredServiceKeys.environmentIdentifier, serviceEnvironmentParams.getEnvironmentIdentifier())
-            .get();
-    if (monitoredServiceEntity != null) {
-      throw new DuplicateFieldException(String.format(
-          "Monitored Source Entity  with duplicate service ref %s, environmentRef %s having identifier %s and orgIdentifier %s and projectIdentifier %s is already present",
-          serviceEnvironmentParams.getServiceIdentifier(), serviceEnvironmentParams.getEnvironmentIdentifier(),
-          identifier, serviceEnvironmentParams.getOrgIdentifier(), serviceEnvironmentParams.getProjectIdentifier()));
+    if (monitoredServiceType == MonitoredServiceType.APPLICATION) {
+      monitoredServiceEntity =
+          hPersistence.createQuery(MonitoredService.class)
+              .filter(MonitoredServiceKeys.accountId, accountId)
+              .filter(MonitoredServiceKeys.orgIdentifier, serviceEnvironmentParams.getOrgIdentifier())
+              .filter(MonitoredServiceKeys.projectIdentifier, serviceEnvironmentParams.getProjectIdentifier())
+              .filter(MonitoredServiceKeys.serviceIdentifier, serviceEnvironmentParams.getServiceIdentifier())
+              .filter(MonitoredServiceKeys.environmentIdentifier, serviceEnvironmentParams.getEnvironmentIdentifier())
+              .get();
+      if (monitoredServiceEntity != null) {
+        throw new DuplicateFieldException(String.format(
+            "Monitored Source Entity  with duplicate service ref %s, environmentRef %s having identifier %s and orgIdentifier %s and projectIdentifier %s is already present",
+            serviceEnvironmentParams.getServiceIdentifier(), serviceEnvironmentParams.getEnvironmentIdentifier(),
+            identifier, serviceEnvironmentParams.getOrgIdentifier(), serviceEnvironmentParams.getProjectIdentifier()));
+      }
     }
     if (sources != null) {
       healthSourceService.checkIfAlreadyPresent(accountId, serviceEnvironmentParams.getOrgIdentifier(),
@@ -654,8 +654,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
       MonitoredService monitoredService, ProjectParams projectParams, DurationDTO duration, Instant endTime) {
     Preconditions.checkNotNull(monitoredService,
         "Monitored service for provided serviceIdentifier and envIdentifier or monitoredServiceIdentifier does not exist.");
-    return heatMapService.getOverAllHealthScore(projectParams, monitoredService.getServiceIdentifier(),
-        monitoredService.getEnvironmentIdentifier(), duration, endTime);
+    return heatMapService.getOverAllHealthScore(projectParams, monitoredService.getIdentifier(), duration, endTime);
   }
 
   @Override
@@ -681,9 +680,10 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         hPersistence.createQuery(MonitoredService.class)
             .filter(MonitoredServiceKeys.accountId, projectParams.getAccountIdentifier())
             .filter(MonitoredServiceKeys.orgIdentifier, projectParams.getOrgIdentifier())
-            .filter(MonitoredServiceKeys.projectIdentifier, projectParams.getProjectIdentifier())
-            .field(MonitoredServiceKeys.identifier)
-            .in(identifiers);
+            .filter(MonitoredServiceKeys.projectIdentifier, projectParams.getProjectIdentifier());
+    if (!identifiers.isEmpty()) {
+      query.field(MonitoredServiceKeys.identifier).in(identifiers);
+    }
 
     return query.asList();
   }
@@ -923,13 +923,12 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                                                   .dependencies(new HashSet<>())
                                                   .build();
     try {
-      saveMonitoredServiceEntity(projectParams.getAccountIdentifier(), monitoredServiceDTO);
+      create(projectParams.getAccountIdentifier(), monitoredServiceDTO);
     } catch (DuplicateKeyException e) {
       identifier = identifier.substring(0, Math.min(identifier.length(), 57));
       monitoredServiceDTO.setIdentifier(identifier + "_" + RandomStringUtils.randomAlphanumeric(7));
-      saveMonitoredServiceEntity(projectParams.getAccountIdentifier(), monitoredServiceDTO);
+      create(projectParams.getAccountIdentifier(), monitoredServiceDTO);
     }
-    setupUsageEventService.sendCreateEventsForMonitoredService(projectParams, monitoredServiceDTO);
     return get(projectParams, monitoredServiceDTO.getIdentifier());
   }
 
@@ -1028,6 +1027,16 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   @Override
   public List<HealthSourceDTO> getHealthSources(ServiceEnvironmentParams serviceEnvironmentParams) {
     MonitoredService monitoredServiceEntity = getMonitoredService(serviceEnvironmentParams);
+    return getHealthSources(monitoredServiceEntity);
+  }
+
+  @Override
+  public List<HealthSourceDTO> getHealthSources(ProjectParams projectParams, String monitoredServiceIdentifier) {
+    MonitoredService monitoredServiceEntity = getMonitoredService(projectParams, monitoredServiceIdentifier);
+    return getHealthSources(monitoredServiceEntity);
+  }
+
+  private List<HealthSourceDTO> getHealthSources(MonitoredService monitoredServiceEntity) {
     Set<HealthSource> healthSources = healthSourceService.get(monitoredServiceEntity.getAccountId(),
         monitoredServiceEntity.getOrgIdentifier(), monitoredServiceEntity.getProjectIdentifier(),
         monitoredServiceEntity.getIdentifier(), monitoredServiceEntity.getHealthSourceIdentifiers());
@@ -1037,23 +1046,6 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                 monitoredServiceEntity.getIdentifier(), healthSource.getIdentifier())))
         .map(healthSource -> HealthSourceDTO.toHealthSourceDTO(healthSource))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  public List<ChangeEventDTO> getChangeEvents(ProjectParams projectParams, String monitoredServiceIdentifier,
-      Instant startTime, Instant endTime, List<ChangeCategory> changeCategories) {
-    MonitoredService monitoredService = getMonitoredService(projectParams, monitoredServiceIdentifier);
-    if (monitoredService == null) {
-      throw new InvalidRequestException(
-          String.format("Monitored Service not found for identifier %s", monitoredServiceIdentifier));
-    }
-    ServiceEnvironmentParams serviceEnvironmentParams =
-        builderWithProjectParams(projectParams)
-            .serviceIdentifier(monitoredService.getServiceIdentifier())
-            .environmentIdentifier(monitoredService.getEnvironmentIdentifier())
-            .build();
-    return changeSourceService.getChangeEvents(
-        serviceEnvironmentParams, monitoredService.getChangeSourceIdentifiers(), startTime, endTime, changeCategories);
   }
 
   @Override
@@ -1194,6 +1186,23 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         .environmentName(environmentName)
         .changeSummary(changeSummary)
         .build();
+  }
+
+  @Override
+  public List<String> getMonitoredServiceIdentifiers(
+      ProjectParams projectParams, List<String> services, List<String> environments) {
+    Query<MonitoredService> query =
+        hPersistence.createQuery(MonitoredService.class)
+            .filter(MonitoredServiceKeys.accountId, projectParams.getAccountIdentifier())
+            .filter(MonitoredServiceKeys.orgIdentifier, projectParams.getOrgIdentifier())
+            .filter(MonitoredServiceKeys.projectIdentifier, projectParams.getProjectIdentifier());
+    if (isNotEmpty(services)) {
+      query = query.field(MonitoredServiceKeys.serviceIdentifier).in(services);
+    }
+    if (isNotEmpty(environments)) {
+      query = query.field(MonitoredServiceKeys.environmentIdentifierList).hasAnyOf(environments);
+    }
+    return query.asList().stream().map(MonitoredService::getIdentifier).collect(Collectors.toList());
   }
 
   private Map<String, List<SloHealthIndicatorDTO>> getSloHealthIndicators(

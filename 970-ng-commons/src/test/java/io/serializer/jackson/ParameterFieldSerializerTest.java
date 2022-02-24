@@ -133,5 +133,10 @@ public class ParameterFieldSerializerTest extends CategoryTest implements Multil
     assertThat(jsonNode.size()).isEqualTo(1);
     assertThat(jsonNode.get("inner")).isNull();
     assertThat(jsonNode.get("abc")).isEqualTo(new TextNode("abc"));
+
+    sampleParams =
+        SampleParams.builder().inner(ParameterField.createExpressionField(true, "<+exp>", null, true)).build();
+    jsonNode = objectMapper.valueToTree(sampleParams);
+    assertThat(jsonNode.get("inner")).isNotNull();
   }
 }

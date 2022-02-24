@@ -36,7 +36,7 @@ export JAVA_HOME=$(/usr/libexec/java_home -v1.8)
 
 Do not add the first line on MacOS Catalina
 
-If bash used, the better option migh be specifying full path to jdk, e.g:
+If bash used, the better option might be specifying full path to jdk, e.g:
 
 ```
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home
@@ -49,7 +49,7 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/H
 ```
 
 7. Download and install `buf`
-Complete this step only if you actively working with the protocol buffer files.
+Complete this step only if you are actively working with the protocol buffer files.
 ```
 brew tap bufbuild/buf
 brew install buf
@@ -63,6 +63,8 @@ buf lint
 8. Install Docker
 
 Official steps to install docker on mac: [docker.com](https://docs.docker.com/desktop/mac/install/).
+
+9. If you are on MacOS make sure you have Xcode installed
 
 
 ### Git setup
@@ -237,6 +239,10 @@ alias runui='run_ui'
 ### Editing setup
 
 1. Install [clang-format](https://clang.llvm.org/docs/ClangFormat.html) (11.0.0)
+If on MacOS you can download this via brew `brew install clang-format@11`
+
+else
+
 Download the clang 11.0.0 tar from [this page](https://releases.llvm.org/download.html)
 Untar the downloaded file and add it to your PATH in `~/.bashrc` or `~/.zshrc`
 

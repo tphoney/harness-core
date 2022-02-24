@@ -21,8 +21,6 @@ import io.harness.annotations.ExposeInternalException;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.beans.MonitoredServiceType;
-import io.harness.cvng.beans.change.ChangeCategory;
-import io.harness.cvng.beans.change.ChangeEventDTO;
 import io.harness.cvng.core.beans.HealthMonitoringFlagResponse;
 import io.harness.cvng.core.beans.change.ChangeSummaryDTO;
 import io.harness.cvng.core.beans.monitoredService.AnomaliesSummaryDTO;
@@ -407,24 +405,14 @@ public class MonitoredServiceResource {
 
   @GET
   @Timed
-  @Path("{identifier}/change-event")
   @ExceptionMetered
-  @ApiOperation(value = "get ChangeEvent List", nickname = "getChangeEventList")
-  public RestResponse<List<ChangeEventDTO>> get(
-      @ApiParam(required = true) @NotNull @QueryParam("accountId") String accountId,
-      @ApiParam(required = true) @NotNull @QueryParam("orgIdentifier") String orgIdentifier,
-      @ApiParam(required = true) @NotNull @QueryParam("projectIdentifier") String projectIdentifier,
-      @NotNull @PathParam("identifier") String identifier,
-      @ApiParam(required = true) @NotNull @QueryParam("startTime") long startTime,
-      @ApiParam(required = true) @NotNull @QueryParam("endTime") long endTime,
-      @ApiParam @NotNull @QueryParam("changeCategories") List<ChangeCategory> changeCategories) {
-    ProjectParams projectParams = ProjectParams.builder()
-                                      .accountIdentifier(accountId)
-                                      .orgIdentifier(orgIdentifier)
-                                      .projectIdentifier(projectIdentifier)
-                                      .build();
-    return new RestResponse<>(monitoredServiceService.getChangeEvents(
-        projectParams, identifier, Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), changeCategories));
+  @Path("{monitoredServiceIdentifier}/health-sources")
+  @ApiOperation(value = "get all health sources for service and environment",
+      nickname = "getAllHealthSourcesForMonitoredServiceIdentifier")
+  public RestResponse<List<HealthSourceDTO>>
+  getHealthSourcesForMonitoredServiceIdentifier(@BeanParam ProjectParams projectParams,
+      @NotNull @PathParam("monitoredServiceIdentifier") String monitoredServiceIdentifier) {
+    return new RestResponse<>(monitoredServiceService.getHealthSources(projectParams, monitoredServiceIdentifier));
   }
 
   @GET

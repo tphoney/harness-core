@@ -117,7 +117,7 @@ public class PlanNodeExecutionStrategyTest extends OrchestrationTestBase {
   @Test
   @Owner(developers = PRASHANT)
   @Category(UnitTests.class)
-  public void shouldTestTriggerNode() {
+  public void shouldTestRunNode() {
     String planExecutionId = generateUuid();
     Ambiance ambiance = Ambiance.newBuilder()
                             .setPlanExecutionId(planExecutionId)
@@ -139,8 +139,48 @@ public class PlanNodeExecutionStrategyTest extends OrchestrationTestBase {
     doReturn(NodeExecution.builder().build())
         .when(executionStrategy)
         .createNodeExecution(ambiance, planNode, null, null, null, null);
-    executionStrategy.triggerNode(ambiance, planNode, null);
+    executionStrategy.runNode(ambiance, planNode, null);
     verify(executorService).submit(any(Runnable.class));
+  }
+
+  @Test
+  @Owner(developers = PRASHANT)
+  @Category(UnitTests.class)
+  public void shouldTestInitiateNode() {
+    String planExecutionId = generateUuid();
+    String planId = generateUuid();
+    String planNodeId = generateUuid();
+    String runtimeId = generateUuid();
+
+    Ambiance ambiance = Ambiance.newBuilder()
+                            .setPlanExecutionId(planExecutionId)
+                            .setPlanId(planId)
+                            .putAllSetupAbstractions(prepareInputArgs())
+                            .build();
+    PlanNode planNode =
+        PlanNode.builder()
+            .name("Test Node")
+            .uuid(planNodeId)
+            .identifier("test")
+            .stepType(TEST_STEP_TYPE)
+            .serviceName("CD")
+            .facilitatorObtainment(
+                FacilitatorObtainment.newBuilder()
+                    .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.SYNC).build())
+                    .build())
+            .build();
+
+    when(planService.fetchNode(eq(planId), eq(planNodeId))).thenReturn(planNode);
+
+    executionStrategy.initiateNode(ambiance, planNode.getUuid(), runtimeId, null);
+
+    ArgumentCaptor<Ambiance> ambianceCaptor = ArgumentCaptor.forClass(Ambiance.class);
+    verify(executionStrategy).runNode(ambianceCaptor.capture(), eq(planNode), eq(null));
+    Ambiance captured = ambianceCaptor.getValue();
+
+    assertThat(captured.getLevelsCount()).isEqualTo(1);
+    assertThat(captured.getLevels(0).getSetupId()).isEqualTo(planNode.getUuid());
+    assertThat(captured.getLevels(0).getRuntimeId()).isEqualTo(runtimeId);
   }
 
   @Test

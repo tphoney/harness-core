@@ -121,4 +121,6 @@ public interface ApplicationManifestService extends OwnedByService, OwnedByEnvir
   boolean deletePerpetualTaskByAppManifest(String accountId, String appManifestId);
 
   List<ApplicationManifest> listHelmChartSourceBySettingId(String accountId, String settingAttributeUuid);
+
+  List<ApplicationManifest> getApplicationManifestByIds(String appId, Set<String> appManifestIds);
 }

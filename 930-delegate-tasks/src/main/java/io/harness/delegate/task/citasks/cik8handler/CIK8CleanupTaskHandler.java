@@ -22,6 +22,7 @@ import io.harness.delegate.beans.ci.CICleanupTaskParams;
 import io.harness.delegate.beans.ci.k8s.CIK8CleanupTaskParams;
 import io.harness.delegate.beans.ci.k8s.K8sTaskExecutionResponse;
 import io.harness.delegate.task.citasks.CICleanupTaskHandler;
+import io.harness.delegate.task.citasks.cik8handler.helper.SecretVolumesHelper;
 import io.harness.delegate.task.citasks.cik8handler.k8java.CIK8JavaClientHandler;
 import io.harness.exception.PodNotFoundException;
 import io.harness.k8s.apiclient.ApiClientFactory;
@@ -43,6 +44,7 @@ public class CIK8CleanupTaskHandler implements CICleanupTaskHandler {
   @Inject private CIK8JavaClientHandler cik8JavaClientHandler;
   @Inject private K8sConnectorHelper k8sConnectorHelper;
   @Inject private ApiClientFactory apiClientFactory;
+  @Inject private SecretVolumesHelper secretVolumesHelper;
 
   @NotNull private CICleanupTaskHandler.Type type = CICleanupTaskHandler.Type.GCP_K8;
 
@@ -147,6 +149,15 @@ public class CIK8CleanupTaskHandler implements CICleanupTaskHandler {
       if (isDeleted.equals(Boolean.FALSE)) {
         log.error("Failed to delete secret {}", secretName);
         isSuccess = false;
+      }
+
+      // Delete all secrets associated with secret volumes
+      for (String secretKey : secretVolumesHelper.getAllSecretKeys(podName)) {
+        isDeleted = cik8JavaClientHandler.deleteSecret(coreV1Api, namespace, secretKey);
+        if (isDeleted.equals(Boolean.FALSE)) {
+          log.error("Failed to delete secret {}", secretKey);
+          isSuccess = false;
+        }
       }
 
       if (isNotEmpty(containerNames)) {

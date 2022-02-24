@@ -1045,6 +1045,34 @@ public class AbstractK8SStateTest extends WingsBaseTest {
   }
 
   @Test
+  @Owner(developers = ACHYUTH)
+  @Category(UnitTests.class)
+  public void testGetRenderedValuesFilesWithStepOverride() {
+    when(openShiftManagerService.isOpenShiftManifestConfig(context)).thenReturn(false);
+
+    Map<K8sValuesLocation, ApplicationManifest> appManifestMap = new HashMap<>();
+    K8sStateExecutionData k8sStateExecutionData = (K8sStateExecutionData) context.getStateExecutionData();
+    k8sStateExecutionData.setValuesFiles(new HashMap<>());
+    k8sStateExecutionData.getValuesFiles().put(K8sValuesLocation.Environment, singletonList("envValues"));
+    k8sStateExecutionData.getValuesFiles().put(
+        K8sValuesLocation.ServiceOverride, singletonList("serviceOverrideValues"));
+    k8sStateExecutionData.getValuesFiles().put(K8sValuesLocation.Service, singletonList("serviceValues"));
+    k8sStateExecutionData.getValuesFiles().put(K8sValuesLocation.EnvironmentGlobal, singletonList("envGlobalValues"));
+    k8sStateExecutionData.getValuesFiles().put(
+        K8sValuesLocation.Step, Arrays.asList("stepValues1", "stepValues2", "stepValues3"));
+
+    List<String> valuesFiles = abstractK8SState.fetchRenderedValuesFiles(appManifestMap, context);
+    assertThat(valuesFiles).hasSize(7);
+    assertThat(valuesFiles.get(0)).isEqualTo("serviceValues");
+    assertThat(valuesFiles.get(1)).isEqualTo("serviceOverrideValues");
+    assertThat(valuesFiles.get(2)).isEqualTo("envGlobalValues");
+    assertThat(valuesFiles.get(3)).isEqualTo("envValues");
+    assertThat(valuesFiles.get(4)).isEqualTo("stepValues1");
+    assertThat(valuesFiles.get(5)).isEqualTo("stepValues2");
+    assertThat(valuesFiles.get(6)).isEqualTo("stepValues3");
+  }
+
+  @Test
   @Owner(developers = ABOSII)
   @Category(UnitTests.class)
   public void testGetRenderedValuesFilesWithMultipleFiles() {

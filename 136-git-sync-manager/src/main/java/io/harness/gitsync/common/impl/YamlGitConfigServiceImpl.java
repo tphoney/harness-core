@@ -18,9 +18,7 @@ import static io.harness.gitsync.common.YamlConstants.PATH_DELIMITER;
 import static io.harness.gitsync.common.beans.BranchSyncStatus.SYNCED;
 import static io.harness.gitsync.common.remote.YamlGitConfigMapper.toYamlGitConfig;
 
-import io.harness.account.AccountClient;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.FeatureName;
 import io.harness.beans.HookEventType;
 import io.harness.beans.IdentifierRef;
 import io.harness.connector.ConnectorInfoDTO;
@@ -59,7 +57,6 @@ import io.harness.lock.PersistentLocker;
 import io.harness.ng.webhook.UpsertWebhookRequestDTO;
 import io.harness.ng.webhook.UpsertWebhookResponseDTO;
 import io.harness.ng.webhook.services.api.WebhookEventService;
-import io.harness.remote.client.RestClientUtils;
 import io.harness.repositories.repositories.yamlGitConfig.YamlGitConfigRepository;
 import io.harness.utils.IdentifierRefHelper;
 
@@ -106,7 +103,6 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
   private final Producer setupUsageEventProducer;
   private final GitSyncSettingsService gitSyncSettingsService;
   private final UserProfileHelper userProfileHelper;
-  private final AccountClient accountClient;
 
   @Inject
   public YamlGitConfigServiceImpl(YamlGitConfigRepository yamlGitConfigRepository,
@@ -116,7 +112,7 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
       WebhookEventService webhookEventService, PersistentLocker persistentLocker,
       IdentifierRefProtoDTOHelper identifierRefProtoDTOHelper,
       @Named(EventsFrameworkConstants.SETUP_USAGE) Producer setupUsageEventProducer,
-      GitSyncSettingsService gitSyncSettingsService, UserProfileHelper userProfileHelper, AccountClient accountClient) {
+      GitSyncSettingsService gitSyncSettingsService, UserProfileHelper userProfileHelper) {
     this.yamlGitConfigRepository = yamlGitConfigRepository;
     this.connectorService = connectorService;
     this.gitSyncConfigEventProducer = gitSyncConfigEventProducer;
@@ -129,7 +125,6 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
     this.setupUsageEventProducer = setupUsageEventProducer;
     this.gitSyncSettingsService = gitSyncSettingsService;
     this.userProfileHelper = userProfileHelper;
-    this.accountClient = accountClient;
   }
 
   @Override
@@ -199,20 +194,8 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
 
   @Override
   public YamlGitConfigDTO save(YamlGitConfigDTO ygs) {
-    if (isFullSyncEnabled(ygs.getAccountIdentifier())) {
-      userProfileHelper.validateIfScmUserProfileIsSet(ygs.getAccountIdentifier());
-    }
+    userProfileHelper.validateIfScmUserProfileIsSet(ygs.getAccountIdentifier());
     return saveInternal(ygs, ygs.getAccountIdentifier());
-  }
-
-  private boolean isFullSyncEnabled(String accountIdentifier) {
-    try {
-      return RestClientUtils.getResponse(
-          accountClient.isFeatureFlagEnabled(FeatureName.NG_GIT_FULL_SYNC.name(), accountIdentifier));
-    } catch (Exception ex) {
-      log.error("Exception occurred while checking Full-Sync Feature Flag enablement", ex);
-      return false;
-    }
   }
 
   void validatePresenceOfRequiredFields(Object... fields) {

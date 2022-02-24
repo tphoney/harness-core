@@ -26,6 +26,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.jfrog.artifactory.client.ArtifactoryRequest.ContentType.JSON;
 import static org.jfrog.artifactory.client.ArtifactoryRequest.ContentType.TEXT;
 import static org.jfrog.artifactory.client.ArtifactoryRequest.Method.GET;
+import static org.jfrog.artifactory.client.ArtifactoryRequest.Method.POST;
 import static org.jfrog.artifactory.client.model.impl.PackageTypeImpl.docker;
 import static org.jfrog.artifactory.client.model.impl.PackageTypeImpl.maven;
 
@@ -42,6 +43,7 @@ import io.harness.exception.ArtifactoryServerException;
 import io.harness.exception.WingsException.ReportTarget;
 import io.harness.network.Http;
 
+import software.wings.beans.appmanifest.HelmChart;
 import software.wings.beans.artifact.Artifact.ArtifactMetadataKeys;
 import software.wings.beans.artifact.ArtifactStreamAttributes;
 import software.wings.common.BuildDetailsComparatorAscending;
@@ -51,6 +53,7 @@ import software.wings.utils.RepositoryType;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
@@ -82,6 +85,7 @@ import org.jfrog.artifactory.client.model.impl.PackageTypeImpl;
 @BreakDependencyOn("io.harness.delegate.task.ListNotifyResponseData")
 public class ArtifactoryServiceImpl implements ArtifactoryService {
   private static final String REASON = "Reason:";
+  private static final String RESULTS = "results";
 
   private static final String DOWNLOAD_FILE_FOR_GENERIC_REPO = "Downloading the file for generic repo";
 
@@ -318,5 +322,119 @@ public class ArtifactoryServiceImpl implements ArtifactoryService {
       handleAndRethrow(e, USER);
     }
     return 0L;
+  }
+
+  @Override
+  public List<HelmChart> getHelmCharts(
+      ArtifactoryConfigRequest artifactoryConfig, String repositoryName, String chartName, int maxVersions) {
+    log.info("Retrieving helm charts for repositoryName {} chartName {}", repositoryName, chartName);
+    Artifactory artifactory = getArtifactoryClient(artifactoryConfig);
+    try {
+      if (isBlank(chartName)) {
+        throw new ArtifactoryServerException("Chart name can not be empty");
+      }
+      String aclQuery = "api/search/aql";
+      List<String> helmChartNames = getHelmChartNames(artifactory, aclQuery, repositoryName, chartName, maxVersions);
+      if (isEmpty(helmChartNames)) {
+        return new ArrayList<>();
+      }
+      return getHelmChartsVersionsForChartNames(artifactory, aclQuery, helmChartNames);
+    } catch (Exception e) {
+      log.error("Error occurred while retrieving File Paths from Artifactory server {}",
+          artifactoryConfig.getArtifactoryUrl(), e);
+      handleAndRethrow(e, USER);
+    }
+    return new ArrayList<>();
+  }
+
+  private List<HelmChart> getHelmChartsVersionsForChartNames(
+      Artifactory artifactory, String aclQuery, List<String> helmChartNames) throws IOException {
+    List<String> helmChartNameQueries = new ArrayList<>();
+    for (String helmChartName : helmChartNames) {
+      String helmChartQuery = "{\"name\": \" " + helmChartName + "\"}";
+      helmChartNameQueries.add(helmChartQuery);
+    }
+    String helmChartNameQuery = String.join(",", helmChartNameQueries);
+
+    String requestBody = "items.find({\"$or\": [ " + helmChartNameQuery
+        + " ]}).include(\"name\", \"repo\", \"@chart.version\", \"path\")";
+    ArtifactoryResponse artifactoryResponse = getArtifactoryResponse(artifactory, aclQuery, requestBody);
+    Map<String, List> response = artifactoryResponse.parseBody(Map.class);
+    if (response != null) {
+      return getHelmChartDetailsFromResponse(response, helmChartNames);
+    }
+    return new ArrayList<>();
+  }
+
+  public List<String> getHelmChartNames(Artifactory artifactory, String aclQuery, String repositoryName,
+      String chartName, int maxVersions) throws IOException {
+    List<String> helmChartNames = new ArrayList<>();
+    if (chartName.charAt(0) == '/') {
+      chartName = chartName.substring(1);
+    }
+    String requestBody = "items.find({\"repo\":\"" + repositoryName + "\"}, {\"@chart.name\": \"" + chartName
+        + "\"}).include(\"name\", \"repo\", \"created\", \"path\").sort({\"$desc\" : [\"created\"]}).limit("
+        + maxVersions + ")";
+    ArtifactoryResponse artifactoryResponse = getArtifactoryResponse(artifactory, aclQuery, requestBody);
+    Map<String, List> response = artifactoryResponse.parseBody(Map.class);
+    if (response != null) {
+      List<Map<String, Object>> results = response.get(RESULTS);
+      for (Map<String, Object> item : results) {
+        String name = (String) item.get("name");
+        helmChartNames.add(name);
+      }
+    }
+    return helmChartNames;
+  }
+
+  public ArtifactoryResponse getArtifactoryResponse(Artifactory artifactory, String aclQuery, String requestBody)
+      throws IOException {
+    ArtifactoryRequest repositoryRequest = new ArtifactoryRequestImpl()
+                                               .apiUrl(aclQuery)
+                                               .method(POST)
+                                               .requestBody(requestBody)
+                                               .requestType(TEXT)
+                                               .responseType(JSON);
+    ArtifactoryResponse artifactoryResponse = artifactory.restCall(repositoryRequest);
+    if (artifactoryResponse.getStatusLine().getStatusCode() == 403
+        || artifactoryResponse.getStatusLine().getStatusCode() == 400) {
+      log.warn(
+          "User not authorized to perform or using OSS version deep level search. Trying with different search api. Message {}",
+          artifactoryResponse.getStatusLine().getReasonPhrase());
+      throw new ArtifactoryServerException("User not authorized to search in artifactory. Message "
+          + artifactoryResponse.getStatusLine().getReasonPhrase());
+    }
+    return artifactoryResponse;
+  }
+
+  private List<HelmChart> getHelmChartDetailsFromResponse(Map<String, List> response, List<String> helmChartNames) {
+    List<Map<String, Object>> results = response.get(RESULTS);
+    Map<String, String> helmChartNameToVersionMap = new HashMap<>();
+    if (results != null) {
+      for (Map<String, Object> item : results) {
+        String name = (String) item.get("name");
+        List<Map<String, String>> properties = (List<Map<String, String>>) item.get("properties");
+        if (isEmpty(properties)) {
+          continue;
+        }
+        Map<String, String> versionProperty =
+            properties.stream().filter(property -> property.get("key").equals("chart.version")).findAny().orElse(null);
+        if (versionProperty == null) {
+          continue;
+        }
+        String version = versionProperty.get("value");
+        helmChartNameToVersionMap.put(name, version);
+      }
+    }
+    List<HelmChart> helmChartDetails = new ArrayList<>();
+    helmChartNames.forEach(helmChartName -> {
+      if (helmChartNameToVersionMap.containsKey(helmChartName)) {
+        helmChartDetails.add(HelmChart.builder()
+                                 .version(helmChartNameToVersionMap.get(helmChartName))
+                                 .displayName(helmChartName)
+                                 .build());
+      }
+    });
+    return helmChartDetails;
   }
 }

@@ -839,7 +839,6 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
         } else if (assignDelegateService.isWhitelisted(delegateTask, delegateId)) {
           return assignTask(delegateId, taskId, delegateTask, delegateInstanceId);
         }
-
         log.info("Delegate {} is blacklisted for task {}", delegateId, taskId);
         return null;
       }

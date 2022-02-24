@@ -398,6 +398,50 @@ func TestFindFilesInBranch(t *testing.T) {
 	assert.Equal(t, int32(0), got.Pagination.Next, "No next page")
 }
 
+func TestFindFilesInBranchBitbucket(t *testing.T) {
+	in := &pb.FindFilesInBranchRequest{
+		Slug: "mohitgargharness/test-repository",
+		Type: &pb.FindFilesInBranchRequest_Branch{
+			Branch: "master",
+		},
+		Provider: &pb.Provider{
+			Hook: &pb.Provider_BitbucketCloud{
+				BitbucketCloud: &pb.BitbucketCloudProvider{
+					Username:    "mohitgargharness",
+					AppPassword: "d58ztzmwJksybeatmP4e",
+				},
+			},
+		},
+	}
+
+	log, _ := logs.GetObservedLogger(zap.InfoLevel)
+	got, err := FindFilesInBranch(context.Background(), in, log.Sugar())
+
+	assert.Nil(t, err, "no errors")
+	assert.NotNil(t, len(got.File), "Non-Null file count")
+	assert.NotNil(t, got.Pagination.NextUrl, "Next page found")
+
+	in = &pb.FindFilesInBranchRequest{
+		Slug: "mohitgargharness/test-repository",
+		Type: &pb.FindFilesInBranchRequest_Branch{
+			Branch: "master",
+		},
+		Pagination: &pb.PageRequest{Url: got.GetPagination().GetNextUrl()},
+		Provider: &pb.Provider{
+			Hook: &pb.Provider_BitbucketCloud{
+				BitbucketCloud: &pb.BitbucketCloudProvider{
+					Username:    "mohitgargharness",
+					AppPassword: "d58ztzmwJksybeatmP4e",
+				},
+			},
+		},
+	}
+
+	assert.Nil(t, err, "no errors")
+	assert.NotNil(t, len(got.File), "Non-Null file count")
+}
+
+
 func TestFindFilesInCommit(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

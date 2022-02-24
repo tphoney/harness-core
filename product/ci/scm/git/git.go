@@ -449,18 +449,25 @@ func GetUserRepos(ctx context.Context, request *pb.GetUserReposRequest, log *zap
 	return out, nil
 }
 
-func GetLatestCommitOnFile(ctx context.Context, p pb.Provider, slug, branch, filePath string, log *zap.SugaredLogger) (string, error) {
+func GetLatestCommitOnFile(ctx context.Context, request *pb.GetLatestCommitOnFileRequest, log *zap.SugaredLogger) (out *pb.GetLatestCommitOnFileResponse, err error) {
 	// For Bitbucket, we also get commits for a non-existent file if it had been created before (deleted now)
-	listCommitsResponse, err := ListCommits(ctx, &pb.ListCommitsRequest{Provider: &p, Slug: slug, Type: &pb.ListCommitsRequest_Branch{Branch: branch}, FilePath: filePath}, log)
+	response, err := ListCommits(ctx, &pb.ListCommitsRequest{Provider: request.Provider, Slug: request.Slug, Type: &pb.ListCommitsRequest_Branch{Branch: request.Branch}, FilePath: request.FilePath}, log)
 	if err != nil {
-		return "", err
+		return &pb.GetLatestCommitOnFileResponse {
+			CommitId: "",
+			Error: err.Error(),
+		}, err
 	}
 	
-	if (listCommitsResponse.CommitIds != nil && len(listCommitsResponse.CommitIds) !=0) {
-		return listCommitsResponse.CommitIds[0], nil
+	if (response.CommitIds != nil && len(response.CommitIds) !=0) {
+		return &pb.GetLatestCommitOnFileResponse {
+			CommitId: response.CommitIds[0],
+		}, nil
 	}
 	// TODO Return an error saying no commit found for the given file
-	return "", nil
+	return &pb.GetLatestCommitOnFileResponse {
+		CommitId: "",
+	}, nil
 }
 
 func convertChangesList(from []*scm.Change) (to []*pb.PRFile) {

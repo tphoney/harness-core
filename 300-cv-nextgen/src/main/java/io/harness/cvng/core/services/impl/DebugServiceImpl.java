@@ -14,12 +14,16 @@ import io.harness.cvng.core.entities.VerificationTask;
 import io.harness.cvng.core.services.api.DataCollectionTaskService;
 import io.harness.cvng.core.services.api.DebugService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
+import io.harness.cvng.servicelevelobjective.entities.SLIRecord;
 import io.harness.cvng.servicelevelobjective.entities.SLOHealthIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective;
+import io.harness.cvng.servicelevelobjective.services.api.SLIRecordService;
 import io.harness.cvng.servicelevelobjective.services.api.SLOHealthIndicatorService;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelIndicatorService;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelObjectiveService;
+import io.harness.cvng.statemachine.entities.AnalysisStateMachine;
+import io.harness.cvng.statemachine.services.api.AnalysisStateMachineService;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
@@ -33,6 +37,8 @@ public class DebugServiceImpl implements DebugService {
   @Inject SLOHealthIndicatorService sloHealthIndicatorService;
   @Inject VerificationTaskService verificationTaskService;
   @Inject DataCollectionTaskService dataCollectionTaskService;
+  @Inject SLIRecordService sliRecordService;
+  @Inject AnalysisStateMachineService analysisStateMachineService;
 
   @Override
   public SLODebugResponse getSLODebugResponse(ProjectParams projectParams, String identifier) {
@@ -50,6 +56,10 @@ public class DebugServiceImpl implements DebugService {
 
     Map<String, List<DataCollectionTask>> sliIdentifierToDataCollectionTaskMap = new HashMap<>();
 
+    Map<String, AnalysisStateMachine> sliIdentifierToAnalysisStateMachineMap = new HashMap<>();
+
+    Map<String, List<SLIRecord>> sliIdentifierToSLIRecordMap = new HashMap<>();
+
     for (ServiceLevelIndicator serviceLevelIndicator : serviceLevelIndicatorList) {
       sliIdentifierToVerificationTaskMap.put(serviceLevelIndicator.getIdentifier(),
           verificationTaskService.getSLITask(projectParams.getAccountIdentifier(), serviceLevelIndicator.getUuid()));
@@ -57,6 +67,13 @@ public class DebugServiceImpl implements DebugService {
       sliIdentifierToDataCollectionTaskMap.put(serviceLevelIndicator.getIdentifier(),
           dataCollectionTaskService.getLatestDataCollectionTasks(
               projectParams.getAccountIdentifier(), serviceLevelIndicator.getUuid(), 3));
+
+      sliIdentifierToSLIRecordMap.put(serviceLevelIndicator.getIdentifier(),
+          sliRecordService.getLatestCountSLIRecords(serviceLevelIndicator.getUuid(), 100));
+
+      sliIdentifierToAnalysisStateMachineMap.put(serviceLevelIndicator.getIdentifier(),
+          analysisStateMachineService.getExecutingStateMachine(verificationTaskService.getSLIVerificationTaskId(
+              projectParams.getAccountIdentifier(), serviceLevelIndicator.getUuid())));
     }
 
     return SLODebugResponse.builder()
@@ -66,6 +83,8 @@ public class DebugServiceImpl implements DebugService {
         .sloHealthIndicator(sloHealthIndicator)
         .sliIdentifierToVerificationTaskMap(sliIdentifierToVerificationTaskMap)
         .sliIdentifierToDataCollectionTaskMap(sliIdentifierToDataCollectionTaskMap)
+        .sliIdentifierToSLIRecordMap(sliIdentifierToSLIRecordMap)
+        .sliIdentifierToAnalysisStateMachineMap(sliIdentifierToAnalysisStateMachineMap)
         .build();
   }
 }

@@ -247,6 +247,7 @@ public class OrchestrationStepsModuleRegistrars {
                    .availableAtAccountLevel(false)
                    .clazz(FlagConfigurationStepNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.CF)
                                            .modulesSupported(Arrays.asList(ModuleType.CF, ModuleType.PMS))
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
                                            .build())
@@ -259,6 +260,7 @@ public class OrchestrationStepsModuleRegistrars {
                    .clazz(PolicyStepNode.class)
                    .yamlSchemaMetadata(
                        YamlSchemaMetadata.builder()
+                           .namespace(SchemaNamespaceConstants.PMS)
                            .modulesSupported(Arrays.asList(ModuleType.values()))
                            .featureFlags(Collections.singletonList(FeatureName.CUSTOM_POLICY_STEP.name()))
                            .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())

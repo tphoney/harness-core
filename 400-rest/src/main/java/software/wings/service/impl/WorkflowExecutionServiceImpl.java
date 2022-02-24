@@ -67,6 +67,7 @@ import static software.wings.beans.deployment.DeploymentMetadata.Include;
 import static software.wings.beans.deployment.DeploymentMetadata.Include.ARTIFACT_SERVICE;
 import static software.wings.beans.deployment.DeploymentMetadata.Include.DEPLOYMENT_TYPE;
 import static software.wings.beans.deployment.DeploymentMetadata.Include.ENVIRONMENT;
+import static software.wings.service.impl.ApplicationManifestServiceImpl.CHART_NAME;
 import static software.wings.sm.InstanceStatusSummary.InstanceStatusSummaryBuilder.anInstanceStatusSummary;
 import static software.wings.sm.StateType.APPROVAL;
 import static software.wings.sm.StateType.APPROVAL_RESUME;
@@ -205,8 +206,10 @@ import software.wings.beans.EnvSummary;
 import software.wings.beans.ExecutionArgs;
 import software.wings.beans.GraphGroup;
 import software.wings.beans.GraphNode;
+import software.wings.beans.HelmChartInputType;
 import software.wings.beans.HelmExecutionSummary;
 import software.wings.beans.InfrastructureMapping;
+import software.wings.beans.ManifestVariable;
 import software.wings.beans.NameValuePair;
 import software.wings.beans.ParallelInfo;
 import software.wings.beans.Pipeline;
@@ -2509,7 +2512,7 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
 
     if (helmCharts == null || helmChartIds.size() != helmCharts.size()) {
       log.error("helmChartIds from executionArgs contains invalid helmCharts");
-      throw new InvalidRequestException("Invalid helm chart");
+      throw new InvalidRequestException("Helm charts provided doesn't exist");
     }
 
     List<String> serviceIds =
@@ -3068,14 +3071,7 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
 
     setArtifactsFromArtifactVariables(executionArgs);
 
-    if (isEmpty(executionArgs.getHelmCharts()) && isNotEmpty(executionArgs.getManifestVariables())) {
-      List<HelmChart> manifests =
-          executionArgs.getManifestVariables()
-              .stream()
-              .map(manifestVariable -> HelmChart.builder().uuid(manifestVariable.getValue()).build())
-              .collect(toList());
-      executionArgs.setHelmCharts(manifests);
-    }
+    setManifestsFromManifestVariables(appId, executionArgs, accountId);
 
     switch (executionArgs.getWorkflowType()) {
       case PIPELINE: {
@@ -3099,6 +3095,53 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
       default:
         throw new WingsException(ErrorCode.INVALID_ARGUMENT).addParam("args", "workflowType");
     }
+  }
+
+  private void setManifestsFromManifestVariables(String appId, ExecutionArgs executionArgs, String accountId) {
+    if (isEmpty(executionArgs.getHelmCharts()) && isNotEmpty(executionArgs.getManifestVariables())) {
+      List<HelmChart> manifests =
+          executionArgs.getManifestVariables()
+              .stream()
+              .filter(manifestVariable -> HelmChartInputType.ID.equals(manifestVariable.getInputType()))
+              .map(manifestVariable -> HelmChart.builder().uuid(manifestVariable.getValue()).build())
+              .collect(toList());
+      manifests.addAll(
+          getHelmChartsForVersionManifestVariables(appId, executionArgs.getManifestVariables(), accountId));
+      executionArgs.setHelmCharts(manifests);
+    }
+  }
+
+  private List<HelmChart> getHelmChartsForVersionManifestVariables(
+      String appId, List<ManifestVariable> manifestVariables, String accountId) {
+    List<HelmChart> helmCharts = new ArrayList<>();
+    manifestVariables.stream()
+        .filter(mv -> HelmChartInputType.VERSION.equals(mv.getInputType()))
+        .forEach(manifestVariable -> {
+          if (isEmpty(manifestVariable.getAppManifestId())) {
+            throw new InvalidRequestException("AppManifest Id not provided in manifest variables");
+          }
+          HelmChart helmChart = helmChartService.getManifestByVersionNumber(
+              accountId, manifestVariable.getAppManifestId(), manifestVariable.getValue());
+          if (helmChart != null) {
+            helmCharts.add(helmChart);
+          } else {
+            Map<String, String> properties =
+                applicationManifestService.fetchAppManifestProperties(appId, manifestVariable.getAppManifestId());
+            HelmChart helmChartToSave = HelmChart.builder()
+                                            .name(properties.get(CHART_NAME))
+                                            .appId(appId)
+                                            .accountId(accountId)
+                                            .serviceId(manifestVariable.getServiceId())
+                                            .applicationManifestId(manifestVariable.getAppManifestId())
+                                            .version(manifestVariable.getValue())
+                                            .build();
+            helmChartToSave.setDisplayName(helmChartToSave.getName() != null
+                    ? helmChartToSave.getName() + "-" + helmChartToSave.getVersion()
+                    : helmChartToSave.getVersion());
+            helmCharts.add(helmChartService.create(helmChartToSave));
+          }
+        });
+    return helmCharts;
   }
 
   private void setArtifactsFromArtifactVariables(ExecutionArgs executionArgs) {

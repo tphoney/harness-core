@@ -108,16 +108,6 @@ public class ChangeSourceServiceImpl implements ChangeSourceService {
   }
 
   @Override
-  public Set<ChangeSourceDTO> getByType(ServiceEnvironmentParams environmentParams, ChangeSourceType changeSourceType) {
-    return createQuery(environmentParams)
-        .filter(ChangeSourceKeys.type, changeSourceType)
-        .asList()
-        .stream()
-        .map(changeSourceTransformer::getDto)
-        .collect(Collectors.toSet());
-  }
-
-  @Override
   public List<ChangeSource> getEntityByType(
       ServiceEnvironmentParams environmentParams, ChangeSourceType changeSourceType) {
     return createQuery(environmentParams).filter(ChangeSourceKeys.type, changeSourceType).asList();
@@ -270,6 +260,7 @@ public class ChangeSourceServiceImpl implements ChangeSourceService {
                                           .orgIdentifier(changeSource.getOrgIdentifier())
                                           .projectIdentifier(changeSource.getProjectIdentifier())
                                           .changeSourceIdentifier(changeSource.getIdentifier())
+                                          .monitoredServiceIdentifier(changeSource.getMonitoredServiceIdentifier())
                                           .envIdentifier(changeSource.getEnvIdentifier())
                                           .serviceIdentifier(changeSource.getServiceIdentifier())
                                           .type(ChangeSourceType.HARNESS_CD_CURRENT_GEN)

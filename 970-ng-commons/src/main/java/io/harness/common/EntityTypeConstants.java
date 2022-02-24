@@ -42,6 +42,14 @@ public interface EntityTypeConstants {
   String JIRA_UPDATE = "JiraUpdate";
   String SHELL_SCRIPT = "ShellScript";
   String K8S_CANARY_DEPLOY = "K8sCanaryDeploy";
+  String K8S_APPLY = "K8sApply";
+  String K8S_BLUE_GREEN_DEPLOY = "K8sBlueGreenDeploy";
+  String K8S_ROLLING_DEPLOY = "K8sRollingDeploy";
+  String K8S_ROLLING_ROLLBACK = "K8sRollingRollback";
+  String K8S_SCALE = "K8sScale";
+  String K8S_DELETE = "K8sDelete";
+  String K8S_BG_SWAP_SERVICES = "K8sBGSwapServices";
+  String K8S_CANARY_DELETE = "K8sCanaryDelete";
   String RUN_STEP = "Run";
   String RUN_TEST = "RunTests";
   String PLUGIN = "Plugin";
@@ -57,6 +65,12 @@ public interface EntityTypeConstants {
   String BUILD_AND_PUSH_GCR = "BuildAndPushGCR";
   String BUILD_AND_PUSH_ECR = "BuildAndPushECR";
   String BUILD_AND_PUSH_DOCKER_REGISTRY = "BuildAndPushDockerRegistry";
+  String TERRAFORM_APPLY = "TerraformApply";
+  String TERRAFORM_PLAN = "TerraformPlan";
+  String TERRAFORM_DESTROY = "TerraformDestroy";
+  String TERRAFORM_ROLLBACK = "TerraformRollback";
+  String HELM_DEPLOY = "HelmDeploy";
+  String HELM_ROLLBACK = "HelmRollback";
   String SERVICENOW_APPROVAL = "ServiceNowApproval";
   String JIRA_APPROVAL = "JiraApproval";
   String HARNESS_APPROVAL = "HarnessApproval";

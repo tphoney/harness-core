@@ -593,7 +593,6 @@ java_library(
         "@maven//:org_elasticsearch_plugin_parent_join_client",
         "@maven//:org_elasticsearch_plugin_rank_eval_client",
         "@maven//:org_freemarker_freemarker",
-        "@maven//:org_glassfish_corba_glassfish_corba_omgapi",
         "@maven//:org_glassfish_corba_glassfish_corba_orb",
         "@maven//:org_glassfish_hk2_external_aopalliance_repackaged",
         "@maven//:org_glassfish_hk2_external_javax_inject",

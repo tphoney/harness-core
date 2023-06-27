@@ -1,0 +1,75 @@
+{
+    "eventKey": "repo:refs_changed",
+    "date": "2023-04-13T02:44:29+0000",
+    "actor": {
+        "name": "harnessadmin",
+        "emailAddress": "manjunatha.etagi@harness.io",
+        "id": 1,
+        "displayName": "Harness Admin",
+        "active": true,
+        "slug": "harnessadmin",
+        "type": "NORMAL",
+        "links": {
+            "self": [
+                {
+                    "href": "https://bitbucket.dev.harness.io/users/harnessadmin"
+                }
+            ]
+        }
+    },
+    "repository": {
+        "slug": "viniciustestrepo",
+        "id": 142,
+        "name": "viniciusTestRepo",
+        "hierarchyId": "47c7823c2fe7070e3f37",
+        "scmId": "git",
+        "state": "AVAILABLE",
+        "statusMessage": "Available",
+        "forkable": true,
+        "project": {
+            "key": "HARTEST",
+            "id": 82,
+            "name": "HarnessTest",
+            "public": false,
+            "type": "NORMAL",
+            "links": {
+                "self": [
+                    {
+                        "href": "https://bitbucket.dev.harness.io/projects/HARTEST"
+                    }
+                ]
+            }
+        },
+        "public": false,
+        "links": {
+            "clone": [
+                {
+                    "href": "https://bitbucket.dev.harness.io/scm/hartest/viniciustestrepo.git",
+                    "name": "http"
+                },
+                {
+                    "href": "ssh://git@bitbucket.dev.harness.io:7999/hartest/viniciustestrepo.git",
+                    "name": "ssh"
+                }
+            ],
+            "self": [
+                {
+                    "href": "https://bitbucket.dev.harness.io/projects/HARTEST/repos/viniciustestrepo/browse"
+                }
+            ]
+        }
+    },
+    "changes": [
+        {
+            "ref": {
+                "id": "refs/heads/master",
+                "displayId": "master",
+                "type": "BRANCH"
+            },
+            "refId": "refs/heads/master",
+            "fromHash": "d5c466cfb664f442f67e66ca3d6fcd6030703aba",
+            "toHash": "8201796cd76fb69f5282434f62412e98b10aab62",
+            "type": "UPDATE"
+        }
+    ]
+}

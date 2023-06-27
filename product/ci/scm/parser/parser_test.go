@@ -191,6 +191,68 @@ func TestParsePushWebhookPRSuccess(t *testing.T) {
 	}
 }
 
+func TestParsePushWebhookStashV7PRSuccess(t *testing.T) {
+	data, _ := os.ReadFile("testdata/stash_v7_push.json")
+	in := &pb.ParseWebhookRequest{
+		Body: string(data),
+		Header: &pb.Header{
+			Fields: []*pb.Header_Pair{
+				{
+					Key:    "X-Event-Key",
+					Values: []string{"repo:refs_changed"},
+				},
+			},
+		},
+		Secret:   "",
+		Provider: pb.GitProvider_STASH,
+	}
+
+	log, _ := logs.GetObservedLogger(zap.InfoLevel)
+	got, err := ParseWebhook(context.Background(), in, log.Sugar())
+	assert.Nil(t, err)
+	assert.NotNil(t, got.GetPush())
+
+	want := &pb.ParseWebhookResponse{}
+	raw, _ := os.ReadFile("testdata/push.json.golden")
+	_ = jsonpb.UnmarshalString(string(raw), want)
+	if !proto.Equal(got, want) {
+		t.Errorf("Unexpected Results")
+		t.Log(got)
+		t.Log(want)
+	}
+}
+
+func TestParsePushWebhookStashV5PRSuccess(t *testing.T) {
+	data, _ := os.ReadFile("testdata/stash_v5_push.json")
+	in := &pb.ParseWebhookRequest{
+		Body: string(data),
+		Header: &pb.Header{
+			Fields: []*pb.Header_Pair{
+				{
+					Key:    "X-Event-Key",
+					Values: []string{"repo:refs_changed"},
+				},
+			},
+		},
+		Secret:   "",
+		Provider: pb.GitProvider_STASH,
+	}
+
+	log, _ := logs.GetObservedLogger(zap.InfoLevel)
+	got, err := ParseWebhook(context.Background(), in, log.Sugar())
+	assert.Nil(t, err)
+	assert.NotNil(t, got.GetPush())
+
+	want := &pb.ParseWebhookResponse{}
+	raw, _ := os.ReadFile("testdata/push.json.golden")
+	_ = jsonpb.UnmarshalString(string(raw), want)
+	if !proto.Equal(got, want) {
+		t.Errorf("Unexpected Results")
+		t.Log("got:", got)
+		t.Log("want:", want)
+	}
+}
+
 func TestParseCommentWebhookSuccess(t *testing.T) {
 	data, _ := os.ReadFile("testdata/comment.json")
 	in := &pb.ParseWebhookRequest{

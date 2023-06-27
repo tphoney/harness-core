@@ -18,7 +18,7 @@ require (
 	github.com/harness/harness-core/commons/go/lib v0.0.0-20220222141117-7659b7eca599
 	github.com/mattn/go-zglob v0.0.4 // indirect
 	github.com/stretchr/testify v1.8.1
-	github.com/wings-software/autogen-go v1.0.0 // indirect
+	github.com/wings-software/autogen-go v1.0.0
 	go.uber.org/zap v1.15.0
 	golang.org/x/net v0.5.0
 	google.golang.org/grpc v1.53.0

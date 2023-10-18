@@ -285,6 +285,7 @@ public class VmInitializeTaskParamsBuilder {
         .serviceDependencies(getServiceDependencies(ambiance, integrationStageConfig))
         .tags(vmInitializeUtils.getBuildTags(ambiance, stageDetails))
         .infraInfo(infraInfo)
+        .tty(featureFlagService.isEnabled(FeatureName.CI_ENABLE_TTY_LOGS, accountID))
         .build();
   }
 
@@ -700,19 +701,25 @@ public class VmInitializeTaskParamsBuilder {
       }
     }
 
-    SetupVmRequest.Config config = SetupVmRequest.Config.builder()
-                                       .envs(env)
-                                       .secrets(secrets)
-                                       .network(SetupVmRequest.Network.builder().id(NETWORK_ID).build())
-                                       .logConfig(SetupVmRequest.LogConfig.builder()
-                                                      .url(params.getLogStreamUrl())
-                                                      .token(params.getLogSvcToken())
-                                                      .accountID(params.getAccountID())
-                                                      .indirectUpload(params.isLogSvcIndirectUpload())
-                                                      .build())
-                                       .tiConfig(getTIConfig(params, env))
-                                       .volumes(getVolumes(params.getVolToMountPath()))
-                                       .build();
+    // If the tty logs feature flag is enabled
+    enableTTY = featureFlagService
+                    .isEnabled(FeatureName.CI_ENABLE_TTY_LOGS, params.getAccountID())
+
+                        SetupVmRequest.Config config =
+        SetupVmRequest.Config.builder()
+            .envs(env)
+            .secrets(secrets)
+            .network(SetupVmRequest.Network.builder().id(NETWORK_ID).build())
+            .logConfig(SetupVmRequest.LogConfig.builder()
+                           .url(params.getLogStreamUrl())
+                           .token(params.getLogSvcToken())
+                           .accountID(params.getAccountID())
+                           .indirectUpload(params.isLogSvcIndirectUpload())
+                           .build())
+            .tiConfig(getTIConfig(params, env))
+            .tty(enableTTY)
+            .volumes(getVolumes(params.getVolToMountPath()))
+            .build();
     return SetupVmRequest.builder()
         .id(params.getStageRuntimeId())
         .tags(params.getTags())

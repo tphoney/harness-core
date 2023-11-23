@@ -48,7 +48,6 @@ import java.util.Map;
 import java.util.Optional;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -76,7 +75,7 @@ public class RunStepInfo implements CIStepInfo, WithConnectorRef {
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) private String name;
   @VariableExpression(skipVariableExpression = true) @Min(MIN_RETRY) @Max(MAX_RETRY) private int retry;
 
-  @NotNull @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> command;
+  @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> command;
   @YamlSchemaTypes(value = {runtime})
   @ApiModelProperty(dataType = "[Lio.harness.yaml.core.variables.OutputNGVariable;")
   @VariableExpression(skipVariableExpression = true)

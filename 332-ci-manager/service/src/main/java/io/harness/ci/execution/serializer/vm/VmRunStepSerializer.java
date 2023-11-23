@@ -17,6 +17,7 @@ import io.harness.beans.serializer.RunTimeInputHandler;
 import io.harness.beans.steps.CIRegistry;
 import io.harness.beans.steps.stepinfo.RunStepInfo;
 import io.harness.beans.sweepingoutputs.StageInfraDetails;
+import io.harness.beans.yaml.extended.CIShellType;
 import io.harness.beans.yaml.extended.reports.JUnitTestReport;
 import io.harness.beans.yaml.extended.reports.UnitTestReportType;
 import io.harness.ci.config.CIExecutionServiceConfig;
@@ -57,7 +58,7 @@ public class VmRunStepSerializer {
       ParameterField<Timeout> parameterFieldTimeout, String stepName, List<CIRegistry> registries, String delegateId,
       StageInfraDetails stageInfraDetails) {
     String command =
-        RunTimeInputHandler.resolveStringParameter("Command", "Run", identifier, runStepInfo.getCommand(), true);
+        RunTimeInputHandler.resolveStringParameter("Command", "Run", identifier, runStepInfo.getCommand(), false);
     String image =
         RunTimeInputHandler.resolveStringParameter("Image", "Run", identifier, runStepInfo.getImage(), false);
     String connectorIdentifier;
@@ -110,6 +111,12 @@ public class VmRunStepSerializer {
           + System.lineSeparator() + command;
     } else {
       command = earlyExitCommand + command;
+    }
+
+    // do not pass commands if shell type is none
+    CIShellType shellType = RunTimeInputHandler.resolveShellType(runStepInfo.getShell());
+    if (shellType == CIShellType.NONE || true) { // TODO REMOVE TRUE BEFORE SUBMITTING
+      command = null;
     }
 
     VmRunStepBuilder runStepBuilder = VmRunStep.builder()

@@ -76,10 +76,10 @@ public class RunStepProtobufSerializer implements ProtobufStepSerializer<RunStep
       command = SerializerUtils.getK8sDebugCommand(accountId, ciExecutionServiceConfig.getRemoteDebugTimeout(),
                     runStepInfo, ciExecutionServiceConfig.getTmateEndpoint())
           + System.lineSeparator()
-          + RunTimeInputHandler.resolveStringParameter("Command", "Run", identifier, runStepInfo.getCommand(), true);
+          + RunTimeInputHandler.resolveStringParameter("Command", "Run", identifier, runStepInfo.getCommand(), false);
     } else {
       command =
-          RunTimeInputHandler.resolveStringParameter("Command", "Run", identifier, runStepInfo.getCommand(), true);
+          RunTimeInputHandler.resolveStringParameter("Command", "Run", identifier, runStepInfo.getCommand(), false);
     }
 
     RunStep.Builder runStepBuilder = RunStep.newBuilder();
@@ -129,6 +129,8 @@ public class RunStepProtobufSerializer implements ProtobufStepSerializer<RunStep
       protoShellType = ShellType.POWERSHELL;
     } else if (shellType == CIShellType.PYTHON) {
       protoShellType = ShellType.PYTHON;
+    } else if (shellType == CIShellType.NONE) {
+      protoShellType = ShellType.NONE;
     }
 
     runStepBuilder.setShellType(protoShellType);

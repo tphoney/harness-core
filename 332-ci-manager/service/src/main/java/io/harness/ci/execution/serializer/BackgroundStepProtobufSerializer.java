@@ -100,6 +100,8 @@ public class BackgroundStepProtobufSerializer implements ProtobufStepSerializer<
       protoShellType = ShellType.POWERSHELL;
     } else if (shellType == CIShellType.PYTHON) {
       protoShellType = ShellType.PYTHON;
+    } else if (shellType == CIShellType.NONE) {
+      protoShellType = ShellType.NONE;
     }
 
     runStepBuilder.setShellType(protoShellType);

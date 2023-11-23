@@ -25,7 +25,8 @@ public enum CIShellType {
   @JsonProperty("Bash") BASH("Bash"),
   @JsonProperty("Powershell") POWERSHELL("Powershell"),
   @JsonProperty("Pwsh") PWSH("Pwsh"),
-  @JsonProperty("Python") PYTHON("Python");
+  @JsonProperty("Python") PYTHON("Python"),
+  @JsonProperty("None") NONE("None");
   private final String yamlName;
 
   @JsonCreator(mode = JsonCreator.Mode.DELEGATING)

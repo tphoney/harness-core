@@ -47,6 +47,13 @@ public enum Shell {
     public CIShellType toShellType() {
       return CIShellType.PYTHON;
     }
+  },
+  @JsonProperty("none")
+  NONE("none") {
+    @Override
+    public CIShellType toShellType() {
+      return CIShellType.NONE;
+    }
   };
 
   private final String yamlName;

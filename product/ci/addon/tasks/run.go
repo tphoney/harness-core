@@ -160,6 +160,11 @@ func (r *runTask) execute(ctx context.Context, retryCount int32) (map[string]str
 				WithStdout(r.procWriter).WithStderr(r.procWriter).WithEnvVarsMap(envVars)
 			_ = runCmd(ctx, cmd, r.id, cmdArgs, retryCount, start, r.logMetrics, r.addonLogger)
 		}()
+	} else if r.isNone() {
+		// there is no entrypoint or command to execute
+		cmd := r.cmdContextFactory.CmdContextWithSleep(ctx, cmdExitWaitTime, "NONE", "").
+			WithStdout(r.procWriter).WithStderr(r.procWriter).WithEnvVarsMap(envVars)
+		err = runCmd(ctx, cmd, r.id, []string{}, retryCount, start, r.logMetrics, r.addonLogger)
 	} else {
 		cmd := r.cmdContextFactory.CmdContextWithSleep(ctx, cmdExitWaitTime, cmdArgs[0], cmdArgs[1:]...).
 			WithStdout(r.procWriter).WithStderr(r.procWriter).WithEnvVarsMap(envVars)
@@ -301,6 +306,13 @@ func (r *runTask) isPowershell() bool {
 
 func (r *runTask) isPython() bool {
 	if r.shellType == pb.ShellType_PYTHON {
+		return true
+	}
+	return false
+}
+
+func (r *runTask) isNone() bool {
+	if r.shellType == pb.ShellType_NONE {
 		return true
 	}
 	return false

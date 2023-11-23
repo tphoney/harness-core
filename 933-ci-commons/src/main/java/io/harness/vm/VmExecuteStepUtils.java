@@ -49,6 +49,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,11 +175,15 @@ public class VmExecuteStepUtils {
         }
       }
     }
+    List<String> command;
+    //  do not send a List with null in it, if there is no command.
+    if (runStep.getCommand() == null) {
+      command = Collections.<String>emptyList();
+    } else {
+      command = Arrays.asList(runStep.getCommand());
+    }
     configBuilder.kind(RUN_STEP_KIND)
-        .runConfig(ExecuteStepRequest.RunConfig.builder()
-                       .command(Arrays.asList(runStep.getCommand()))
-                       .entrypoint(runStep.getEntrypoint())
-                       .build())
+        .runConfig(ExecuteStepRequest.RunConfig.builder().command(command).entrypoint(runStep.getEntrypoint()).build())
         .image(runStep.getImage())
         .pull(runStep.getPullPolicy())
         .user(runStep.getRunAsUser())

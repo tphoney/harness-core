@@ -64,8 +64,6 @@ public class SerializerUtils {
       entrypoint = Arrays.asList("pwsh", "-Command");
     } else if (shellType == CIShellType.PYTHON) {
       entrypoint = Arrays.asList("python3", "-c");
-    } else if (shellType == CIShellType.NONE) {
-      entrypoint = Collections.<String>emptyList();
     } else {
       throw new CIStageExecutionException(format("Invalid shell type: %s", shellType));
     }
@@ -173,8 +171,6 @@ public class SerializerUtils {
       cmd = "$ErrorActionPreference = 'Stop' \n";
     } else if (shellType == CIShellType.PYTHON) {
       cmd = "";
-    } else if (shellType == CIShellType.NONE) {
-      cmd = null;
     } else {
       throw new CIStageExecutionException(format("Invalid shell type: %s", shellType));
     }
